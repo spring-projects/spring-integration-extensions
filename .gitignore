@@ -1,6 +1,20 @@
-*.class
-
-# Package Files #
-*.jar
-*.war
-*.ear
+*.iml
+*.ipr
+*.iws
+*.msg
+*/src/main/java/META-INF
+.classpath
+.DS_Store
+.gradle
+.idea
+.project
+.settings
+bin
+build
+build.log
+derby.log
+lib
+logs
+nohup.out
+out
+target
