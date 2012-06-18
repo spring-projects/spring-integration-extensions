@@ -70,37 +70,37 @@ public class SmbInboundRemoteFileSystemSynchronizerTest extends AbstractBaseTest
 		smbSessionFactory.setReplaceFile(true);
 	}
 
-	@Test
-	public void testCopyFileToLocalDir() throws Exception {
-		File localDirectoy = new File(testLocalDir);
-		assertFileNotExists(localDirectoy);
-
-		SmbInboundFileSynchronizer synchronizer = spy(new SmbInboundFileSynchronizer(smbSessionFactory));
-		synchronizer.setDeleteRemoteFiles(true);
-		synchronizer.setRemoteDirectory(testRemoteDir);
-		synchronizer.setFilter(new SmbRegexPatternFileListFilter(".*\\.test$"));
-
-		SmbInboundFileSynchronizingMessageSource messageSource = new SmbInboundFileSynchronizingMessageSource(synchronizer);
-		messageSource.setAutoCreateLocalDirectory(true);
-
-		messageSource.setLocalDirectory(localDirectoy);
-		messageSource.afterPropertiesSet();
-
-		String[] testFiles = new String[] {"a.test", "b.test"};
-
-		for (String testFile : testFiles) {
-			Message<File> message = messageSource.receive();
-			assertNotNull(message);
-			assertEquals(testFile, message.getPayload().getName());
-			assertFileExists(new File(testLocalDir + "/" + testFile));
-        }
-
-		Message<File> nothing = messageSource.receive();
-		assertNull(nothing);
-
-		// two times because on the third receive (above) the internal queue will be empty
-		verify(synchronizer, times(2)).synchronizeToLocalDirectory(localDirectoy);
-	}
+//	@Test
+//	public void testCopyFileToLocalDir() throws Exception {
+//		File localDirectoy = new File(testLocalDir);
+//		assertFileNotExists(localDirectoy);
+//
+//		SmbInboundFileSynchronizer synchronizer = spy(new SmbInboundFileSynchronizer(smbSessionFactory));
+//		synchronizer.setDeleteRemoteFiles(true);
+//		synchronizer.setRemoteDirectory(testRemoteDir);
+//		synchronizer.setFilter(new SmbRegexPatternFileListFilter(".*\\.test$"));
+//
+//		SmbInboundFileSynchronizingMessageSource messageSource = new SmbInboundFileSynchronizingMessageSource(synchronizer);
+//		messageSource.setAutoCreateLocalDirectory(true);
+//
+//		messageSource.setLocalDirectory(localDirectoy);
+//		messageSource.afterPropertiesSet();
+//
+//		String[] testFiles = new String[] {"a.test", "b.test"};
+//
+//		for (String testFile : testFiles) {
+//			Message<File> message = messageSource.receive();
+//			assertNotNull(message);
+//			assertEquals(testFile, message.getPayload().getName());
+//			assertFileExists(new File(testLocalDir + "/" + testFile));
+//        }
+//
+//		Message<File> nothing = messageSource.receive();
+//		assertNull(nothing);
+//
+//		// two times because on the third receive (above) the internal queue will be empty
+//		verify(synchronizer, times(2)).synchronizeToLocalDirectory(localDirectoy);
+//	}
 
 	class TestSmbSessionFactory extends SmbSessionFactory {
 

@@ -21,39 +21,39 @@ import org.junit.Test;
 
 public class MySmbSessionTest {
 
-	@Test
-	public void testRemove() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testRead() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testWrite() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testMkdir() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testRename() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testClose() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testIsOpen() {
-		fail("Not yet implemented");
-	}
+//	@Test
+//	public void testRemove() {
+//		fail("Not yet implemented");
+//	}
+//
+//	@Test
+//	public void testRead() {
+//		fail("Not yet implemented");
+//	}
+//
+//	@Test
+//	public void testWrite() {
+//		fail("Not yet implemented");
+//	}
+//
+//	@Test
+//	public void testMkdir() {
+//		fail("Not yet implemented");
+//	}
+//
+//	@Test
+//	public void testRename() {
+//		fail("Not yet implemented");
+//	}
+//
+//	@Test
+//	public void testClose() {
+//		fail("Not yet implemented");
+//	}
+//
+//	@Test
+//	public void testIsOpen() {
+//		fail("Not yet implemented");
+//	}
 
 }
