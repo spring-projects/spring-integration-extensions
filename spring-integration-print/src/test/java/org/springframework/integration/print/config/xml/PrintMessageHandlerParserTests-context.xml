@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-print="http://www.springframework.org/schema/integration/print"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration/print http://www.springframework.org/schema/integration/print/spring-integration-print.xsd">
+	<int:channel id="input"/>
+
+	<int-print:outbound-channel-adapter id="printOutboundChannelAdapter"
+			copies="14"
+			doc-flavor="java.lang.String"
+			mime-type="text/plain; charset=utf-16"
+			sides="DUPLEX"
+			auto-startup="true"
+			order="2"
+			channel="input">
+	</int-print:outbound-channel-adapter>
+
+</beans>

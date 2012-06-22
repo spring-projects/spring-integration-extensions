@@ -1,4 +1,9 @@
-spring-integration-extensions
+Spring Integration Extensions
 =============================
 
-The Spring Integration Extensions project will serve as the repository for extension components for Spring Integration
+The Spring Integration Extensions project serves as the repository for extension components for Spring Integration.
+
+## Available Components
+
+* SMB Support
+* Print Support

@@ -1,0 +1,4 @@
+# Tooling related information for the integration Print namespace
+http\://www.springframework.org/schema/integration/print@name=integration Print Namespace
+http\://www.springframework.org/schema/integration/print@prefix=int-print
+http\://www.springframework.org/schema/integration/print@icon=org/springframework/integration/print/config/xml/spring-integration-print.gif

@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/print/spring-integration-print-2.2.xsd=org/springframework/integration/print/config/xml/spring-integration-print-2.2.xsd
+http\://www.springframework.org/schema/integration/print/spring-integration-print.xsd=org/springframework/integration/print/config/xml/spring-integration-print-2.2.xsd

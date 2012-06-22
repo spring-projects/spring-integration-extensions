@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/integration/print"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	targetNamespace="http://www.springframework.org/schema/integration/print"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+	<xsd:import namespace="http://www.springframework.org/schema/integration"
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration-2.2.xsd" />
+
+	<xsd:annotation>
+		<xsd:documentation><![CDATA[
+			Defines the configuration elements for the Spring Integration
+			Print Adapter.
+		]]></xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="outbound-channel-adapter">
+		<xsd:annotation>
+			<xsd:documentation>
+					Defines a Print Outbound Channel Adapter, allowing you
+					to send payloadds to a connected printer using the Java
+					Print Service API.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1" />
+			</xsd:sequence>
+			<xsd:attributeGroup ref="corePrintComponentAttributes"/>
+			<xsd:attribute name="channel" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<xsd:documentation>
+							Channel from which messages will be printed.
+							When a message is sent to this channel it will
+							cause the payload to be printed.
+						</xsd:documentation>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="org.springframework.integration.MessageChannel" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="order">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the order for invocation when this endpoint is connected as a
+						subscriber to a SubscribableChannel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:attributeGroup name="corePrintComponentAttributes">
+		<xsd:attribute name="id" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Identifies the underlying Spring bean definition, which is an
+					instance of either 'EventDrivenConsumer' or 'PollingConsumer',
+					depending on whether the component's input channel is a
+					'SubscribableChannel' or 'PollableChannel'.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="auto-startup" default="true" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Flag to indicate that the component should start automatically
+					on startup (default true).
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="xsd:boolean xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="copies" use="optional" type="xsd:integer" default="1">
+			<xsd:annotation>
+				<xsd:documentation>
+					The number of copies to print. Defaults to 1 if not set.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="sides" use="optional" default="ONE_SIDED">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+					Defaults to single side if not specified.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="sides xsd:string"/>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="doc-flavor" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+					Defaults to single side if not specified.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="doc-flavor xsd:string"/>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="mime-type" use="optional" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
+	<xsd:simpleType name="sides">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="ONE_SIDED"/>
+			<xsd:enumeration value="DUPLEX"/>
+			<xsd:enumeration value="TUMBLE"/>
+			<xsd:enumeration value="TWO_SIDED_LONG_EDGE"/>
+			<xsd:enumeration value="TWO_SIDED_SHORT_EDGE"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="doc-flavor">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="INPUT_STREAM"/>
+			<xsd:enumeration value="BYTE_ARRAY"/>
+			<xsd:enumeration value="CHAR_ARRAY"/>
+			<xsd:enumeration value="READER"/>
+			<xsd:enumeration value="SERVICE_FORMATTED"/>
+			<xsd:enumeration value="java.lang.String"/>
+			<xsd:enumeration value="URL"/>
+			<xsd:enumeration value="INPUT_STREAM"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+</xsd:schema>
