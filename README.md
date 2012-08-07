@@ -85,7 +85,7 @@ In order to simplify the process of writing custom components for Spring Integra
 
 Follow the Spring Integration team members and contributors on Twitter:
 
-* [@m_f_](https://twitter.com/https://twitter.com/m_f_) - Mark Fisher
+* [@m\_f\_](https://twitter.com/m\_f\_) - Mark Fisher
 * [@ghillert](https://twitter.com/ghillert) - Gunnar Hillert
 * [@z_oleg](https://twitter.com/z_oleg) - Oleg Zhurakousky
 * [@gprussell](https://twitter.com/gprussell) - Gary Russell
