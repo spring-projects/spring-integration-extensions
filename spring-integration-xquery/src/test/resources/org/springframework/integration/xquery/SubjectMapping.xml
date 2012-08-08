@@ -1,0 +1,61 @@
+<mappings>
+	<students>
+		<student id="1">
+			<name>Jughead</name>
+			<class>1</class>
+		</student>
+		<student id="2">
+			<name>Archie</name>
+			<class>1</class>
+		</student>
+		<student id="3">
+			<name>Reggie</name>
+			<class>1</class>
+		</student>
+		<student id="4">
+			<name>Moose</name>
+			<class>1</class>
+		</student>
+		<student id="5">
+			<name>Betty</name>
+			<class>1</class>
+		</student>
+		<student id="6">
+			<name>Veronica</name>
+			<class>1</class>
+		</student>
+	</students>
+	<subjects>
+		<subject>
+			<name>Math</name>
+			<students>
+				<studentId>1</studentId>
+				<studentId>2</studentId>
+				<studentId>5</studentId>
+			</students>
+		</subject>
+		<subject>
+			<name>Physics</name>
+			<students>
+				<studentId>2</studentId>
+				<studentId>5</studentId>
+				<studentId>6</studentId>
+			</students>
+		</subject>
+		<subject>
+			<name>Chemistry</name>
+			<students>
+				<studentId>3</studentId>
+				<studentId>4</studentId>
+				<studentId>6</studentId>
+			</students>
+		</subject>
+		<subject>
+			<name>Cooking</name>
+			<students>
+				<studentId>1</studentId>
+				<studentId>5</studentId>
+			</students>
+		</subject>
+	</subjects>
+</mappings>

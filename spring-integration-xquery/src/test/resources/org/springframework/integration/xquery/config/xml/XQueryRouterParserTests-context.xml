@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-xquery="http://www.springframework.org/schema/integration/xquery"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/xquery http://www.springframework.org/schema/integration/xquery/spring-integration-xquery.xsd">
+
+	<int-xquery:xquery-router id="xqueryRouterOne" input-channel="xpathRouterOne">
+		<int-xquery:xquery>
+			<![CDATA[
+					declare variable $name as xs:string external;
+					declare variable $class as xs:int external;
+					for 	$student in /mappings/students/student,
+							$subject in /mappings/subjects/subject
+					where	$student/@id = $subject/students/studentId
+					and	$student/name = $name
+					and	$student/class = $class
+					return $subject/name/text()
+			]]>
+		</int-xquery:xquery>
+		<int-xquery:xquery-parameter name="name" expression="headers['name']"/>
+		<int-xquery:xquery-parameter name="class" value="1"/>
+	</int-xquery:xquery-router>
+
+	<int-xquery:xquery-router id="xqueryRouterTwo"
+							input-channel="xpathRouterOne"
+							xquery="'Hello World'"
+							converter="converter"
+							xq-datasource="xqDs">
+		<int-xquery:xquery-parameter name="name" ref="name"/>
+	</int-xquery:xquery-router>
+
+	<int-xquery:xquery-router id="xqueryRouterThree"
+							input-channel="xpathRouterOne"
+							xquery-file-resource="classpath:org/springframework/integration/xquery/XQuery.xq"
+							converter="converter"
+							xq-datasource="xqDs">
+		<int-xquery:xquery-parameter name="name" expression="headers['name']"/>
+		<int-xquery:xquery-parameter name="class" value="1"/>
+	</int-xquery:xquery-router>
+
+
+
+	<int-xquery:xquery-router id="xqueryRouterFour"
+							input-channel="xpathRouterOne"
+							xquery-file-resource="org/springframework/integration/xquery/XQuery.xq"
+							converter="converter"
+							xq-datasource="xqDs">
+		<int-xquery:xquery-parameter name="name" expression="headers['name']"/>
+		<int-xquery:xquery-parameter name="class" value="1"/>
+	</int-xquery:xquery-router>
+
+	<bean id="converter" class="org.springframework.integration.xquery.DummyXmlPayloadConverter"/>
+
+	<bean id="xqDs" class="org.springframework.integration.xquery.config.xml.XQueryRouterParserTests.DummyXQDataSource"/>
+
+	<bean id="name" class="java.lang.String">
+		<constructor-arg index="0" value="name"/>
+	</bean>
+</beans>

@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/xquery/spring-integration-xquery-2.2.xsd=org/springframework/integration/xquery/config/spring-integration-xquery-2.2.xsd
+http\://www.springframework.org/schema/integration/xquery/spring-integration-xquery.xsd=org/springframework/integration/xquery/config/spring-integration-xquery-2.2.xsd
