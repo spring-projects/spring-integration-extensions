@@ -15,19 +15,25 @@
  */
 package org.springframework.integration.print.support;
 
+import java.util.Comparator;
+
+import javax.print.DocFlavor;
 
 /**
- * Contains utility methods used by the Print components.
- *
  * @author Gunnar Hillert
  * @since 1.0
- *
  */
-public final class PrintUtils {
+public class DocFlavorComparator implements Comparator<DocFlavor> {
 
-	/** Prevent instantiation. */
-	private PrintUtils() {
-		throw new AssertionError();
+	public int compare(DocFlavor docFlavor1, DocFlavor docFlavor2) {
+
+		int comparison = docFlavor1.getMimeType().compareTo(docFlavor2.getMimeType());
+
+		if (comparison == 0) {
+			return docFlavor1.getMediaSubtype().compareTo(docFlavor2.getMediaSubtype());
+		}
+
+		return comparison;
 	}
 
 }

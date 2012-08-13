@@ -78,27 +78,58 @@
 				<xsd:union memberTypes="xsd:boolean xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="copies" use="optional" type="xsd:integer" default="1">
+		<xsd:attribute name="printer-name" use="optional" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					The number of copies to print. Defaults to 1 if not set.
+					If the printer name is not provided the sytem's default printer
+					is being used if available if available. Otherwise an
+					exceptions is thrown.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="sides" use="optional" default="ONE_SIDED">
+		<xsd:attribute name="print-service-ref" use="optional" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					Allows you to provide a custom print-service implementation.
+				</xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:expected-type type="javax.print.PrintService" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="copies" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The number of copies to print. Uses the default of the printer.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="sides" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-					Defaults to single side if not specified.
+					Uses the default of the printer.
 				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:union memberTypes="sides xsd:string"/>
 			</xsd:simpleType>
 		</xsd:attribute>
+		<xsd:attribute name="media-tray" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+					Uses the default of the printer.
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="media-tray xsd:string"/>
+			</xsd:simpleType>
+		</xsd:attribute>
 		<xsd:attribute name="doc-flavor" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-					Defaults to single side if not specified.
+					See: http://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
 				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
@@ -108,6 +139,7 @@
 		<xsd:attribute name="mime-type" use="optional" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
+					See: http://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
@@ -120,6 +152,13 @@
 			<xsd:enumeration value="TUMBLE"/>
 			<xsd:enumeration value="TWO_SIDED_LONG_EDGE"/>
 			<xsd:enumeration value="TWO_SIDED_SHORT_EDGE"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="chromaticity">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="MONOCHROME"/>
+			<xsd:enumeration value="COLOR"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -136,4 +175,94 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
+	<xsd:simpleType name="media-tray">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="BOTTOM"/>
+			<xsd:enumeration value="ENVELOPE"/>
+			<xsd:enumeration value="LARGE_CAPACITY"/>
+			<xsd:enumeration value="MAIN"/>
+			<xsd:enumeration value="MANUAL"/>
+			<xsd:enumeration value="MIDDLE"/>
+			<xsd:enumeration value="SIDE"/>
+			<xsd:enumeration value="TOP"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="media-size-name">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="TISO_A0"/>
+			<xsd:enumeration value="ISO_A1"/>
+			<xsd:enumeration value="ISO_A2"/>
+			<xsd:enumeration value="ISO_A3"/>
+			<xsd:enumeration value="ISO_A4"/>
+			<xsd:enumeration value="ISO_A5"/>
+			<xsd:enumeration value="ISO_A6"/>
+			<xsd:enumeration value="ISO_A7"/>
+			<xsd:enumeration value="ISO_A8"/>
+			<xsd:enumeration value="ISO_A9"/>
+			<xsd:enumeration value="ISO_A10"/>
+			<xsd:enumeration value="ISO_B0"/>
+			<xsd:enumeration value="ISO_B1"/>
+			<xsd:enumeration value="ISO_B2"/>
+			<xsd:enumeration value="ISO_B3"/>
+			<xsd:enumeration value="ISO_B4"/>
+			<xsd:enumeration value="ISO_B5"/>
+			<xsd:enumeration value="ISO_B6"/>
+			<xsd:enumeration value="ISO_B7"/>
+			<xsd:enumeration value="ISO_B8"/>
+			<xsd:enumeration value="ISO_B9"/>
+			<xsd:enumeration value="ISO_B10"/>
+			<xsd:enumeration value="JIS_B0"/>
+			<xsd:enumeration value="JIS_B1"/>
+			<xsd:enumeration value="JIS_B2"/>
+			<xsd:enumeration value="JIS_B3"/>
+			<xsd:enumeration value="JIS_B4"/>
+			<xsd:enumeration value="JIS_B5"/>
+			<xsd:enumeration value="JIS_B6"/>
+			<xsd:enumeration value="JIS_B7"/>
+			<xsd:enumeration value="JIS_B8"/>
+			<xsd:enumeration value="JIS_B9"/>
+			<xsd:enumeration value="JIS_B10"/>
+			<xsd:enumeration value="ISO_C0"/>
+			<xsd:enumeration value="ISO_C1"/>
+			<xsd:enumeration value="ISO_C2"/>
+			<xsd:enumeration value="ISO_C3"/>
+			<xsd:enumeration value="ISO_C4"/>
+			<xsd:enumeration value="ISO_C5"/>
+			<xsd:enumeration value="ISO_C6"/>
+			<xsd:enumeration value="NA_LETTER"/>
+			<xsd:enumeration value="NA_LEGAL"/>
+			<xsd:enumeration value="EXECUTIVE"/>
+			<xsd:enumeration value="LEDGER"/>
+			<xsd:enumeration value="TABLOID"/>
+			<xsd:enumeration value="INVOICE"/>
+			<xsd:enumeration value="FOLIO"/>
+			<xsd:enumeration value="QUARTO"/>
+			<xsd:enumeration value="JAPANESE_POSTCARD"/>
+			<xsd:enumeration value="JAPANESE_DOUBLE_POSTCARD"/>
+			<xsd:enumeration value="A"/>
+			<xsd:enumeration value="B"/>
+			<xsd:enumeration value="C"/>
+			<xsd:enumeration value="D"/>
+			<xsd:enumeration value="E"/>
+			<xsd:enumeration value="ISO_DESIGNATED_LONG"/>
+			<xsd:enumeration value="ITALY_ENVELOPE"/>
+			<xsd:enumeration value="MONARCH_ENVELOPE"/>
+			<xsd:enumeration value="PERSONAL_ENVELOPE"/>
+			<xsd:enumeration value="NA_NUMBER_9_ENVELOPE"/>
+			<xsd:enumeration value="NA_NUMBER_10_ENVELOPE"/>
+			<xsd:enumeration value="NA_NUMBER_11_ENVELOPE"/>
+			<xsd:enumeration value="NA_NUMBER_12_ENVELOPE"/>
+			<xsd:enumeration value="NA_NUMBER_14_ENVELOPE"/>
+			<xsd:enumeration value="NA_6X9_ENVELOPE"/>
+			<xsd:enumeration value="NA_7X9_ENVELOPE"/>
+			<xsd:enumeration value="NA_9X11_ENVELOPE"/>
+			<xsd:enumeration value="NA_9X12_ENVELOPE"/>
+			<xsd:enumeration value="NA_10X13_ENVELOPE"/>
+			<xsd:enumeration value="NA_10X14_ENVELOPE"/>
+			<xsd:enumeration value="NA_10X15_ENVELOPE"/>
+			<xsd:enumeration value="NA_5X7"/>
+			<xsd:enumeration value="NA_8X10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
 </xsd:schema>

@@ -15,12 +15,17 @@
  */
 package org.springframework.integration.print.config.xml;
 
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.print.outbound.PrintMessageHandler;
+import org.springframework.integration.print.support.ChromaticityEnum;
+import org.springframework.integration.print.support.MediaSizeNameEnum;
+import org.springframework.integration.print.support.MediaTrayEnum;
 import org.springframework.integration.print.support.PrintSides;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -30,7 +35,7 @@ import org.w3c.dom.Element;
  * The parser for the Print Outbound Channel Adapter.
  *
  * @author Gunnar Hillert
- * @since 2.2
+ * @since 1.0
  *
  */
 public class PrintOutboundChannelAdapterParser extends AbstractOutboundChannelAdapterParser {
@@ -49,6 +54,16 @@ public class PrintOutboundChannelAdapterParser extends AbstractOutboundChannelAd
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
 
 		final BeanDefinitionBuilder printOutboundChannelAdapterBuilder = BeanDefinitionBuilder.genericBeanDefinition(PrintMessageHandler.class);
+		final BeanDefinitionBuilder printServiceExecutorBuilder = PrintParserUtils.getPrintServiceExecutorBuilder(element, parserContext);
+
+		final BeanDefinition printServiceExecutorBeanDefinition = printServiceExecutorBuilder.getBeanDefinition();
+
+		final String channelAdapterId = this.resolveId(element, printServiceExecutorBuilder.getRawBeanDefinition(), parserContext);
+		final String printServiceExecutorBeanName = channelAdapterId + ".jpaExecutor";
+
+		parserContext.registerBeanComponent(new BeanComponentDefinition(printServiceExecutorBeanDefinition, printServiceExecutorBeanName));
+
+		printOutboundChannelAdapterBuilder.addConstructorArgReference(printServiceExecutorBeanName);
 
 		String docFlavor = element.getAttribute("doc-flavor");
 		String mimeType = element.getAttribute("mime-type");
@@ -62,11 +77,30 @@ public class PrintOutboundChannelAdapterParser extends AbstractOutboundChannelAd
 			printOutboundChannelAdapterBuilder.addConstructorArgValue(docFlavor);
 		}
 
-		String sides = element.getAttribute("sides");
+		final String sides = element.getAttribute("sides");
 
-		PrintSides printSides = PrintSides.fromString(sides);
+		if (StringUtils.hasText(sides)) {
+			final PrintSides printSides = PrintSides.fromString(sides);
+			printOutboundChannelAdapterBuilder.addPropertyValue("sides", printSides.getSides());
+		}
 
-		printOutboundChannelAdapterBuilder.addPropertyValue("sides", printSides.getSides());
+		final String mediaSizeName = element.getAttribute("media-size-name");
+
+		if (StringUtils.hasText(mediaSizeName)) {
+			printOutboundChannelAdapterBuilder.addPropertyValue("mediaSizeName", MediaSizeNameEnum.getForString(mediaSizeName));
+		}
+
+		final String mediaTray = element.getAttribute("media-tray");
+
+		if (StringUtils.hasText(mediaTray)) {
+			printOutboundChannelAdapterBuilder.addPropertyValue("mediaTray", MediaTrayEnum.getForString(mediaTray));
+		}
+
+		final String chromaticity = element.getAttribute("chromaticity");
+
+		if (StringUtils.hasText(chromaticity)) {
+			printOutboundChannelAdapterBuilder.addPropertyValue("chromaticity", ChromaticityEnum.getForString(chromaticity));
+		}
 
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(printOutboundChannelAdapterBuilder, element, "copies");
 

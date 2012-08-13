@@ -4,9 +4,6 @@ buildscript {
 	repositories {
 		maven { url 'https://repo.springsource.org/plugins-snapshot' }
 	}
-	dependencies {
-		classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.1.5'
-	}
 }
 
 apply plugin: 'java'
@@ -21,9 +18,8 @@ repositories {
 	maven { url 'http://repo.springsource.org/plugins-release' } // for bundlor
 }
 
-// ensure JDK 5 compatibility (GRADLE-18; INT-1578)
-sourceCompatibility=1.5
-targetCompatibility=1.5
+sourceCompatibility=1.6
+targetCompatibility=1.6
 
 ext {
 	aspectjVersion = '1.6.8'
@@ -303,5 +299,5 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.0-rc-3'
+	gradleVersion = '1.0'
 }

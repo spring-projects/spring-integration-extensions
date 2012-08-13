@@ -18,17 +18,17 @@ package org.springframework.integration.print.config.xml;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.integration.print.core.PrintExecutor;
+import org.springframework.integration.print.core.PrintServiceExecutor;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
-
 /**
- * Contains various utility methods for parsing Print Adapter
- * specific namesspace elements as well as for the generation of the the
- * respective {@link BeanDefinition}s.
+ * Contains various utility methods for parsing Print Adapter specific namesspace
+ * elements and generating the respective {@link BeanDefinition}s.
  *
  * @author Gunnar Hillert
+ *
  * @since 1.0
  *
  */
@@ -40,22 +40,43 @@ public final class PrintParserUtils {
 	}
 
 	/**
-	 * Create a new {@link BeanDefinitionBuilder} for the class {@link PrintExecutor}.
-	 * Initialize the wrapped {@link PrintExecutor} with common properties.
+	 * Create a new {@link BeanDefinitionBuilder} for the class {@link JpaExecutor}.
+	 * Initialize the wrapped {@link JpaExecutor} with common properties.
 	 *
 	 * @param element Must not be null
 	 * @param parserContext Must not be null
-	 * @return The BeanDefinitionBuilder for the PrintExecutor
+	 * @return The BeanDefinitionBuilder for the JpaExecutor
 	 */
-	public static BeanDefinitionBuilder getPrintExecutorBuilder(final Element element,
+	public static BeanDefinitionBuilder getPrintServiceExecutorBuilder(final Element element,
 															final ParserContext parserContext) {
 
 		Assert.notNull(element,       "The provided element must not be null.");
 		Assert.notNull(parserContext, "The provided parserContext must not be null.");
 
-		final BeanDefinitionBuilder printExecutorBuilder = BeanDefinitionBuilder.genericBeanDefinition(PrintExecutor.class);
+		final Object source = parserContext.extractSource(element);
 
-		return printExecutorBuilder;
+		final BeanDefinitionBuilder printServiceExecutorBuilder = BeanDefinitionBuilder.genericBeanDefinition(PrintServiceExecutor.class);
+
+		final String printServiceRef = element.getAttribute("print-service-ref");
+		final String printerName = element.getAttribute("printer-name");
+
+		if (StringUtils.hasText(printServiceRef)
+				&& StringUtils.hasText(printerName)) {
+
+			parserContext.getReaderContext().error("Exactly only one of the attributes 'print-service-ref' or " +
+						"'printer-name' must be be set.", source);
+
+		}
+
+		if (StringUtils.hasText(printServiceRef)) {
+			printServiceExecutorBuilder.addConstructorArgReference(printServiceRef);
+		}
+
+		if (StringUtils.hasText(printerName)) {
+			printServiceExecutorBuilder.addConstructorArgReference(printerName);
+		}
+
+		return printServiceExecutorBuilder;
 
 	}
 

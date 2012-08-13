@@ -1,17 +1,37 @@
 package org.springframework.integration.print.outbound;
 
-import org.junit.Ignore;
+import java.io.InputStream;
+
+import javax.print.DocFlavor;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
+import org.springframework.integration.print.core.PrintServiceExecutor;
 import org.springframework.integration.support.MessageBuilder;
 
 public class PrintMessageHandlerTest {
 
-	//@Test
-	//@Ignore
-	public void test() {
-		PrintMessageHandler handler = new PrintMessageHandler();
+	private static final Log LOG = LogFactory.getLog(PrintMessageHandler.class);
 
-		handler.handleMessage(MessageBuilder.withPayload("This is a test".getBytes()).build());
+	//@Test
+	public void testPdfPrint() {
+
+		PrintServiceExecutor printServiceExecutor = new PrintServiceExecutor();
+		PrintMessageHandler handler = new PrintMessageHandler(printServiceExecutor, DocFlavor.INPUT_STREAM.AUTOSENSE);
+
+		InputStream is = PrintMessageHandlerTest.class.getResourceAsStream("Spring Integration Print Testing.pdf");
+		handler.setCopies(2);
+		handler.setPrintJobName("My Spring Integration Print test.");
+		handler.afterPropertiesSet();
+		handler.handleMessage(MessageBuilder.withPayload(is).build());
+
 	}
 
+	@Test
+	public void testShowSupportedAttributes() {
+		final PrintServiceExecutor printServiceExecutor = new PrintServiceExecutor();
+		final String info = printServiceExecutor.getPrinterInfo();
+		LOG.info(info);
+	}
 }

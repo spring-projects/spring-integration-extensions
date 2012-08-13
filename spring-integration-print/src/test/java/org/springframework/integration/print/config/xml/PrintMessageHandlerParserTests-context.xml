@@ -9,14 +9,17 @@
 		http://www.springframework.org/schema/integration/print http://www.springframework.org/schema/integration/print/spring-integration-print.xsd">
 	<int:channel id="input"/>
 
+	<bean id="printService" class="org.springframework.integration.print.support.MockPrintService"/>
+
 	<int-print:outbound-channel-adapter id="printOutboundChannelAdapter"
-			copies="14"
-			doc-flavor="java.lang.String"
-			mime-type="text/plain; charset=utf-16"
-			sides="DUPLEX"
-			auto-startup="true"
-			order="2"
-			channel="input">
+		print-service-ref="printService"
+		copies="14"
+		doc-flavor="java.lang.String"
+		mime-type="text/plain; charset=utf-16"
+		sides="DUPLEX"
+		auto-startup="true"
+		order="2"
+		channel="input">
 	</int-print:outbound-channel-adapter>
 
 </beans>

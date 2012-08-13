@@ -13,22 +13,15 @@
 package org.springframework.integration.print.config.xml;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import javax.print.DocFlavor;
 import javax.print.attribute.standard.Copies;
 import javax.print.attribute.standard.Sides;
 
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.core.MessageHandler;
-import org.springframework.integration.endpoint.EventDrivenConsumer;
-import org.springframework.integration.print.core.PrintExecutor;
 import org.springframework.integration.test.util.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -59,7 +52,6 @@ public class PrintMessageHandlerParserTests {
 
 		final Sides sides = TestUtils.getPropertyValue(messageHandler, "sides", Sides.class);
 		assertEquals(Sides.DUPLEX, sides);
-
 
 	}
 

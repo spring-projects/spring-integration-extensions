@@ -16,82 +16,225 @@
 
 package org.springframework.integration.print.outbound;
 
+import java.io.InputStream;
+import java.util.Locale;
+
 import javax.print.Doc;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
 import javax.print.SimpleDoc;
+import javax.print.attribute.DocAttributeSet;
+import javax.print.attribute.HashDocAttributeSet;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Chromaticity;
 import javax.print.attribute.standard.Copies;
+import javax.print.attribute.standard.JobName;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.Message;
 import org.springframework.integration.handler.AbstractMessageHandler;
+import org.springframework.integration.print.core.PrintServiceExecutor;
+import org.springframework.integration.print.support.PrintJobMonitor;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
- * Simple adapter to support printing of payloads.
+ * Outbound Adapter that supports printing of payloads.
  *
  * @author Gunnar Hillert
- * @since 2.2
+ * @since 1.0
  */
 public class PrintMessageHandler extends AbstractMessageHandler {
 
 	private static final Log LOG = LogFactory.getLog(PrintMessageHandler.class);
 
-	private volatile Sides sides   = Sides.ONE_SIDED;
-	private volatile Copies copies = new Copies(1);
+	private final PrintServiceExecutor printServiceExecutor;
 
+	private volatile String printJobName;
+	private volatile MediaSizeName mediaSizeName;
+	private volatile Sides sides;
+	private volatile Copies copies;
+	private volatile MediaTray mediaTray;
+	private volatile Chromaticity chromaticity;
 	private final DocFlavor docFlavor;
 
-	public PrintMessageHandler(String mimeType, String className) {
+	private volatile PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
+
+	public PrintMessageHandler(PrintServiceExecutor printServiceExecutor, DocFlavor docFlavor) {
+		Assert.notNull(docFlavor, "'docFlavor' must not be null.");
+		this.docFlavor = docFlavor;
+		this.printServiceExecutor = printServiceExecutor;
+
+	}
+
+	public PrintMessageHandler(PrintServiceExecutor printServiceExecutor, String mimeType, String className) {
 
 		Assert.hasText(className, "'className' must be neither null nor empty.");
 		Assert.hasText(mimeType, "'mimeType' must be neither null nor empty.");
 
 		this.docFlavor = new DocFlavor(mimeType, className);
+		this.printServiceExecutor = printServiceExecutor;
 
 	}
 
-	public PrintMessageHandler() {
-		this.docFlavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+	public PrintMessageHandler(PrintServiceExecutor printServiceExecutor) {
+		this.docFlavor = DocFlavor.STRING.TEXT_PLAIN;
+		this.printServiceExecutor = printServiceExecutor;
 	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
 
-		final PrintService printService = PrintServiceLookup.lookupDefaultPrintService();
-
-		Assert.notNull(printService, "Did not find a 'printService'.");
-
-		if (LOG.isInfoEnabled()) {
-			LOG.info("Printing to default printer: " + printService.getName());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Printing using printer '" + this.printServiceExecutor.getPrintService().getName() + "'.");
 		}
 
-		final Doc doc = new SimpleDoc(((String) message.getPayload()).getBytes(), docFlavor, null);
+	DocAttributeSet das = new HashDocAttributeSet();
+		das.add(Chromaticity.MONOCHROME);
 
-		final PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+		Object payload = message.getPayload();
 
-		attributes.add(copies);
-		attributes.add(sides);
+		final Doc doc = new SimpleDoc(message.getPayload(), docFlavor, das);
 
-		final DocPrintJob job = printService.createPrintJob();
-		job.print(doc, attributes);
+		final DocPrintJob job = this.printServiceExecutor.getPrintService().createPrintJob();
+
+		PrintJobMonitor printJobMonitor = new PrintJobMonitor(job);
+
+		job.print(doc, this.printRequestAttributeSet);
+
+		printJobMonitor.waitForDone();
+
+		if (payload instanceof InputStream) {
+			((InputStream) payload).close();
+		}
 
 	}
 
+	@Override
+	protected void onInit() throws Exception {
+
+		if (this.copies != null) {
+			//Assert.isTrue(printService.isAttributeValueSupported(this.copies, this.docFlavor, this.printService.getAttributes()),
+			//	"Attribute '" + this.copies.getName() + "' with value '" + this.copies.getValue() + "' is not supported.");
+			this.printRequestAttributeSet.add(this.copies);
+		}
+
+		if (this.chromaticity != null) {
+			Assert.isTrue(this.printServiceExecutor.getPrintService().isAttributeValueSupported(this.chromaticity, this.docFlavor, this.printServiceExecutor.getPrintService().getAttributes()),
+				"Attribute '" + this.chromaticity.getName() + "' with value '" + this.chromaticity.getValue() + "' is not supported.");
+			this.printRequestAttributeSet.add(this.chromaticity);
+		}
+
+		if (this.mediaSizeName != null) {
+			Assert.isTrue(this.printServiceExecutor.getPrintService().isAttributeValueSupported(this.mediaSizeName, null, null),
+				"Attribute '" + this.mediaSizeName.getName()
+				+ "' with value '" + this.mediaSizeName.getValue() + "' is not supported.");
+			this.printRequestAttributeSet.add(this.mediaSizeName);
+		}
+
+		if (this.mediaTray != null) {
+			Assert.isTrue(this.printServiceExecutor.getPrintService().isAttributeValueSupported(this.mediaTray, this.docFlavor, this.printServiceExecutor.getPrintService().getAttributes()),
+				"Attribute value '" + this.mediaTray + "' is not supported.");
+			this.printRequestAttributeSet.add(this.mediaTray);
+		}
+
+		if (this.sides!=null) {
+			Assert.isTrue(this.printServiceExecutor.getPrintService().isAttributeValueSupported(this.sides, this.docFlavor, this.printServiceExecutor.getPrintService().getAttributes()),
+				"Attribute value '" + this.sides + "' is not supported.");
+			this.printRequestAttributeSet.add(this.sides);
+		}
+
+		if (StringUtils.hasText(this.printJobName)) {
+			this.printRequestAttributeSet.add(new JobName(this.printJobName, Locale.getDefault()));
+		}
+
+		super.onInit();
+
+	}
+
+	/**
+	 * Specifies how the pages are are printed to the selected medium,
+	 * e.g. duplex or one-sided. Under the covers, this property will add the
+	 * provided {@link Sides} instance to the respective {@link PrintRequestAttributeSet}.
+	 *
+	 * This property is not used, if not specified (No explicit default value).
+	 *
+	 * @param sides Must not be null
+	 */
 	public void setSides(Sides sides) {
-		Assert.notNull(sides, "'sides' must not be null");
+		Assert.notNull(sides, "'sides' must not be null.");
 		this.sides = sides;
 	}
 
+	/**
+	 * Let’s you specify an integer value that indicates how many time each
+	 * print page shall be printed. Under the covers, this property will add a
+	 *
+	 * {@link Copies} instance to the respective {@link PrintRequestAttributeSet}.
+	 * This property is not used, if not specified (No explicit default value).
+	 *
+	 * @param numberOfCopies Must be greater than 0
+	 */
 	public void setCopies(int numberOfCopies) {
-		Assert.isTrue(numberOfCopies > 0, "'copies' must be greater than 0");
+		Assert.isTrue(numberOfCopies > 0, "'copies' must be greater than 0.");
 		this.copies = new Copies(numberOfCopies);
+	}
+
+	/**
+	 * Specifies the media tray/bin for the print job. This property can be used
+	 * instead of providing the {@link #mediaSizeName} property. Under the covers,
+	 * this property will add the provided {@link MediaTray} instance to the
+	 * respective {@link PrintRequestAttributeSet}. This property is not used,
+	 * if not specified (No explicit default value).
+	 *
+	 * @param mediaTray Must not be null
+	 */
+	public void setMediaTray(MediaTray mediaTray) {
+		Assert.notNull(mediaTray, "'mediaTray' must not be null.");
+		this.mediaTray = mediaTray;
+	}
+
+	/**
+	 *  Specifies whether you want to do monochrome or color printing. Under the
+	 *  covers, this property will add the provided {@link Chromaticity} instance
+	 *  to the respective {@link PrintRequestAttributeSet}. This property is not
+	 *  used, if not specified (No explicit default value).
+	 *
+	 *  @param chromaticity Must not be null.
+	 */
+	public void setChromaticity(Chromaticity chromaticity) {
+		Assert.notNull(chromaticity, "'chromaticity' must not be null.");
+		this.chromaticity = chromaticity;
+	}
+
+	/**
+	 * Sets the {@link MediaSizeName}. Under the covers, this property will add
+	 * the provided {@link MediaSizeName} to the respective {@link PrintRequestAttributeSet}.
+	 * This property is not used, if not specified (No explicit default value).
+	 *
+	 * @param mediaSizeName Must not be null.
+	 */
+	public void setMediaSizeName(MediaSizeName mediaSizeName) {
+		Assert.notNull(mediaSizeName, "'mediaSizeName' must not be null.");
+		this.mediaSizeName = mediaSizeName;
+	}
+
+	/**
+	 * Optional property that let’s you specify the name of the print job as it
+	 * is added to the print queue. Under the covers, this property will create
+	 * a {@link JobName} instance and add it to the respective {@link PrintRequestAttributeSet}.
+	 * This property is not used, if not specified (No explicit default value).
+	 *
+	 * @param printJobName Must neither be null nor empty.
+	 */
+	public void setPrintJobName(String printJobName) {
+		Assert.hasText(printJobName, "'mediaSizeName' must neither be null nor empty.");
+		this.printJobName = printJobName;
 	}
 
 }

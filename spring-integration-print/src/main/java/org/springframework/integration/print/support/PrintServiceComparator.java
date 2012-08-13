@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.integration.print.support;
 
-package org.springframework.integration.print;
+import java.util.Comparator;
+
+import javax.print.PrintService;
 
 /**
- * Print adapter specific message headers.
- *
  * @author Gunnar Hillert
  * @since 1.0
  */
-public class PrintHeaders {
+public class PrintServiceComparator implements Comparator<PrintService> {
 
-	private static final String PREFIX = "print_";
-
-	public static final String EXAMPLE = PREFIX + "example_";
-
-	/** Noninstantiable utility class */
-	private PrintHeaders() {
-		throw new AssertionError();
+	public int compare(PrintService printService1, PrintService printService2) {
+		return printService1.getName().compareTo(printService2.getName());
 	}
 
 }
