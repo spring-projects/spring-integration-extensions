@@ -1,5 +1,6 @@
 package org.springframework.integration.print.outbound;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class PrintOutboundChannelAdapterTest {
 	private DirectChannel channel;
 
 	@Test
-	//@Ignore
+	@Ignore
 	public void test() {
 		final Message<String> message = MessageBuilder.withPayload("This is a test.").build();
 		channel.send(message);

@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import javax.print.PrintService;
 
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.integration.print.core.PrintServiceExecutor;
 import org.springframework.util.StringUtils;
@@ -26,12 +27,14 @@ public class PrintUtilsTest {
 	 * Test method for {@link org.springframework.integration.print.core.PrintServiceExecutor#getAvailablePrinterServices()}.
 	 */
 	@Test
+	@Ignore
 	public void testGetAvailablePrinterServices() {
 		SortedSet<PrintService> printers = PrintServiceExecutor.getAvailablePrinterServices();
 		LOGGER.info("Available Printers: " + StringUtils.collectionToCommaDelimitedString(printers));
 	}
 
 	@Test
+	@Ignore
 	public void testGetPrintServiceByName() {
 		PrintService printService = printServiceExecutor.getPrintService();
 		LOGGER.info("Default Printer found: " + printService);
