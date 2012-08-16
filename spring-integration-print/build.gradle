@@ -119,12 +119,6 @@ artifacts {
 	archives javadocJar
 }
 
-apply plugin: 'docbook-reference'
-
-reference {
-	sourceDir = file('src/reference/docbook')
-}
-
 apply plugin: 'sonar'
 
 sonar {
@@ -206,6 +200,7 @@ task schemaZip(type: Zip) {
 }
 
 task docsZip(type: Zip) {
+
 		group = 'Distribution'
 		classifier = 'docs'
 		description = "Builds -${classifier} archive containing api and reference " +
@@ -219,9 +214,6 @@ task docsZip(type: Zip) {
 			into 'api'
 		}
 
-		from (reference) {
-			into 'reference'
-		}
 }
 
 task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
