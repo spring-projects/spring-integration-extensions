@@ -8,6 +8,7 @@ The Spring Integration Extensions project provides extension modules for [Spring
 * [SMB][] Support
 * [Print][] Support
 * [Atmosphere][] Support ([Websockets][])
+* [XQuery][] Support
 
 ## Getting support
 
@@ -124,3 +125,4 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [Print]: http://docs.oracle.com/javase/6/docs/technotes/guides/jps/index.html
 [Atmosphere]: https://github.com/Atmosphere/atmosphere
 [Websockets]: http://www.html5rocks.com/en/tutorials/websockets/basics/
+[XQuery]: http://en.wikipedia.org/wiki/XQuery

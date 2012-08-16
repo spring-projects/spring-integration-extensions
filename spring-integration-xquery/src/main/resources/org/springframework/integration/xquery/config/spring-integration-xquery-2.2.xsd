@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/integration/xquery"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	targetNamespace="http://www.springframework.org/schema/integration/xquery"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+	<xsd:import namespace="http://www.springframework.org/schema/integration"
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration-2.2.xsd" />
+
+	<xsd:annotation>
+		<xsd:documentation>
+			Defines the configuration elements for Spring
+			Integration's Xquery support.
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:complexType name="inputOutputEndpoint">
+		<xsd:sequence>
+			<xsd:element ref="integration:poller" minOccurs="0"
+				maxOccurs="1" />
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:string" />
+		<xsd:attribute name="input-channel" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:expected-type
+							type="org.springframework.integration.MessageChannel" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="output-channel" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:expected-type
+							type="org.springframework.integration.MessageChannel" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:attributeGroup name="xquery-executor-common-attributes">
+		<xsd:annotation>
+			<xsd:documentation>
+				The common attributes that would be used for all
+				the xquery components
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="xq-datasource" type="xsd:string"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The reference to the XQDataSource that will be
+					provided by the user to
+					execute the provided XQuery. If none is
+					provided, then the default
+					implementation will be used.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="xquery-file-resource" type="xsd:string"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The classpath or the file system resource path to
+					the file containing
+					the
+					xquery, typically .xq file. This attribute is
+					mutually exclusive with the
+					xquery attribute and the xquery
+					subelement
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="xquery" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The String representing the XQuery that needs to
+					be executed. Either
+					this attribute or the xquery sub element needs
+					to be provided.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="converter" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					Specify the Converter to use when converting
+					payloads prior to evaluation.
+					The DefaultXmlPayloadConverter is used
+					if this reference is not
+					provided, and it
+					should be sufficient in
+					most cases since it can convert from Node,
+					Document, Source,
+					File,
+					and String typed payloads. If you need to extend beyond the
+					capabilities of
+					that default implementation, then an upstream
+					Transformer is probably a
+					better option
+					than providing a reference to
+					a custom implementation of this strategy
+					here.
+				</xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:expected-type
+							type="org.springframework.integration.xml.XmlPayloadConverter" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
+
+
+	<xsd:complexType name="XQueryParameterType">
+		<xsd:annotation>
+			<xsd:documentation>
+				The subelement of the xquery based component that
+				will be used to
+				specify the
+				parameters for the xquery
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>
+					The mandatory attribute that will be used to
+					specify the name of the
+					XQuery parameter
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="value" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The attribute that will be used to specify the
+					static value to be used
+					for the named
+					parameter.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="ref" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					This attribute, mutually exclusive with value and
+					expression that is
+					used to specify
+					reference to some other bean in
+					the application context.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="expression" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					The attribute mutually exclusive with ref and
+					value attribute, this
+					will be
+					used to provide the expression that
+					would be evaluated on the incoming
+					message
+					to derive the value of the
+					header.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:element name="xquery" type="xsd:string">
+		<xsd:annotation>
+			<xsd:documentation>
+				The element that will be the sub element of all
+				the XQuery components.
+				It will be used to provide the XQuery string
+				to these XQuery
+				components.
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="xquery-parameter" type="XQueryParameterType">
+		<xsd:annotation>
+			<xsd:documentation>
+				One or more xquery-parameter elements will be used
+				to specify the
+				names and one of the three attributes used to derive
+				the
+				value of the parameter
+            </xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="mapping" type="integration:mappingValueChannelType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+                If the values returned by the XQuery Expression
+                do not represent the channel names themselves, additional
+                mappings can be specified using the "mapping" sub-element.
+
+                For example if the '/request/responders' expression
+                results in two values: 'responderA' and 'responderB',
+                but you don't want to couple the responder names
+                to channel names you may provide additional mappings
+                such as:
+
+                <int-xml:mapping value="responderA" channel="channelA"/>
+                <int-xml:mapping value="responderB" channel="channelB"/>
+                ]]>
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:complexType name="XQueryRouterType">
+		<xsd:complexContent>
+			<xsd:extension base="integration:abstractRouterType">
+				<xsd:sequence>
+					<xsd:element ref="integration:poller" minOccurs="0"
+						maxOccurs="1" />
+					<xsd:element ref="xquery" minOccurs="0" maxOccurs="1" />
+					<xsd:element ref="xquery-parameter" minOccurs="0"
+						maxOccurs="unbounded" />
+					<xsd:element ref="mapping" minOccurs="0" maxOccurs="unbounded" />
+				</xsd:sequence>
+				<xsd:attributeGroup ref="integration:topLevelRouterAttributeGroup" />
+				<xsd:attributeGroup ref="xquery-executor-common-attributes" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="XQueryTransformerType">
+		<xsd:annotation>
+			<xsd:documentation>
+				The type definition for the XQuery router
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="inputOutputEndpoint">
+				<xsd:sequence>
+					<xsd:element ref="xquery" minOccurs="0" maxOccurs="1" />
+					<xsd:element ref="xquery-parameter" minOccurs="0"
+						maxOccurs="unbounded" />
+					<xsd:element ref="mapping" minOccurs="0" maxOccurs="unbounded" />
+				</xsd:sequence>
+				<xsd:attributeGroup ref="xquery-executor-common-attributes" />
+				<xsd:attribute name="format-output" type="xsd:boolean"
+					default="false">
+					<xsd:annotation>
+						<xsd:documentation>
+							This attribute, only valid for a transformer is
+							used to configure the
+							property that instructs the component to
+							format the output xml if
+							one is produced by the transformer after
+							XQuery transformation. By default
+							the output is not formatted.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="result-type" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							The expected type of the result after
+							transformation of the
+							input payload. The value is the fully
+							qualified name of the class
+							The default value assumed in
+							java.lang.String.
+							If a class is provided using this attribute
+							which is other than
+							java.lang.String, java.lang.Number,
+							java.lang.Boolean or
+							org.w3c.dom.Node,
+							then you need to have a
+							mapper registered using the mapping child
+							element.
+							If a
+							transformation to any other type is needed and you
+							dont want to
+							provide
+							the mapping child element, then provide a
+							reference to the
+							xquery-result-mapper attribute.
+							This attribute is
+							mutually
+							exclusive to the xquery-result-mapper attribute.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+
+				<xsd:attribute name="xquery-result-mapper" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation>
+							This attribute allows the user to provide
+							mapper instance that would be
+							used to map the result of the XQuery
+							executed to a desired target type of the transformer.
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="xquery-router" type="XQueryRouterType" />
+	<xsd:element name="xquery-transformer" type="XQueryTransformerType" />
+
+</xsd:schema>
