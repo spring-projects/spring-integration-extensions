@@ -172,7 +172,7 @@ public class PrintMessageHandler extends AbstractMessageHandler {
 	}
 
 	/**
-	 * Let’s you specify an integer value that indicates how many time each
+	 * Let's you specify an integer value that indicates how many time each
 	 * print page shall be printed. Under the covers, this property will add a
 	 *
 	 * {@link Copies} instance to the respective {@link PrintRequestAttributeSet}.
@@ -225,7 +225,7 @@ public class PrintMessageHandler extends AbstractMessageHandler {
 	}
 
 	/**
-	 * Optional property that let’s you specify the name of the print job as it
+	 * Optional property that let's you specify the name of the print job as it
 	 * is added to the print queue. Under the covers, this property will create
 	 * a {@link JobName} instance and add it to the respective {@link PrintRequestAttributeSet}.
 	 * This property is not used, if not specified (No explicit default value).
