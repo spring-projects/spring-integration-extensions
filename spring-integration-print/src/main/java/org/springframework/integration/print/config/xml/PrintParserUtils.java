@@ -40,12 +40,11 @@ public final class PrintParserUtils {
 	}
 
 	/**
-	 * Create a new {@link BeanDefinitionBuilder} for the class {@link JpaExecutor}.
-	 * Initialize the wrapped {@link JpaExecutor} with common properties.
-	 *
+	 * Create a new {@link BeanDefinitionBuilder} for the class {@link PrintServiceExecutor}.
+
 	 * @param element Must not be null
 	 * @param parserContext Must not be null
-	 * @return The BeanDefinitionBuilder for the JpaExecutor
+	 * @return The BeanDefinitionBuilder for the {@link PrintServiceExecutor}
 	 */
 	public static BeanDefinitionBuilder getPrintServiceExecutorBuilder(final Element element,
 															final ParserContext parserContext) {
