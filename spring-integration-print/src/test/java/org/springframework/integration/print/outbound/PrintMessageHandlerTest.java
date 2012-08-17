@@ -6,6 +6,7 @@ import javax.print.DocFlavor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.integration.print.core.PrintServiceExecutor;
 import org.springframework.integration.support.MessageBuilder;
@@ -14,7 +15,8 @@ public class PrintMessageHandlerTest {
 
 	private static final Log LOG = LogFactory.getLog(PrintMessageHandler.class);
 
-	//@Test
+	@Test
+	@Ignore
 	public void testPdfPrint() {
 
 		PrintServiceExecutor printServiceExecutor = new PrintServiceExecutor();
@@ -29,6 +31,7 @@ public class PrintMessageHandlerTest {
 	}
 
 	@Test
+	@Ignore
 	public void testShowSupportedAttributes() {
 		final PrintServiceExecutor printServiceExecutor = new PrintServiceExecutor();
 		final String info = printServiceExecutor.getPrinterInfo();
