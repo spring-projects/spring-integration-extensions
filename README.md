@@ -19,7 +19,7 @@ on [Stack Overflow][]. [Commercial support][] is available too.
 
 * [Spring Integration][]
 * [Spring Integration Samples][]
-* [Spring Integation Templates][]
+* [Spring Integration Templates][]
 * [Spring Integration Dsl Groovy][]
 * [Spring Integration Dsl Scala][]
 * [Spring Integration Pattern Catalog][]
@@ -113,7 +113,7 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [contributor guidelines]: https://github.com/SpringSource/spring-integration/wiki/Contributor-guidelines
 [administrator guidelines]: https://github.com/SpringSource/spring-integration/wiki/Administrator-Guidelines
 [Spring Integration Samples]: https://github.com/SpringSource/spring-integration-samples
-[Spring Integation Templates]: https://github.com/SpringSource/spring-integration-templates/tree/master/si-sts-templates
+[Spring Integration Templates]: https://github.com/SpringSource/spring-integration-templates/tree/master/si-sts-templates
 [Spring Integration Dsl Groovy]: https://github.com/SpringSource/spring-integration-dsl-groovy
 [Spring Integration Dsl Scala]: https://github.com/SpringSource/spring-integration-dsl-scala
 [Spring Integration Pattern Catalog]: https://github.com/SpringSource/spring-integration-pattern-catalog
