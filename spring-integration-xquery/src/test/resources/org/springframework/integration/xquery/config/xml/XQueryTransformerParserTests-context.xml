@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-xquery="http://www.springframework.org/schema/integration/xquery"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/xquery http://www.springframework.org/schema/integration/xquery/spring-integration-xquery.xsd">
+
+	<int:channel id="output"/>
+
+	<int-xquery:xquery-transformer id="xqueryTransformerOne"
+								input-channel="xqueryTransformerInOne"
+								output-channel="output">
+		<int-xquery:xquery>
+			<![CDATA[
+					declare variable $name as xs:string external;
+					declare variable $class as xs:int external;
+					for 	$student in /mappings/students/student,
+							$subject in /mappings/subjects/subject
+					where	$student/@id = $subject/students/studentId
+					and	$student/name = $name
+					and	$student/class = $class
+					return $subject/name/text()
+			]]>
+		</int-xquery:xquery>
+		<int-xquery:xquery-parameter name="name" expression="headers['name']"/>
+		<int-xquery:xquery-parameter name="class" value="1"/>
+	</int-xquery:xquery-transformer>
+
+	<int-xquery:xquery-transformer id="xqueryTransformerTwo"
+						input-channel="xqueryTransformerOutTwo"
+						output-channel="output"
+						xquery="'Hello World'"
+						converter="converter"
+						xq-datasource="xqDs"
+						format-output="true">
+	</int-xquery:xquery-transformer>
+
+	<int-xquery:xquery-transformer id="xqueryTransformerThree"
+						input-channel="xqueryTransformerIPThree"
+						output-channel="output"
+						xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
+						converter="converter"
+						xq-datasource="xqDs">
+	</int-xquery:xquery-transformer>
+
+	<int-xquery:xquery-transformer id="booleanResultTypeTransformer"
+								input-channel="booleanResultTypeTransformerIP"
+								output-channel="output"
+								result-type="java.lang.Boolean"
+								xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
+								xq-datasource="xqDs"/>
+
+	<int-xquery:xquery-transformer id="stringResultTypeTransformer"
+								input-channel="stringResultTypeTransformerIP"
+								output-channel="output"
+								result-type="string"
+								xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
+								xq-datasource="xqDs"/>
+
+	<int-xquery:xquery-transformer id="customXQueryResultMapper"
+								input-channel="stringResultTypeTransformerIP"
+								output-channel="output"
+								xquery-result-mapper="xqueryResultMapper"
+								xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
+								xq-datasource="xqDs"/>
+
+	<bean id="converter" class="org.springframework.integration.xquery.DummyXmlPayloadConverter"/>
+
+	<bean id="xqDs" class="org.springframework.integration.xquery.config.xml.XQueryTransformerParserTests.DummyXQDataSource"/>
+
+	<bean id="xqueryResultMapper" class="org.springframework.integration.xquery.config.xml.XQueryTransformerParserTests.DummyXQueryResultMapper"/>
+
+</beans>
