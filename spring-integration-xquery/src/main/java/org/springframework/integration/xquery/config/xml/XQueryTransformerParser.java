@@ -74,7 +74,7 @@ public class XQueryTransformerParser extends AbstractTransformerParser {
 				try {
 					type = Class.forName(resultType);
 				} catch (ClassNotFoundException e) {
-					new IllegalArgumentException("Class " + resultType + " specified in result-type not found, " +
+					throw new IllegalArgumentException("Class " + resultType + " specified in result-type not found, " +
 							"have you provided the fully qualified name?",e);
 				}
 			}

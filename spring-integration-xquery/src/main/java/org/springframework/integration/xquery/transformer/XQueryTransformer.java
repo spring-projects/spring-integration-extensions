@@ -66,7 +66,7 @@ public class XQueryTransformer extends AbstractTransformer {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected Object doTransform(Message<?> message) throws Exception {
+	protected Object doTransform(Message<?> message) {
 		Object transformed;
 		List<Object> queryResult;
 		if(resultType != null) {

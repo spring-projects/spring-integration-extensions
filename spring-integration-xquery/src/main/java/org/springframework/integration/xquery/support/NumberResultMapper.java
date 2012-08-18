@@ -42,17 +42,15 @@ public class NumberResultMapper extends AbstractXQueryResultMapper<Number> {
 
 				XQItemType type = result.getItemType();
 				Number value = convertToNumber(type, result);
-				if(value == null) {
-					if(isNodeType(type)) {
-						Node n = result.getNode();
-						String strValue = transformNodeToString(n);
-						if(StringUtils.hasText(strValue)) {
-							if(strValue.indexOf(".") > 0) {
-								value = Double.valueOf(strValue);
-							}
-							else {
-								value = Long.valueOf(strValue);
-							}
+				if(value == null && isNodeType(type)) {
+					Node n = result.getNode();
+					String strValue = transformNodeToString(n);
+					if(StringUtils.hasText(strValue)) {
+						if(strValue.indexOf('.') > 0) {
+							value = Double.valueOf(strValue);
+						}
+						else {
+							value = Long.valueOf(strValue);
 						}
 					}
 				}

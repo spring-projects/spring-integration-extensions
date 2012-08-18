@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.integration.MessagingException;
 import org.springframework.util.Assert;
@@ -37,6 +39,16 @@ import org.springframework.util.Assert;
  */
 public class XQueryUtils {
 
+	private static final Log logger = LogFactory.getLog(XQueryUtils.class);
+
+
+
+	private XQueryUtils() {
+		//prevent instantiation
+		throw new AssertionError("Cannot instantiate a utility class");
+	}
+
+
 	/**
 	 * Reads the XQuery string from the resource file specified
 	 *
@@ -49,10 +61,11 @@ public class XQueryUtils {
 		Assert.notNull(resource, "null resource provided");
 		Assert.isTrue(resource.exists(), "Provided XQuery resource does not exist");
 		Assert.isTrue(resource.isReadable(), "Provided XQuery resource is not readable");
+		BufferedReader reader = null;
 		try {
 			URL url = resource.getURL();
 			InputStream inStream = url.openStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
+			reader = new BufferedReader(new InputStreamReader(inStream));
 			String line = reader.readLine();
 			StringBuilder builder = new StringBuilder();
 			while(line != null) {
@@ -64,6 +77,14 @@ public class XQueryUtils {
 			return xQuery;
 		} catch (IOException e) {
 			throw new MessagingException("Error while reading the xQuery resource", e);
+		} finally {
+			if(reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					logger.error("Exception while closing reader", e);
+				}
+			}
 		}
 	}
 }
