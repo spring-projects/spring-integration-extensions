@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	xmlns:aws-ses="http://www.springframework.org/schema/integration/aws/ses"
+	xsi:schemaLocation=
+	"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/integration/aws/ses http://www.springframework.org/schema/integration/aws/ses/spring-integration-aws-ses.xsd
+	http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+
+	<integration:channel id="outboundAdapterChannel"/>
+
+	<aws-ses:outbound-channel-adapter  id="validDefinition"
+		accessKey="dummy"
+		secretKey="dummy"
+		channel="outboundAdapterChannel"/>
+</beans>
