@@ -99,7 +99,7 @@ public class XQueryParameter {
 	 * Sets the expression that would be evaluated to get the parameter value
 	 * @param expression
 	 */
-	public void setExpression(String expression) {
+	public final void setExpression(String expression) {
 		Assert.isTrue(parameterValue == null, "The parameter value and expression are mutually exclusive" +
 				", parameter value already set");
 		Assert.isTrue(!StringUtils.hasText(this.expression), "Expression string is already set once, cannot reset it");

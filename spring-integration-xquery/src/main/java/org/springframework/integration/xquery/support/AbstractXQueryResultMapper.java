@@ -58,7 +58,6 @@ import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQItemType;
 import javax.xml.xquery.XQResultSequence;
 
-import org.springframework.integration.xquery.support.XQueryResultMapper;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
@@ -71,7 +70,8 @@ import org.w3c.dom.Node;
  */
 public abstract class AbstractXQueryResultMapper<T> implements XQueryResultMapper<T> {
 
-	protected volatile boolean formatOutput;
+	private volatile boolean formatOutput;
+
 	/**
 	 * The getBaseType method throws an exception if the item kind is of some specific types
 	 * This method will be used to check if the getBaseType method can be invoked or not
@@ -155,7 +155,7 @@ public abstract class AbstractXQueryResultMapper<T> implements XQueryResultMappe
 		Number value = null;
 		try {
 			if(StringUtils.hasText(strValue)) {
-				if(strValue.indexOf(".") > 0) {
+				if(strValue.indexOf('.') > 0) {
 					value = Double.valueOf(strValue);
 				}
 				else {
@@ -263,13 +263,13 @@ public abstract class AbstractXQueryResultMapper<T> implements XQueryResultMappe
 	 * @throws TransformerException
 	 */
 	protected String transformNodeToString(Node n)
-			throws TransformerConfigurationException,
-			TransformerFactoryConfigurationError, TransformerException {
+			throws TransformerException {
 		String value;
 		StringWriter writer = new StringWriter();
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
-		if(formatOutput)
+		if(formatOutput) {
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		}
 		transformer.transform( new DOMSource(n), new StreamResult(writer));
 		value = writer.toString();
 		return value;

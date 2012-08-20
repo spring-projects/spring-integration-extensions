@@ -186,19 +186,19 @@ public class XQueryExecutor implements InitializingBean,BeanClassLoaderAware {
 	 * @return the instantiated {@link XQDataSource}
 	 */
 	private XQDataSource discoverXQDataSource() {
-		Object xqDataSource = null;
+		Object dataSource = null;
 		try {
 			if(ClassUtils.isPresent(SAXON_XQ_DATASOURCE_CLASS, classLoader)) {
-				xqDataSource = Class.forName(SAXON_XQ_DATASOURCE_CLASS).newInstance();
+				dataSource = Class.forName(SAXON_XQ_DATASOURCE_CLASS).newInstance();
 			}
 			//For now its just Saxon we will discover, we can add other implementations here later
 		} catch (Exception e) {
 			throw new MessagingException("Unable to discover/instantiate an XQDataSource, " +
 					"see nested exception for details", e);
 		}
-		Assert.notNull(xqDataSource, "No XQDataSource provided nor any known implementation discovered in the classpath");
-		logger.info("Using \"" + xqDataSource.getClass() + "\" as the XQDataSource implementation");
-		return (XQDataSource)xqDataSource;
+		Assert.notNull(dataSource, "No XQDataSource provided nor any known implementation discovered in the classpath");
+		logger.info("Using \"" + dataSource.getClass() + "\" as the XQDataSource implementation");
+		return (XQDataSource)dataSource;
 	}
 
 	/**
@@ -444,8 +444,9 @@ public class XQueryExecutor implements InitializingBean,BeanClassLoaderAware {
 	 */
 	public void setXQueryParameters(List<XQueryParameter> params) {
 		if(params != null && params.size() > 0) {
-			if(xQueryParameterMap == null)
+			if(xQueryParameterMap == null) {
 				xQueryParameterMap = new HashMap<String, XQueryParameter>();
+			}
 			for(XQueryParameter param:params) {
 				xQueryParameterMap.put(param.getParameterName(), param);
 			}

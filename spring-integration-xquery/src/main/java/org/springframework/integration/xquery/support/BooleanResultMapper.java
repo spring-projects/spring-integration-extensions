@@ -42,11 +42,9 @@ public class BooleanResultMapper extends AbstractXQueryResultMapper<Boolean> {
 			while(result.next()) {
 				XQItemType type = result.getItemType();
 				Boolean value = convertToBoolean(type, result);
-				if(value == null) {
-					if(isNodeType(type)) {
-						Node n = result.getNode();
-						value = Boolean.valueOf(transformNodeToString(n));
-					}
+				if(value == null && isNodeType(type)) {
+					Node n = result.getNode();
+					value = Boolean.valueOf(transformNodeToString(n));
 				}
 				results.add(value);
 			}
