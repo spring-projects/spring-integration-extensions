@@ -46,7 +46,8 @@ import org.w3c.dom.Node;
  * The base test class for the XQueryExecutor tests
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public abstract class AbstractXQueryExecutorTests {

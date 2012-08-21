@@ -21,7 +21,8 @@ import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHa
  * The namespace handler for the "int-xquery" namespace
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public class IntegrationXQueryNamespaceHandler extends

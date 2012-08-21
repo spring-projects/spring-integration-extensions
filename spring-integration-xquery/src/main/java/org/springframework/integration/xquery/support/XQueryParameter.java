@@ -28,7 +28,8 @@ import org.springframework.util.StringUtils;
  * instance
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public class XQueryParameter {

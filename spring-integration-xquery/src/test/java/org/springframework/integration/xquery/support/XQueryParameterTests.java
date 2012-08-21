@@ -31,7 +31,7 @@ import org.springframework.integration.test.util.TestUtils;
  *
  * @author Amol Nayak
  *
- * @since 2.2
+ * @since 1.0
  *
  */
 public class XQueryParameterTests {

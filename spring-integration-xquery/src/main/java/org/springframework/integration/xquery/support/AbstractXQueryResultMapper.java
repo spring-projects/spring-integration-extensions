@@ -48,10 +48,8 @@ import java.math.BigInteger;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xquery.XQException;
@@ -65,7 +63,8 @@ import org.w3c.dom.Node;
 /**
  * The absract base class for {@link XQueryResultMapper} implementations
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public abstract class AbstractXQueryResultMapper<T> implements XQueryResultMapper<T> {
@@ -258,8 +257,6 @@ public abstract class AbstractXQueryResultMapper<T> implements XQueryResultMappe
 	/**Transforms the given {@link Node} to a String
 	 * @param n
 	 * @return
-	 * @throws TransformerConfigurationException
-	 * @throws TransformerFactoryConfigurationError
 	 * @throws TransformerException
 	 */
 	protected String transformNodeToString(Node n)

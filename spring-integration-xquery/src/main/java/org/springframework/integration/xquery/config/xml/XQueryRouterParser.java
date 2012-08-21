@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
  *
  * @author Amol Nayak
  *
- * @since 2.2
+ * @since 1.0
  *
  */
 public class XQueryRouterParser extends AbstractRouterParser {

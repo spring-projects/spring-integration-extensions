@@ -25,7 +25,8 @@ import org.w3c.dom.Node;
  * The Dummy Xml payload converter class that would be used for parser tests
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public class DummyXmlPayloadConverter implements XmlPayloadConverter {
