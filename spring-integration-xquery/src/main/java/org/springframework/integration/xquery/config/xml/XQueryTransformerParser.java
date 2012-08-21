@@ -28,7 +28,8 @@ import org.w3c.dom.Node;
  * The parser for the XQuery transformer component
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public class XQueryTransformerParser extends AbstractTransformerParser {

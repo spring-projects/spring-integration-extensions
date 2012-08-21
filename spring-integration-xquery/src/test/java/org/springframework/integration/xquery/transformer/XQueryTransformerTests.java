@@ -34,7 +34,8 @@ import org.w3c.dom.Node;
  * The Test class for the {@link XQueryTransformer} class
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public class XQueryTransformerTests {

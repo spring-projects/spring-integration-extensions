@@ -40,15 +40,16 @@ import org.w3c.dom.NodeList;
  *
  * @author Amol Nayak
  *
- * @since 2.2
+ * @since 1.0
  *
  */
-public class XQueryParserUtils {
+public final class XQueryParserUtils {
 
 
 
 	private XQueryParserUtils() {
 		//prevent instantiation
+		throw new AssertionError("Cannot instantiate a utility class");
 	}
 
 	/**
@@ -59,7 +60,7 @@ public class XQueryParserUtils {
 	public static final AbstractBeanDefinition getXQueryExecutor(Element element) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(XQueryExecutor.class);
 		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "converter");
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "xq-datasource","xQDataSource");
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "data-source","xQDataSource");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "format-output");
 		setXQueryInBuilder(element, builder);
 		//lets get the parameter nodes

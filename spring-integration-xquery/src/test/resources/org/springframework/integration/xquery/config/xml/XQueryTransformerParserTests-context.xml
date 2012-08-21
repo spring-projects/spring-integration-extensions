@@ -33,7 +33,7 @@
 						output-channel="output"
 						xquery="'Hello World'"
 						converter="converter"
-						xq-datasource="xqDs"
+						data-source="xqDs"
 						format-output="true">
 	</int-xquery:xquery-transformer>
 
@@ -42,7 +42,7 @@
 						output-channel="output"
 						xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
 						converter="converter"
-						xq-datasource="xqDs">
+						data-source="xqDs">
 	</int-xquery:xquery-transformer>
 
 	<int-xquery:xquery-transformer id="booleanResultTypeTransformer"
@@ -50,21 +50,21 @@
 								output-channel="output"
 								result-type="java.lang.Boolean"
 								xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
-								xq-datasource="xqDs"/>
+								data-source="xqDs"/>
 
 	<int-xquery:xquery-transformer id="stringResultTypeTransformer"
 								input-channel="stringResultTypeTransformerIP"
 								output-channel="output"
 								result-type="string"
 								xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
-								xq-datasource="xqDs"/>
+								data-source="xqDs"/>
 
 	<int-xquery:xquery-transformer id="customXQueryResultMapper"
 								input-channel="stringResultTypeTransformerIP"
 								output-channel="output"
 								xquery-result-mapper="xqueryResultMapper"
 								xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
-								xq-datasource="xqDs"/>
+								data-source="xqDs"/>
 
 	<bean id="converter" class="org.springframework.integration.xquery.DummyXmlPayloadConverter"/>
 

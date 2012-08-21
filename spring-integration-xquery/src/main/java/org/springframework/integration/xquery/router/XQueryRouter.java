@@ -28,7 +28,8 @@ import org.springframework.util.Assert;
  * to which the message will be routed
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public class XQueryRouter extends AbstractMappingMessageRouter {

@@ -38,7 +38,7 @@ import org.springframework.integration.xquery.support.XQueryParameter;
  *
  * @author Amol Nayak
  *
- * @since 2.2
+ * @since 1.0
  *
  */
 public class XQueryRouterParserTests {

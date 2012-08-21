@@ -24,7 +24,8 @@ import javax.xml.xquery.XQResultSequence;
  * returned by XQuery execution to a List of the specified type
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public interface XQueryResultMapper<T> {

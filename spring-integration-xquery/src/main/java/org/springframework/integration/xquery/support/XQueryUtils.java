@@ -34,10 +34,10 @@ import org.springframework.util.Assert;
  *
  * @author Amol Nayak
  *
- * @since 2.2
+ * @since 1.0
  *
  */
-public class XQueryUtils {
+public final class XQueryUtils {
 
 	private static final Log logger = LogFactory.getLog(XQueryUtils.class);
 
