@@ -22,7 +22,7 @@ package org.springframework.integration.xquery.core;
  *
  * @author Amol Nayak
  *
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SaxonXQueryExecutorTests extends AbstractXQueryExecutorTests {

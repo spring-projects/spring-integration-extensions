@@ -53,7 +53,7 @@
 				the xquery components
 			</xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="xq-datasource" type="xsd:string"
+		<xsd:attribute name="data-source" type="xsd:string"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>
@@ -63,6 +63,11 @@
 					provided, then the default
 					implementation will be used.
 				</xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:expected-type type="javax.xml.xquery.XQDataSource" />
+					</tool:annotation>
+				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="xquery-file-resource" type="xsd:string"

@@ -89,11 +89,11 @@ The value or the expression to find the value for these named parameters is spec
 							input-channel="xpathRouterOne"
 							xquery="'Hello World'"
 							converter="converter"
-							xq-datasource="xqDs">
+							data-source="xqDs">
 		<int-xquery:xquery-parameter name="name" ref="name"/>
 	</int-xquery:xquery-router>
 
-The above config now specifies the *xquery* attribute to specify the query. It additionally has the *converter* and the *xq-datasource* attributes. The *converter* holds a reference to the bean which implements the `org.springframework.integration.xml.DefaultXmlPayloadConverter` interface. By default it uses `org.springframework.integration.xml.DefaultXmlPayloadConverter` Please note that this interface and the implementation is from  **spring-integration-xml** project. The *xq-datasource* attribute holds a reference to a bean that implements the `javax.xml.xquery.XQDataSource` interface. By default it will use `net.sf.saxon.xqj.SaxonXQDataSource` implementation.
+The above config now specifies the *xquery* attribute to specify the query. It additionally has the *converter* and the *data-source* attributes. The *converter* holds a reference to the bean which implements the `org.springframework.integration.xml.DefaultXmlPayloadConverter` interface. By default it uses `org.springframework.integration.xml.DefaultXmlPayloadConverter` Please note that this interface and the implementation is from  **spring-integration-xml** project. The *data-source* attribute holds a reference to a bean that implements the `javax.xml.xquery.XQDataSource` interface. By default it will use `net.sf.saxon.xqj.SaxonXQDataSource` implementation.
 
 #### With **xquery-file-resource** attribute
 
@@ -101,7 +101,7 @@ The above config now specifies the *xquery* attribute to specify the query. It a
 							input-channel="xpathRouterOne"
 							xquery-file-resource="org/springframework/integration/xquery/XQuery.xq"
 							converter="converter"
-							xq-datasource="xqDs">
+							data-source="xqDs">
 		<int-xquery:xquery-parameter name="name" expression="headers['name']"/>
 		<int-xquery:xquery-parameter name="class" value="1"/>
 	</int-xquery:xquery-router>
@@ -145,7 +145,7 @@ Similar to routers, transformers too support accepting the xquery as a child sub
 						output-channel="output"
 						xquery="'Hello World'"
 						converter="converter"
-						xq-datasource="xqDs"
+						data-source="xqDs"
 						format-output="true">
 	</int-xquery:xquery-transformer>
 
@@ -158,7 +158,7 @@ An additional attibute *format-output* is mentioned, the value could be *true* o
 						output-channel="output"
 						xquery-file-resource="classpath:org/springframework/integration/xquery/XQueryTransform.xq"
 						converter="converter"
-						xq-datasource="xqDs">
+						data-source="xqDs">
 	</int-xquery:xquery-transformer>
 
 ###Credits

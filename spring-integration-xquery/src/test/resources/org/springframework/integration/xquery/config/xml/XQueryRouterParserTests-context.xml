@@ -28,7 +28,7 @@
 							input-channel="xpathRouterOne"
 							xquery="'Hello World'"
 							converter="converter"
-							xq-datasource="xqDs">
+							data-source="xqDs">
 		<int-xquery:xquery-parameter name="name" ref="name"/>
 	</int-xquery:xquery-router>
 
@@ -36,7 +36,7 @@
 							input-channel="xpathRouterOne"
 							xquery-file-resource="classpath:org/springframework/integration/xquery/XQuery.xq"
 							converter="converter"
-							xq-datasource="xqDs">
+							data-source="xqDs">
 		<int-xquery:xquery-parameter name="name" expression="headers['name']"/>
 		<int-xquery:xquery-parameter name="class" value="1"/>
 	</int-xquery:xquery-router>
@@ -47,7 +47,7 @@
 							input-channel="xpathRouterOne"
 							xquery-file-resource="org/springframework/integration/xquery/XQuery.xq"
 							converter="converter"
-							xq-datasource="xqDs">
+							data-source="xqDs">
 		<int-xquery:xquery-parameter name="name" expression="headers['name']"/>
 		<int-xquery:xquery-parameter name="class" value="1"/>
 	</int-xquery:xquery-router>

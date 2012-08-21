@@ -29,7 +29,8 @@ import org.springframework.integration.xquery.core.XQueryExecutor;
  * The Test class for the XQuery router
  *
  * @author Amol Nayak
- * @since 2.2
+ *
+ * @since 1.0
  *
  */
 public class XQueryRouterTests {

@@ -42,7 +42,7 @@ import net.xqj.sedna.SednaXQDataSource;
  *
  * @author Amol Nayak
  *
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SednaXQueryExecutorTests extends AbstractXQueryExecutorTests {
