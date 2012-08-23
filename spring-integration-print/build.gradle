@@ -15,51 +15,20 @@ group = 'org.springframework.integration.print'
 
 repositories {
 	maven { url 'http://repo.springsource.org/libs-milestone' }
-	maven { url 'http://repo.springsource.org/plugins-release' } // for bundlor
+	maven { url 'http://repo.springsource.org/plugins-release' }
 }
 
 sourceCompatibility=1.6
 targetCompatibility=1.6
 
 ext {
-	aspectjVersion = '1.6.8'
-	cglibVersion = '2.2'
-	commonsNetVersion = '3.0.1'
 	easymockVersion = '2.3'
-	groovyVersion = '1.8.5'
-	jacksonVersion = '1.9.2'
-	javaxActivationVersion = '1.1.1'
 	junitVersion = '4.8.2'
 	log4jVersion = '1.2.12'
 	mockitoVersion = '1.9.0'
-	// When changing Spring Versions - don't forget to update bundlor ranges
-	springVersion = '3.1.1.RELEASE'
+	springVersion = '3.1.2.RELEASE'
 	springIntegrationVersion = '2.1.2.RELEASE'
-	springAmqpVersion = '1.1.0.RELEASE'
-	springDataMongoVersion = '1.1.0.M1'
-	springDataRedisVersion = '1.0.0.RELEASE'
-	springGemfireVersion = '1.1.1.RELEASE'
-	springSecurityVersion = '3.1.0.RELEASE'
-	springSocialTwitterVersion = '1.0.1.RELEASE'
-	springWsVersion = '2.0.3.RELEASE'
 }
-
-dependencies {
-	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile "org.springframework:spring-tx:$springVersion"
-	compile("org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion", optional)
-	compile("org.springframework.amqp:spring-rabbit:$springAmqpVersion") {
-		exclude group: 'org.springframework', module: 'spring-aop'
-		exclude group: 'org.springframework', module: 'spring-beans'
-		exclude group: 'org.springframework', module: 'spring-context'
-		exclude group: 'org.springframework', module: 'spring-core'
-		exclude group: 'org.springframework', module: 'spring-oxm'
-		exclude group: 'org.springframework', module: 'spring-tx'
-	}
-
-	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-}
-
 
 eclipse {
 	project {
@@ -81,9 +50,10 @@ configurations {
 	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
 }
 
-// dependencies that are common across all java projects
 dependencies {
-	testCompile "cglib:cglib-nodep:$cglibVersion"
+
+	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
+	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "junit:junit-dep:$junitVersion"
 	testCompile "log4j:log4j:$log4jVersion"
 	testCompile "org.easymock:easymock:$easymockVersion"
@@ -155,19 +125,16 @@ sonar {
 
 task api(type: Javadoc) {
 	group = 'Documentation'
-	description = 'Generates aggregated Javadoc API documentation.'
+	description = 'Generates the Javadoc API documentation.'
 	title = "${rootProject.description} ${version} API"
 	options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
 	options.author = true
 	options.header = rootProject.description
 	options.overview = 'src/api/overview.html'
-	source subprojects.collect { project ->
-		project.sourceSets.main.allJava
-	}
+
+	source = sourceSets.main.allJava
+	classpath = project.sourceSets.main.compileClasspath
 	destinationDir = new File(buildDir, "api")
-	classpath = files(subprojects.collect { project ->
-		project.sourceSets.main.compileClasspath
-	})
 }
 
 task schemaZip(type: Zip) {
@@ -176,27 +143,23 @@ task schemaZip(type: Zip) {
 	description = "Builds -${classifier} archive containing all " +
 		"XSDs for deployment at static.springframework.org/schema."
 
-	subprojects.each { subproject ->
-		def Properties schemas = new Properties();
-		def shortName = subproject.name.replaceFirst("${rootProject.name}-", '')
-		if (subproject.name.endsWith("-core")) {
-			shortName = ''
+	def Properties schemas = new Properties();
+	def shortName = project.name.replaceFirst("${rootProject.name}-", '')
+
+	project.sourceSets.main.resources.find {
+		it.path.endsWith('META-INF/spring.schemas')
+	}?.withInputStream { schemas.load(it) }
+
+	for (def key : schemas.keySet()) {
+		File xsdFile = project.sourceSets.main.resources.find {
+			it.path.endsWith(schemas.get(key))
 		}
-
-		subproject.sourceSets.main.resources.find {
-			it.path.endsWith('META-INF/spring.schemas')
-		}?.withInputStream { schemas.load(it) }
-
-		for (def key : schemas.keySet()) {
-			File xsdFile = subproject.sourceSets.main.resources.find {
-				it.path.endsWith(schemas.get(key))
-			}
-			assert xsdFile != null
-			into ("integration/${shortName}") {
-				from xsdFile.path
-			}
+		assert xsdFile != null
+		into ("integration/${shortName}") {
+			from xsdFile.path
 		}
 	}
+
 }
 
 task docsZip(type: Zip) {
@@ -239,13 +202,12 @@ task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
 		into "${baseDir}/schema"
 	}
 
-	subprojects.each { subproject ->
-		into ("${baseDir}/libs") {
-			from subproject.jar
-			from subproject.sourcesJar
-			from subproject.javadocJar
-		}
+	into ("${baseDir}/libs") {
+		from project.jar
+		from project.sourcesJar
+		from project.javadocJar
 	}
+
 }
 
 // Create an optional "with dependencies" distribution.
@@ -260,14 +222,13 @@ task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
 
 	gradle.taskGraph.whenReady { taskGraph ->
 		if (taskGraph.hasTask(":${zipTask.name}")) {
-			def projectNames = rootProject.subprojects*.name
+			def projectName = rootProject.name
 			def artifacts = new HashSet()
-			subprojects.each { subproject ->
-				subproject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-					def dependency = artifact.moduleVersion.id
-					if (!projectNames.contains(dependency.name)) {
-						artifacts << artifact.file
-					}
+
+			rootProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+				def dependency = artifact.moduleVersion.id
+				if (!projectName.equals(dependency.name)) {
+					artifacts << artifact.file
 				}
 			}
 
