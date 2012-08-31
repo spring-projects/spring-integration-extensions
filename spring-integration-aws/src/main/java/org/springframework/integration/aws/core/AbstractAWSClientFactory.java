@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.amazonaws.AmazonWebServiceClient;
@@ -67,6 +66,8 @@ public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient>
 	 */
 	protected final static String DEFAULT_PROTOCOL = HTTPS;
 
+	private T defaultEndpointInstance;
+
 
 	/**
 	 * Returns the cached implementation of the {@link AmazonWebServiceClient} based on the URL provided.
@@ -79,6 +80,12 @@ public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient>
 	 */
 	public final T getClient(String url) {
 		String endpoint = getEndpointFromURL(url);
+		if(endpoint == null) {
+			if(defaultEndpointInstance == null) {
+				defaultEndpointInstance = getClientImplementation();
+			}
+			return defaultEndpointInstance;
+		}
 		if(!clientMap.containsKey(endpoint)) {
 			T client = getClientImplementation();
 			client.setEndpoint(endpoint);
@@ -89,8 +96,10 @@ public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient>
 				client = existingClient;
 			}
 			return client;
-		} else
+		}
+		else {
 			return clientMap.get(endpoint);
+		}
 	}
 
 	/**
@@ -115,7 +124,9 @@ public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient>
 	 * @return
 	 */
 	private String getEndpointFromURL(String stringUrl) {
-		Assert.notNull(stringUrl,"Provided String URL is null");
+		if(!StringUtils.hasText(stringUrl)) {
+			return null;
+		}
 		String endpoint;
 		try {
 			if(!(stringUrl.startsWith(HTTP)
