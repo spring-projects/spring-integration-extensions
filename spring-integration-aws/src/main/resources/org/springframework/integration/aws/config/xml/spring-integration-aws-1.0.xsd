@@ -104,4 +104,288 @@
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
+	<xsd:element name="s3-outbound-channel-adapter">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:documentation>
+					Defines an outbound S3 Channel Adapter for Uploading files to Amazon S3
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:attribute name="id" type="xsd:string"/>
+			<xsd:attribute name="channel" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="org.springframework.integration.core.MessageChannel"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attributeGroup ref="awsAdaptersCommonAttributes"/>
+			<xsd:attribute name="bucket" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation>
+						The mandatory attribute that would be used to provide the AWS bucket to which
+						the objects needs to be uploaded.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="charset" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Relevant only when the payload of the message to the outbound adapter is of
+						type java.lang.String. The default charset is UTF-8.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="multipart-upload-threshold" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>
+						Using 'Amazon Multipart Upload' you can upload data as a set of parts using
+						parallel threads. This non-negative integer value representing bytes which is used
+						to provide the threshold after which the upload to the S3 bucket will be done
+						using 'Amazon Multipart Upload'. Amazon recommends the size to be 100 MB.
+						The minimum threshold for 'Amazon Multipart Upload' is 5120 bytes.
+						If the attribute is not specified, then the value used is the default value used
+						by the underlying implementation. The default implementation uses AWS SDK which
+						uses Multi part upload after 16 MB. The maximum value for this is 2 GB. Any value
+						greater than 2 GB will not throw an exception but the value will be set to
+						2 GB internally for the threshold.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="temporary-directory" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						If the payload of the message is an InputStream, byte[] or String
+						the contents are written to a temporary file in the provided temporary directory
+						location before being uploaded to the S3. In absence of this attribute, the
+						value is defaulted to the value of the system property "java.io.tmpdir"
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="temporary-suffix" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The suffix for the files if a temporary file is to be generated. The value
+						defaults to ".writing"
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="thread-pool-executor" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="java.util.concurrent.ThreadPoolExecutor"/>
+						</tool:annotation>
+						<xsd:documentation>
+							The thread pool executor to be used for multi part uploads.
+							If none is provided, the default one used by the underlying SDK
+							or library will be used.
+						</xsd:documentation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="remote-directory" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The String literal that gives the remote folder in the provided bucket where
+						the files will be uploaded. This attribute is mutually exclusive to
+						remote-directory-expression
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="remote-directory-expression" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						This attribute is mutually exclusive with the remote-directory attribute
+						and is used to provide an expression that would be evaluated against the incoming
+						message to derive the remote directory name in the given bucket.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="file-name-generator" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="org.springframework.integration.aws.s3.FileNameGenerationStrategy"/>
+						</tool:annotation>
+					</xsd:appinfo>
+					<xsd:documentation>
+						The instance that would be used to generate the name of the file that would be
+						stored in S3. If none is specified then
+						org.springframework.integration.aws.s3.DefaultFileNameGenerationStrategy would be used.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="file-name-generation-expression" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The filename generation expression that is mutually exclusive to the
+						file-name-generator attribute. The default expression is "headers['file_name']"
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="auto-startup" type="xsd:string" default="true"/>
+			<xsd:attribute name="order">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the order for invocation when this endpoint is connected as a
+						subscriber to a SubscribableChannel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="s3-operations" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:expected-type type="org.springframework.integration.aws.s3.core.AmazonS3Operations"/>
+					</xsd:appinfo>
+					<xsd:documentation>
+						Reference to the bean with an implementation of org.springframework.integration.aws.s3.core.AmazonS3Operations
+						that would be used to perform the operations on the S3 bucket. If not provided, the
+						default implementation used is
+						org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations which is the
+						implementation using the AWS SDK.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="aws-endpoint" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The String that gives the endpoint to use for the adapter, if none is
+						specified the default used is s3.amazonaws.com.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="s3-inbound-channel-adapter">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:documentation>
+					Defines the inbound channel adapter for Amazon S3. The component is used to synchronize
+					the objects in an S3 bucket with the file system.
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:sequence minOccurs="0" maxOccurs="1">
+				<xsd:element ref="integration:poller"/>
+			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:string"/>
+			<xsd:attribute name="channel" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="org.springframework.integration.core.MessageChannel"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attributeGroup ref="awsAdaptersCommonAttributes"/>
+			<xsd:attribute name="bucket" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation>
+						The mandatory attribute that would be used to provide the AWS bucket to which
+						the objects needs to be uploaded.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="temporary-suffix" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The suffix files will use while the are being written to the local file system.
+						A file present with this suffix on the local file system denotes that the file
+						is not completely received from the s3 bucket.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="s3-operations" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:expected-type type="org.springframework.integration.aws.s3.core.AmazonS3Operations"/>
+					</xsd:appinfo>
+					<xsd:documentation>
+						Reference to the bean with an implementation of org.springframework.integration.aws.s3.core.AmazonS3Operations
+						that would be used to perform the operations on the S3 bucket. If not provided, the
+						default implementation used is
+						org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations which uses AWS SDK.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="aws-endpoint" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The String that gives the endpoint to use for the adapter, if none is
+						specified the default used is s3.amazonaws.com.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="remote-directory" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						This is the sub folder if any on the remote bucket that would be synchronized
+						with the local directory. Useful if a part of the bucket is to be synchronized.
+						If none specified, the entire bucket will be synchronized with the local directory.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="local-directory" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The attribute specifying the directory on the local file system where
+						the objects from S3 bucket would be synchronized to. Either of local-directory
+						or the local-directory-expression are mandatory.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="local-directory-expression" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The attribute specifying the expression to find the directory on the local file
+						system where the objects from S3 bucket would be synchronized to. Either of local-directory
+						or the locl-directory-expression are mandatory.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="auto-startup" type="xsd:string" default="true"/>
+			<xsd:attribute name="max-objects-per-batch" type="xsd:integer">
+				<xsd:annotation>
+					<xsd:documentation>
+						The maximum number of objects returned in the listOperation performed on the S3 bucket
+						The default value used internally is 100. That is not more than 100 objects would be returned
+						in one call to list the objects, subsequent calls will be made to the Web service to retrieve the next
+						batch of objects.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="accept-sub-folders" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The boolean value that would be used to specify if the sub folders of the given
+						folder are to be synchronized or not. By default the value is false and only files
+						at the level of the specified folder (or root of the bucket if no remote folder specified)
+						are synchronized. The objects in the sub folder are ignored.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="file-name-wildcard" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The wildcard pattern that would be used to further filter out the objects listed.
+						This attribute is mutually exclusive to the file-name-regex attribute.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="file-name-regex" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The regex that would be used to further filter out the objects listed.
+						This attribute is mutually exclusive to the file-name-wildcard attribute.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
 </xsd:schema>

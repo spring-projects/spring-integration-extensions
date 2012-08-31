@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	xmlns:int-aws="http://www.springframework.org/schema/integration/aws"
+	xsi:schemaLocation=
+	"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/integration/aws http://www.springframework.org/schema/integration/aws/spring-integration-aws.xsd
+	http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+
+	<integration:channel id="input"/>
+
+
+	<int-aws:s3-outbound-channel-adapter
+			id="withCustomNameGenerator"
+			channel="input"
+			s3-operations="customOps"
+			bucket="TestBucket"
+			accessKey="dummy"
+			secretKey="dummy"
+			multipart-upload-threshold="5120"
+			remote-directory="/"
+			file-name-generation-expression="headers['name']"
+			auto-startup="false"/>
+
+	<bean id="customOps"
+		class="org.springframework.integration.aws.s3.config.xml.AmazonS3OutboundChannelAdapterParserTests.DummyS3Operations"/>
+</beans>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	xmlns:int-aws="http://www.springframework.org/schema/integration/aws"
+	xsi:schemaLocation=
+	"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/integration/aws http://www.springframework.org/schema/integration/aws/spring-integration-aws.xsd
+	http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+
+	<integration:channel id="input"/>
+
+	<int-aws:s3-outbound-channel-adapter
+			id="withCustomService"
+			channel="input"
+			bucket="TestBucket"
+			accessKey="dummy"
+			secretKey="dummy"
+			s3-operations="customOps"
+			remote-directory="/"
+			auto-startup="false"/>
+
+	<int-aws:s3-outbound-channel-adapter
+			id="withDefaultServices"
+			channel="input"
+			bucket="TestBucket"
+			accessKey="dummy"
+			secretKey="dummy"
+			remote-directory-expression="headers['remoteDirectory']"
+			charset="US-ASCII"
+			thread-pool-executor="executor"
+			multipart-upload-threshold="5120"
+			temporary-suffix=".write"
+			file-name-generation-expression="headers['name']"/>
+
+
+	<int-aws:s3-outbound-channel-adapter
+			id="withCustomNameGenerator"
+			channel="input"
+			bucket="TestBucket"
+			accessKey="dummy"
+			secretKey="dummy"
+			remote-directory="/"
+			file-name-generator="customFileNameGenerator"
+			auto-startup="false"/>
+
+	<int-aws:s3-outbound-channel-adapter
+			id="withCustomEndpoint"
+			aws-endpoint="http://s3-eu-west-1.amazonaws.com"
+			channel="input"
+			bucket="TestBucket"
+			accessKey="dummy"
+			secretKey="dummy"
+			remote-directory="/"
+			auto-startup="false"/>
+
+	<bean id="queue" class="java.util.concurrent.ArrayBlockingQueue">
+		<constructor-arg value="10"/>
+	</bean>
+
+	<bean id="executor" class="java.util.concurrent.ThreadPoolExecutor">
+		<constructor-arg index="0" value="5"/>
+		<constructor-arg index="1" value="10"/>
+		<constructor-arg index="2" value="10"/>
+		<constructor-arg index="3" value="MILLISECONDS"/>
+		<constructor-arg index="4" ref="queue"/>
+	</bean>
+
+	<bean id="customOps"
+		class="org.springframework.integration.aws.s3.config.xml.AmazonS3DummyOperations"/>
+
+	<bean id="customFileNameGenerator"
+		class="org.springframework.integration.aws.s3.config.xml.AmazonS3OutboundChannelAdapterParserTests.DummyFileNameGenerator"/>
+
+</beans>
