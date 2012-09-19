@@ -1,0 +1,1 @@
+http\://www.springframework.org/schema/integration/pushnotify=org.springframework.integration.pushnotify.config.xml.IntegrationPushNotifyNamespaceHandler

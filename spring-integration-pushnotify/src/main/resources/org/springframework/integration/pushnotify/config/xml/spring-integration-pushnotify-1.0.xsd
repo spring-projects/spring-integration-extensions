@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	xmlns="http://www.springframework.org/schema/integration/pushnotify"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	targetNamespace="http://www.springframework.org/schema/integration/pushnotify"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+	<xsd:import namespace="http://www.springframework.org/schema/integration"
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration-2.2.xsd" />
+
+	<xsd:annotation>
+		<xsd:documentation>
+			Defines the configuration elements for Spring
+			Integration's Push notify support
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="outbound-gateway">
+		<xsd:annotation>
+			<xsd:documentation>
+				Defines the outbound gateway element for all the
+				services to push to various
+				handheld platforms
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="id" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						Identifies the underlying Spring bean
+						definition, which is an
+						instance of either 'EventDrivenConsumer' or
+						'PollingConsumer',
+						depending on whether the component's input
+						channel is a
+						'SubscribableChannel' or 'PollableChannel'.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="request-channel" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The receiving Message Channel of this endpoint.
+					</xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type
+								type="org.springframework.integration.core.MessageChannel" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="reply-channel" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Message Channel to which replies should be
+						sent,
+						after receiving the response from the push service
+					</xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type
+								type="org.springframework.integration.core.MessageChannel" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="reply-timeout" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+					Allows you to specify how long this gateway will wait for
+					the reply message to be sent successfully to the reply channel
+					before throwing an exception. This attribute only applies when the
+					channel might block, for example when using a bounded queue channel that
+					is currently full.
+
+					Also, keep in mind that when sending to a DirectChannel, the
+					invocation will occur in the sender's thread. Therefore,
+					the failing of the send operation may be caused by other
+					components further downstream.
+
+					The "reply-timeout" attribute maps to the "sendTimeout" property of the
+					underlying 'MessagingTemplate' instance (org.springframework.integration.core.MessagingTemplate).
+
+					The attribute will default, if not specified, to '-1', meaning that
+					by default, the Gateway will wait indefinitely. The value is
+					specified in milliseconds.
+				]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="type" use="required">
+				<xsd:annotation>
+					<xsd:documentation>
+						An enumeration of values that would identify the
+						service to connect
+						to push the messages to.
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:union memberTypes="serviceType xsd:string" />
+				</xsd:simpleType>
+			</xsd:attribute>
+
+			<!-- Android specific attributes start -->
+			<xsd:attribute name="service-ref" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The reference to a custom service implementation
+			</xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type
+								type="org.springframework.integration.pushnotify.PushNotifyService" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="sender-id" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The sender id of the GCM that would be used by the adapter to push
+						the messages
+						to the GCM. See GCM documentation or the README of the adapter for
+						more details.
+			</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="sender-id-ref" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The sender id reference of the GCM that would be used by the adapter
+						to push the messages
+						to the GCM. See GCM documentation or the README of the adapter for
+						more details.
+						Either of this attribute or sender-id attributes is mandatory.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="collapse-key" type="xsd:string" />
+			<xsd:attribute name="collapse-key-expression" type="xsd:string" />
+			<xsd:attribute name="time-to-live" type="xsd:string" />
+			<xsd:attribute name="time-to-live-expression" type="xsd:string" />
+			<xsd:attribute name="delay-while-idle" type="xsd:string" />
+			<xsd:attribute name="delay-while-idle-expression" type="xsd:string" />
+			<xsd:attribute name="receiver-id" type="xsd:string" />
+			<xsd:attribute name="receiver-id-expression" type="xsd:string" />
+
+			<!-- Android specific attributes end -->
+
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:simpleType name="serviceType">
+		<xsd:annotation>
+			<xsd:documentation>
+				The enumeration of the service types that is
+				supported by the library
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="android" />
+			<!-- Add the iOS, blackberry, urbanairship etc... -->
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>
