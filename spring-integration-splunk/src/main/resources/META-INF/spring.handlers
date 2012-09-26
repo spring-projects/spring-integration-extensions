@@ -1,0 +1,1 @@
+http\://www.springframework.org/schema/integration/splunk=org.springframework.integration.splunk.config.xml.SplunkNamespaceHandler

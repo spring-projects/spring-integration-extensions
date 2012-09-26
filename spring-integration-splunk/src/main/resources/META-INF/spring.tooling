@@ -1,0 +1,4 @@
+# Tooling related information for the integration Splunk namespace
+http\://www.springframework.org/schema/integration/splunk@name=integration Splunk Namespace
+http\://www.springframework.org/schema/integration/splunk@prefix=int-splunk
+http\://www.springframework.org/schema/integration/splunk@icon=org/springframework/integration/splunk/config/xml/spring-integration-splunk.gif
