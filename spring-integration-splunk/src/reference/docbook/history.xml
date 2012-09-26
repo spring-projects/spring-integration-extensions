@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="history"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	<title>Change History</title>
+		<table>
+			<thead>
+			<td>Release</td>
+			<td>Date</td>
+			<td>Changes</td>
+		</thead>
+		<tbody>
+		<tr>
+			<td>0.5.0</td>
+			<td>2012.9.28</td>
+			<td>Initial release</td>
+		</tr>
+		</tbody>
+	</table>
+</appendix>
