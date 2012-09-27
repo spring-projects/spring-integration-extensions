@@ -2,7 +2,6 @@ apply plugin: 'maven'
 
 ext.optionalDeps = []
 ext.providedDeps = []
-
 ext.optional = { optionalDeps << it }
 ext.provided = { providedDeps << it }
 
