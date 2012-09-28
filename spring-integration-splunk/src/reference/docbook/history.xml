@@ -3,6 +3,21 @@
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xi="http://www.w3.org/2001/XInclude">
     <title>Change History</title>
-
+    <para>
+    <table>
+    	<thead>
+			<td>Release</td>
+			<td>Date</td>
+			<td>Changes</td>
+		</thead>
+		<tbody>
+		<tr>
+			<td>1.0.0</td>
+			<td>2012.9.28</td>
+			<td>Initial release</td>
+		</tr>
+		</tbody>
+	</table>
+	</para>
 
 </appendix>

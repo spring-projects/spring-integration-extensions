@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
+import org.springframework.integration.splunk.support.SearchMode;
 import org.springframework.integration.splunk.support.SplunkDataReader;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -43,11 +44,12 @@ public class SplunkInboundChannelAdapterParserTests {
 	 * Test method for {@link org.springframework.integration.splunk.config.xml.SplunkInboundChannelAdapterParser#parseSource(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)}.
 	 */
 	@Test
+	//@Ignore
 	public void testParseSourceElementParserContext() {
 		SourcePollingChannelAdapter adapter = appContext.getBean("splunkInboundChannelAdapter",
 				SourcePollingChannelAdapter.class);
 		Assert.assertNotNull(adapter);
-		Assert.assertTrue(adapter.isAutoStartup());
+		Assert.assertFalse(adapter.isAutoStartup());
 
 		SplunkDataReader reader = appContext.getBean("splunkInboundChannelAdapter.splunkExecutor.reader",
 				SplunkDataReader.class);
@@ -56,7 +58,7 @@ public class SplunkInboundChannelAdapterParserTests {
 		String searchString = "search spring:example";
 		Assert.assertEquals(searchString, reader.getSearch());
 
-		SplunkDataReader.Mode mode = SplunkDataReader.Mode.blocking;
+		SearchMode mode = SearchMode.blocking;
 		Assert.assertEquals(mode, reader.getMode());
 
 		String earliestTime = "-1d";

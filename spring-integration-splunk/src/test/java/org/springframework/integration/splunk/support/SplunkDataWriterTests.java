@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.springframework.integration.splunk.core.Connection;
 import org.springframework.integration.splunk.core.ConnectionFactory;
 import org.springframework.integration.splunk.entity.SplunkData;
-import org.springframework.integration.splunk.support.SplunkDataWriter.IngestType;
 
 import com.splunk.Args;
 import com.splunk.Receiver;

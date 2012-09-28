@@ -21,59 +21,43 @@ repositories {
 	maven { url 'http://repo.springsource.org/plugins-release' } // for bundlor
 }
 
-// ensure JDK 5 compatibility (GRADLE-18; INT-1578)
 sourceCompatibility=1.5
 targetCompatibility=1.5
 
 ext {
-	aspectjVersion = '1.6.8'
 	cglibVersion = '2.2'
-	commonsNetVersion = '3.0.1'
-	easymockVersion = '2.3'
-	groovyVersion = '1.8.5'
-	jacksonVersion = '1.9.2'
-	javaxActivationVersion = '1.1.1'
 	junitVersion = '4.8.2'
 	log4jVersion = '1.2.12'
 	mockitoVersion = '1.9.0'
-	// When changing Spring Versions - don't forget to update bundlor ranges
-	springVersion = '3.1.1.RELEASE'
+	springVersion = '3.1.2.RELEASE'
 	springIntegrationVersion = '2.1.2.RELEASE'
-	springAmqpVersion = '1.1.0.RELEASE'
-	springDataMongoVersion = '1.1.0.M1'
-	springDataRedisVersion = '1.0.0.RELEASE'
-	springGemfireVersion = '1.1.1.RELEASE'
-	springSecurityVersion = '3.1.0.RELEASE'
-	springSocialTwitterVersion = '1.0.1.RELEASE'
-	springWsVersion = '2.0.3.RELEASE'
 	commonsLangVersion = '2.6'
 	commonsPoolVersion = '1.6'
-	derbyVersion = '10.9.1.0'
-	dbcpVersion = '1.4'
+	splunkVersion = '0.8.0'
+}
+
+// See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
+// and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
+configurations {
+	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
 }
 
 dependencies {
-	compile fileTree(dir:"lib", include: "*.jar")
+	compile("com.splunk:splunk:$splunkVersion")
+	compile "org.springframework:spring-beans:$springVersion"
+	compile "org.springframework:spring-context:$springVersion"
+	compile "org.springframework:spring-expression:$springVersion"
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile "org.springframework:spring-tx:$springVersion"
-	compile("org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion", optional)
-	compile("org.springframework.amqp:spring-rabbit:$springAmqpVersion") {
-		exclude group: 'org.springframework', module: 'spring-aop'
-		exclude group: 'org.springframework', module: 'spring-beans'
-		exclude group: 'org.springframework', module: 'spring-context'
-		exclude group: 'org.springframework', module: 'spring-core'
-		exclude group: 'org.springframework', module: 'spring-oxm'
-		exclude group: 'org.springframework', module: 'spring-tx'
-	}
 	compile "commons-lang:commons-lang:$commonsLangVersion"
 	compile "commons-pool:commons-pool:$commonsPoolVersion"
+	
+	testCompile "org.mockito:mockito-all:$mockitoVersion"
+	testCompile "org.springframework:spring-test:$springVersion"
+	testCompile "cglib:cglib-nodep:$cglibVersion"
+	testCompile "junit:junit-dep:$junitVersion"
+	testCompile "log4j:log4j:$log4jVersion"
 	testCompile "org.springframework.integration:spring-integration-stream:$springIntegrationVersion"
-	testCompile "org.springframework.integration:spring-integration-jdbc:$springIntegrationVersion"
-	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-	testCompile "org.springframework:spring-jdbc:$springVersion"
-	testCompile "org.apache.derby:derby:$derbyVersion"
-	testCompile "org.apache.derby:derbyclient:$derbyVersion"
-	testCompile "commons-dbcp:commons-dbcp:$dbcpVersion"
+	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
 }
 
 
@@ -91,24 +75,7 @@ sourceSets {
 	}
 }
 
-// See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
-// and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
-configurations {
-	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
-}
 
-// dependencies that are common across all java projects
-dependencies {
-	testCompile "cglib:cglib-nodep:$cglibVersion"
-	testCompile "junit:junit-dep:$junitVersion"
-	testCompile "log4j:log4j:$log4jVersion"
-	testCompile "org.easymock:easymock:$easymockVersion"
-	testCompile "org.easymock:easymockclassextension:$easymockVersion"
-	testCompile "org.hamcrest:hamcrest-all:1.1"
-	testCompile "org.mockito:mockito-all:$mockitoVersion"
-	testCompile "org.springframework:spring-test:$springVersion"
-	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
-}
 
 // enable all compiler warnings; individual projects may customize further
 ext.xLintArg = '-Xlint:all'
@@ -315,7 +282,7 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.0-rc-3'
+	gradleVersion = '1.2'
 }
 
 defaultTasks 'build'

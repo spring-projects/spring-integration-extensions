@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
 
 /**
  * Contains various utility methods for parsing Splunk Adapter
- * specific namesspace elements as well as for the generation of the the
+ * specific namesspace elements as well as for the generation of the
  * respective {@link BeanDefinition}s.
  *
  * @author Jarred Li

@@ -45,7 +45,7 @@ import com.splunk.Service;
 /**
  * Data reader to search data from Splunk.
  * 
- * There are 5 ways to search data in the Splunk: saved search, blocking search, 
+ * There are 5 ways to search data provided by Splunk SDK: saved search, blocking search, 
  * non blocking search, realtime search, export search.
  * 
  * Splunk search also supports time range search with earliestTime and latestTime.
@@ -67,7 +67,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 
 	private ConnectionFactory<Service> connectionFactory;
 
-	private Mode mode;
+	private SearchMode mode;
 
 	private int count = 0;
 
@@ -110,7 +110,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		this.savedSearch = savedSearch;
 	}
 
-	public void setMode(Mode mode) {
+	public void setMode(SearchMode mode) {
 		Assert.notNull(mode, "mode must be set");
 		this.mode = mode;
 	}
@@ -136,7 +136,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		this.initEarliestTime = initEarliestTime;
 	}
 
-	public Mode getMode() {
+	public SearchMode getMode() {
 		return mode;
 	}
 
@@ -465,8 +465,6 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		Assert.notNull(initEarliestTime, "initial earliest time can not be null");
 	}
 
-	public static enum Mode {
-		blocking, normal, realtime, export, saved;
-	}
+
 
 }

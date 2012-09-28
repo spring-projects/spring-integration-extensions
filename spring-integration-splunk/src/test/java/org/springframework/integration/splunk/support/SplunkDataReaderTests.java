@@ -33,7 +33,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.integration.splunk.core.Connection;
 import org.springframework.integration.splunk.core.ConnectionFactory;
 import org.springframework.integration.splunk.entity.SplunkData;
-import org.springframework.integration.splunk.support.SplunkDataReader.Mode;
 
 import com.splunk.Job;
 import com.splunk.JobCollection;
@@ -59,7 +58,7 @@ public class SplunkDataReaderTests {
 	 */
 	@Test
 	public void testBlockingSearch() throws Exception {
-		reader.setMode(Mode.blocking);
+		reader.setMode(SearchMode.blocking);
 		reader.setSearch("search spring:example");
 		List<SplunkData> data = reader.search();
 		Assert.assertNotNull(data);
@@ -68,7 +67,7 @@ public class SplunkDataReaderTests {
 
 	@Test
 	public void testNonBlockingSearch() throws Exception {
-		reader.setMode(Mode.normal);
+		reader.setMode(SearchMode.normal);
 		reader.setSearch("search spring:example");
 		List<SplunkData> data = reader.search();
 		Assert.assertNotNull(data);
@@ -78,7 +77,7 @@ public class SplunkDataReaderTests {
 
 	@Test
 	public void testRealtimeSearch() throws Exception {
-		reader.setMode(Mode.realtime);
+		reader.setMode(SearchMode.realtime);
 		reader.setSearch("search spring:example");
 		List<SplunkData> data = reader.search();
 		Assert.assertNotNull(data);

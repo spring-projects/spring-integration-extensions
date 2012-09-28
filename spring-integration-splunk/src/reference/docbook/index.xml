@@ -21,6 +21,8 @@
 
 		<authorgroup>
 			<author><firstname>Jarred Li</firstname></author>
+			<author><firstname>Mark Pollack</firstname></author>
+			<author><firstname>Damien Dallimore</firstname></author>
 		</authorgroup>
 		<legalnotice>
 			<para>© SpringSource Inc., 2012</para>
@@ -33,12 +35,8 @@
 		<title>What's new?</title>
 		<partintro id="spring-integration-intro">
 			<para>
-				For those who are already familiar with Spring Integration, this
-				chapter
-				provides a brief overview of the new features of version 2.2. If you are
-				interested in the changes and features, that were introduced in
-				earlier
-				versions, please take a look at chapter:
+				If you are interested in the changes and features, that were introduced in
+				earlier versions, please take a look at chapter:
 
 				<xref linkend="history" />
 
@@ -50,19 +48,17 @@
 	<part id="spring-integration-adapters">
 		<title>Integration Adapters</title>
 		<partintro id="spring-integration-adapters">
-			<para>This section covers the various Channel Adapters and Messaging
-				Gateways provided
-				by Spring Integration to support Message-based communication with
-				external systems.
+			<para>
+			 Spring Integration adapter for Splunk includes inbound channel adapter to 
+			 read data from Splunk and outbound channel adapter to write data into
+			 Splunk.
 			</para>
 		</partintro>
 		<xi:include href="./SIAdapterLowerPrefix.xml" />
 	</part>
 	<part id="spring-integration-appendices">
 		<title>Appendices</title>
-		<partintro id="spring-integration-adapters">
-			<para>Advanced Topics and Additional Resources</para>
-		</partintro>
+		<xi:include href="./resources.xml" />
 		<xi:include href="./history.xml" />
 	</part>
 </book>

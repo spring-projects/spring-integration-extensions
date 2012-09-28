@@ -72,8 +72,7 @@ public class SplunkExecutor implements InitializingBean {
 	}
 
 	/**
-	 * Execute the Splunk operation. Delegates to
-	 * {@link SplunkExecutor#poll(Message)}.
+	 * Execute the Splunk operation.
 	 */
 	public List<SplunkData> poll() {
 		logger.debug("poll start:");

@@ -70,7 +70,7 @@ public class SplunkConnection implements Connection<Service> {
 	public boolean isOpen() {
 		boolean result = true;
 		try {
-			service.getToken();
+			service.getApplications();
 		} catch (Throwable t) {
 			result = false;
 		}

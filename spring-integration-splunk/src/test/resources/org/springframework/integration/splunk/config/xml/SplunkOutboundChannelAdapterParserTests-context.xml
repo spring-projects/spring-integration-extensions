@@ -12,7 +12,6 @@
 	<import resource="../../SplunkCommon-context.xml" />
 
 	<int:channel id="outputToSplunk">
-		<int:queue/>
 	</int:channel>
 
 	<int-splunk:outbound-channel-adapter
@@ -20,8 +19,6 @@
 		channel="outputToSplunk" splunk-server-ref="splunkServer"
 		pool-server-connection="true" sourceType="spring-integration" source="example5"
 		ingest="submit">
-		<int:poller fixed-rate="5" time-unit="SECONDS">
-		</int:poller>
 	</int-splunk:outbound-channel-adapter>
 
 

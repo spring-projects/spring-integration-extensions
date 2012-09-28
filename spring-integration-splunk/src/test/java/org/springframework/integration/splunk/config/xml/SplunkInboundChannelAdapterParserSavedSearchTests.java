@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
+import org.springframework.integration.splunk.support.SearchMode;
 import org.springframework.integration.splunk.support.SplunkDataReader;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -47,13 +48,12 @@ public class SplunkInboundChannelAdapterParserSavedSearchTests {
 		SourcePollingChannelAdapter adapter = appContext.getBean("splunkInboundChannelAdapter",
 				SourcePollingChannelAdapter.class);
 		Assert.assertNotNull(adapter);
-		Assert.assertTrue(adapter.isAutoStartup());
 
 		SplunkDataReader reader = appContext.getBean("splunkInboundChannelAdapter.splunkExecutor.reader",
 				SplunkDataReader.class);
 		Assert.assertNotNull(reader);
 
-		SplunkDataReader.Mode mode = SplunkDataReader.Mode.saved;
+		SearchMode mode = SearchMode.saved;
 		Assert.assertEquals(mode, reader.getMode());
 
 		String savedSearch = "savedSearch";

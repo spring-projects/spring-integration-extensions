@@ -27,6 +27,7 @@ import org.springframework.integration.splunk.core.Connection;
 import org.springframework.integration.splunk.core.DataWriter;
 import org.springframework.integration.splunk.core.ConnectionFactory;
 import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.util.Assert;
 
 import com.splunk.Args;
 import com.splunk.Index;
@@ -195,22 +196,7 @@ public class SplunkDataWriter implements DataWriter, InitializingBean {
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
 	 */
 	public void afterPropertiesSet() throws Exception {
-
-	}
-
-
-	public static enum IngestType {
-		stream("stream"), tcp("tcp"), submit("submit");
-
-		private String type;
-
-		IngestType(String ingestType) {
-			this.type = ingestType;
-		}
-
-		public String getIngestType() {
-			return type;
-		}
+		Assert.notNull(ingest, "You must specify ingest type");
 	}
 
 }

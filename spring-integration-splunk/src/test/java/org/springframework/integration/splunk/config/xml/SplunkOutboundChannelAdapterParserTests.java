@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.integration.splunk.support.IngestType;
 import org.springframework.integration.splunk.support.SplunkDataWriter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -55,7 +56,7 @@ public class SplunkOutboundChannelAdapterParserTests {
 		String source = "example5";
 		Assert.assertEquals(source, writer.getSource());
 
-		SplunkDataWriter.IngestType ingest = SplunkDataWriter.IngestType.submit;
+		IngestType ingest = IngestType.submit;
 		Assert.assertEquals(ingest, writer.getIngest());
 
 
