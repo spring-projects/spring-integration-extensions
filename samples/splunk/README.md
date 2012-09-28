@@ -1,50 +1,41 @@
 Development
 ===================================
 ### to genereate eclipse project:
-1. git clone https://github.com/leejianwei/spring-integration-extensions.git
-2. change to "spring-integration-extensions/spring-integration-splunk" dir
-3. ./gradlew publish
-4. git clone https://github.com/leejianwei/spring-integration-splunk-sample.git
-5. change to "spring-integration-splunk-sample" dir
-6. ./gradlew eclipse
-	
-### to build project:
-	./gradelw build
+The example application depends on spring-integration-splunk. You have to
+build that project first.
 
-Create Twitter Application
+1. change to "spring-integration-extensions/spring-integration-splunk" dir
+2. ./gradlew publish
+
+Then you can generate eclipse project for the examples 
+3. change to "samples/splunk" dir
+4. ./gradlew eclipse
+
+Run example applications
 =====================================
-1. got to https://dev.twitter.com
-2. clite "create an app"
-3. fill all the data to generate twitter app
-4. update "src/main/resources/twitter.properties" to your twitter application
-5. update Splunk server info in the "src/main/resources/org/springframework/integration/splunk/example/SplunkCommon-context.xml"
-6. run the main class:
+1. update Splunk server info in the "src/main/resources/org/springframework/integration/splunk/SplunkCommon-context.xml"
+2. run the main classes. 
+You may run outbound channel adapter applications to push some data into Splunk.
+After that, you can run inbound channel adapter applications to read the data.
 
-### Twitter into Splunk: Get Tweet and push to Splunk with outbound channel adapter
-
-	src/main/java/org/springframework/integration/splunk/example/outbound/twitter/TwiterMain.java
-	src/main/resources/org/springframework/integration/splunk/example/outbound/twitter/SpringSplunkShowcaseTwitter-context.xml
 	
-change the "fromUsers" properties to the user name of your followers whose tweet will be pushed to Splunk
-~~~~~xml
-	<bean id="fromUserSelector"
-		class="org.springframework.integration.splunk.example.outbound.twitter.FromUserSelector">
-		<property name="fromUsers">
-			<list>
-				<value>AP</value>
-				<value>nytimes</value>
-			</list>
-		</property>
-	</bean>
-~~~~~
-	
-### Database into Splunk: Get data from Database and push to Splunk with outbound channel adapter
+### Outbound channel adapter
 
-	src/main/java/org/springframework/integration/splunk/example/outbound/jdbc/DatabaseMain.java
+	Submit: SplunkOutboundChannelAdapterTests
+	Tcp: SplunkOutboundChannelAdapterTcpTests
+	Stream: SplunkOutboundChannelAdapterStreamTests
 	
-### Read data from Splunk: Read data from Splunk with inbound channel adapter, persist the data into Database.
+### Inbound channel adapter
 
-	src/main/java/org/springframework/integration/splunk/example/inbound/SplunkMain.java
+	Blocking search: SplunkInboundChannelAdapterTests
+	Non blocking search: SplunkInboundChannelAdapterNonBlockingTests
+	Realtime search: SplunkInboundChannelAdapterRealtimeTests
+	Export search: SplunkInboundChannelAdapterExportTests
+	Saved search: SplunkInboundChannelAdapterSavedTests
+
+	
+
+
 	
 
 

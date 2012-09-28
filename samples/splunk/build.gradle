@@ -21,4 +21,11 @@ task wrapper(type: Wrapper) {
 	gradleVersion = '1.2'
 }
 
+eclipse {
+	project {
+		name = "spring-integration-splunk-examples"
+	}
+}
+
+
 defaultTasks 'clean', 'build'
