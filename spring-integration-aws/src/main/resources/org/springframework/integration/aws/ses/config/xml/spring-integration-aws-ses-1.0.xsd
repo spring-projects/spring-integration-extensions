@@ -37,9 +37,19 @@
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
+
 			<xsd:attribute name="accessKey" type="xsd:string"/>
 			<xsd:attribute name="secretKey" type="xsd:string"/>
 			<xsd:attribute name="propertiesFile" type="xsd:string"/>
+			<xsd:attribute name="credentials-ref" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="org.springframework.integration.aws.core.AmazonWSCredentials"/>
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
 
 			<xsd:attribute name="auto-startup" type="xsd:string" default="true"/>
 			<xsd:attribute name="order">

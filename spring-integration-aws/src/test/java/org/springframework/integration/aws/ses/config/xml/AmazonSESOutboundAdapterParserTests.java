@@ -43,7 +43,7 @@ public class AmazonSESOutboundAdapterParserTests {
 	 */
 	@Test
 	public void propFileValidOutboundAdapter() {
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:propfile-valid-ses-test.xml");
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:ses-propfile-valid-test.xml");
 		EventDrivenConsumer consumer = ctx.getBean("validDefinition",EventDrivenConsumer.class);
 		assertValidDefinition(consumer);
 		ctx.close();
@@ -56,7 +56,20 @@ public class AmazonSESOutboundAdapterParserTests {
 	 */
 	@Test
 	public void propsValidOutboundAdapter() {
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:props-valid-ses-test.xml");
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:ses-props-valid-test.xml");
+		EventDrivenConsumer consumer = ctx.getBean("validDefinition",EventDrivenConsumer.class);
+		assertValidDefinition(consumer);
+		ctx.close();
+	}
+
+	/**
+	 * Tests the creation of context with a valid definition by specifying the credentials
+	 * as individual attributes of the xml
+	 *
+	 */
+	@Test
+	public void refValidOutboundAdapter() {
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:ses-cred-ref-valid-test.xml");
 		EventDrivenConsumer consumer = ctx.getBean("validDefinition",EventDrivenConsumer.class);
 		assertValidDefinition(consumer);
 		ctx.close();
