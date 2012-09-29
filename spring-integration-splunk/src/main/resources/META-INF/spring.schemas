@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/splunk/spring-integration-splunk-1.0.xsd=org/springframework/integration/splunk/config/xml/spring-integration-splunk-1.0.xsd
+http\://www.springframework.org/schema/integration/splunk/spring-integration-splunk.xsd=org/springframework/integration/splunk/config/xml/spring-integration-splunk-1.0.xsd
