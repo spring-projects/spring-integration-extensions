@@ -1,0 +1,236 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<results preview='0'>
+<meta>
+<fieldOrder>
+<field>_cd</field>
+<field>_indextime</field>
+<field>_raw</field>
+<field>_serial</field>
+<field>_si</field>
+<field>_sourcetype</field>
+<field>_subsecond</field>
+<field>_time</field>
+<field>host</field>
+<field>index</field>
+<field>linecount</field>
+<field>source</field>
+<field>sourcetype</field>
+<field>splunk_server</field>
+</fieldOrder>
+</meta>
+	<result offset='0'>
+		<field k='_cd'>
+			<value><text>9:30</text></value>
+		</field>
+		<field k='_indextime'>
+			<value><text>1348478076</text></value>
+		</field>
+		<field k='_raw'><v xml:space='preserve' trunc='0'>2012-09-24 17:19:43:792+0800 name=&quot;spring&quot; event_id=&quot;<sg h='1'>spring:example</sg>&quot; desc=&quot;description&quot;</v></field>
+		<field k='_serial'>
+			<value><text>0</text></value>
+		</field>
+		<field k='_si'>
+			<value><text>jarred-virtual-machine</text></value>
+			<value><text>main</text></value>
+		</field>
+		<field k='_sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='_subsecond'>
+			<value><text>.792</text></value>
+		</field>
+		<field k='_time'>
+			<value><text>2012-09-24T17:19:43.792+08:00</text></value>
+		</field>
+		<field k='host'>
+			<value><text>test.host</text></value>
+		</field>
+		<field k='index'>
+			<value><text>main</text></value>
+		</field>
+		<field k='linecount'>
+			<value><text>1</text></value>
+		</field>
+		<field k='source'>
+			<value><text>example5</text></value>
+		</field>
+		<field k='sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='splunk_server'>
+			<value><text>jarred-virtual-machine</text></value>
+		</field>
+	</result>
+	<result offset='1'>
+		<field k='_cd'>
+			<value><text>9:26</text></value>
+		</field>
+		<field k='_indextime'>
+			<value><text>1348478076</text></value>
+		</field>
+		<field k='_raw'><v xml:space='preserve' trunc='0'>2012-09-24 17:19:43:756+0800 name=&quot;spring&quot; event_id=&quot;<sg h='1'>spring:example</sg>&quot; desc=&quot;description&quot;</v></field>
+		<field k='_serial'>
+			<value><text>1</text></value>
+		</field>
+		<field k='_si'>
+			<value><text>jarred-virtual-machine</text></value>
+			<value><text>main</text></value>
+		</field>
+		<field k='_sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='_subsecond'>
+			<value><text>.756</text></value>
+		</field>
+		<field k='_time'>
+			<value><text>2012-09-24T17:19:43.756+08:00</text></value>
+		</field>
+		<field k='host'>
+			<value><text>test.host</text></value>
+		</field>
+		<field k='index'>
+			<value><text>main</text></value>
+		</field>
+		<field k='linecount'>
+			<value><text>1</text></value>
+		</field>
+		<field k='source'>
+			<value><text>example5</text></value>
+		</field>
+		<field k='sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='splunk_server'>
+			<value><text>jarred-virtual-machine</text></value>
+		</field>
+	</result>
+	<result offset='2'>
+		<field k='_cd'>
+			<value><text>9:21</text></value>
+		</field>
+		<field k='_indextime'>
+			<value><text>1348464748</text></value>
+		</field>
+		<field k='_raw'><v xml:space='preserve' trunc='0'>2012-09-24 13:37:34:860+0800 name=&quot;spring&quot; event_id=&quot;<sg h='1'>spring:example</sg>&quot; desc=&quot;description&quot;</v></field>
+		<field k='_serial'>
+			<value><text>2</text></value>
+		</field>
+		<field k='_si'>
+			<value><text>jarred-virtual-machine</text></value>
+			<value><text>main</text></value>
+		</field>
+		<field k='_sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='_subsecond'>
+			<value><text>.860</text></value>
+		</field>
+		<field k='_time'>
+			<value><text>2012-09-24T13:37:34.860+08:00</text></value>
+		</field>
+		<field k='host'>
+			<value><text>test.host</text></value>
+		</field>
+		<field k='index'>
+			<value><text>main</text></value>
+		</field>
+		<field k='linecount'>
+			<value><text>1</text></value>
+		</field>
+		<field k='source'>
+			<value><text>example5</text></value>
+		</field>
+		<field k='sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='splunk_server'>
+			<value><text>jarred-virtual-machine</text></value>
+		</field>
+	</result>
+	<result offset='3'>
+		<field k='_cd'>
+			<value><text>9:17</text></value>
+		</field>
+		<field k='_indextime'>
+			<value><text>1348464748</text></value>
+		</field>
+		<field k='_raw'><v xml:space='preserve' trunc='0'>2012-09-24 13:37:34:789+0800 name=&quot;spring&quot; event_id=&quot;<sg h='1'>spring:example</sg>&quot; desc=&quot;description&quot;</v></field>
+		<field k='_serial'>
+			<value><text>3</text></value>
+		</field>
+		<field k='_si'>
+			<value><text>jarred-virtual-machine</text></value>
+			<value><text>main</text></value>
+		</field>
+		<field k='_sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='_subsecond'>
+			<value><text>.789</text></value>
+		</field>
+		<field k='_time'>
+			<value><text>2012-09-24T13:37:34.789+08:00</text></value>
+		</field>
+		<field k='host'>
+			<value><text>test.host</text></value>
+		</field>
+		<field k='index'>
+			<value><text>main</text></value>
+		</field>
+		<field k='linecount'>
+			<value><text>1</text></value>
+		</field>
+		<field k='source'>
+			<value><text>example5</text></value>
+		</field>
+		<field k='sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='splunk_server'>
+			<value><text>jarred-virtual-machine</text></value>
+		</field>
+	</result>
+	<result offset='4'>
+		<field k='_cd'>
+			<value><text>9:12</text></value>
+		</field>
+		<field k='_indextime'>
+			<value><text>1348464606</text></value>
+		</field>
+		<field k='_raw'><v xml:space='preserve' trunc='0'>2012-09-24 13:35:13:621+0800 name=&quot;spring&quot; event_id=&quot;<sg h='1'>spring:example</sg>&quot; desc=&quot;description&quot;</v></field>
+		<field k='_serial'>
+			<value><text>4</text></value>
+		</field>
+		<field k='_si'>
+			<value><text>jarred-virtual-machine</text></value>
+			<value><text>main</text></value>
+		</field>
+		<field k='_sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='_subsecond'>
+			<value><text>.621</text></value>
+		</field>
+		<field k='_time'>
+			<value><text>2012-09-24T13:35:13.621+08:00</text></value>
+		</field>
+		<field k='host'>
+			<value><text>test.host</text></value>
+		</field>
+		<field k='index'>
+			<value><text>main</text></value>
+		</field>
+		<field k='linecount'>
+			<value><text>1</text></value>
+		</field>
+		<field k='source'>
+			<value><text>example5</text></value>
+		</field>
+		<field k='sourcetype'>
+			<value><text>spring-integration</text></value>
+		</field>
+		<field k='splunk_server'>
+			<value><text>jarred-virtual-machine</text></value>
+		</field>
+	</result>
+</results>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="whats-new"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>What's new?</title>
+	<para>
+		The Spring Integration adapter for Splunk includes two adapters:
+	</para>
+	<itemizedlist>
+		<listitem>
+			Inbound Channel Adapter to search data from Splunk.
+		</listitem>
+		<listitem>
+			Outbound Channel Adapter to push event data into Splunk.
+		</listitem>
+	</itemizedlist>
+</chapter>

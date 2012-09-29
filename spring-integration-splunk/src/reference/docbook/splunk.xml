@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
+	xml:id="splunk" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>Splunk Adapter</title>
+	<para>
+		The Spring Integration Splunk Adapter provides outbound and inbound channel adapters:
+	</para>
+	<itemizedlist>
+		<listitem>
+			<para>
+				<emphasis>
+					<link linkend='splunk-outbound-channel-adapter'>Outbound Channel adapter</link>
+				</emphasis>
+			</para>
+		</listitem>
+		<listitem>
+			<para>
+				<emphasis>
+					<link linkend='splunk-inbound-channel-adapter'>Inbound Channel Adapter</link>
+				</emphasis>
+			</para>
+		</listitem>
+	</itemizedlist>
+
+	<para>
+		To use Spring Integration adapter for Splunk, you have to import the XML namespace. For example, you can
+		have following XML:
+	</para>
+	<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-splunk="http://www.springframework.org/schema/integration/splunk"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/splunk
+		http://www.springframework.org/schema/integration/splunk/spring-integration-splunk.xsd
+		http://www.springframework.org/schema/integration
+		http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+</beans>]]></programlisting>
+
+		<para>
+			Meanwhile, you have to define your Splunk server information. For example
+			you can define server as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int-splunk="http://www.springframework.org/schema/integration/splunk"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/splunk
+		http://www.springframework.org/schema/integration/splunk/spring-integration-splunk.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+	...
+	<int-splunk:server id="splunkServer" host="somehost" port="8089"
+		userName="user" password="password" owner="admin"/>
+				...
+</beans>]]></programlisting>
+
+	<section id="splunk-outbound-channel-adapter">
+		<title>Outbound Channel Adapter</title>
+		<para>
+			Outbound channel adapter is used to put data into Splunk from
+			channels in Spring Integration.
+			There are 3 kinds of method to put data:
+		</para>
+
+		<itemizedlist>
+			<listitem>Submit (HTTP REST)</listitem>
+			<listitem>Stream</listitem>
+			<listitem>Tcp</listitem>
+		</itemizedlist>
+
+		<para>
+			The main difference between using the REST inputs vs plain TCP/UDP inputs is really
+			in the Splunk event handling pipeline.
+		</para>
+
+		<para>
+			With REST , you have to  declare your event meta data (index, source, source type…)
+			in the HTTP request at the source. You can't really transform the log event anymore
+			after you have created and sent it to Splunk.Typically though, for people using REST,
+			this is fine because they are well formatting their log events before sending them
+			anyway ie: no further processing/transforming and manipulation is required.
+			You can however still do dynamic search time transforms/filtering on the
+			data when later searching over it in Splunk.
+		</para>
+		<para>
+			To use outbound channel adapter with submit, you can define the adapter as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<int-splunk:outbound-channel-adapter id="splunkOutboundChannelAdapter"
+	auto-startup="true" order="1"
+	channel="outputToSplunk"
+	splunk-server-ref="splunkServer"
+	pool-server-connection="true" sourceType="spring-integration" source="example"
+	ingest="submit">
+</int-splunk:outbound-channel-adapter>]]></programlisting>
+
+		<para>
+			With TCP inputs , you can manipulate and transform the event data in Splunk before
+			it gets indexed (using entrys in props.conf/transforms.conf). The event meta data
+			(index, source, source type…) gets declared on the Splunk side when you establish
+			the TCP/UDP input and can also be dynamically created, so essentially you have
+			a lot more control over the indexing of the event data.This is generally more
+			important when you don't control the format of the data at the source and it needs
+			manipulating/filtering ie: network devices syslogging etc…
+		</para>
+
+		<para>
+			To use outbound channel adapter with tcp, you can define the adapter as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<int-splunk:outbound-channel-adapter
+	id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
+	channel="outputToSplunk" splunk-server-ref="splunkServer"
+	ingest="tcp" tcpPort="9999">
+</int-splunk:outbound-channel-adapter>]]></programlisting>
+
+		<para>
+			To use outbound channel adapter with stream, you can define the adapter as following:
+		</para>
+
+		<programlisting language="xml"><![CDATA[<int-splunk:outbound-channel-adapter
+	id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
+	channel="outputToSplunk" splunk-server-ref="splunkServer"
+	ingest="stream">
+</int-splunk:outbound-channel-adapter>]]></programlisting>
+
+	</section>
+
+	<section id="splunk-inbound-channel-adapter">
+		<title>Inbound Channel Adapter</title>
+		<para>
+			Inbound channel adapter is used to get data out of Splunk and put
+			into Spring Integration's channel.
+			There are 5 ways to get data out of Splunk:
+		</para>
+
+		<itemizedlist>
+			<listitem>Blocking</listitem>
+			<listitem>Non blocking</listitem>
+			<listitem>Saved search</listitem>
+			<listitem>Realtime</listitem>
+			<listitem>Export</listitem>
+		</itemizedlist>
+
+		<para>
+			For more information on the difference, please refer
+			<ulink url="https://github.com/splunk/splunk-sdk-java/tree/master/examples">Splunk SDK</ulink>
+		</para>
+
+		<para>
+			To use bloking inbound channel adapter, you can define the adapter as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
+	auto-startup="true" search="search spring:example"
+	splunk-server-ref="splunkServer"
+	channel="inputFromSplunk" mode="blocking" initEarliestTime="-1d">
+	<int:poller fixed-rate="5" time-unit="SECONDS"/>
+</int-splunk:inbound-channel-adapter>]]></programlisting>
+
+		<para>
+			To use non blocking inbound channel adapter, you can define the adapter as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
+	auto-startup="true" search="search spring:example"
+	splunk-server-ref="splunkServer"
+	channel="inputFromSplunk" mode="normal" initEarliestTime="-1d">
+	<int:poller fixed-rate="5" time-unit="SECONDS"/>
+</int-splunk:inbound-channel-adapter>]]></programlisting>
+
+		<para>
+			To use saved search inbound channel adapter, you can define the adapter as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
+	auto-startup="true" savedSearch="test" splunk-server-ref="splunkServer"
+	splunk-server-ref="splunkServer"
+	channel="inputFromSplunk" mode="saved" initEarliestTime="-1d">
+	<int:poller fixed-rate="5" time-unit="SECONDS"/>
+</int-splunk:inbound-channel-adapter>]]></programlisting>
+
+		<para>
+			To use realtime search inbound channel adapter, you can define the adapter as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
+	auto-startup="true" search="search spring:example"
+	splunk-server-ref="splunkServer"
+	channel="inputFromSplunk" mode="realtime" initEarliestTime="-1d">
+	<int:poller fixed-rate="5" time-unit="SECONDS"/>
+</int-splunk:inbound-channel-adapter>]]></programlisting>
+		<para>
+			To use export inbound channel adapter, you can define the adapter as following:
+		</para>
+		<programlisting language="xml"><![CDATA[<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
+	auto-startup="true" search="search spring:example"
+	splunk-server-ref="splunkServer"
+	channel="inputFromSplunk" mode="export" initEarliestTime="-1d">
+	<int:poller fixed-rate="5" time-unit="SECONDS"/>
+</int-splunk:inbound-channel-adapter>]]></programlisting>
+
+		<para>
+			As Splunk support range search, you can specify the search rage by using
+			"latestTime", "earliestTime", "initEarliestTime".
+		</para>
+		<para>
+			"initEarliestTime" is the value for "earliestTime" when the application first start.
+			If you specify "earliestTime" and "latestTime", the poller will only search data
+			in that range. Otherwise, the range will move forward as time goes. That means, the
+			"latestTime" is equal to the time where the polling trigger, the "earliestTime" is
+			equal to the time where the last polling is run.
+		</para>
+		<para>
+			You can get more information on the rage search from
+			<ulink url="http://docs.splunk.com/Documentation/Splunk/latest/User/ChangeTheTimeRangeOfYourSearch">
+			Splunk</ulink>.
+		</para>
+	</section>
+</chapter>

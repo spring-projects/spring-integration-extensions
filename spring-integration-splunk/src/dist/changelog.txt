@@ -1,0 +1,8 @@
+Spring Integration Splunk Adapter CHANGELOG
+=========================================
+
+Features in version 1.0.0
+
+1. Inbound channel adapter with 5 different ways to search data: bloking, normal(non-blocking), realtime, export, saved search.
+
+2. Outbound channel adapter with 3 ways to push event data: Stream, tcp, REST
