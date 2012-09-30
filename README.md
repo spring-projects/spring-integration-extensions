@@ -9,6 +9,7 @@ The Spring Integration Extensions project provides extension modules for [Spring
 * [Print][] Support
 * [Atmosphere][] Support ([Websockets][])
 * [XQuery][] Support
+* [Splunk][] Support
 
 ## Getting support
 
@@ -126,3 +127,4 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [Atmosphere]: https://github.com/Atmosphere/atmosphere
 [Websockets]: http://www.html5rocks.com/en/tutorials/websockets/basics/
 [XQuery]: http://en.wikipedia.org/wiki/XQuery
+[Splunk]:http://www.splunk.com/
