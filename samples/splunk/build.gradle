@@ -1,0 +1,30 @@
+description = 'Spring Integration Splunk Sample'
+apply plugin: 'base'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+repositories {
+	maven { url "http://repo.springsource.org/libs-snapshot" }
+	mavenLocal()
+}
+
+dependencies {
+	compile "org.springframework.integration:spring-integration-splunk:$springIntegrationSplunkVersion"
+	compile "org.springframework.integration:spring-integration-jdbc:$springIntegrationVersion"
+	compile "org.springframework:spring-jdbc:$springVersion"
+	compile "org.apache.derby:derby:$derbyVersion"
+}
+
+task wrapper(type: Wrapper) {
+	description = 'Generates gradlew[.bat] scripts'
+	gradleVersion = '1.2'
+}
+
+eclipse {
+	project {
+		name = "spring-integration-splunk-sample"
+	}
+}
+
+defaultTasks 'clean', 'build'
