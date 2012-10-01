@@ -32,7 +32,7 @@ public class SplunkOutboundChannelAdapterSubmitSample {
 
 	public static void main(String args[]) {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-				"SplunkOutboundChannelAdapterTests-context.xml", SplunkOutboundChannelAdapterSubmitSample.class);
+				"SplunkOutboundChannelAdapterSubmitSample-context.xml", SplunkOutboundChannelAdapterSubmitSample.class);
 		ctx.start();
 
 		generateMessage(ctx);

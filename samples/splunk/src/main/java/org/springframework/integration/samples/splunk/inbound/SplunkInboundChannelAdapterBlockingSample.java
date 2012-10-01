@@ -26,7 +26,7 @@ public class SplunkInboundChannelAdapterBlockingSample {
 
 	public static void main(String args[]) {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-				"SplunkInboundChannelAdapterTests-context.xml", SplunkInboundChannelAdapterBlockingSample.class);
+				"SplunkInboundChannelAdapterBlockingSample-context.xml", SplunkInboundChannelAdapterBlockingSample.class);
 		ctx.start();
 	}
 }

@@ -26,7 +26,7 @@ public class SplunkInboundChannelAdapterRealtimeSample {
 
 	public static void main(String args[]) {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-				"SplunkInboundChannelAdapterRealtimeTests-context.xml", SplunkInboundChannelAdapterRealtimeSample.class);
+				"SplunkInboundChannelAdapterRealtimeSample-context.xml", SplunkInboundChannelAdapterRealtimeSample.class);
 		ctx.start();
 	}
 }

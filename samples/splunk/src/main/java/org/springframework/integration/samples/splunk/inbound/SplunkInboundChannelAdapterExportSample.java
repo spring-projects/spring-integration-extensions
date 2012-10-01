@@ -27,7 +27,7 @@ public class SplunkInboundChannelAdapterExportSample {
 
 	public static void main(String args[]) {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-				"SplunkInboundChannelAdapterExportTests-context.xml", SplunkInboundChannelAdapterExportSample.class);
+				"SplunkInboundChannelAdapterExportSample-context.xml", SplunkInboundChannelAdapterExportSample.class);
 		ctx.start();
 	}
 }

@@ -14,7 +14,7 @@
 	<int-splunk:outbound-channel-adapter
 		id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
 		channel="outputToSplunk" splunk-server-ref="splunkServer"
-		ingest="stream" host="stream.host">
+		ingest="stream" host="localhost">
 	</int-splunk:outbound-channel-adapter>
- 	
+
 </beans>

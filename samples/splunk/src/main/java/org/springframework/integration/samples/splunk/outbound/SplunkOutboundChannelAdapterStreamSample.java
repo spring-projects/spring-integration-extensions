@@ -31,7 +31,7 @@ public class SplunkOutboundChannelAdapterStreamSample {
 
 	public static void main(String args[]) {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-				"SplunkOutboundChannelAdapterStreamTests-context.xml", SplunkOutboundChannelAdapterStreamSample.class);
+				"SplunkOutboundChannelAdapterStreamSample-context.xml", SplunkOutboundChannelAdapterStreamSample.class);
 		ctx.start();
 
 		SubscribableChannel channel = ctx.getBean("outputToSplunk", SubscribableChannel.class);

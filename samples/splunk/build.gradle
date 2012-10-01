@@ -1,4 +1,4 @@
-description = 'Spring Integration Splunk Adapter Example'
+description = 'Spring Integration Splunk Sample'
 apply plugin: 'base'
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -23,9 +23,8 @@ task wrapper(type: Wrapper) {
 
 eclipse {
 	project {
-		name = "spring-integration-splunk-examples"
+		name = "spring-integration-splunk-sample"
 	}
 }
-
 
 defaultTasks 'clean', 'build'
