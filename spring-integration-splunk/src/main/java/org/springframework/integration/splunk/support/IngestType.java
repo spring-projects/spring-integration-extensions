@@ -27,15 +27,5 @@ package org.springframework.integration.splunk.support;
  *
  */
 public enum IngestType {
-	stream("stream"), tcp("tcp"), submit("submit");
-
-	private String type;
-
-	IngestType(String ingestType) {
-		this.type = ingestType;
-	}
-
-	public String getIngestType() {
-		return type;
-	}
+	STREAM, TCP, SUBMIT;
 }

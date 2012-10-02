@@ -18,7 +18,7 @@
 		id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
 		channel="outputToSplunk" splunk-server-ref="splunkServer"
 		pool-server-connection="true" sourceType="spring-integration" source="example5"
-		ingest="stream" host="test.host" hostRegex="test.host.*">
+		ingest="STREAM" host="test.host" hostRegex="test.host.*">
 	</int-splunk:outbound-channel-adapter>
 
 </beans>

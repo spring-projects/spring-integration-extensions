@@ -56,7 +56,7 @@ public class SplunkOutboundChannelAdapterParserTests {
 		String source = "example5";
 		Assert.assertEquals(source, writer.getSource());
 
-		IngestType ingest = IngestType.submit;
+		IngestType ingest = IngestType.SUBMIT;
 		Assert.assertEquals(ingest, writer.getIngest());
 
 
