@@ -50,7 +50,7 @@ public class SplunkOutboundChannelAdapterParserStreamTests {
 				SplunkDataWriter.class);
 		Assert.assertNotNull(writer);
 
-		IngestType ingest = IngestType.stream;
+		IngestType ingest = IngestType.STREAM;
 		Assert.assertEquals(ingest, writer.getIngest());
 
 		String host = "test.host";

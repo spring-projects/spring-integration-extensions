@@ -15,7 +15,7 @@
 	
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" savedSearch="test" splunk-server-ref="splunkServer" channel="inputFromSplunk"
-		mode="saved" earliestTime="-5d" latestTime="now" initEarliestTime="-1d">
+		mode="SAVEDSEARCH" earliestTime="-5d" latestTime="now" initEarliestTime="-1d">
 		<int:poller fixed-rate="5" time-unit="SECONDS"/>
 	</int-splunk:inbound-channel-adapter>
 

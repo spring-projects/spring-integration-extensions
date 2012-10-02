@@ -179,19 +179,19 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 	public List<SplunkData> search() throws Exception {
 		logger.debug("mode:" + mode);
 		switch (mode) {
-		case saved: {
+		case SAVEDSEARCH: {
 			return savedSearch();
 		}
-		case blocking: {
+		case BLOCKING: {
 			return blockingSearch();
 		}
-		case normal: {
+		case NORMAL: {
 			return nonBlockingSearch();
 		}
-		case export: {
+		case EXPORT: {
 			return exportSearch();
 		}
-		case realtime: {
+		case REALTIME: {
 			return realtimeSearch();
 		}
 		}

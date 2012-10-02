@@ -11,7 +11,7 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.springframework.integration"></context:component-scan>
+	<context:component-scan base-package="org.springframework.integration.splunk.support"></context:component-scan>
 	<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean"/>
 
 	<int-splunk:server id="splunkServer" host="10.112.127.51" port="8089" userName="admin" password="password" owner="admin"/>

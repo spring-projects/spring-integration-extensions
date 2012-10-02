@@ -50,7 +50,7 @@ public class SplunkDataWriterTests {
 	 */
 	@Test
 	public void testWrite() throws Exception {
-		writer.setIngest(IngestType.submit);
+		writer.setIngest(IngestType.SUBMIT);
 
 		SplunkData sd = new SplunkData("spring", "spring:example");
 		sd.setCommonDesc("description");

@@ -58,7 +58,7 @@ public class SplunkInboundChannelAdapterParserTests {
 		String searchString = "search spring:example";
 		Assert.assertEquals(searchString, reader.getSearch());
 
-		SearchMode mode = SearchMode.blocking;
+		SearchMode mode = SearchMode.BLOCKING;
 		Assert.assertEquals(mode, reader.getMode());
 
 		String earliestTime = "-1d";

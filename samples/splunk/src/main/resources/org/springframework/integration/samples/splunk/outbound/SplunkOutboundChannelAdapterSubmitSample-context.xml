@@ -15,7 +15,7 @@
 		id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
 		channel="outputToSplunkWithMessageStore" splunk-server-ref="splunkServer"
 		pool-server-connection="true" sourceType="spring-integration" source="example5"
-		ingest="submit" host="test.host">
+		ingest="SUBMIT" host="test.host">
 		<int:poller fixed-rate="5" time-unit="SECONDS">
 			<int:transactional transaction-manager="txManager"
 				isolation="DEFAULT" propagation="REQUIRED" />
