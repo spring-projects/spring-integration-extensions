@@ -19,7 +19,7 @@ Spring Integration's channel. There are 5 ways to get data out of Splunk:
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" search="search spring:example"
 		splunk-server-ref="splunkServer"
-		channel="inputFromSplunk" mode="blocking" earliestTime="-1d" latestTime="now" initEarliestTime="-1d">
+		channel="inputFromSplunk" mode="BLOCKING" earliestTime="-1d" latestTime="now" initEarliestTime="-1d">
 		<int:poller fixed-rate="5" time-unit="SECONDS"/>
 	</int-splunk:inbound-channel-adapter>
 ~~~~~
@@ -29,7 +29,7 @@ Spring Integration's channel. There are 5 ways to get data out of Splunk:
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" search="search spring:example"
 		splunk-server-ref="splunkServer"
-		channel="inputFromSplunk" mode="normal" earliestTime="-1d" latestTime="now" initEarliestTime="-1d">
+		channel="inputFromSplunk" mode="NORMAL" earliestTime="-1d" latestTime="now" initEarliestTime="-1d">
 		<int:poller fixed-rate="5" time-unit="SECONDS"/>
 	</int-splunk:inbound-channel-adapter>
 ~~~~~
@@ -38,7 +38,7 @@ Spring Integration's channel. There are 5 ways to get data out of Splunk:
 ~~~~~xml
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" savedSearch="test" splunk-server-ref="splunkServer"
-		channel="inputFromSplunk" mode="saved" earliestTime="-1d" latestTime="now" initEarliestTime="-1d">
+		channel="inputFromSplunk" mode="SAVEDSEARCH" earliestTime="-1d" latestTime="now" initEarliestTime="-1d">
 		<int:poller fixed-rate="5" time-unit="SECONDS"/>
 	</int-splunk:inbound-channel-adapter>
 ~~~~~
@@ -47,7 +47,7 @@ Spring Integration's channel. There are 5 ways to get data out of Splunk:
 ~~~~~xml
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" search="search spring:example" splunk-server-ref="splunkServer" channel="inputFromSplunk"
-		mode="realtime" earliestTime="-5s" latestTime="rt" initEarliestTime="-1d">
+		mode="REALTIME" earliestTime="-5s" latestTime="rt" initEarliestTime="-1d">
 		<int:poller fixed-rate="5" time-unit="SECONDS"/>
 	</int-splunk:inbound-channel-adapter>
 ~~~~~
@@ -56,7 +56,7 @@ Spring Integration's channel. There are 5 ways to get data out of Splunk:
 ~~~~~xml
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" search="search spring:example" splunk-server-ref="splunkServer" channel="inputFromSplunk"
-		mode="export" earliestTime="-5d" latestTime="now" initEarliestTime="-1d">
+		mode="EXPORT" earliestTime="-5d" latestTime="now" initEarliestTime="-1d">
 		<int:poller fixed-rate="5" time-unit="SECONDS"/>
 	</int-splunk:inbound-channel-adapter>
 ~~~~~
@@ -75,7 +75,7 @@ channels in Spring Integration. There are 3 kinds of method to put data
 		id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
 		channel="outputToSplunk"
 		splunk-server-ref="splunkServer" pool-server-connection="true"
-		sourceType="spring-integration" source="example2" ingest="submit">
+		sourceType="spring-integration" source="example2" ingest="SUBMIT">
 	</int-splunk:outbound-channel-adapter>
 
 ~~~~~
@@ -85,7 +85,7 @@ channels in Spring Integration. There are 3 kinds of method to put data
 	<int-splunk:outbound-channel-adapter
 		id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
 		channel="outputToSplunk" splunk-server-ref="splunkServer"
-		ingest="stream">
+		ingest="STREAM">
 	</int-splunk:outbound-channel-adapter>
 
 ~~~~~
@@ -95,7 +95,7 @@ channels in Spring Integration. There are 3 kinds of method to put data
 	<int-splunk:outbound-channel-adapter
 		id="splunkOutboundChannelAdapter" auto-startup="true" order="1"
 		channel="outputToSplunk" splunk-server-ref="splunkServer"
-		ingest="tcp" tcpPort="9999">
+		ingest="TCP" tcpPort="9999">
 	</int-splunk:outbound-channel-adapter>
 
 ~~~~~

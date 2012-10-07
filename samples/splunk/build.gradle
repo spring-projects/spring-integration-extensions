@@ -5,8 +5,8 @@ apply plugin: 'eclipse'
 apply plugin: 'application'
 
 repositories {
-	maven { url "http://repo.springsource.org/libs-snapshot" }
 	mavenLocal()
+	maven { url "http://repo.springsource.org/libs-snapshot" }
 }
 
 dependencies {

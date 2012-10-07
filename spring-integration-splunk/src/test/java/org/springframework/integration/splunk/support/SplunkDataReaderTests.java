@@ -58,7 +58,7 @@ public class SplunkDataReaderTests {
 	 */
 	@Test
 	public void testBlockingSearch() throws Exception {
-		reader.setMode(SearchMode.blocking);
+		reader.setMode(SearchMode.BLOCKING);
 		reader.setSearch("search spring:example");
 		List<SplunkData> data = reader.search();
 		Assert.assertNotNull(data);
@@ -67,7 +67,7 @@ public class SplunkDataReaderTests {
 
 	@Test
 	public void testNonBlockingSearch() throws Exception {
-		reader.setMode(SearchMode.normal);
+		reader.setMode(SearchMode.NORMAL);
 		reader.setSearch("search spring:example");
 		List<SplunkData> data = reader.search();
 		Assert.assertNotNull(data);
@@ -77,7 +77,7 @@ public class SplunkDataReaderTests {
 
 	@Test
 	public void testRealtimeSearch() throws Exception {
-		reader.setMode(SearchMode.realtime);
+		reader.setMode(SearchMode.REALTIME);
 		reader.setSearch("search spring:example");
 		List<SplunkData> data = reader.search();
 		Assert.assertNotNull(data);

@@ -29,5 +29,5 @@ package org.springframework.integration.splunk.support;
  *
  */
 public enum SearchMode {
-	blocking, normal, realtime, export, saved;
+	BLOCKING, NORMAL, REALTIME, EXPORT, SAVEDSEARCH;
 }

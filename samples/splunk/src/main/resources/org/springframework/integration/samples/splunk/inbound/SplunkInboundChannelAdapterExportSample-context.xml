@@ -15,7 +15,7 @@
 	
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" search="search spring:example" splunk-server-ref="splunkServer" channel="inputFromSplunk"
-		mode="export" earliestTime="-5d" latestTime="now" initEarliestTime="-1d">
+		mode="EXPORT" earliestTime="-5d" latestTime="now" initEarliestTime="-1d">
 		<int:poller fixed-rate="5" time-unit="SECONDS"/>
 	</int-splunk:inbound-channel-adapter>
 

@@ -16,7 +16,7 @@
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="false" search="search spring:example"
 		splunk-server-ref="splunkServer"
-		channel="inputFromSplunk" mode="blocking" earliestTime="-1d" latestTime="now"
+		channel="inputFromSplunk" mode="BLOCKING" earliestTime="-1d" latestTime="now"
 		initEarliestTime="-1d" fieldList="field1, field2">
 		<int:poller fixed-rate="5000"/>
 	</int-splunk:inbound-channel-adapter>
