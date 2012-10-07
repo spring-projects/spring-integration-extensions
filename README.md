@@ -69,7 +69,7 @@ Once complete, you may then import the projects into Eclipse as usual:
 
 `File -> Import -> Existing projects into workspace`
 
-# Using IntelliJ IDEA
+### Using IntelliJ IDEA
 
 To generate IDEA metadata (.iml and .ipr files), do the following:
 
