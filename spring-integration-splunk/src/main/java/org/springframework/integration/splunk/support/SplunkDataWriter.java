@@ -54,7 +54,7 @@ public class SplunkDataWriter implements DataWriter, InitializingBean {
 
 	private String index;
 
-	private IngestType ingest = IngestType.stream; //tcp, stream, submit
+	private IngestType ingest = IngestType.STREAM; //tcp, stream, submit
 
 	private int tcpPort;
 
@@ -101,8 +101,8 @@ public class SplunkDataWriter implements DataWriter, InitializingBean {
 				receiver = service.getReceiver();
 			}
 
-			if ((ingest.equals(IngestType.stream) || ingest.equals(IngestType.tcp))) {
-				if (ingest.equals("stream")) {
+			if ((ingest.equals(IngestType.STREAM) || ingest.equals(IngestType.TCP))) {
+				if (ingest.equals(IngestType.STREAM)) {
 					if (indexObject != null)
 						socket = indexObject.attach(args);
 					else
@@ -115,7 +115,7 @@ public class SplunkDataWriter implements DataWriter, InitializingBean {
 				writer = new OutputStreamWriter(ostream, "UTF8");
 			}
 
-			if ((ingest.equals(IngestType.stream) || ingest.equals(IngestType.tcp))) {
+			if ((ingest.equals(IngestType.STREAM) || ingest.equals(IngestType.TCP))) {
 				writer.write(data.toString());
 				writer.flush();
 				writer.close();

@@ -53,7 +53,7 @@ public class SplunkInboundChannelAdapterParserSavedSearchTests {
 				SplunkDataReader.class);
 		Assert.assertNotNull(reader);
 
-		SearchMode mode = SearchMode.saved;
+		SearchMode mode = SearchMode.SAVEDSEARCH;
 		Assert.assertEquals(mode, reader.getMode());
 
 		String savedSearch = "savedSearch";
