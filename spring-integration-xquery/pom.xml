@@ -19,6 +19,12 @@
 		<maven>2.2.1</maven>
 	</prerequisites>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spring.integration.version>2.2.0.RC2</spring.integration.version>
+		<junit.version>4.10</junit.version>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -57,19 +63,19 @@
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-core</artifactId>
-			<version>2.2.0.M3</version>
+			<version>${spring.integration.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-xml</artifactId>
-			<version>2.2.0.M3</version>
+			<version>${spring.integration.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-test</artifactId>
-			<version>2.2.0.M3</version>
+			<version>${spring.integration.version}</version>
 		</dependency>
 
 		<dependency>
@@ -82,27 +88,27 @@
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
 			<version>9.4</version>
-			<scope>optional</scope>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>net.xqj.sedna</groupId>
 			<artifactId>sedna-xqj</artifactId>
 			<version>1.0.0</version>
-			<scope>optional</scope>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>com.xqj2</groupId>
 			<artifactId>xqj2</artifactId>
-			<version>0.0.1</version>
-			<scope>optional</scope>
+			<version>0.1.0</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit-dep</artifactId>
-			<version>4.10</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
