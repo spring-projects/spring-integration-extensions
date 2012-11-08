@@ -22,8 +22,8 @@ repositories {
 }
 
 // ensure JDK 5 compatibility (GRADLE-18; INT-1578)
-sourceCompatibility=1.5
-targetCompatibility=1.5
+sourceCompatibility=1.6
+targetCompatibility=1.6
 
 ext {
 	aspectjVersion = '1.6.8'
@@ -33,12 +33,12 @@ ext {
 	groovyVersion = '1.8.5'
 	jacksonVersion = '1.9.2'
 	javaxActivationVersion = '1.1.1'
-	junitVersion = '4.8.2'
+	junitVersion = '4.10'
 	log4jVersion = '1.2.12'
 	mockitoVersion = '1.9.0'
 
-	springVersion = '3.1.1.RELEASE'
-	springIntegrationVersion = '2.1.2.RELEASE'
+	springVersion = '3.1.3.RELEASE'
+	springIntegrationVersion = '2.2.0.RC2'
 
 }
 
@@ -293,5 +293,5 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.0'
+	gradleVersion = '1.2'
 }

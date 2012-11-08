@@ -35,17 +35,17 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Implementation of the {@link Session} interface for Server Message Block (SMB) 
- * also known as Common Internet File System (CIFS). The Samba project set out to  
+ * Implementation of the {@link Session} interface for Server Message Block (SMB)
+ * also known as Common Internet File System (CIFS). The Samba project set out to
  * create non-Windows implementations of SMB. Often Samba is thus used synonymously to SMB.
- * 
- * SMB is an application-layer network protocol that manages shared access to files, printers 
+ *
+ * SMB is an application-layer network protocol that manages shared access to files, printers
  * and other networked resources.
  *
- * See <a href="http://en.wikipedia.org/wiki/Server_Message_Block">Server Message Block</a> 
+ * See <a href="http://en.wikipedia.org/wiki/Server_Message_Block">Server Message Block</a>
  * for more details.
  *
- * Inspired by the sprint-integration-ftp implementation done by Mark Fisher and Oleg Zhurakousky.   
+ * Inspired by the sprint-integration-ftp implementation done by Mark Fisher and Oleg Zhurakousky.
  *
  * @author Markus Spann
  * @author Mark Fisher
@@ -74,7 +74,7 @@ public class SmbSession implements Session<SmbFile> {
 	 * @param _shareAndDir server root SMB directory
 	 * @param _replaceFile replace existing files if true
 	 * @param _useTempFile make use temporary files when writing
-	 * @throws IOException in case of I/O errors 
+	 * @throws IOException in case of I/O errors
 	 */
 	SmbSession(String _host, int _port, String _domain, String _user, String _password, String _shareAndDir, boolean _replaceFile, boolean _useTempFile) throws IOException {
 		this(new SmbShare(new SmbConfig(_host, _port, _domain, _user, _password, _shareAndDir)));
@@ -179,8 +179,8 @@ public class SmbSession implements Session<SmbFile> {
 	}
 
 	/**
-	 * Writes contents of the specified {@link InputStream} to the remote resource 
-	 * specified by path. Remote directories are created implicitely as required. 
+	 * Writes contents of the specified {@link InputStream} to the remote resource
+	 * specified by path. Remote directories are created implicitely as required.
 	 * @param _inputStream input stream
 	 * @param _path remote path (of a file) to write to
 	 * @throws IOException on error conditions returned by a CIFS server
@@ -241,7 +241,7 @@ public class SmbSession implements Session<SmbFile> {
 	/**
 	 * Creates the specified remote path if not yet exists.
 	 * If the specified resource is a file rather than a path, creates all directories leading
-	 * to that file. 
+	 * to that file.
 	 * @param _path remote path to create
 	 * @return always true (error states are express by exceptions)
 	 * @throws IOException on error conditions returned by a CIFS server
@@ -362,7 +362,7 @@ public class SmbSession implements Session<SmbFile> {
 	}
 
 	/**
-	 * Convenience method to write the specified input stream to a remote path and return 
+	 * Convenience method to write the specified input stream to a remote path and return
 	 * the path as an SMB file object.
 	 * @param _inputStream input stream
 	 * @param _path remote path (of a file) to write to
@@ -380,7 +380,7 @@ public class SmbSession implements Session<SmbFile> {
      * @param _path remote path
      * @param _isDirectory Boolean object to indicate the path is a directory, may be null
      * @return SmbFile object for path
-     * @throws IOException in case of I/O errors 
+     * @throws IOException in case of I/O errors
      */
     private SmbFile createSmbFileObject(String _path, Boolean _isDirectory) throws IOException {
 		String path = StringUtils.cleanPath(_path);
@@ -389,7 +389,7 @@ public class SmbSession implements Session<SmbFile> {
 		}
 
     	SmbFile smbFile = new SmbFile(smbShare, path);
-    
+
     	boolean appendFileSeparator = !path.endsWith(FILE_SEPARATOR);
     	if (appendFileSeparator) {
     		try {
@@ -428,10 +428,10 @@ public class SmbSession implements Session<SmbFile> {
 	static void configureJcifs() {
         // TODO jcifs.Config.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
     	// TODO jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
-    
+
     	// set JCIFS SMB client library' log level unless already configured by system property
     	final String sysPropLogLevel = "jcifs.util.loglevel";
-    
+
     	if (jcifs.Config.getProperty(sysPropLogLevel) == null) {
     		// set log level according to this class' logger's log level.
     		Log log = LogFactory.getLog(SmbSession.class);
@@ -444,5 +444,10 @@ public class SmbSession implements Session<SmbFile> {
     		}
     	}
     }
+
+	@Override
+	public String[] listNames(String path) throws IOException {
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 
 }
