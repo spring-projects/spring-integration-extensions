@@ -11,6 +11,9 @@
 
 	<int-ip:tcp-connection-factory id="ws"
 		type="server" port="18080"
+		using-nio="true"
+		so-timeout="600000"
+		interceptor-factory-chain="interceptors"
 		serializer="wsSerializer"
 		deserializer="wsSerializer" />
 
@@ -19,16 +22,13 @@
 		<property name="simpleData" value="true" />
 	</bean>
 
-	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="webSocketData" />
+	<bean id="interceptors" class="org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorFactoryChain">
+		<property name="interceptors">
+			<bean class="org.springframework.integration.ip.extensions.websocket.WebSocketTcpConnectionInterceptorFactory" />
+		</property>
+	</bean>
 
-	<int:router input-channel="webSocketData" expression="payload.type"
-			resolution-required="false"  default-output-channel="stdOut" >
-		<int:mapping value="1" channel="handshakeChannel" />
-		<int:mapping value="4" channel="startStopChannel" />
-	</int:router>
-
-	<int:service-activator input-channel="handshakeChannel" output-channel="toBrowser"
-		ref="wsSerializer" method="generateHandshake" />
+	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="startStopChannel" />
 
 	<bean id="service" class="org.springframework.integration.ip.extensions.sockjs.WebSocketServerTests$DemoService" />
 
@@ -37,6 +37,8 @@
 		<int:transformer expression="payload.payload" />
 		<int:service-activator method="startStop" ref="service" />
 	</int:chain>
+
+	<!-- outbound send to websocket -->
 
 	<int:inbound-channel-adapter ref="service" method="getNext" channel="out">
 		<int:poller fixed-delay="1000" error-channel="removeSocket" />
@@ -51,6 +53,8 @@
 	<int:channel id="stdOut" />
 
 	<int-stream:stdout-channel-adapter append-newline="true" channel="stdOut" />
+
+	<!-- Remove state after error on write -->
 
 	<int:channel id="removeSocket" />
 

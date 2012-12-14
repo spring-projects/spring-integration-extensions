@@ -57,6 +57,13 @@
 			document.getElementById("message").value = "start";
 		}
 	}
+
+	function doClose(message) {
+		if (!window.WebSocket) {
+			return;
+		}
+		webSocket.close();
+	}
 </script>
 <center>
 	<form onsubmit="return false;" id="form">
@@ -64,6 +71,8 @@
 		<input type="text" id="message" name="message" value="start" />
 		<br/><br/>
 		<input type="button" value="Send To Spring Integration" onclick="sendToSI(this.form.message.value)" align="center"/>
+		<br/><br/>
+		<input type="button" value="Close WebSocket" onclick="doClose()" align="center"/>
 	</form>
 	<br/>
 	<textarea rows="1" cols="5" id="theField" readonly="readonly"></textarea>
