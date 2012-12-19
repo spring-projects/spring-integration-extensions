@@ -14,7 +14,7 @@ apply from:   "${rootProject.projectDir}/publish-maven.gradle"
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
-group = 'org.springframework.integration.smpp'
+group = 'org.springframework.integration'
 
 repositories {
 	maven { url 'http://repo.springsource.org/libs-milestone' }
