@@ -65,9 +65,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		else if (frame instanceof SockJsFrame) {
 			theFrame = (SockJsFrame) frame;
-			if (theFrame.getType() == SockJsFrame.TYPE_DATA) {
-				data = theFrame.getPayload();
-			}
+			data = theFrame.getPayload();
 		}
 		if (data != null && data.startsWith(HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION)) {
 			outputStream.write(data.getBytes());
@@ -75,9 +73,12 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		int lenBytes;
 		int payloadLen = this.server ? 0 : 0x80; //masked
-		boolean pong = data.startsWith("pong:");
-		String theData = pong ? data.substring(5) : data;
-		int length = theFrame.getType() == SockJsFrame.TYPE_DATA_BINARY ? theFrame.getBinary().length : theData.length();
+		boolean close = theFrame.getType() == SockJsFrame.TYPE_CLOSE;
+		boolean pong = theFrame.getType() == SockJsFrame.TYPE_PONG;
+		int length = theFrame.getBinary() != null ? theFrame.getBinary().length : data.length();
+		if (close) {
+			length += 2;
+		}
 		if (length >= Math.pow(2, 16)) {
 			lenBytes = 8;
 			payloadLen |= 127;
@@ -95,9 +96,8 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		if (pong) {
 			buffer.put((byte) 0x8a);
 		}
-		else if (theFrame.getType() == SockJsFrame.TYPE_CLOSE) {
+		else if (close) {
 			buffer.put((byte) 0x88);
-			payloadLen |= 2;
 		}
 		else if (theFrame.getType() == SockJsFrame.TYPE_DATA_BINARY) {
 			buffer.put((byte) 0x82);
@@ -120,18 +120,17 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			buffer.position(buffer.position() - 4);
 			buffer.get(maskBytes);
 		}
-		if (theFrame.getType() == SockJsFrame.TYPE_CLOSE) {
+		if (close) {
 			buffer.putShort(theFrame.getStatus());
+			// TODO: mask status when client
 		}
-		else {
-			byte[] bytes = theFrame.getType() == SockJsFrame.TYPE_DATA_BINARY ? theFrame.getBinary() : theData.getBytes("UTF-8");
-			for (int i = 0; i < bytes.length; i++) {
-				if (server) {
-					buffer.put(bytes[i]);
-				}
-				else {
-					buffer.put((byte) (bytes[i] ^ maskBytes[i % 4]));
-				}
+		byte[] bytes = theFrame.getBinary() != null ? theFrame.getBinary() : data.getBytes("UTF-8");
+		for (int i = 0; i < bytes.length; i++) {
+			if (server) {
+				buffer.put(bytes[i]);
+			}
+			else {
+				buffer.put((byte) (bytes[i] ^ maskBytes[i % 4]));
 			}
 		}
 		outputStream.write(buffer.array(), 0, buffer.position());
@@ -182,6 +181,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 					break;
 				case 0x89:
 					ping = true;
+					binary = true;
 					logger.debug("Ping, fin=" + fin);
 					break;
 				case 0x8a:
@@ -251,7 +251,10 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				done = (server ? maskInx == 4 : true) && dataInx >= len;
 			}
 		};
-		String data =  new String(buffer, "UTF-8");
+		String data = new String(buffer, "UTF-8");
+		if (close) {
+			data = data.substring(2);
+		}
 		if (!fin) {
 			StringBuilder builder = this.fragments.get(inputStream);
 			if (builder == null) {
@@ -262,7 +265,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			return null;
 		}
 		else if (ping) {
-			return new SockJsFrame(SockJsFrame.TYPE_PING, data);
+			return new SockJsFrame(SockJsFrame.TYPE_PING, buffer);
 		}
 		else if (pong) {
 			return new SockJsFrame(SockJsFrame.TYPE_PONG, data);

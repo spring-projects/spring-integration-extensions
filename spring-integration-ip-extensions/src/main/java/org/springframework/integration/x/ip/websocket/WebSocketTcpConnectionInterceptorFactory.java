@@ -63,13 +63,46 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 					if (logger.isDebugEnabled()) {
 						logger.debug("Close, status:" + payload.getStatus());
 					}
-					this.send(message);
+					// If we initiated the close, just close.
+					if (!this.getRequiredDeserializer().getState(this.getTheInputStream()).isCloseInitiated()) {
+						this.send(message);
+					}
 					this.close();
 					return true;
 				}
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Send failed", e);
 				}
+			}
+			else if (payload.getType() == SockJsFrame.TYPE_PING) {
+				try {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Ping:" + new String(payload.getBinary(), "UTF-8"));
+					}
+					if (payload.getBinary().length > 125) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Protocol violation - closing");
+						}
+						SockJsFrame close = new SockJsFrame(SockJsFrame.TYPE_CLOSE, "Protocol Error");
+						close.setStatus((short) 1002);
+						this.getRequiredDeserializer().getState(this.getTheInputStream()).setCloseInitiated(true);
+						this.send(MessageBuilder.withPayload(close).build());
+					}
+					else {
+						SockJsFrame pong = new SockJsFrame(SockJsFrame.TYPE_PONG, payload.getBinary());
+						this.send(MessageBuilder.withPayload(pong).build());
+					}
+					return true;
+				}
+				catch (Exception e) {
+					throw new MessageHandlingException(message, "Send failed", e);
+				}
+			}
+			else if (payload.getType() == SockJsFrame.TYPE_PONG) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Pong");
+				}
+				return true;
 			}
 			else if (this.shook) {
 				return super.onMessage(message);
@@ -95,8 +128,6 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				}
 			}
 			catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			super.close();
 		}

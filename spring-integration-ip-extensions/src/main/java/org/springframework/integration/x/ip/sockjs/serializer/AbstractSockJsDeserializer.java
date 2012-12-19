@@ -112,6 +112,10 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 		this.streamState.remove(inputStream);
 	}
 
+	public BasicState getState(InputStream inputStream) {
+		return this.streamState.get(inputStream);
+	}
+
 	public abstract T deserialize(InputStream inputStream) throws IOException;
 
 	protected SockJsFrame decodeToFrame(String data) {
@@ -153,6 +157,10 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 
 		private volatile GZIPFeederInputStream gzipFeederInputStream;
 
+		private volatile boolean closeInitiated;
+
+		private volatile boolean expectingPong;
+
 		boolean isGzipping() {
 			return gzipping;
 		}
@@ -173,6 +181,22 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 				this.gzipFeederInputStream = new GZIPFeederInputStream();
 			}
 			return gzipFeederInputStream;
+		}
+
+		public boolean isCloseInitiated() {
+			return this.closeInitiated;
+		}
+
+		public void setCloseInitiated(boolean closeInitiated) {
+			this.closeInitiated = closeInitiated;
+		}
+
+		public boolean isExpectingPong() {
+			return this.expectingPong;
+		}
+
+		public void setExpectingPong(boolean expectingPong) {
+			this.expectingPong = expectingPong;
 		}
 	}
 
