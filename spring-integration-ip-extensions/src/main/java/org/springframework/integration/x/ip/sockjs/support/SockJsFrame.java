@@ -24,6 +24,8 @@ public class SockJsFrame {
 
 	public static final int TYPE_INVALID = 0;
 
+	public static final int TYPE_FRAGMENTED_CONTROL = 256;
+
 	public static final int TYPE_HEADERS = 1;
 
 	public static final int TYPE_HEARTBEAT = 2;
@@ -61,14 +63,16 @@ public class SockJsFrame {
 	private volatile int rsv;
 
 	public SockJsFrame(int type, String payload) {
-		this.type = type;
-		this.payload = payload;
-		this.binary = null;
+		this(type, payload, null);
 	}
 
 	public SockJsFrame(int type, byte[] binary) {
+		this(type, null, binary);
+	}
+
+	public SockJsFrame(int type, String payload, byte[] binary) {
 		this.type = type;
-		this.payload = null;
+		this.payload = payload;
 		this.binary = binary;
 	}
 

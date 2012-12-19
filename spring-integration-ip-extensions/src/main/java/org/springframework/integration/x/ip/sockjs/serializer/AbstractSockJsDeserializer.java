@@ -161,6 +161,8 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 
 		private volatile boolean expectingPong;
 
+		private volatile SockJsFrame pendingFrame;
+
 		boolean isGzipping() {
 			return gzipping;
 		}
@@ -198,6 +200,15 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 		public void setExpectingPong(boolean expectingPong) {
 			this.expectingPong = expectingPong;
 		}
+
+		public SockJsFrame getPendingFrame() {
+			return pendingFrame;
+		}
+
+		public void setPendingFrame(SockJsFrame pendingFrame) {
+			this.pendingFrame = pendingFrame;
+		}
+
 	}
 
 	public static class GZIPFeederInputStream extends InputStream {

@@ -80,7 +80,12 @@ public class WebSocketServerTests {
 				messages.add(message);
 				logger.warn("Sending " + message.getPayload() + " to connection " + entry.getKey());
 			}
-			return messages;
+			if (messages.size() == 0) {
+				return null;
+			}
+			else {
+				return messages;
+			}
 		}
 
 		public void remove(String connetionId) {

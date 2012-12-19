@@ -138,6 +138,21 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 
 	@Override
 	public SockJsFrame deserialize(InputStream inputStream) throws IOException {
+		SockJsFrame frame = null;
+		BasicState state = this.getState(inputStream);
+		if (state != null) {
+			frame = state.getPendingFrame();
+		}
+		while (frame == null || (frame.getPayload() == null && frame.getBinary() == null)) {
+			frame = doDeserialize(inputStream, frame);
+			if (frame.getPayload() == null && frame.getBinary() == null) {
+				state.setPendingFrame(frame);
+			}
+		}
+		return frame;
+	}
+
+	private SockJsFrame doDeserialize(InputStream inputStream, SockJsFrame protoFrame) throws IOException {
 		List<SockJsFrame> headers = checkStreaming(inputStream);
 		if (headers != null) {
 			return headers.get(0);
@@ -157,6 +172,8 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		boolean close = false;
 		boolean binary = false;
 		boolean invalid = false;
+		String invalidText = null;
+		boolean fragmentedControl = false;
 		int lenBytes = 0;
 		byte[] mask = new byte[4];
 		int maskInx = 0;
@@ -174,24 +191,46 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				rsv = (bite & 0x70) >> 4;
 				bite &= 0x0f;
 				switch (bite) {
+				case 0x00:
+					logger.debug("Continuation, fin=" + fin);
+					if (protoFrame == null) {
+						invalid = true;
+						invalidText = "Unexpected continuation frame";
+					}
+					else {
+						binary = protoFrame.getType() == SockJsFrame.TYPE_DATA_BINARY;
+						this.getState(inputStream).setPendingFrame(null);
+					}
+					break;
 				case 0x01:
 					logger.debug("Text, fin=" + fin);
+					if (protoFrame != null) {
+						invalid = true;
+						invalidText = "Expected continuation frame";
+					}
 					break;
 				case 0x02:
 					logger.debug("Binary, fin=" + fin);
+					if (protoFrame != null) {
+						invalid = true;
+						invalidText = "Expected continuation frame";
+					}
 					binary = true;
 					break;
 				case 0x08:
 					logger.debug("Close, fin=" + fin);
+					fragmentedControl = !fin;
 					close = true;
 					break;
 				case 0x09:
 					ping = true;
 					binary = true;
+					fragmentedControl = !fin;
 					logger.debug("Ping, fin=" + fin);
 					break;
 				case 0x0a:
 					pong = true;
+					fragmentedControl = !fin;
 					logger.debug("Pong, fin=" + fin);
 					break;
 				case 0x03:
@@ -205,6 +244,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				case 0x0e:
 				case 0x0f:
 					invalid = true;
+					invalidText = "Reserved opcode " + Integer.toHexString(bite);
 					break;
 				default:
 					throw new IOException("Unexpected opcode " + Integer.toHexString(bite));
@@ -272,14 +312,21 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 
 		SockJsFrame frame;
 
-		if (!fin) {
+		if (fragmentedControl) {
+			frame = new SockJsFrame(SockJsFrame.TYPE_FRAGMENTED_CONTROL, buffer);
+		}
+		else if (invalid) {
+			frame = new SockJsFrame(SockJsFrame.TYPE_INVALID, invalidText, buffer);
+		}
+		else if (!fin) {
 			StringBuilder builder = this.fragments.get(inputStream);
 			if (builder == null) {
 				builder = new StringBuilder();
 				this.fragments.put(inputStream, builder);
 			}
 			builder.append(data);
-			return null;
+			logger.debug("Fragment");
+			return new SockJsFrame(binary ? SockJsFrame.TYPE_DATA_BINARY : SockJsFrame.TYPE_DATA, (String) null);
 		}
 		else if (ping) {
 			frame = new SockJsFrame(SockJsFrame.TYPE_PING, buffer);
@@ -294,19 +341,17 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		else if (binary) {
 			frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
-		}
-		else if (invalid) {
-			frame = new SockJsFrame(SockJsFrame.TYPE_INVALID, buffer);
+			//TODO binary fragments
 		}
 		else {
 			StringBuilder builder = this.fragments.get(inputStream);
 			if (builder == null) {
-				frame = decodeToFrame(data);
+				frame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
 			}
 			else {
 				builder.append(data).toString();
 				this.removeFragments(inputStream);
-				frame = this.decodeToFrame(builder.toString());
+				frame = new SockJsFrame(SockJsFrame.TYPE_DATA, builder.toString());
 			}
 		}
 		if (rsv > 0) {

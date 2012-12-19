@@ -32,6 +32,7 @@ import org.springframework.integration.ip.tcp.connection.TcpConnectionIntercepto
 import org.springframework.integration.ip.tcp.connection.TcpNetConnection;
 import org.springframework.integration.ip.tcp.connection.TcpNioConnection;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.x.ip.sockjs.serializer.AbstractSockJsDeserializer.BasicState;
 import org.springframework.integration.x.ip.sockjs.serializer.WebSocketSerializer;
 import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
 import org.springframework.util.Assert;
@@ -60,25 +61,23 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		public boolean onMessage(Message<?> message) {
 			Assert.isInstanceOf(SockJsFrame.class, message.getPayload());
 			SockJsFrame payload = (SockJsFrame) message.getPayload();
-			if (payload.getRsv() > 0) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Reserved bits:" + payload.getRsv());
-				}
+			InputStream inputStream = null;
+			try {
+				inputStream = this.getTheInputStream();
+			}
+			catch (IOException e1) {
 				this.protocolViolation(message);
 			}
-			else if (payload.getType() == SockJsFrame.TYPE_INVALID) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Invalid Opcode");
-				}
-				this.protocolViolation(message);
-			}
-			else if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
+
+			BasicState state = this.getRequiredDeserializer().getState(inputStream);
+			Assert.notNull(state, "State must not be null");
+			if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
 				try {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Close, status:" + payload.getStatus());
 					}
 					// If we initiated the close, just close.
-					if (!this.getRequiredDeserializer().getState(this.getTheInputStream()).isCloseInitiated()) {
+					if (!state.isCloseInitiated()) {
 						this.send(message);
 					}
 					this.close();
@@ -86,6 +85,29 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Send failed", e);
 				}
+			}
+			else if (state == null || state.isCloseInitiated()) {
+				if (logger.isWarnEnabled()) {
+					logger.warn("Message dropped - close initiated:" + message);
+				}
+			}
+			else if (payload.getRsv() > 0) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Reserved bits:" + payload.getRsv());
+				}
+				this.protocolViolation(message);
+			}
+			else if (payload.getType() == SockJsFrame.TYPE_INVALID) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Invalid:" + payload.getPayload());
+				}
+				this.protocolViolation(message);
+			}
+			else if (payload.getType() == SockJsFrame.TYPE_FRAGMENTED_CONTROL) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Fragmented Control Op");
+				}
+				this.protocolViolation(message);
 			}
 			else if (payload.getType() == SockJsFrame.TYPE_PING) {
 				try {
@@ -96,10 +118,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 						this.protocolViolation(message);
 					}
 					else {
-						if (!this.getRequiredDeserializer().getState(this.getTheInputStream()).isCloseInitiated()) {
-							SockJsFrame pong = new SockJsFrame(SockJsFrame.TYPE_PONG, payload.getBinary());
-							this.send(MessageBuilder.withPayload(pong).build());
-						}
+						SockJsFrame pong = new SockJsFrame(SockJsFrame.TYPE_PONG, payload.getBinary());
+						this.send(MessageBuilder.withPayload(pong).build());
 					}
 				}
 				catch (Exception e) {
@@ -130,7 +150,9 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			if (logger.isDebugEnabled()) {
 				logger.debug("Protocol violation - closing");
 			}
-			SockJsFrame close = new SockJsFrame(SockJsFrame.TYPE_CLOSE, "Protocol Error");
+			SockJsFrame frame = (SockJsFrame) message.getPayload();
+			String error = "Protocol Error" + frame.getPayload() == null ? "" : (":" + frame.getPayload());
+			SockJsFrame close = new SockJsFrame(SockJsFrame.TYPE_CLOSE, error);
 			close.setStatus((short) 1002);
 			try {
 				this.getRequiredDeserializer().getState(this.getTheInputStream()).setCloseInitiated(true);
