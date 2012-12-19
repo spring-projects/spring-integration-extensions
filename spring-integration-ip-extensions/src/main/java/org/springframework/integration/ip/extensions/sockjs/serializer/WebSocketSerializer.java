@@ -33,10 +33,10 @@ import org.springframework.util.Assert;
 
 /**
  * @author Gary Russell
- * @since 2.2
+ * @since 3.0
  *
  */
-public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame> implements Serializer<String> {
+public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame> implements Serializer<Object> {
 
 	private static final String HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION =
 			"HTTP/1.1 101 Web Socket Protocol Handshake - Spring Integration\r\n";
@@ -55,9 +55,21 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		this.fragments.remove(inputStream);
 	}
 
-	public void serialize(final String data, OutputStream outputStream)
+	public void serialize(final Object frame, OutputStream outputStream)
 			throws IOException {
-		if (data.startsWith(HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION)) {
+		String data = "";
+		SockJsFrame theFrame = null;
+		if (frame instanceof String) {
+			data = (String) frame;
+			theFrame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
+		}
+		else if (frame instanceof SockJsFrame) {
+			theFrame = (SockJsFrame) frame;
+			if (theFrame.getType() == SockJsFrame.TYPE_DATA) {
+				data = theFrame.getPayload();
+			}
+		}
+		if (data != null && data.startsWith(HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION)) {
 			outputStream.write(data.getBytes());
 			return;
 		}
@@ -82,7 +94,11 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		ByteBuffer buffer = ByteBuffer.allocate(length + 6 + lenBytes);
 		if (pong) {
 			buffer.put((byte) 0x8a);
-		} else {
+		}
+		else if (theFrame.getType() == SockJsFrame.TYPE_CLOSE) {
+			buffer.put((byte) 0x88);
+		}
+		else {
 			// Final fragment; text
 			buffer.put((byte) 0x81);
 		}
@@ -100,13 +116,18 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			buffer.position(buffer.position() - 4);
 			buffer.get(maskBytes);
 		}
-		byte[] bytes = theData.getBytes("UTF-8");
-		for (int i = 0; i < bytes.length; i++) {
-			if (server) {
-				buffer.put(bytes[i]);
-			}
-			else {
-				buffer.put((byte) (bytes[i] ^ maskBytes[i % 4]));
+		if (theFrame.getType() == SockJsFrame.TYPE_CLOSE) {
+			buffer.putShort(theFrame.getStatus());
+		}
+		else {
+			byte[] bytes = theData.getBytes("UTF-8");
+			for (int i = 0; i < bytes.length; i++) {
+				if (server) {
+					buffer.put(bytes[i]);
+				}
+				else {
+					buffer.put((byte) (bytes[i] ^ maskBytes[i % 4]));
+				}
 			}
 		}
 		outputStream.write(buffer.array(), 0, buffer.position());
@@ -130,6 +151,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		boolean fin = false;
 		boolean ping = false;
 		boolean pong = false;
+		boolean close = false;
 		int lenBytes = 0;
 		byte[] mask = new byte[4];
 		int maskInx = 0;
@@ -161,7 +183,9 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 					logger.debug("Pong, fin=" + fin);
 					break;
 				case 0x88:
-					throw new IOException("Connection closed");
+					logger.debug("Close, fin=" + fin);
+					close = true;
+					break;
 				default:
 					throw new IOException("Unexpected opcode " + Integer.toHexString(bite));
 				}
@@ -218,7 +242,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 					}
 					buffer[dataInx++] = (byte) bite;
 				}
-				done = dataInx >= len;
+				done = (server ? maskInx == 4 : true) && dataInx >= len;
 			}
 		};
 		String data =  new String(buffer, "UTF-8");
@@ -236,6 +260,11 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		else if (pong) {
 			return new SockJsFrame(SockJsFrame.TYPE_PONG, data);
+		}
+		else if (close) {
+			SockJsFrame closeFrame = new SockJsFrame(SockJsFrame.TYPE_CLOSE, data);
+			closeFrame.setStatus((short) (buffer[0] << 7 | buffer[1]));
+			return closeFrame;
 		}
 		else {
 			StringBuilder builder = this.fragments.get(inputStream);
@@ -264,7 +293,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		this.removeFragments(inputStream);
 	}
 
-	public String generateHandshake(SockJsFrame frame) throws Exception {
+	public SockJsFrame generateHandshake(SockJsFrame frame) throws Exception {
 		Assert.isTrue(frame.getType() == SockJsFrame.TYPE_HEADERS, "Expected headers:" + frame);
 		String[] headers = frame.getPayload().split("\\r\\n");
 		String key = null;
@@ -278,7 +307,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 						   "Upgrade: WebSocket\r\n" +
 						   "Connection: Upgrade\r\n" +
 						   "Sec-WebSocket-Accept: " + SockJsUtils.generateWebSocketAccept(key) + "\r\n\r\n";
-		return handshake;
+		return new SockJsFrame(SockJsFrame.TYPE_DATA, handshake);
 	}
 
 }

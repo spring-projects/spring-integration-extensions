@@ -52,16 +52,28 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 		@Override
 		public boolean onMessage(Message<?> message) {
-			if (this.shook) {
+			Assert.isInstanceOf(SockJsFrame.class, message.getPayload());
+			SockJsFrame payload = (SockJsFrame) message.getPayload();
+			if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
+				try {
+					this.send(message);
+					this.close();
+					return true;
+				}
+				catch (Exception e) {
+					throw new MessageHandlingException(message, "Send failed", e);
+				}
+			}
+			else if (this.shook) {
 				return super.onMessage(message);
 			}
 			else {
 				try {
-					doHandshake((SockJsFrame) message.getPayload());
+					doHandshake(payload);
 					this.shook = true;
 				}
 				catch (Exception e) {
-					throw new MessageHandlingException(message, "Handshake failed",e);
+					throw new MessageHandlingException(message, "Handshake failed", e);
 				}
 				return true;
 			}
@@ -103,7 +115,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		}
 
 		private void doHandshake(SockJsFrame frame) throws Exception {
-			String handshake = this.getRequiredDeserializer().generateHandshake(frame);
+			SockJsFrame handshake = this.getRequiredDeserializer().generateHandshake(frame);
 			this.send(MessageBuilder.withPayload(handshake).build());
 		}
 

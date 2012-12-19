@@ -50,6 +50,8 @@ public class SockJsFrame {
 
 	private final String payload;
 
+	private short status;
+
 	public SockJsFrame(int type, String payload) {
 		this.type = type;
 		this.payload = payload;
@@ -61,6 +63,14 @@ public class SockJsFrame {
 
 	public String getPayload() {
 		return this.payload;
+	}
+
+	public short getStatus() {
+		return status;
+	}
+
+	public void setStatus(short status) {
+		this.status = status;
 	}
 
 	@Override

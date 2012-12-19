@@ -32,11 +32,9 @@ import org.springframework.integration.support.MessageBuilder;
 
 /**
  * @author Gary Russell
- * @since 2.2
+ * @since 3.0
  *
  */
-//@ContextConfiguration
-//@RunWith(SpringJUnit4ClassRunner.class)
 public class WebSocketServerTests {
 
 	public static void main(String[] args) throws Exception {

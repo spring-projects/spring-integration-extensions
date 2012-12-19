@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int-ip="http://www.springframework.org/schema/integration/ip"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/ip http://www.springframework.org/schema/integration/ip/spring-integration-ip.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<int-ip:tcp-connection-factory id="ws"
+		type="server" port="18080"
+		using-nio="true"
+		so-timeout="600000"
+		interceptor-factory-chain="interceptors"
+		serializer="wsSerializer"
+		deserializer="wsSerializer" />
+
+	<bean id="wsSerializer" class="org.springframework.integration.ip.extensions.sockjs.serializer.WebSocketSerializer">
+		<property name="server" value="true" />
+		<property name="simpleData" value="true" />
+	</bean>
+
+	<bean id="interceptors" class="org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorFactoryChain">
+		<property name="interceptors">
+			<bean class="org.springframework.integration.ip.extensions.websocket.WebSocketTcpConnectionInterceptorFactory" />
+		</property>
+	</bean>
+
+	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="echoChannel" />
+
+	<bean id="service" class="org.springframework.integration.ip.extensions.sockjs.WebSocketServerTests$DemoService" />
+
+	<int:chain input-channel="echoChannel" output-channel="toBrowser">
+		<!-- payload is a SockJsFrame with the data in its payload property -->
+		<int:transformer expression="payload.payload" />
+		<int:service-activator expression="payload" />
+	</int:chain>
+
+	<!-- outbound send to websocket -->
+
+	<int:channel id="toBrowser" />
+
+	<int-ip:tcp-outbound-channel-adapter connection-factory="ws" channel="toBrowser" />
+
+	<int:channel id="stdOut" />
+
+	<int-stream:stdout-channel-adapter append-newline="true" channel="stdOut" />
+
+	<!-- Remove state after error on write -->
+
+	<int:channel id="removeSocket" />
+
+	<int:chain input-channel="removeSocket">
+		<int:transformer expression="payload.failedMessage.headers['ip_connectionId']" />
+		<int:service-activator ref="service" method="remove" />
+	</int:chain>
+
+</beans>
