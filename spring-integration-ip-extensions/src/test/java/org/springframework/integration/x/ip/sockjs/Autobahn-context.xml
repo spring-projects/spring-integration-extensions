@@ -34,7 +34,7 @@
 
 	<int:chain input-channel="echoChannel" output-channel="toBrowser">
 		<!-- payload is a SockJsFrame with the data in its payload property -->
-		<int:transformer expression="payload.payload" />
+<!-- 		<int:transformer expression="payload.payload" /> -->
 		<int:service-activator expression="payload" />
 	</int:chain>
 

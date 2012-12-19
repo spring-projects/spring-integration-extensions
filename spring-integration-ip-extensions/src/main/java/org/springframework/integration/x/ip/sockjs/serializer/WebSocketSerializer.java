@@ -77,7 +77,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		int payloadLen = this.server ? 0 : 0x80; //masked
 		boolean pong = data.startsWith("pong:");
 		String theData = pong ? data.substring(5) : data;
-		int length = theData.length();
+		int length = theFrame.getType() == SockJsFrame.TYPE_DATA_BINARY ? theFrame.getBinary().length : theData.length();
 		if (length >= Math.pow(2, 16)) {
 			lenBytes = 8;
 			payloadLen |= 127;
@@ -97,6 +97,10 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		else if (theFrame.getType() == SockJsFrame.TYPE_CLOSE) {
 			buffer.put((byte) 0x88);
+			payloadLen |= 2;
+		}
+		else if (theFrame.getType() == SockJsFrame.TYPE_DATA_BINARY) {
+			buffer.put((byte) 0x82);
 		}
 		else {
 			// Final fragment; text
@@ -120,7 +124,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			buffer.putShort(theFrame.getStatus());
 		}
 		else {
-			byte[] bytes = theData.getBytes("UTF-8");
+			byte[] bytes = theFrame.getType() == SockJsFrame.TYPE_DATA_BINARY ? theFrame.getBinary() : theData.getBytes("UTF-8");
 			for (int i = 0; i < bytes.length; i++) {
 				if (server) {
 					buffer.put(bytes[i]);
@@ -152,6 +156,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		boolean ping = false;
 		boolean pong = false;
 		boolean close = false;
+		boolean binary = false;
 		int lenBytes = 0;
 		byte[] mask = new byte[4];
 		int maskInx = 0;
@@ -173,7 +178,8 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				case 0x02:
 				case 0x82:
 					logger.debug("Binary, fin=" + fin);
-					throw new IOException("SockJS doesn't support binary");
+					binary = true;
+					break;
 				case 0x89:
 					ping = true;
 					logger.debug("Ping, fin=" + fin);
@@ -263,8 +269,11 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		else if (close) {
 			SockJsFrame closeFrame = new SockJsFrame(SockJsFrame.TYPE_CLOSE, data);
-			closeFrame.setStatus((short) (buffer[0] << 7 | buffer[1]));
+			closeFrame.setStatus((short) ((buffer[0] << 8) | (buffer[1] & 0xff)));
 			return closeFrame;
+		}
+		else if (binary) {
+			return new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
 		}
 		else {
 			StringBuilder builder = this.fragments.get(inputStream);

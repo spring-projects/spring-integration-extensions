@@ -30,6 +30,8 @@ public class SockJsFrame {
 
 	public static final int TYPE_DATA = 4;
 
+	public static final int TYPE_DATA_BINARY = 260;
+
 	public static final int TYPE_PING = 5;
 
 	public static final int TYPE_PONG = 6;
@@ -50,11 +52,20 @@ public class SockJsFrame {
 
 	private final String payload;
 
+	private final byte[] binary;
+
 	private short status;
 
 	public SockJsFrame(int type, String payload) {
 		this.type = type;
 		this.payload = payload;
+		this.binary = null;
+	}
+
+	public SockJsFrame(int type, byte[] binary) {
+		this.type = type;
+		this.payload = null;
+		this.binary = binary;
 	}
 
 	public int getType() {
@@ -63,6 +74,10 @@ public class SockJsFrame {
 
 	public String getPayload() {
 		return this.payload;
+	}
+
+	public byte[] getBinary() {
+		return binary;
 	}
 
 	public short getStatus() {
@@ -75,7 +90,7 @@ public class SockJsFrame {
 
 	@Override
 	public String toString() {
-		return "SockJsFrame [type=" + typeToString[type] + ", payload=" + payload + "]";
+		return "SockJsFrame [type=" + typeToString[type & 0xff] + ", payload=" + payload + ", binary=" + binary + "]";
 	}
 
 }

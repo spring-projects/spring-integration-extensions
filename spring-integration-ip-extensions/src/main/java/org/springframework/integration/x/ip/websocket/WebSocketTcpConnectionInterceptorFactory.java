@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.core.serializer.Deserializer;
 import org.springframework.integration.Message;
@@ -41,6 +43,8 @@ import org.springframework.util.Assert;
  */
 public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionInterceptorFactory {
 
+	private static final Log logger = LogFactory.getLog(WebSocketTcpConnectionInterceptor.class);
+
 	@Override
 	public TcpConnectionInterceptor getInterceptor() {
 		return new WebSocketTcpConnectionInterceptor();
@@ -56,6 +60,9 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			SockJsFrame payload = (SockJsFrame) message.getPayload();
 			if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
 				try {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Close, status:" + payload.getStatus());
+					}
 					this.send(message);
 					this.close();
 					return true;
