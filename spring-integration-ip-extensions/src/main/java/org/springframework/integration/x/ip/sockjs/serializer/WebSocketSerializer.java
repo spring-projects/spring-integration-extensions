@@ -159,6 +159,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		int lenBytes = 0;
 		byte[] mask = new byte[4];
 		int maskInx = 0;
+		int rsv = 0;
 		while (!done ) {
 			bite = inputStream.read();
 //			logger.debug("Read:" + Integer.toHexString(bite));
@@ -169,26 +170,26 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			switch (n++) {
 			case 0:
 				fin = (bite & 0x80) > 0;
+				rsv = (bite & 0x70) >> 4;
+				bite &= 0x0f;
 				switch (bite) {
 				case 0x01:
-				case 0x81:
 					logger.debug("Text, fin=" + fin);
 					break;
 				case 0x02:
-				case 0x82:
 					logger.debug("Binary, fin=" + fin);
 					binary = true;
 					break;
-				case 0x89:
+				case 0x09:
 					ping = true;
 					binary = true;
 					logger.debug("Ping, fin=" + fin);
 					break;
-				case 0x8a:
+				case 0x0a:
 					pong = true;
 					logger.debug("Pong, fin=" + fin);
 					break;
-				case 0x88:
+				case 0x08:
 					logger.debug("Close, fin=" + fin);
 					close = true;
 					break;
@@ -255,6 +256,9 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		if (close) {
 			data = data.substring(2);
 		}
+
+		SockJsFrame frame;
+
 		if (!fin) {
 			StringBuilder builder = this.fragments.get(inputStream);
 			if (builder == null) {
@@ -265,30 +269,34 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			return null;
 		}
 		else if (ping) {
-			return new SockJsFrame(SockJsFrame.TYPE_PING, buffer);
+			frame = new SockJsFrame(SockJsFrame.TYPE_PING, buffer);
 		}
 		else if (pong) {
-			return new SockJsFrame(SockJsFrame.TYPE_PONG, data);
+			frame = new SockJsFrame(SockJsFrame.TYPE_PONG, data);
 		}
 		else if (close) {
 			SockJsFrame closeFrame = new SockJsFrame(SockJsFrame.TYPE_CLOSE, data);
 			closeFrame.setStatus((short) ((buffer[0] << 8) | (buffer[1] & 0xff)));
-			return closeFrame;
+			frame = closeFrame;
 		}
 		else if (binary) {
-			return new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
+			frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
 		}
 		else {
 			StringBuilder builder = this.fragments.get(inputStream);
 			if (builder == null) {
-				return decodeToFrame(data);
+				frame = decodeToFrame(data);
 			}
 			else {
 				builder.append(data).toString();
 				this.removeFragments(inputStream);
-				return this.decodeToFrame(builder.toString());
+				frame = this.decodeToFrame(builder.toString());
 			}
 		}
+		if (rsv > 0) {
+			frame.setRsv(rsv);
+		}
+		return frame;
 	}
 
 	@Override

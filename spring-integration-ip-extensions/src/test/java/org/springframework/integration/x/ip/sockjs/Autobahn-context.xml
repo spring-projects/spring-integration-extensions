@@ -9,9 +9,11 @@
 		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+	<!-- 2.10 fails with NIO because pongs get out of sequence -->
+	
 	<int-ip:tcp-connection-factory id="ws"
 		type="server" port="18080"
-		using-nio="false" <!-- 2.10 fails with NIO because pongs get out of sequence -->
+		using-nio="false" 
 		so-timeout="600000"
 		interceptor-factory-chain="interceptors"
 		serializer="wsSerializer"

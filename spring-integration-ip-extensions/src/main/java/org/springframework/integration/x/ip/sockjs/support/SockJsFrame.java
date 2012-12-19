@@ -54,7 +54,9 @@ public class SockJsFrame {
 
 	private final byte[] binary;
 
-	private short status;
+	private volatile short status;
+
+	private volatile int rsv;
 
 	public SockJsFrame(int type, String payload) {
 		this.type = type;
@@ -88,9 +90,18 @@ public class SockJsFrame {
 		this.status = status;
 	}
 
+	public void setRsv(int rsv) {
+		this.rsv = rsv;
+	}
+
+	public int getRsv() {
+		return rsv;
+	}
+
 	@Override
 	public String toString() {
-		return "SockJsFrame [type=" + typeToString[type & 0xff] + ", payload=" + payload + ", binary=" + binary + "]";
+		return "SockJsFrame [type=" + typeToString[type & 0xff] + ", payload=" + payload + ", binary=" + binary +
+				", status=" + status + ", rsv=" + rsv + "]";
 	}
 
 }

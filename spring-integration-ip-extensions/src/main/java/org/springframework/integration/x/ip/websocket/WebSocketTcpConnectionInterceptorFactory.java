@@ -54,11 +54,19 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 		private boolean shook;
 
+		private InputStream theInputStream;
+
 		@Override
 		public boolean onMessage(Message<?> message) {
 			Assert.isInstanceOf(SockJsFrame.class, message.getPayload());
 			SockJsFrame payload = (SockJsFrame) message.getPayload();
-			if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
+			if (payload.getRsv() > 0) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Reserved bits:" + payload.getRsv());
+				}
+				this.protocolViolation(message);
+			}
+			else if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
 				try {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Close, status:" + payload.getStatus());
@@ -68,7 +76,6 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 						this.send(message);
 					}
 					this.close();
-					return true;
 				}
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Send failed", e);
@@ -80,19 +87,14 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 						logger.debug("Ping:" + new String(payload.getBinary(), "UTF-8"));
 					}
 					if (payload.getBinary().length > 125) {
-						if (logger.isDebugEnabled()) {
-							logger.debug("Protocol violation - closing");
-						}
-						SockJsFrame close = new SockJsFrame(SockJsFrame.TYPE_CLOSE, "Protocol Error");
-						close.setStatus((short) 1002);
-						this.getRequiredDeserializer().getState(this.getTheInputStream()).setCloseInitiated(true);
-						this.send(MessageBuilder.withPayload(close).build());
+						this.protocolViolation(message);
 					}
 					else {
-						SockJsFrame pong = new SockJsFrame(SockJsFrame.TYPE_PONG, payload.getBinary());
-						this.send(MessageBuilder.withPayload(pong).build());
+						if (!this.getRequiredDeserializer().getState(this.getTheInputStream()).isCloseInitiated()) {
+							SockJsFrame pong = new SockJsFrame(SockJsFrame.TYPE_PONG, payload.getBinary());
+							this.send(MessageBuilder.withPayload(pong).build());
+						}
 					}
-					return true;
 				}
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Send failed", e);
@@ -102,7 +104,6 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				if (logger.isDebugEnabled()) {
 					logger.debug("Pong");
 				}
-				return true;
 			}
 			else if (this.shook) {
 				return super.onMessage(message);
@@ -115,8 +116,22 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Handshake failed", e);
 				}
-				return true;
 			}
+			return true;
+		}
+
+		private void protocolViolation(Message<?> message) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Protocol violation - closing");
+			}
+			SockJsFrame close = new SockJsFrame(SockJsFrame.TYPE_CLOSE, "Protocol Error");
+			close.setStatus((short) 1002);
+			try {
+				this.getRequiredDeserializer().getState(this.getTheInputStream()).setCloseInitiated(true);
+				this.send(MessageBuilder.withPayload(close).build());
+			}
+			catch (Exception e) {
+				throw new MessageHandlingException(message, "Send failed", e);			}
 		}
 
 		@Override
@@ -138,6 +153,9 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		 * @throws IOException
 		 */
 		private InputStream getTheInputStream() throws IOException {
+			if (this.theInputStream != null) {
+				return this.theInputStream;
+			}
 			TcpConnection theConnection = this.getTheConnection();
 			InputStream inputStream = null;
 			if (theConnection instanceof TcpNioConnection) {
@@ -149,6 +167,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 					inputStream = socket.getInputStream();
 				}
 			}
+			this.theInputStream = inputStream;
 			return inputStream;
 		}
 
