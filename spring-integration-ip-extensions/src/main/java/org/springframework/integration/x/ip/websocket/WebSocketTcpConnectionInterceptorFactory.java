@@ -66,6 +66,12 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				}
 				this.protocolViolation(message);
 			}
+			else if (payload.getType() == SockJsFrame.TYPE_INVALID) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Invalid Opcode");
+				}
+				this.protocolViolation(message);
+			}
 			else if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
 				try {
 					if (logger.isDebugEnabled()) {

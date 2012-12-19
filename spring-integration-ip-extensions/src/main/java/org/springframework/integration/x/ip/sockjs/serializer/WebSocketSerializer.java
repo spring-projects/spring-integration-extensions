@@ -156,6 +156,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		boolean pong = false;
 		boolean close = false;
 		boolean binary = false;
+		boolean invalid = false;
 		int lenBytes = 0;
 		byte[] mask = new byte[4];
 		int maskInx = 0;
@@ -180,6 +181,10 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 					logger.debug("Binary, fin=" + fin);
 					binary = true;
 					break;
+				case 0x08:
+					logger.debug("Close, fin=" + fin);
+					close = true;
+					break;
 				case 0x09:
 					ping = true;
 					binary = true;
@@ -189,9 +194,17 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 					pong = true;
 					logger.debug("Pong, fin=" + fin);
 					break;
-				case 0x08:
-					logger.debug("Close, fin=" + fin);
-					close = true;
+				case 0x03:
+				case 0x04:
+				case 0x05:
+				case 0x06:
+				case 0x07:
+				case 0x0b:
+				case 0x0c:
+				case 0x0d:
+				case 0x0e:
+				case 0x0f:
+					invalid = true;
 					break;
 				default:
 					throw new IOException("Unexpected opcode " + Integer.toHexString(bite));
@@ -281,6 +294,9 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		else if (binary) {
 			frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
+		}
+		else if (invalid) {
+			frame = new SockJsFrame(SockJsFrame.TYPE_INVALID, buffer);
 		}
 		else {
 			StringBuilder builder = this.fragments.get(inputStream);

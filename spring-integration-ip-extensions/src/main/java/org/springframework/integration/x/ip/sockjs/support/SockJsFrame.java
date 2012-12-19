@@ -22,6 +22,8 @@ package org.springframework.integration.x.ip.sockjs.support;
  */
 public class SockJsFrame {
 
+	public static final int TYPE_INVALID = 0;
+
 	public static final int TYPE_HEADERS = 1;
 
 	public static final int TYPE_HEARTBEAT = 2;
