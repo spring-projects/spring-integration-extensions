@@ -1,0 +1,1 @@
+http\://www.springframework.org/schema/integration/smpp=org.springframework.integration.smpp.config.xml.SmppNamespaceHandler
