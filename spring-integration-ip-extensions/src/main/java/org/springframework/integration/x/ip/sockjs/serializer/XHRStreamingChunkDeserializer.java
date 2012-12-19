@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.ip.extensions.sockjs.serializer;
+package org.springframework.integration.x.ip.sockjs.serializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import org.springframework.integration.ip.extensions.sockjs.support.SockJsFrame;
 import org.springframework.integration.ip.tcp.serializer.SoftEndOfStreamException;
+import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
 import org.springframework.util.Assert;
 
 /**
  * @author Gary Russell
- * @since 2.2
+ * @since 3.0
  *
  */
 public class XHRStreamingChunkDeserializer extends AbstractSockJsDeserializer<List<SockJsFrame>> {

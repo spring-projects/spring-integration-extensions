@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.ip.extensions.serializer;
+package org.springframework.integration.x.ip.serializer;
 
 import java.io.IOException;
 import java.io.InputStream;

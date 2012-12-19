@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.ip.extensions.sockjs.serializer;
+package org.springframework.integration.x.ip.sockjs.serializer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,9 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.serializer.Serializer;
-import org.springframework.integration.ip.extensions.sockjs.SockJsUtils;
-import org.springframework.integration.ip.extensions.sockjs.support.SockJsFrame;
 import org.springframework.integration.ip.tcp.serializer.SoftEndOfStreamException;
+import org.springframework.integration.x.ip.sockjs.SockJsUtils;
+import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
 import org.springframework.util.Assert;
 
 /**

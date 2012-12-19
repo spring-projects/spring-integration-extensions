@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.ip.extensions.websocket;
+package org.springframework.integration.x.ip.websocket;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +23,6 @@ import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.core.serializer.Deserializer;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
-import org.springframework.integration.ip.extensions.sockjs.serializer.WebSocketSerializer;
-import org.springframework.integration.ip.extensions.sockjs.support.SockJsFrame;
 import org.springframework.integration.ip.tcp.connection.AbstractTcpConnectionInterceptor;
 import org.springframework.integration.ip.tcp.connection.TcpConnection;
 import org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptor;
@@ -32,6 +30,8 @@ import org.springframework.integration.ip.tcp.connection.TcpConnectionIntercepto
 import org.springframework.integration.ip.tcp.connection.TcpNetConnection;
 import org.springframework.integration.ip.tcp.connection.TcpNioConnection;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.x.ip.sockjs.serializer.WebSocketSerializer;
+import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
 import org.springframework.util.Assert;
 
 /**

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.ip.extensions.sockjs.support;
+package org.springframework.integration.x.ip.sockjs.support;
 
 /**
  * @author Gary Russell
- * @since 2.2
+ * @since 3.0
  *
  */
 public class SockJsFrame {

@@ -13,29 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.ip.extensions.sockjs;
+package org.springframework.integration.x.ip.sockjs;
 
-import java.security.MessageDigest;
-
-import org.apache.commons.codec.binary.Base64;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author Gary Russell
- * @since 2.2
+ * @since 3.0
  *
  */
-public class SockJsUtils {
-
-	public static String generateWebSocketAccept(String key) throws Exception {
-		MessageDigest md = MessageDigest.getInstance("SHA-1");
-		String toDigest = key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-		byte[] acceptStringBytes  = md.digest(toDigest.getBytes());
-		acceptStringBytes = Base64.encodeBase64(acceptStringBytes);
-		String acceptString = new String(acceptStringBytes);
-		return acceptString;
-	}
+public class AutobahnTests {
 
 	public static void main(String[] args) throws Exception {
-		generateWebSocketAccept("wSE2F/mejbdJ59sbarKyUA==");
+		new ClassPathXmlApplicationContext("Autobahn-context.xml", AutobahnTests.class);
+		System.out.println("Hit Enter To Terminate...");
+		System.in.read();
+		System.exit(0);
 	}
+
 }

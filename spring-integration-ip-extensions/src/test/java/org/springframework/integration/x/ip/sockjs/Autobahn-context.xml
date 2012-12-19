@@ -17,34 +17,28 @@
 		serializer="wsSerializer"
 		deserializer="wsSerializer" />
 
-	<bean id="wsSerializer" class="org.springframework.integration.ip.extensions.sockjs.serializer.WebSocketSerializer">
+	<bean id="wsSerializer" class="org.springframework.integration.x.ip.sockjs.serializer.WebSocketSerializer">
 		<property name="server" value="true" />
 		<property name="simpleData" value="true" />
 	</bean>
 
 	<bean id="interceptors" class="org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorFactoryChain">
 		<property name="interceptors">
-			<bean class="org.springframework.integration.ip.extensions.websocket.WebSocketTcpConnectionInterceptorFactory" />
+			<bean class="org.springframework.integration.x.ip.websocket.WebSocketTcpConnectionInterceptorFactory" />
 		</property>
 	</bean>
 
-	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="startStopChannel" />
+	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="echoChannel" />
 
-	<bean id="service" class="org.springframework.integration.ip.extensions.sockjs.WebSocketServerTests$DemoService" />
+	<bean id="service" class="org.springframework.integration.x.ip.sockjs.WebSocketServerTests$DemoService" />
 
-	<int:chain input-channel="startStopChannel">
+	<int:chain input-channel="echoChannel" output-channel="toBrowser">
 		<!-- payload is a SockJsFrame with the data in its payload property -->
 		<int:transformer expression="payload.payload" />
-		<int:service-activator method="startStop" ref="service" />
+		<int:service-activator expression="payload" />
 	</int:chain>
 
 	<!-- outbound send to websocket -->
-
-	<int:inbound-channel-adapter ref="service" method="getNext" channel="out">
-		<int:poller fixed-delay="1000" error-channel="removeSocket" />
-	</int:inbound-channel-adapter>
-
-	<int:splitter input-channel="out" output-channel="toBrowser" />
 
 	<int:channel id="toBrowser" />
 

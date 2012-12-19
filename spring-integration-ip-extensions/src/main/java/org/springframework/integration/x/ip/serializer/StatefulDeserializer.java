@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.ip.extensions.sockjs;
+package org.springframework.integration.x.ip.serializer;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import java.io.InputStream;
+
+import org.springframework.core.serializer.Deserializer;
 
 /**
  * @author Gary Russell
  * @since 3.0
  *
  */
-public class AutobahnTests {
+public interface StatefulDeserializer<T> extends Deserializer<T> {
 
-	public static void main(String[] args) throws Exception {
-		new ClassPathXmlApplicationContext("Autobahn-context.xml", AutobahnTests.class);
-		System.out.println("Hit Enter To Terminate...");
-		System.in.read();
-		System.exit(0);
-	}
-
+	void removeState(InputStream inputStream);
 }

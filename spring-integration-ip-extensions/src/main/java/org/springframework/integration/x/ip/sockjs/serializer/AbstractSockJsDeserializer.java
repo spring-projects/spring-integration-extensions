@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.ip.extensions.sockjs.serializer;
+package org.springframework.integration.x.ip.sockjs.serializer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,13 +25,13 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.integration.ip.extensions.serializer.ByteArrayCrLfSerializer;
-import org.springframework.integration.ip.extensions.serializer.StatefulDeserializer;
-import org.springframework.integration.ip.extensions.sockjs.support.SockJsFrame;
+import org.springframework.integration.x.ip.serializer.ByteArrayCrLfSerializer;
+import org.springframework.integration.x.ip.serializer.StatefulDeserializer;
+import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
 
 /**
  * @author Gary Russell
- * @since 2.1
+ * @since 3.0
  *
  */
 public abstract class AbstractSockJsDeserializer<T> implements StatefulDeserializer<T> {
