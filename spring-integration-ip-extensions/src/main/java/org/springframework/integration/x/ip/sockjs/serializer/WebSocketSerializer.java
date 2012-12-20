@@ -357,9 +357,6 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			}
 			frame = closeFrame;
 		}
-		else if (binary) {
-			frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
-		}
 		else {
 			List<byte[]> fragments = this.getState(inputStream).getFragments();
 			if (fragments.size() == 0) {

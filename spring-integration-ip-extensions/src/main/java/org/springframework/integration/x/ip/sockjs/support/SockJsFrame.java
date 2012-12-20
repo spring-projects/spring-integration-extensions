@@ -117,6 +117,7 @@ public class SockJsFrame {
 		return "SockJsFrame [type=" + typeToString[type & 0xff] + (payload == null ? "" : ", payload=" + payload.substring(0, len) +
 				(trunc ? "..." : "")) +
 				", binary=" + binary +
+				(binary != null ? ", binary.length=" + binary.length : "") +
 				", status=" + status + ", rsv=" + rsv + "]";
 	}
 
