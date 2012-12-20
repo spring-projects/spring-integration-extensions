@@ -18,14 +18,14 @@ package org.springframework.integration.x.ip.sockjs.serializer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.serializer.Serializer;
+import org.springframework.integration.MessagingException;
 import org.springframework.integration.ip.tcp.serializer.SoftEndOfStreamException;
 import org.springframework.integration.x.ip.sockjs.SockJsUtils;
 import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
@@ -43,16 +43,20 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 
 	private final Log logger = LogFactory.getLog(this.getClass());
 
-	private final Map<InputStream, StringBuilder> fragments = new ConcurrentHashMap<InputStream, StringBuilder>();
-
 	private volatile boolean server;
+
+	private boolean validateUtf8;
 
 	public void setServer(boolean server) {
 		this.server = server;
 	}
 
-	public void removeFragments(InputStream inputStream) {
-		this.fragments.remove(inputStream);
+	/**
+	 * Validate UTF-8 (required for Autobahn tests).
+	 * @param validateUtf8
+	 */
+	public void setValidateUtf8(boolean validateUtf8) {
+		this.validateUtf8 = validateUtf8;
 	}
 
 	public void serialize(final Object frame, OutputStream outputStream)
@@ -75,7 +79,9 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		int payloadLen = this.server ? 0 : 0x80; //masked
 		boolean close = theFrame.getType() == SockJsFrame.TYPE_CLOSE;
 		boolean pong = theFrame.getType() == SockJsFrame.TYPE_PONG;
-		int length = theFrame.getBinary() != null ? theFrame.getBinary().length : data.length();
+		byte[] bytes = theFrame.getBinary() != null ? theFrame.getBinary() : data.getBytes("UTF-8");
+
+		int length = bytes.length;
 		if (close) {
 			length += 2;
 		}
@@ -124,7 +130,6 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			buffer.putShort(theFrame.getStatus());
 			// TODO: mask status when client
 		}
-		byte[] bytes = theFrame.getBinary() != null ? theFrame.getBinary() : data.getBytes("UTF-8");
 		for (int i = 0; i < bytes.length; i++) {
 			if (server) {
 				buffer.put(bytes[i]);
@@ -305,10 +310,6 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				done = (server ? maskInx == 4 : true) && dataInx >= len;
 			}
 		};
-		String data = new String(buffer, "UTF-8");
-		if (close) {
-			data = data.substring(2);
-		}
 
 		SockJsFrame frame;
 
@@ -319,12 +320,8 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			frame = new SockJsFrame(SockJsFrame.TYPE_INVALID, invalidText, buffer);
 		}
 		else if (!fin) {
-			StringBuilder builder = this.fragments.get(inputStream);
-			if (builder == null) {
-				builder = new StringBuilder();
-				this.fragments.put(inputStream, builder);
-			}
-			builder.append(data);
+			List<byte[]> fragments = this.getState(inputStream).getFragments();
+			fragments.add(buffer);
 			logger.debug("Fragment");
 			return new SockJsFrame(binary ? SockJsFrame.TYPE_DATA_BINARY : SockJsFrame.TYPE_DATA, (String) null);
 		}
@@ -332,32 +329,87 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			frame = new SockJsFrame(SockJsFrame.TYPE_PING, buffer);
 		}
 		else if (pong) {
+			String data = new String(buffer, "UTF-8");
 			frame = new SockJsFrame(SockJsFrame.TYPE_PONG, data);
 		}
 		else if (close) {
+			String data = new String(buffer, "UTF-8");
+			if (data.length() >= 2) {
+				data = data.substring(2);
+			}
 			SockJsFrame closeFrame = new SockJsFrame(SockJsFrame.TYPE_CLOSE, data);
 			closeFrame.setStatus((short) ((buffer[0] << 8) | (buffer[1] & 0xff)));
 			frame = closeFrame;
 		}
 		else if (binary) {
 			frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
-			//TODO binary fragments
 		}
 		else {
-			StringBuilder builder = this.fragments.get(inputStream);
-			if (builder == null) {
-				frame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
+			List<byte[]> fragments = this.getState(inputStream).getFragments();
+			if (fragments.size() == 0) {
+				if (binary) {
+					frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
+				}
+				else {
+					String data = new String(buffer, "UTF-8");
+					if (!validateUtf8IfNecessary(buffer, data)) {
+						frame = new SockJsFrame(SockJsFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", buffer);
+					}
+					else {
+						frame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
+					}
+				}
 			}
 			else {
-				builder.append(data).toString();
-				this.removeFragments(inputStream);
-				frame = new SockJsFrame(SockJsFrame.TYPE_DATA, builder.toString());
+				fragments.add(buffer);
+				int utf8Len = 0;
+				for (byte[] fragment : fragments) {
+					utf8Len += fragment.length;
+				}
+				byte[] reconstructed = new byte[utf8Len];
+				int utf8Pos = 0;
+				for (byte[] fragment : fragments) {
+					System.arraycopy(fragment, 0, reconstructed, utf8Pos, fragment.length);
+					utf8Pos += fragment.length;
+				}
+				if (binary) {
+					frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, reconstructed);
+				}
+				else {
+					String data = new String(reconstructed, "UTF-8");
+					if (!validateUtf8IfNecessary(reconstructed, data)) {
+						frame = new SockJsFrame(SockJsFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", reconstructed);
+					}
+					else {
+						frame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
+					}
+				}
 			}
 		}
 		if (rsv > 0) {
 			frame.setRsv(rsv);
 		}
 		return frame;
+	}
+
+	private boolean validateUtf8IfNecessary(byte[] buffer, String data) {
+		if (this.validateUtf8) {
+			try {
+				byte[] bytes = data.getBytes("UTF-8");
+				if (bytes.length != buffer.length) {
+					return false;
+				}
+				for (int i = 0; i < buffer.length; i++) {
+					if (buffer[i] != bytes[i]) {
+						return false;
+					}
+				}
+			}
+			catch (UnsupportedEncodingException e) {
+				throw new MessagingException("UTF-8 Conversion error");
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -371,7 +423,6 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 	@Override
 	public void removeState(InputStream inputStream) {
 		super.removeState(inputStream);
-		this.removeFragments(inputStream);
 	}
 
 	public SockJsFrame generateHandshake(SockJsFrame frame) throws Exception {

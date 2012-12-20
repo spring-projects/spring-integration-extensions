@@ -26,6 +26,8 @@ public class SockJsFrame {
 
 	public static final int TYPE_FRAGMENTED_CONTROL = 256;
 
+	public static final int TYPE_INVALID_UTF8 = 512;
+
 	public static final int TYPE_HEADERS = 1;
 
 	public static final int TYPE_HEARTBEAT = 2;

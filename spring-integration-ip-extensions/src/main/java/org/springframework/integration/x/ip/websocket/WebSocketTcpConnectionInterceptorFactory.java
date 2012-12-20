@@ -97,7 +97,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				}
 				this.protocolViolation(message);
 			}
-			else if (payload.getType() == SockJsFrame.TYPE_INVALID) {
+			else if ((payload.getType() & 0xff) == SockJsFrame.TYPE_INVALID) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Invalid:" + payload.getPayload());
 				}
@@ -153,7 +153,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			SockJsFrame frame = (SockJsFrame) message.getPayload();
 			String error = "Protocol Error" + frame.getPayload() == null ? "" : (":" + frame.getPayload());
 			SockJsFrame close = new SockJsFrame(SockJsFrame.TYPE_CLOSE, error);
-			close.setStatus((short) 1002);
+			close.setStatus(frame.getType() == SockJsFrame.TYPE_INVALID_UTF8 ? (short) 1007 : (short) 1002);
 			try {
 				this.getRequiredDeserializer().getState(this.getTheInputStream()).setCloseInitiated(true);
 				this.send(MessageBuilder.withPayload(close).build());

@@ -163,6 +163,8 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 
 		private volatile SockJsFrame pendingFrame;
 
+		private final List<byte[]> fragments = new ArrayList<byte[]>();
+
 		boolean isGzipping() {
 			return gzipping;
 		}
@@ -207,6 +209,10 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 
 		public void setPendingFrame(SockJsFrame pendingFrame) {
 			this.pendingFrame = pendingFrame;
+		}
+
+		public List<byte[]> getFragments() {
+			return fragments;
 		}
 
 	}
