@@ -60,7 +60,7 @@ public class SockJsFrame {
 
 	private final byte[] binary;
 
-	private volatile short status;
+	private volatile short status = -1;
 
 	private volatile int rsv;
 
@@ -108,7 +108,15 @@ public class SockJsFrame {
 
 	@Override
 	public String toString() {
-		return "SockJsFrame [type=" + typeToString[type & 0xff] + ", payload=" + payload + ", binary=" + binary +
+		int len = 0;
+		boolean trunc = false;
+		if (this.payload!= null) {
+			len = Math.min(100, payload.length());
+			trunc = len < payload.length();
+		}
+		return "SockJsFrame [type=" + typeToString[type & 0xff] + (payload == null ? "" : ", payload=" + payload.substring(0, len) +
+				(trunc ? "..." : "")) +
+				", binary=" + binary +
 				", status=" + status + ", rsv=" + rsv + "]";
 	}
 

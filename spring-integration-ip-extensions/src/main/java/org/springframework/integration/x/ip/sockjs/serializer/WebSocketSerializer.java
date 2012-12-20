@@ -20,7 +20,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +43,9 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 
 	private static final String HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION =
 			"HTTP/1.1 101 Web Socket Protocol Handshake - Spring Integration\r\n";
+
+	private static final Set<Short> INVALID_STATUS = new HashSet<Short>(
+		Arrays.asList((short) 1004, (short) 1005, (short) 1006, (short) 1012, (short) 1013, (short) 1014, (short) 1015));
 
 	private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -338,7 +344,17 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				data = data.substring(2);
 			}
 			SockJsFrame closeFrame = new SockJsFrame(SockJsFrame.TYPE_CLOSE, data);
-			closeFrame.setStatus((short) ((buffer[0] << 8) | (buffer[1] & 0xff)));
+			short status = 1000;
+			if (buffer.length >= 2) {
+				status = (short) ((buffer[0] << 8) | (buffer[1] & 0xff));
+				closeFrame.setStatus(status);
+			}
+			if (buffer.length == 1 || buffer.length > 125 ||
+					(buffer.length > 2 && !validateUtf8IfNecessary(buffer, 2, data)) ||
+					status < 1000 || INVALID_STATUS.contains(status) || (status >= 1016 && status < 3000) || status >= 5000) {
+				// Simply close in this case; no close reply
+				this.getState(inputStream).setCloseInitiated(true);
+			}
 			frame = closeFrame;
 		}
 		else if (binary) {
@@ -352,7 +368,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				}
 				else {
 					String data = new String(buffer, "UTF-8");
-					if (!validateUtf8IfNecessary(buffer, data)) {
+					if (!validateUtf8IfNecessary(buffer, 0, data)) {
 						frame = new SockJsFrame(SockJsFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", buffer);
 					}
 					else {
@@ -377,7 +393,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 				}
 				else {
 					String data = new String(reconstructed, "UTF-8");
-					if (!validateUtf8IfNecessary(reconstructed, data)) {
+					if (!validateUtf8IfNecessary(reconstructed, 0, data)) {
 						frame = new SockJsFrame(SockJsFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", reconstructed);
 					}
 					else {
@@ -392,15 +408,15 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		return frame;
 	}
 
-	private boolean validateUtf8IfNecessary(byte[] buffer, String data) {
+	private boolean validateUtf8IfNecessary(byte[] buffer, int offset, String data) {
 		if (this.validateUtf8) {
 			try {
 				byte[] bytes = data.getBytes("UTF-8");
-				if (bytes.length != buffer.length) {
+				if (bytes.length != buffer.length - offset) {
 					return false;
 				}
-				for (int i = 0; i < buffer.length; i++) {
-					if (buffer[i] != bytes[i]) {
+				for (int i = 0; i < bytes.length; i++) {
+					if (buffer[i + offset] != bytes[i]) {
 						return false;
 					}
 				}

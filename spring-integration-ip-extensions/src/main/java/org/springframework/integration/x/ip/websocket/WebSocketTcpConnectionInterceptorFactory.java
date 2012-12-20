@@ -71,13 +71,22 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 			BasicState state = this.getRequiredDeserializer().getState(inputStream);
 			Assert.notNull(state, "State must not be null");
-			if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
+			if (payload.getRsv() > 0) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Reserved bits:" + payload.getRsv());
+				}
+				this.protocolViolation(message);
+			}
+			else if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
 				try {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Close, status:" + payload.getStatus());
 					}
 					// If we initiated the close, just close.
 					if (!state.isCloseInitiated()) {
+						if (payload.getStatus() < 0) {
+							payload.setStatus((short) 1000);
+						}
 						this.send(message);
 					}
 					this.close();
@@ -90,12 +99,6 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				if (logger.isWarnEnabled()) {
 					logger.warn("Message dropped - close initiated:" + message);
 				}
-			}
-			else if (payload.getRsv() > 0) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Reserved bits:" + payload.getRsv());
-				}
-				this.protocolViolation(message);
 			}
 			else if ((payload.getType() & 0xff) == SockJsFrame.TYPE_INVALID) {
 				if (logger.isDebugEnabled()) {
