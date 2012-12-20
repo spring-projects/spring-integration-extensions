@@ -81,7 +81,9 @@ public abstract class AbstractSockJsDeserializer<T> implements StatefulDeseriali
 	private List<SockJsFrame> decodeHeaders(String frameData, BasicState state) {
 		// TODO: Full header separation - mvc utils?
 		List<SockJsFrame> dataList = new ArrayList<SockJsFrame>();
-		System.out.println("Received:Headers\r\n" + frameData);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Received:Headers\r\n" + frameData);
+		}
 		String[] headers = frameData.split("\\r\\n");
 		String cookies = "Cookie: ";
 		for (String header : headers) {
