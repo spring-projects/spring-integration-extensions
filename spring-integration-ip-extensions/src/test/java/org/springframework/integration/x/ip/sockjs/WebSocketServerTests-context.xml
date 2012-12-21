@@ -17,9 +17,8 @@
 		serializer="wsSerializer"
 		deserializer="wsSerializer" />
 
-	<bean id="wsSerializer" class="org.springframework.integration.x.ip.sockjs.serializer.WebSocketSerializer">
+	<bean id="wsSerializer" class="org.springframework.integration.x.ip.websocket.WebSocketSerializer">
 		<property name="server" value="true" />
-		<property name="simpleData" value="true" />
 	</bean>
 
 	<bean id="interceptors" class="org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorFactoryChain">

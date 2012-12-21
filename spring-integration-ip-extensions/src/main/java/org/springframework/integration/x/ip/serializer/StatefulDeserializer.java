@@ -15,8 +15,6 @@
  */
 package org.springframework.integration.x.ip.serializer;
 
-import java.io.InputStream;
-
 import org.springframework.core.serializer.Deserializer;
 
 /**
@@ -26,5 +24,5 @@ import org.springframework.core.serializer.Deserializer;
  */
 public interface StatefulDeserializer<T> extends Deserializer<T> {
 
-	void removeState(InputStream inputStream);
+	void removeState(Object key);
 }

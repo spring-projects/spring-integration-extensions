@@ -32,9 +32,7 @@ import org.springframework.integration.ip.tcp.connection.TcpConnectionIntercepto
 import org.springframework.integration.ip.tcp.connection.TcpNetConnection;
 import org.springframework.integration.ip.tcp.connection.TcpNioConnection;
 import org.springframework.integration.support.MessageBuilder;
-import org.springframework.integration.x.ip.sockjs.serializer.AbstractSockJsDeserializer.BasicState;
-import org.springframework.integration.x.ip.sockjs.serializer.WebSocketSerializer;
-import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
+import org.springframework.integration.x.ip.websocket.WebSocketSerializer.WebSocketState;
 import org.springframework.util.Assert;
 
 /**
@@ -59,8 +57,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 		@Override
 		public boolean onMessage(Message<?> message) {
-			Assert.isInstanceOf(SockJsFrame.class, message.getPayload());
-			SockJsFrame payload = (SockJsFrame) message.getPayload();
+			Assert.isInstanceOf(WebSocketFrame.class, message.getPayload());
+			WebSocketFrame payload = (WebSocketFrame) message.getPayload();
 			InputStream inputStream = null;
 			try {
 				inputStream = this.getTheInputStream();
@@ -69,7 +67,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				this.protocolViolation(message);
 			}
 
-			BasicState state = this.getRequiredDeserializer().getState(inputStream);
+			WebSocketState state = (WebSocketState) this.getRequiredDeserializer().getState(inputStream);
 			Assert.notNull(state, "State must not be null");
 			if (payload.getRsv() > 0) {
 				if (logger.isDebugEnabled()) {
@@ -77,7 +75,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				}
 				this.protocolViolation(message);
 			}
-			else if (payload.getType() == SockJsFrame.TYPE_CLOSE) {
+			else if (payload.getType() == WebSocketFrame.TYPE_CLOSE) {
 				try {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Close, status:" + payload.getStatus());
@@ -100,19 +98,19 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 					logger.warn("Message dropped - close initiated:" + message);
 				}
 			}
-			else if ((payload.getType() & 0xff) == SockJsFrame.TYPE_INVALID) {
+			else if ((payload.getType() & 0xff) == WebSocketFrame.TYPE_INVALID) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Invalid:" + payload.getPayload());
 				}
 				this.protocolViolation(message);
 			}
-			else if (payload.getType() == SockJsFrame.TYPE_FRAGMENTED_CONTROL) {
+			else if (payload.getType() == WebSocketFrame.TYPE_FRAGMENTED_CONTROL) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Fragmented Control Op");
 				}
 				this.protocolViolation(message);
 			}
-			else if (payload.getType() == SockJsFrame.TYPE_PING) {
+			else if (payload.getType() == WebSocketFrame.TYPE_PING) {
 				try {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Ping:" + new String(payload.getBinary(), "UTF-8"));
@@ -121,7 +119,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 						this.protocolViolation(message);
 					}
 					else {
-						SockJsFrame pong = new SockJsFrame(SockJsFrame.TYPE_PONG, payload.getBinary());
+						WebSocketFrame pong = new WebSocketFrame(WebSocketFrame.TYPE_PONG, payload.getBinary());
 						this.send(MessageBuilder.withPayload(pong).build());
 					}
 				}
@@ -129,7 +127,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 					throw new MessageHandlingException(message, "Send failed", e);
 				}
 			}
-			else if (payload.getType() == SockJsFrame.TYPE_PONG) {
+			else if (payload.getType() == WebSocketFrame.TYPE_PONG) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Pong");
 				}
@@ -153,12 +151,12 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			if (logger.isDebugEnabled()) {
 				logger.debug("Protocol violation - closing");
 			}
-			SockJsFrame frame = (SockJsFrame) message.getPayload();
+			WebSocketFrame frame = (WebSocketFrame) message.getPayload();
 			String error = "Protocol Error" + frame.getPayload() == null ? "" : (":" + frame.getPayload());
-			SockJsFrame close = new SockJsFrame(SockJsFrame.TYPE_CLOSE, error);
-			close.setStatus(frame.getType() == SockJsFrame.TYPE_INVALID_UTF8 ? (short) 1007 : (short) 1002);
+			WebSocketFrame close = new WebSocketFrame(WebSocketFrame.TYPE_CLOSE, error);
+			close.setStatus(frame.getType() == WebSocketFrame.TYPE_INVALID_UTF8 ? (short) 1007 : (short) 1002);
 			try {
-				this.getRequiredDeserializer().getState(this.getTheInputStream()).setCloseInitiated(true);
+				((WebSocketState) this.getRequiredDeserializer().getState(this.getTheInputStream())).setCloseInitiated(true);
 				this.send(MessageBuilder.withPayload(close).build());
 			}
 			catch (Exception e) {
@@ -202,8 +200,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			return inputStream;
 		}
 
-		private void doHandshake(SockJsFrame frame) throws Exception {
-			SockJsFrame handshake = this.getRequiredDeserializer().generateHandshake(frame);
+		private void doHandshake(WebSocketFrame frame) throws Exception {
+			WebSocketFrame handshake = this.getRequiredDeserializer().generateHandshake(frame);
 			this.send(MessageBuilder.withPayload(handshake).build());
 		}
 

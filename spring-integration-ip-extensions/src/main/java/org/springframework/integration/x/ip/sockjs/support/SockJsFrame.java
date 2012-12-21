@@ -15,18 +15,14 @@
  */
 package org.springframework.integration.x.ip.sockjs.support;
 
+import org.springframework.integration.x.ip.serializer.DataFrame;
+
 /**
  * @author Gary Russell
  * @since 3.0
  *
  */
-public class SockJsFrame {
-
-	public static final int TYPE_INVALID = 0;
-
-	public static final int TYPE_FRAGMENTED_CONTROL = 256;
-
-	public static final int TYPE_INVALID_UTF8 = 512;
+public class SockJsFrame extends DataFrame {
 
 	public static final int TYPE_HEADERS = 1;
 
@@ -35,8 +31,6 @@ public class SockJsFrame {
 	public static final int TYPE_PRELUDE = 3;
 
 	public static final int TYPE_DATA = 4;
-
-	public static final int TYPE_DATA_BINARY = 260;
 
 	public static final int TYPE_PING = 5;
 
@@ -54,71 +48,13 @@ public class SockJsFrame {
 		"Invalid", "Headers", "HeartBeat", "XHR Prelude", "Data", "Ping", "Pong", "Open", "Close", "Unexpected", "Cookies"
 	};
 
-	private final int type;
-
-	private final String payload;
-
-	private final byte[] binary;
-
-	private volatile short status = -1;
-
-	private volatile int rsv;
-
 	public SockJsFrame(int type, String payload) {
-		this(type, payload, null);
-	}
-
-	public SockJsFrame(int type, byte[] binary) {
-		this(type, null, binary);
-	}
-
-	public SockJsFrame(int type, String payload, byte[] binary) {
-		this.type = type;
-		this.payload = payload;
-		this.binary = binary;
-	}
-
-	public int getType() {
-		return this.type;
-	}
-
-	public String getPayload() {
-		return this.payload;
-	}
-
-	public byte[] getBinary() {
-		return binary;
-	}
-
-	public short getStatus() {
-		return status;
-	}
-
-	public void setStatus(short status) {
-		this.status = status;
-	}
-
-	public void setRsv(int rsv) {
-		this.rsv = rsv;
-	}
-
-	public int getRsv() {
-		return rsv;
+		super(type, payload);
 	}
 
 	@Override
 	public String toString() {
-		int len = 0;
-		boolean trunc = false;
-		if (this.payload!= null) {
-			len = Math.min(100, payload.length());
-			trunc = len < payload.length();
-		}
-		return "SockJsFrame [type=" + typeToString[type & 0xff] + (payload == null ? "" : ", payload=" + payload.substring(0, len) +
-				(trunc ? "..." : "")) +
-				", binary=" + binary +
-				(binary != null ? ", binary.length=" + binary.length : "") +
-				", status=" + status + ", rsv=" + rsv + "]";
+		return "SockJsFrame [type=" + typeToString[type] + ", payload=" + payload + "]";
 	}
 
 }

@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.x.ip.sockjs.serializer;
+package org.springframework.integration.x.ip.websocket;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.core.serializer.Serializer;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.ip.tcp.serializer.SoftEndOfStreamException;
-import org.springframework.integration.x.ip.sockjs.SockJsUtils;
-import org.springframework.integration.x.ip.sockjs.support.SockJsFrame;
+import org.springframework.integration.x.ip.serializer.AbstractHttpSwitchingDeserializer;
+import org.springframework.integration.x.ip.serializer.DataFrame;
 import org.springframework.util.Assert;
 
 /**
@@ -39,15 +40,13 @@ import org.springframework.util.Assert;
  * @since 3.0
  *
  */
-public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame> implements Serializer<Object> {
+public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer implements Serializer<Object> {
 
 	private static final String HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION =
 			"HTTP/1.1 101 Web Socket Protocol Handshake - Spring Integration\r\n";
 
 	private static final Set<Short> INVALID_STATUS = new HashSet<Short>(
 		Arrays.asList((short) 1004, (short) 1005, (short) 1006, (short) 1012, (short) 1013, (short) 1014, (short) 1015));
-
-	private final Log logger = LogFactory.getLog(this.getClass());
 
 	private volatile boolean server;
 
@@ -65,16 +64,26 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		this.validateUtf8 = validateUtf8;
 	}
 
+	@Override
+	protected DataFrame createDataFrame(int type, String frameData) {
+		return new WebSocketFrame(type, frameData);
+	}
+
+	@Override
+	protected BasicState createState() {
+		return new WebSocketState();
+	}
+
 	public void serialize(final Object frame, OutputStream outputStream)
 			throws IOException {
 		String data = "";
-		SockJsFrame theFrame = null;
+		WebSocketFrame theFrame = null;
 		if (frame instanceof String) {
 			data = (String) frame;
-			theFrame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
+			theFrame = new WebSocketFrame(WebSocketFrame.TYPE_DATA, data);
 		}
-		else if (frame instanceof SockJsFrame) {
-			theFrame = (SockJsFrame) frame;
+		else if (frame instanceof WebSocketFrame) {
+			theFrame = (WebSocketFrame) frame;
 			data = theFrame.getPayload();
 		}
 		if (data != null && data.startsWith(HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION)) {
@@ -83,8 +92,8 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		}
 		int lenBytes;
 		int payloadLen = this.server ? 0 : 0x80; //masked
-		boolean close = theFrame.getType() == SockJsFrame.TYPE_CLOSE;
-		boolean pong = theFrame.getType() == SockJsFrame.TYPE_PONG;
+		boolean close = theFrame.getType() == WebSocketFrame.TYPE_CLOSE;
+		boolean pong = theFrame.getType() == WebSocketFrame.TYPE_PONG;
 		byte[] bytes = theFrame.getBinary() != null ? theFrame.getBinary() : data.getBytes("UTF-8");
 
 		int length = bytes.length;
@@ -111,7 +120,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		else if (close) {
 			buffer.put((byte) 0x88);
 		}
-		else if (theFrame.getType() == SockJsFrame.TYPE_DATA_BINARY) {
+		else if (theFrame.getType() == WebSocketFrame.TYPE_DATA_BINARY) {
 			buffer.put((byte) 0x82);
 		}
 		else {
@@ -148,8 +157,8 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 	}
 
 	@Override
-	public SockJsFrame deserialize(InputStream inputStream) throws IOException {
-		SockJsFrame frame = null;
+	public DataFrame deserialize(InputStream inputStream) throws IOException {
+		DataFrame frame = null;
 		BasicState state = this.getState(inputStream);
 		if (state != null) {
 			frame = state.getPendingFrame();
@@ -163,8 +172,8 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		return frame;
 	}
 
-	private SockJsFrame doDeserialize(InputStream inputStream, SockJsFrame protoFrame) throws IOException {
-		List<SockJsFrame> headers = checkStreaming(inputStream);
+	private DataFrame doDeserialize(InputStream inputStream, DataFrame protoFrame) throws IOException {
+		List<DataFrame> headers = checkStreaming(inputStream);
 		if (headers != null) {
 			return headers.get(0);
 		}
@@ -209,7 +218,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 						invalidText = "Unexpected continuation frame";
 					}
 					else {
-						binary = protoFrame.getType() == SockJsFrame.TYPE_DATA_BINARY;
+						binary = protoFrame.getType() == WebSocketFrame.TYPE_DATA_BINARY;
 						this.getState(inputStream).setPendingFrame(null);
 					}
 					break;
@@ -317,33 +326,33 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			}
 		};
 
-		SockJsFrame frame;
+		WebSocketFrame frame;
 
 		if (fragmentedControl) {
-			frame = new SockJsFrame(SockJsFrame.TYPE_FRAGMENTED_CONTROL, buffer);
+			frame = new WebSocketFrame(WebSocketFrame.TYPE_FRAGMENTED_CONTROL, buffer);
 		}
 		else if (invalid) {
-			frame = new SockJsFrame(SockJsFrame.TYPE_INVALID, invalidText, buffer);
+			frame = new WebSocketFrame(WebSocketFrame.TYPE_INVALID, invalidText, buffer);
 		}
 		else if (!fin) {
 			List<byte[]> fragments = this.getState(inputStream).getFragments();
 			fragments.add(buffer);
 			logger.debug("Fragment");
-			return new SockJsFrame(binary ? SockJsFrame.TYPE_DATA_BINARY : SockJsFrame.TYPE_DATA, (String) null);
+			return new WebSocketFrame(binary ? WebSocketFrame.TYPE_DATA_BINARY : WebSocketFrame.TYPE_DATA, (String) null);
 		}
 		else if (ping) {
-			frame = new SockJsFrame(SockJsFrame.TYPE_PING, buffer);
+			frame = new WebSocketFrame(WebSocketFrame.TYPE_PING, buffer);
 		}
 		else if (pong) {
 			String data = new String(buffer, "UTF-8");
-			frame = new SockJsFrame(SockJsFrame.TYPE_PONG, data);
+			frame = new WebSocketFrame(WebSocketFrame.TYPE_PONG, data);
 		}
 		else if (close) {
 			String data = new String(buffer, "UTF-8");
 			if (data.length() >= 2) {
 				data = data.substring(2);
 			}
-			SockJsFrame closeFrame = new SockJsFrame(SockJsFrame.TYPE_CLOSE, data);
+			WebSocketFrame closeFrame = new WebSocketFrame(WebSocketFrame.TYPE_CLOSE, data);
 			short status = 1000;
 			if (buffer.length >= 2) {
 				status = (short) ((buffer[0] << 8) | (buffer[1] & 0xff));
@@ -353,7 +362,7 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 					(buffer.length > 2 && !validateUtf8IfNecessary(buffer, 2, data)) ||
 					status < 1000 || INVALID_STATUS.contains(status) || (status >= 1016 && status < 3000) || status >= 5000) {
 				// Simply close in this case; no close reply
-				this.getState(inputStream).setCloseInitiated(true);
+				((WebSocketState) this.getState(inputStream)).setCloseInitiated(true);
 			}
 			frame = closeFrame;
 		}
@@ -361,15 +370,15 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 			List<byte[]> fragments = this.getState(inputStream).getFragments();
 			if (fragments.size() == 0) {
 				if (binary) {
-					frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, buffer);
+					frame = new WebSocketFrame(WebSocketFrame.TYPE_DATA_BINARY, buffer);
 				}
 				else {
 					String data = new String(buffer, "UTF-8");
 					if (!validateUtf8IfNecessary(buffer, 0, data)) {
-						frame = new SockJsFrame(SockJsFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", buffer);
+						frame = new WebSocketFrame(WebSocketFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", buffer);
 					}
 					else {
-						frame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
+						frame = new WebSocketFrame(WebSocketFrame.TYPE_DATA, data);
 					}
 				}
 			}
@@ -386,15 +395,15 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 					utf8Pos += fragment.length;
 				}
 				if (binary) {
-					frame = new SockJsFrame(SockJsFrame.TYPE_DATA_BINARY, reconstructed);
+					frame = new WebSocketFrame(WebSocketFrame.TYPE_DATA_BINARY, reconstructed);
 				}
 				else {
 					String data = new String(reconstructed, "UTF-8");
 					if (!validateUtf8IfNecessary(reconstructed, 0, data)) {
-						frame = new SockJsFrame(SockJsFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", reconstructed);
+						frame = new WebSocketFrame(WebSocketFrame.TYPE_INVALID_UTF8, "Invalid UTF-8", reconstructed);
 					}
 					else {
-						frame = new SockJsFrame(SockJsFrame.TYPE_DATA, data);
+						frame = new WebSocketFrame(WebSocketFrame.TYPE_DATA, data);
 					}
 				}
 			}
@@ -434,12 +443,12 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 	}
 
 	@Override
-	public void removeState(InputStream inputStream) {
+	public void removeState(Object inputStream) {
 		super.removeState(inputStream);
 	}
 
-	public SockJsFrame generateHandshake(SockJsFrame frame) throws Exception {
-		Assert.isTrue(frame.getType() == SockJsFrame.TYPE_HEADERS, "Expected headers:" + frame);
+	public WebSocketFrame generateHandshake(WebSocketFrame frame) throws Exception {
+		Assert.isTrue(frame.getType() == WebSocketFrame.TYPE_HEADERS, "Expected headers:" + frame);
 		String[] headers = frame.getPayload().split("\\r\\n");
 		String key = null;
 		for (String header : headers) {
@@ -451,8 +460,39 @@ public class WebSocketSerializer extends AbstractSockJsDeserializer<SockJsFrame>
 		String handshake = HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION +
 						   "Upgrade: WebSocket\r\n" +
 						   "Connection: Upgrade\r\n" +
-						   "Sec-WebSocket-Accept: " + SockJsUtils.generateWebSocketAccept(key) + "\r\n\r\n";
-		return new SockJsFrame(SockJsFrame.TYPE_DATA, handshake);
+						   "Sec-WebSocket-Accept: " + this.generateWebSocketAccept(key) + "\r\n\r\n";
+		return new WebSocketFrame(WebSocketFrame.TYPE_DATA, handshake);
 	}
 
+	private String generateWebSocketAccept(String key) throws NoSuchAlgorithmException  {
+		MessageDigest md = MessageDigest.getInstance("SHA-1");
+		String toDigest = key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+		byte[] acceptStringBytes  = md.digest(toDigest.getBytes());
+		acceptStringBytes = Base64.encodeBase64(acceptStringBytes);
+		String acceptString = new String(acceptStringBytes);
+		return acceptString;
+	}
+
+	public static class WebSocketState extends BasicState {
+
+		private volatile boolean closeInitiated;
+		private volatile boolean expectingPong;
+
+		public boolean isCloseInitiated() {
+			return this.closeInitiated;
+		}
+
+		public void setCloseInitiated(boolean closeInitiated) {
+			this.closeInitiated = closeInitiated;
+		}
+
+		public boolean isExpectingPong() {
+			return this.expectingPong;
+		}
+
+		public void setExpectingPong(boolean expectingPong) {
+			this.expectingPong = expectingPong;
+		}
+
+	}
 }
