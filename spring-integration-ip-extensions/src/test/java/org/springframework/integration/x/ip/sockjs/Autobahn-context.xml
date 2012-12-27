@@ -9,8 +9,6 @@
 		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- 2.10 fails with NIO because pongs get out of sequence -->
-
 	<!-- ws://localhost:18080 -->
 
 	<int-ip:tcp-connection-factory id="ws"
@@ -25,9 +23,11 @@
 
 	<!-- wss://localhost:28080 -->
 
+	<!-- We MUST use apply-sequence with NIO so we can resequence frames -->
+
 	<int-ip:tcp-connection-factory id="wss"
 		type="server" port="28080"
-		using-nio="false"
+		using-nio="true" apply-sequence="true"
 		so-timeout="600000"
 		ssl-context-support="sslCtxSup"
 		interceptor-factory-chain="interceptors"

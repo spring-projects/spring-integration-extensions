@@ -81,13 +81,14 @@ public class WebSocketFrame extends DataFrame {
 			trunc = len < payload.length();
 		}
 		String typeAsString;
-		if (type < typeToString.length) {
+		if ((type & 0xff) < typeToString.length) {
 			typeAsString = typeToString[type & 0xff];
 		}
 		else {
 			typeAsString = Integer.toString(type);
 		}
-		return "WebSocketFrame [type=" + typeAsString + (payload == null ? "" : ", payload=" + payload.substring(0, len) +
+		return "WebSocketFrame [type=" + typeAsString + "(" +
+				type + ")"+ (payload == null ? "" : ", payload=" + payload.substring(0, len) +
 				(trunc ? "..." : "")) +
 				", binary=" + binary +
 				(binary != null ? ", binary.length=" + binary.length : "") +

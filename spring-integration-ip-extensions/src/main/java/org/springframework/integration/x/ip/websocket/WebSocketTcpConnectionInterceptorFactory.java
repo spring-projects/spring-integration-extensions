@@ -25,6 +25,13 @@ import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.core.serializer.Deserializer;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
+import org.springframework.integration.MessageHeaders;
+import org.springframework.integration.MessagingException;
+import org.springframework.integration.aggregator.ResequencingMessageGroupProcessor;
+import org.springframework.integration.aggregator.ResequencingMessageHandler;
+import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.core.MessageHandler;
+import org.springframework.integration.endpoint.EventDrivenConsumer;
 import org.springframework.integration.ip.tcp.connection.AbstractTcpConnectionInterceptor;
 import org.springframework.integration.ip.tcp.connection.TcpConnection;
 import org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptor;
@@ -51,12 +58,53 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 	private class WebSocketTcpConnectionInterceptor extends AbstractTcpConnectionInterceptor {
 
-		private boolean shook;
+		private volatile boolean shook;
 
-		private InputStream theInputStream;
+		private volatile InputStream theInputStream;
 
+		private final DirectChannel resequenceChannel = new DirectChannel();
+
+		private final EventDrivenConsumer resequencer;
+
+		public WebSocketTcpConnectionInterceptor() {
+			super();
+			ResequencingMessageHandler handler = new ResequencingMessageHandler(new ResequencingMessageGroupProcessor());
+			handler.setReleasePartialSequences(true);
+			DirectChannel resequenced = new DirectChannel();
+			resequenced.setBeanName("resequencedWSFrames");
+			handler.setOutputChannel(resequenced);
+			this.resequencer = new EventDrivenConsumer(this.resequenceChannel, handler);
+			resequenced.subscribe(new MessageHandler() {
+
+				@Override
+				public void handleMessage(Message<?> message) throws MessagingException {
+					doOnMessage(message);
+				}
+			});
+			this.resequencer.afterPropertiesSet();
+			this.resequencer.start();
+		}
+
+		/**
+		 * When using NIO, we have to resequence the messages because frames may
+		 * arrive out of order. This is particularly an issue for some of the
+		 * Autobahn tests where, for example, many pings are sent and the test
+		 * expects the pongs to come back in the same order.
+		 * TODO: Add an option to eliminate the resequencer if the application
+		 * doesn't care.
+		 */
 		@Override
 		public boolean onMessage(Message<?> message) {
+			if (this.getTheConnection() instanceof TcpNioConnection) {
+				resequenceChannel.send(message);
+				return true;
+			}
+			else {
+				return this.doOnMessage(message);
+			}
+		}
+
+		public boolean doOnMessage(Message<?> message) {
 			Assert.isInstanceOf(WebSocketFrame.class, message.getPayload());
 			WebSocketFrame payload = (WebSocketFrame) message.getPayload();
 			InputStream inputStream = null;
@@ -68,7 +116,10 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			}
 
 			WebSocketState state = (WebSocketState) this.getRequiredDeserializer().getState(inputStream);
-			Assert.notNull(state, "State must not be null");
+			Assert.notNull(state, "State must not be null:" + message);
+			if (logger.isDebugEnabled()) {
+				logger.debug(state);
+			}
 			if (payload.getRsv() > 0) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Reserved bits:" + payload.getRsv());
@@ -120,7 +171,9 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 					}
 					else {
 						WebSocketFrame pong = new WebSocketFrame(WebSocketFrame.TYPE_PONG, payload.getBinary());
-						this.send(MessageBuilder.withPayload(pong).build());
+						this.send(MessageBuilder.withPayload(pong)
+								.copyHeaders(message.getHeaders())
+								.build());
 					}
 				}
 				catch (Exception e) {
@@ -137,7 +190,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			}
 			else {
 				try {
-					doHandshake(payload);
+					doHandshake(payload, message.getHeaders());
 					this.shook = true;
 				}
 				catch (Exception e) {
@@ -149,7 +202,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 		private void protocolViolation(Message<?> message) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Protocol violation - closing");
+				logger.debug("Protocol violation - closing; " + message);
 			}
 			WebSocketFrame frame = (WebSocketFrame) message.getPayload();
 			String error = "Protocol Error" + frame.getPayload() == null ? "" : (":" + frame.getPayload());
@@ -157,7 +210,9 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			close.setStatus(frame.getType() == WebSocketFrame.TYPE_INVALID_UTF8 ? (short) 1007 : (short) 1002);
 			try {
 				((WebSocketState) this.getRequiredDeserializer().getState(this.getTheInputStream())).setCloseInitiated(true);
-				this.send(MessageBuilder.withPayload(close).build());
+				this.send(MessageBuilder.withPayload(close)
+						.copyHeaders(message.getHeaders())
+						.build());
 			}
 			catch (Exception e) {
 				throw new MessageHandlingException(message, "Send failed", e);			}
@@ -200,9 +255,11 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			return inputStream;
 		}
 
-		private void doHandshake(WebSocketFrame frame) throws Exception {
+		private void doHandshake(WebSocketFrame frame, MessageHeaders messageHeaders) throws Exception {
 			WebSocketFrame handshake = this.getRequiredDeserializer().generateHandshake(frame);
-			this.send(MessageBuilder.withPayload(handshake).build());
+			this.send(MessageBuilder.withPayload(handshake)
+					.copyHeaders(messageHeaders)
+					.build());
 		}
 
 		private WebSocketSerializer getRequiredDeserializer() {

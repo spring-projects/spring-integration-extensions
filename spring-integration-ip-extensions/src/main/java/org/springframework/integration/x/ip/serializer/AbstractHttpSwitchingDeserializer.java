@@ -135,6 +135,12 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 			return fragments;
 		}
 
+		@Override
+		public String toString() {
+			return "BasicState [pendingFrame=" + pendingFrame + ", fragments.size()=" + fragments.size() + "]";
+		}
+
+
 	}
 
 }

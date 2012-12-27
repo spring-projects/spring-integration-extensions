@@ -219,8 +219,8 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 					}
 					else {
 						binary = protoFrame.getType() == WebSocketFrame.TYPE_DATA_BINARY;
-						this.getState(inputStream).setPendingFrame(null);
 					}
+					this.getState(inputStream).setPendingFrame(null);
 					break;
 				case 0x01:
 					logger.debug("Text, fin=" + fin);
@@ -329,7 +329,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		WebSocketFrame frame;
 
 		if (fragmentedControl) {
-			frame = new WebSocketFrame(WebSocketFrame.TYPE_FRAGMENTED_CONTROL, buffer);
+			frame = new WebSocketFrame(WebSocketFrame.TYPE_FRAGMENTED_CONTROL, "Fragmented control frame", buffer);
 		}
 		else if (invalid) {
 			frame = new WebSocketFrame(WebSocketFrame.TYPE_INVALID, invalidText, buffer);
@@ -394,6 +394,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 					System.arraycopy(fragment, 0, reconstructed, utf8Pos, fragment.length);
 					utf8Pos += fragment.length;
 				}
+				fragments.clear();
 				if (binary) {
 					frame = new WebSocketFrame(WebSocketFrame.TYPE_DATA_BINARY, reconstructed);
 				}
@@ -476,6 +477,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 	public static class WebSocketState extends BasicState {
 
 		private volatile boolean closeInitiated;
+
 		private volatile boolean expectingPong;
 
 		public boolean isCloseInitiated() {
