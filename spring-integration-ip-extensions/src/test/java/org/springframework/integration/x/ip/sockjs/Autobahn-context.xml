@@ -10,14 +10,44 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- 2.10 fails with NIO because pongs get out of sequence -->
-	
+
+	<!-- ws://localhost:18080 -->
+
 	<int-ip:tcp-connection-factory id="ws"
 		type="server" port="18080"
-		using-nio="false" 
+		using-nio="false"
 		so-timeout="600000"
 		interceptor-factory-chain="interceptors"
 		serializer="wsSerializer"
 		deserializer="wsSerializer" />
+
+	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="echoChannel" />
+
+	<!-- wss://localhost:28080 -->
+
+	<int-ip:tcp-connection-factory id="wss"
+		type="server" port="28080"
+		using-nio="false"
+		so-timeout="600000"
+		ssl-context-support="sslCtxSup"
+		interceptor-factory-chain="interceptors"
+		serializer="wsSerializer"
+		deserializer="wsSerializer" />
+
+	<bean id="sslCtxSup" class="org.springframework.integration.ip.tcp.connection.support.DefaultTcpSSLContextSupport">
+		<constructor-arg value="key.store"/>
+		<constructor-arg value="trust.store"/>
+		<constructor-arg value="secret"/>
+		<constructor-arg value="secret"/>
+	</bean>
+
+	<int-ip:tcp-inbound-channel-adapter connection-factory="wss" channel="addSSLHeader" />
+
+	<int:header-enricher input-channel="addSSLHeader" output-channel="echoChannel">
+		<int:header name="SSL" value="true"/>
+	</int:header-enricher>
+
+	<!-- End SSL config -->
 
 	<bean id="wsSerializer" class="org.springframework.integration.x.ip.websocket.WebSocketSerializer">
 		<property name="server" value="true" />
@@ -30,20 +60,30 @@
 		</property>
 	</bean>
 
-	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="echoChannel" />
-
 	<bean id="service" class="org.springframework.integration.x.ip.sockjs.WebSocketServerTests$DemoService" />
 
-	<int:chain input-channel="echoChannel" output-channel="toBrowser">
-		<!-- payload is a SockJsFrame with the data in its payload property -->
+	<int:chain input-channel="echoChannel" output-channel="toChooseBrowser">
+		<!-- payload is a DataFrame -->
 		<int:service-activator expression="payload" />
 	</int:chain>
 
-	<!-- outbound send to websocket -->
+	<int:header-value-router input-channel="toChooseBrowser"
+							 header-name="SSL" default-output-channel="toBrowser">
+		<int:mapping value="false" channel="toBrowser"/>
+		<int:mapping value="true" channel="toBrowserSSL"/>
+	</int:header-value-router>
+
+	<!-- outbound send to websocket (ws:) -->
 
 	<int:channel id="toBrowser" />
 
 	<int-ip:tcp-outbound-channel-adapter connection-factory="ws" channel="toBrowser" />
+
+	<!-- outbound send to websocket (wss:) -->
+
+	<int:channel id="toBrowserSSL" />
+
+	<int-ip:tcp-outbound-channel-adapter connection-factory="wss" channel="toBrowserSSL" />
 
 	<int:channel id="stdOut" />
 

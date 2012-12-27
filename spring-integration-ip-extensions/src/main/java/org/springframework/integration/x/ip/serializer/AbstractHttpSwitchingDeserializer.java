@@ -43,7 +43,7 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 
 	protected final ByteArrayCrLfSerializer crlfDeserializer = new ByteArrayCrLfSerializer();
 
-	void setMaxMessageSize(int maxMessageSize) {
+	public void setMaxMessageSize(int maxMessageSize) {
 		this.maxMessageSize = maxMessageSize;
 	}
 

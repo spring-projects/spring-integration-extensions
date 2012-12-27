@@ -306,7 +306,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 			case 8:
 			case 9:
 				if (lenBytes-- > 0) {
-					len = len << 8 | bite;
+					len = len << 8 | (bite & 0xff);
 					if (lenBytes == 0) {
 						buffer = new byte[len];
 					}
