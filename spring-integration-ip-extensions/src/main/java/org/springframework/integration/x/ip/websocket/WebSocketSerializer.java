@@ -86,7 +86,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 			theFrame = (WebSocketFrame) frame;
 			data = theFrame.getPayload();
 		}
-		if (data != null && data.startsWith(HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION)) {
+		if (data != null && data.startsWith("HTTP/1.1")) {
 			outputStream.write(data.getBytes());
 			return;
 		}
@@ -452,11 +452,20 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		Assert.isTrue(frame.getType() == WebSocketFrame.TYPE_HEADERS, "Expected headers:" + frame);
 		String[] headers = frame.getPayload().split("\\r\\n");
 		String key = null;
+		String version = null;
 		for (String header : headers) {
 			if (header.toLowerCase().startsWith("sec-websocket-key")) {
 				key = header.split(":")[1].trim();
-				break;
 			}
+			else if (header.toLowerCase().startsWith("sec-websocket-version")) {
+				version = header.split(":")[1].trim();
+			}
+		}
+		if (key == null) {
+			throw new WebSocketUpgradeException("400 Bad Request: No sec-websocket-key header detected");
+		}
+		else if (!"13".equals(version)) {
+			throw new WebSocketUpgradeException("426 Upgrade Required", "sec-websocket-version: 13\r\n");
 		}
 		String handshake = HTTP_1_1_101_WEB_SOCKET_PROTOCOL_HANDSHAKE_SPRING_INTEGRATION +
 						   "Upgrade: WebSocket\r\n" +

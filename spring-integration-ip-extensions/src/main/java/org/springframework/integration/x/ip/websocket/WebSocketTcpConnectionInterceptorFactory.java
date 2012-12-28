@@ -90,12 +90,10 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		 * arrive out of order. This is particularly an issue for some of the
 		 * Autobahn tests where, for example, many pings are sent and the test
 		 * expects the pongs to come back in the same order.
-		 * TODO: Add an option to eliminate the resequencer if the application
-		 * doesn't care.
 		 */
 		@Override
 		public boolean onMessage(Message<?> message) {
-			if (this.getTheConnection() instanceof TcpNioConnection) {
+			if (this.getTheConnection() instanceof TcpNioConnection && message.getHeaders().getCorrelationId() != null) {
 				resequenceChannel.send(message);
 				return true;
 			}
@@ -256,10 +254,21 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		}
 
 		private void doHandshake(WebSocketFrame frame, MessageHeaders messageHeaders) throws Exception {
-			WebSocketFrame handshake = this.getRequiredDeserializer().generateHandshake(frame);
-			this.send(MessageBuilder.withPayload(handshake)
-					.copyHeaders(messageHeaders)
-					.build());
+			try {
+				WebSocketFrame handshake = this.getRequiredDeserializer().generateHandshake(frame);
+				this.send(MessageBuilder.withPayload(handshake)
+						.copyHeaders(messageHeaders)
+						.build());
+			}
+			catch (WebSocketUpgradeException e) {
+				this.send(MessageBuilder
+						.withPayload(
+								new WebSocketFrame(WebSocketFrame.TYPE_DATA, "HTTP/1.1 " +
+										e.getMessage() + e.getHeaders()))
+						.copyHeaders(messageHeaders)
+						.build());
+				this.close();
+			}
 		}
 
 		private WebSocketSerializer getRequiredDeserializer() {
