@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.springframework.integration.aws.common;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.springframework.integration.aws.core.AbstractAmazonWSClientFactory;
+import org.springframework.integration.aws.core.AbstractAWSClientFactory;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.sqs.AmazonSQSClient;
@@ -31,9 +31,9 @@ import com.amazonaws.services.sqs.AmazonSQSClient;
  * @since 1.0
  *
  */
-public class AmazonWSClientFactoryTest {
+public class AWSClientFactoryTest {
 
-	AbstractAmazonWSClientFactory<AmazonSQSClient> factory = new AbstractAmazonWSClientFactory<AmazonSQSClient>() {
+	AbstractAWSClientFactory<AmazonSQSClient> factory = new AbstractAWSClientFactory<AmazonSQSClient>() {
 
 		@Override
 		protected AmazonSQSClient getClientImplementation() {

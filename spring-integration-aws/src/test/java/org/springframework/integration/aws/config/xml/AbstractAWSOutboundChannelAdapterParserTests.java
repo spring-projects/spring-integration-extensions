@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.aws.core.AmazonWSCredentials;
+import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.endpoint.AbstractEndpoint;
 import org.springframework.integration.test.util.TestUtils;
@@ -102,7 +102,7 @@ public abstract class AbstractAWSOutboundChannelAdapterParserTests<T extends Mes
 	 *
 	 * @return
 	 */
-	protected abstract AmazonWSCredentials getCredentials();
+	protected abstract AWSCredentials getCredentials();
 
 	/**
 	 * The test class for the  AWS Credentials test that used property files
@@ -110,11 +110,11 @@ public abstract class AbstractAWSOutboundChannelAdapterParserTests<T extends Mes
 	@Test
 	public final void awsCredentialsTestWithPropFiles() {
 		MessageHandler handler = getMessageHandlerForBeanDefinition(CREDENTIALS_TEST_ONE);
-		AmazonWSCredentials credentials = getCredentials();
+		AWSCredentials credentials = getCredentials();
 		String accessKey = credentials.getAccessKey();
 		String secretKey = credentials.getSecretKey();
-		AmazonWSCredentials configuredCredentials =
-			TestUtils.getPropertyValue(handler, "credentials",AmazonWSCredentials.class);
+		AWSCredentials configuredCredentials =
+			TestUtils.getPropertyValue(handler, "credentials",AWSCredentials.class);
 		Assert.assertEquals(accessKey, configuredCredentials.getAccessKey());
 		Assert.assertEquals(secretKey, configuredCredentials.getSecretKey());
 	}
@@ -125,11 +125,11 @@ public abstract class AbstractAWSOutboundChannelAdapterParserTests<T extends Mes
 	@Test
 	public final void awsCredentialsTestWithoutPropFiles() {
 		MessageHandler handler = getMessageHandlerForBeanDefinition(CREDENTIALS_TEST_TWO);
-		AmazonWSCredentials credentials = getCredentials();
+		AWSCredentials credentials = getCredentials();
 		String accessKey = credentials.getAccessKey();
 		String secretKey = credentials.getSecretKey();
-		AmazonWSCredentials configuredCredentials =
-			TestUtils.getPropertyValue(handler, "credentials",AmazonWSCredentials.class);
+		AWSCredentials configuredCredentials =
+			TestUtils.getPropertyValue(handler, "credentials",AWSCredentials.class);
 		Assert.assertEquals(accessKey, configuredCredentials.getAccessKey());
 		Assert.assertEquals(secretKey, configuredCredentials.getSecretKey());
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ package org.springframework.integration.aws.core;
  * @since 1.0
  *
  */
-public class AmazonWSOperationException extends RuntimeException {
+public class AWSOperationException extends RuntimeException {
 
 	/**
 	 *
@@ -32,22 +32,22 @@ public class AmazonWSOperationException extends RuntimeException {
 
 	private final String accessKey;
 
-	public AmazonWSOperationException(String accessKey) {
+	public AWSOperationException(String accessKey) {
 		super();
 		this.accessKey = accessKey;
 	}
 
-	public AmazonWSOperationException(String accessKey,String message) {
+	public AWSOperationException(String accessKey,String message) {
 		super(message);
 		this.accessKey = accessKey;
 	}
 
-	public AmazonWSOperationException(String accessKey,String message, Throwable cause) {
+	public AWSOperationException(String accessKey,String message, Throwable cause) {
 		super(message, cause);
 		this.accessKey = accessKey;
 	}
 
-	public AmazonWSOperationException(String accessKey,Throwable cause) {
+	public AWSOperationException(String accessKey,Throwable cause) {
 		super(cause);
 		this.accessKey = accessKey;
 	}

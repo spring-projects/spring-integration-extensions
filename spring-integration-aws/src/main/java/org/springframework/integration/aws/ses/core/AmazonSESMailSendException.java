@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package org.springframework.integration.aws.ses.core;
 
-import org.springframework.integration.aws.core.AmazonWSOperationException;
+import java.util.Map;
+
+import org.springframework.integration.aws.core.AWSOperationException;
 
 /**
  * This exception will be thrown upon failure in sending a mail from Amazon SES
@@ -25,44 +27,69 @@ import org.springframework.integration.aws.core.AmazonWSOperationException;
  * @since 1.0
  *
  */
-public class AmazonSESMailSendException extends AmazonWSOperationException {
+public class AmazonSESMailSendException extends AWSOperationException {
+
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = -3035267174544370619L;
 
-	private final AmazonSESSimpleMailMessage mailMessage;
+	private final Map<Object, Exception> failedMessages;
 
+	/**
+	 *
+	 * @param accessKey
+	 * @param message
+	 * @param cause
+	 * @param failedMessages
+	 */
 	public AmazonSESMailSendException(String accessKey, String message,
-			Throwable cause,AmazonSESSimpleMailMessage mailMessage) {
+			Throwable cause,Map<Object, Exception> failedMessages) {
 		super(accessKey, message, cause);
-		this.mailMessage = mailMessage;
-	}
-
-	public AmazonSESMailSendException(String accessKey,
-			String message,AmazonSESSimpleMailMessage mailMessage) {
-		super(accessKey, message);
-		this.mailMessage = mailMessage;
-	}
-
-	public AmazonSESMailSendException(String accessKey,
-			Throwable cause,AmazonSESSimpleMailMessage mailMessage) {
-		super(accessKey, cause);
-		this.mailMessage = mailMessage;
-	}
-
-	public AmazonSESMailSendException(String accessKey,AmazonSESSimpleMailMessage mailMessage) {
-		super(accessKey);
-		this.mailMessage = mailMessage;
+		this.failedMessages = failedMessages;
 	}
 
 	/**
-	 * The failed mail message
-	 * @return
+	 *
+	 * @param accessKey
+	 * @param message
+	 * @param failedMessages
 	 */
-	public AmazonSESSimpleMailMessage getMailMessage() {
-		return mailMessage;
+	public AmazonSESMailSendException(String accessKey,
+			String message,Map<Object, Exception> failedMessages) {
+		super(accessKey, message);
+		this.failedMessages = failedMessages;
 	}
 
+	/**
+	 *
+	 * @param accessKey
+	 * @param cause
+	 * @param failedMessages
+	 */
+	public AmazonSESMailSendException(String accessKey,
+			Throwable cause,Map<Object, Exception> failedMessages) {
+		super(accessKey, cause);
+		this.failedMessages = failedMessages;
+	}
+
+	/**
+	 *
+	 * @param accessKey
+	 * @param failedMessages
+	 */
+	public AmazonSESMailSendException(String accessKey,Map<Object, Exception> failedMessages) {
+		super(accessKey);
+		this.failedMessages = failedMessages;
+	}
+
+	/**
+	 * Gets the map of failed messages where the failed message is the key and the exception
+	 * while sending it is the value
+	 * @return
+	 */
+	public Map<Object, Exception> getFailedMessages() {
+		return failedMessages;
+	}
 }

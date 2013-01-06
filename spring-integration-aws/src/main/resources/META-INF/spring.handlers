@@ -1,1 +1,1 @@
-http\://www.springframework.org/schema/integration/aws/ses=org.springframework.integration.aws.ses.config.xml.AmazonSESNamespaceHandler
+http\://www.springframework.org/schema/integration/aws=org.springframework.integration.aws.config.xml.AWSNamespaceHandler

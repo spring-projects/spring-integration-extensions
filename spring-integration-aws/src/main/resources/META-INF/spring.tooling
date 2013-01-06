@@ -1,0 +1,3 @@
+http\://www.springframework.org/schema/integration/aws@name=Integration AWS Namespace
+http\://www.springframework.org/schema/integration/aws@prefix=int-aws
+http\://www.springframework.org/schema/integration/aws@icon=org/springframework/integration/aws/config/xml/spring-integration-aws.gif

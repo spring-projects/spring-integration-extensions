@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.aws.ses;
+package org.springframework.integration.aws.config.xml;
+
+import org.springframework.integration.aws.ses.config.xml.AmazonSESOutboundAdapterParser;
+import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHandler;
 
 /**
- * All the pre defined Amazon SES Mail headers
+ * The namepsace handler for "int-aws" namespace
  *
  * @author Amol Nayak
  *
  * @since 1.0
  *
  */
-public interface AmazonSESMailHeaders {
+public class AWSNamespaceHandler extends
+		AbstractIntegrationNamespaceHandler {
 
-	public static final String FROM_EMAIL_ID 		= 	"fromEmailId";
-	public static final String TO_EMAIL_ID 			= 	"toEmailId";
-	public static final String BCC_EMAIL_ID			=	"bccEmailId";
-	public static final String CC_EMAIL_ID			=	"ccEmailId";
-	public static final String REPLYTO_EMAIL_ID		=	"ccEmailId";
-	public static final String HTML_FORMAT			=	"htmlFormat";
-	public static final String SUBJECT				=	"subject";
+
+	public void init() {
+		this.registerBeanDefinitionParser("ses-outbound-channel-adapter", new AmazonSESOutboundAdapterParser());
+	}
 
 }

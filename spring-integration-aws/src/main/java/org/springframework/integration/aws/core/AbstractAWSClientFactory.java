@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import com.amazonaws.AmazonWebServiceClient;
  * @since 1.0
  *
  */
-public abstract class AbstractAmazonWSClientFactory<T extends AmazonWebServiceClient> implements AmazonWSClientFactory<T> {
+public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient> implements AWSClientFactory<T> {
 
 	/**
 	 * A map storing the {@link AmazonWebServiceClient} endpoint as the key and the SQS Client as the
@@ -133,7 +133,7 @@ public abstract class AbstractAmazonWSClientFactory<T extends AmazonWebServiceCl
 				endpoint = host;
 			}
 		} catch (MalformedURLException e) {
-			throw new AmazonWSOperationException(null, "The URL \"" + stringUrl + "\" is malformed",e);
+			throw new AWSOperationException(null, "The URL \"" + stringUrl + "\" is malformed",e);
 		}
 		return endpoint;
 	}

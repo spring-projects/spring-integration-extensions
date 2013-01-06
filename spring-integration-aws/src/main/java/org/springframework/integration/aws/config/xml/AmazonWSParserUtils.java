@@ -18,7 +18,6 @@ package org.springframework.integration.aws.config.xml;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.integration.aws.core.AmazonWSCredentials;
 import org.springframework.integration.aws.core.BasicAWSCredentials;
 import org.springframework.integration.aws.core.PropertiesAWSCredentials;
 import org.springframework.util.StringUtils;

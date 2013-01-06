@@ -18,6 +18,22 @@
 		<maven>2.2.1</maven>
 	</prerequisites>
 
+	<properties>
+	    <spring.integration.version>2.2.0.RELEASE</spring.integration.version>
+	    <spring.test.version>3.1.3.RELEASE</spring.test.version>
+	    <aws.sdk.version>1.3.12</aws.sdk.version>
+	    <commons.codec.version>1.5</commons.codec.version>
+		<commons.logging.version>1.1.1</commons.logging.version>
+		<commons.io.version>2.0.1</commons.io.version>
+		<java.mail.version>1.4.4</java.mail.version>
+		<jackson.version>1.9.11</jackson.version>
+		<apache.httpclient.version>4.1.1</apache.httpclient.version>
+		<hamcrest.version>1.1</hamcrest.version>
+		<junit.version>4.11</junit.version>
+		<mockito.version>1.9.0</mockito.version>
+		<project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
+	</properties>
+
   <build>
     <resources>
       <resource>
@@ -86,42 +102,49 @@
     <dependency>
 		<groupId>com.amazonaws</groupId>
 		<artifactId>aws-java-sdk</artifactId>
-		<version>1.3.12</version>
+		<version>${aws.sdk.version}</version>
 		<scope>compile</scope>
 	</dependency>
 
     <dependency>
 		<groupId>commons-codec</groupId>
 		<artifactId>commons-codec</artifactId>
-		<version>1.5</version>
+		<version>${commons.codec.version}</version>
 		<scope>compile</scope>
     </dependency>
 
    <dependency>
 		<groupId>commons-logging</groupId>
 		<artifactId>commons-logging</artifactId>
-		<version>1.1.1</version>
+		<version>${commons.logging.version}</version>
 		<scope>compile</scope>
 	</dependency>
 
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.0.1</version>
+      <version>${commons.io.version}</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
 		<groupId>javax.mail</groupId>
 		<artifactId>mail</artifactId>
-		<version>1.4.4</version>
+		<version>${java.mail.version}</version>
 		<scope>compile</scope>
 	</dependency>
 
     <dependency>
 		<groupId>org.springframework.integration</groupId>
 		<artifactId>spring-integration-core</artifactId>
-		<version>2.2.0.RC1</version>
+		<version>${spring.integration.version}</version>
+		<scope>compile</scope>
+	</dependency>
+
+    <dependency>
+		<groupId>org.springframework.integration</groupId>
+		<artifactId>spring-integration-mail</artifactId>
+		<version>${spring.integration.version}</version>
 		<scope>compile</scope>
 	</dependency>
 
@@ -129,84 +152,72 @@
 	<dependency>
 	    <groupId>org.codehaus.jackson</groupId>
 	    <artifactId>jackson-core-asl</artifactId>
-	    <version>1.8.3</version>
+	    <version>${jackson.version}</version>
 	    <scope>compile</scope>
 	</dependency>
 
 	<dependency>
 	    <groupId>org.codehaus.jackson</groupId>
 	    <artifactId>jackson-mapper-asl</artifactId>
-	    <version>1.8.3</version>
+	    <version>${jackson.version}</version>
 	    <scope>compile</scope>
 	</dependency>
 
 	<dependency>
 		<groupId>org.apache.httpcomponents</groupId>
 		<artifactId>httpclient</artifactId>
-		<version>4.1.1</version>
+		<version>${apache.httpclient.version}</version>
 		<scope>compile</scope>
 	</dependency>
 
 	<dependency>
 	    <groupId>org.apache.httpcomponents</groupId>
 	    <artifactId>httpcore</artifactId>
-	    <version>4.1.1</version>
+	    <version>${apache.httpclient.version}</version>
 	    <scope>compile</scope>
-	</dependency>
-
-	<!-- No compile time dependency, just using the MimeMessageHelper in tests -->
-	<dependency>
-	    <groupId>org.springframework</groupId>
-	    <artifactId>spring-context-support</artifactId>
-	    <version>3.1.0.RELEASE</version>
-	    <scope>test</scope>
 	</dependency>
 
 	<dependency>
 	    <groupId>org.springframework.integration</groupId>
 	    <artifactId>spring-integration-test</artifactId>
-	    <version>2.2.0.BUILD-SNAPSHOT</version>
+	    <version>${spring.integration.version}</version>
 	    <scope>test</scope>
 	</dependency>
 
     <dependency>
 		<groupId>org.hamcrest</groupId>
 		<artifactId>hamcrest-core</artifactId>
-		<version>1.1</version>
+		<version>${hamcrest.version}</version>
 		<scope>test</scope>
 	</dependency>
 
     <dependency>
       <groupId>junit</groupId>
-      <artifactId>junit-dep</artifactId>
-      <version>4.10</version>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
 		<groupId>org.mockito</groupId>
 		<artifactId>mockito-all</artifactId>
-		<version>1.9.0</version>
+		<version>${mockito.version}</version>
 		<scope>test</scope>
     </dependency>
 
     <dependency>
 		<groupId>org.mockito</groupId>
 		<artifactId>mockito-core</artifactId>
-		<version>1.9.0</version>
+		<version>${mockito.version}</version>
 		<scope>test</scope>
     </dependency>
 
     <dependency>
 		<groupId>org.springframework</groupId>
 		<artifactId>spring-test</artifactId>
-		<version>3.1.2.RELEASE</version>
+		<version>${spring.test.version}</version>
 		<scope>test</scope>
 	</dependency>
 
   </dependencies>
-
-  <properties>
-    <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
-  </properties>
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.aws.core.AmazonWSCredentials;
+import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
 import org.springframework.integration.test.util.TestUtils;
@@ -79,7 +79,7 @@ public class AmazonSESOutboundAdapterParserTests {
 		Assert.assertNotNull("Expected a non null EventDrivenConsumer", consumer);
 		MessageHandler handler = TestUtils.getPropertyValue(consumer, "handler", MessageHandler.class);
 		Assert.assertNotNull("Expected a non null messagehandler", handler);
-		AmazonWSCredentials credentials =  TestUtils.getPropertyValue(handler, "mailSender.credentials", AmazonWSCredentials.class);
+		AWSCredentials credentials =  TestUtils.getPropertyValue(handler, "mailSender.credentials", AWSCredentials.class);
 		Assert.assertNotNull("Expected a non null instance of credentials", credentials);
 		Assert.assertEquals("dummy", credentials.getAccessKey());
 		Assert.assertEquals("dummy", credentials.getSecretKey());
@@ -91,6 +91,6 @@ public class AmazonSESOutboundAdapterParserTests {
 	 */
 	@Test(expected=BeanDefinitionParsingException.class)
 	public void invalidDefinitionWithBothPropsAndPropFile() {
-		new ClassPathXmlApplicationContext("classpath:both-awscred-props-property-ses.xml");
+		new ClassPathXmlApplicationContext("classpath:ses-both-awscred-props-property.xml");
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import com.amazonaws.AmazonWebServiceClient;
  */
 public abstract class AbstractAWSClientFactoryTests<T extends AmazonWebServiceClient> {
 
-	protected AbstractAmazonWSClientFactory<T> factory;
+	protected AbstractAWSClientFactory<T> factory;
 
 	@Before
 	public final void setup() {
@@ -46,7 +46,7 @@ public abstract class AbstractAWSClientFactoryTests<T extends AmazonWebServiceCl
 	 * The subclass is responsible for returning the appropriate factory implementation
 	 * @return
 	 */
-	protected abstract AbstractAmazonWSClientFactory<T> getFactory();
+	protected abstract AbstractAWSClientFactory<T> getFactory();
 
 	/**
 	 * Gets the endpoint for the service in US-EAST-1 region
