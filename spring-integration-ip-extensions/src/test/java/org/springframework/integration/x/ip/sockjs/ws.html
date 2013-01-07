@@ -1,0 +1,83 @@
+<!--
+/*
+ * Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ -->
+ <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+		"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head><title>Spring Integration Web Socket Test</title></head>
+
+<body>
+<script type="text/javascript">
+	var webSocket;
+	if (window.WebSocket) {
+		webSocket = new WebSocket("ws://localhost:18080/myapp");
+		webSocket.onmessage = function(event) {
+			document.getElementById("theField").value = event.data;
+		}
+		webSocket.onopen = function(event) {
+			document.getElementById("status").value = "WebSocket opened";
+		};
+		webSocket.onclose = function(event) {
+			document.getElementById("status").value = "WebSocket closed";
+			alert("WebSocket closed.");
+		};
+	} else {
+		alert("Your browser does not support Websockets. (Use Chrome)");
+	}
+
+	function sendToSI(message) {
+		if (!window.WebSocket) {
+			return;
+		}
+		if (webSocket.readyState == WebSocket.OPEN) {
+			webSocket.send(message);
+		} else {
+			alert("The socket is not open.");
+		}
+		document.getElementById("status").value = "sent " + message;
+		if (message == "start") {
+			document.getElementById("message").value = "stop";
+		}
+		else if (message == "stop") {
+			document.getElementById("message").value = "start";
+		}
+	}
+
+	function doClose(message) {
+		if (!window.WebSocket) {
+			return;
+		}
+		webSocket.close();
+	}
+</script>
+<center>
+	<form onsubmit="return false;" id="form">
+		<br/><br/>
+		<input type="text" id="message" name="message" value="start" />
+		<br/><br/>
+		<input type="button" value="Send To Spring Integration" onclick="sendToSI(this.form.message.value)" align="center"/>
+		<br/><br/>
+		<input type="button" value="Close WebSocket" onclick="doClose()" align="center"/>
+	</form>
+	<br/>
+	<textarea rows="1" cols="5" id="theField" readonly="readonly"></textarea>
+	<br/><br/>
+	<textarea rows="1" id="status" readonly="readonly"></textarea>
+</center>
+</body>
+</html>
