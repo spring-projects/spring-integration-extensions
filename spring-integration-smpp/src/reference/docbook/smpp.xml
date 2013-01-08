@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="smpp"
+	xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>Smpp Adapter</title>
+	<para>
+		The Spring Integration Smpp Adapter provides...
+	</para>
+	<itemizedlist>
+		<listitem>
+			<para><emphasis><link linkend='smpp-outbound-channel-adapter'>Outbound Channel adapter</link></emphasis></para>
+		</listitem>
+		<listitem>
+			<para><emphasis><link linkend='smpp-outbound-gateway'>Outbound Gateway</link></emphasis></para>
+		</listitem>
+		<listitem>
+			<para><emphasis><link linkend='smpp-inbound-channel-adapter'>Inbound Channel Adapter</link></emphasis></para>
+		</listitem>
+        <listitem>
+            <para><emphasis><link linkend='smpp-inbound-gateway'>Inbound Gateway</link></emphasis></para>
+        </listitem>
+	</itemizedlist>
+
+    <para>
+        To use Spring Integration adapter for SMPP, you have to import the XML namespace. For example, you can
+        have following XML:
+    </para>
+    <programlisting language="xml">
+        <![CDATA[
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-smpp="http://www.springframework.org/schema/integration/smpp"
+       xsi:schemaLocation="http://www.springframework.org/schema/integration
+        http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration/smpp
+		http://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd
+		">
+</beans>
+        ]]>
+    </programlisting>
+
+    <para>
+        Meanwhile, you have to define your SMSC server information. For example you can define
+        server as following:
+    </para>
+    <programlisting language="xml">
+        <![CDATA[
+                //TODO
+        ]]>
+    </programlisting>
+
+    //TODO: more documentation
+    <section id="smpp-outbound-channel-adapter">
+        <title>Outbound Channel Adapter</title>
+        <para>
+            Outbound channel adapter is to send sms into SMSC from channels in Spring Integration.
+        </para>
+    </section>
+
+    <section id="smpp-inbound-channel-adapter">
+        <title>Inbound Channel Adapter</title>
+        <para>
+            Inbound channel adapter is used to receive sms from SMSC into Spring Integration channel.
+        </para>
+    </section>
+
+    <section id="smpp-outbound-gateway">
+        <title>Outbound Gateway</title>
+        <para>
+            Outbound gateway is similar to outbound channel adapter except that it can also be used to get
+            a result on the <emphasis>reply channel</emphasis> after sending.
+        </para>
+    </section>
+
+    <section id="smpp-inbound-gateway">
+        <title>Inbound Gateway</title>
+        <para>
+            Inbound gateway is similar to inbound channel adapter except that it can also be used to return
+            a result on the <emphasis>reply channel</emphasis> after receiving.
+        </para>
+    </section>
+
+</chapter>

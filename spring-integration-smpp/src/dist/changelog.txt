@@ -1,0 +1,12 @@
+Spring Integration Smpp Adapter CHANGELOG
+=========================================
+
+Feature in version 2.2.0
+
+1. Inbound channel adapter
+
+2. Outbound channel adapter
+
+3. Inbound gateway
+
+4. Outbound gateway
