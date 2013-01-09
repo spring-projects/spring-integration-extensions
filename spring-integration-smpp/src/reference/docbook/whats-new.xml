@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="whats-new"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>What's new?</title>
+    <para>
+        The Spring Integration adapter for SMPP includes two adapters and two gateways:
+    </para>
+    <itemizedList>
+        <listItem>
+            Inbound Channel Adapter to receive sms from SMSC.
+        </listItem>
+        <listItem>
+            Outbound Channel Adapter to send sms through SMSC.
+        </listItem>
+        <listItem>
+            Inbound Gateway to receive sms from SMSC.
+        </listItem>
+        <listItem>
+            Outbound Gateway to send through SMSC.
+        </listItem>
+    </itemizedList>
+
+</chapter>

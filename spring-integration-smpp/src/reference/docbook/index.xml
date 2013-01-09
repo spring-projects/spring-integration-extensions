@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0"
+	xml:id="spring-integration-reference" xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:xlink="http://www.w3.org/1999/xlink">
+	<bookinfo>
+		<title>Spring Integration Smpp Adapter</title>
+		<titleabbrev>Smpp Adapter ${version}</titleabbrev>
+		<productname>Spring Integration</productname>
+		<releaseinfo>${version}</releaseinfo>
+
+		<!-- TODO: this isn't showing up. -->
+		<mediaobject>
+			<imageobject role="fo">
+				<imagedata fileref="images/logo.png" format="PNG" align="center" />
+			</imageobject>
+			<imageobject role="html">
+				<imagedata fileref="images/logo.png" format="PNG" align="center" />
+			</imageobject>
+		</mediaobject>
+		<!-- END TODO -->
+
+		<authorgroup>
+			<author><firstname>Josh Long</firstname></author>
+			<author><firstname>Johanes Soetanto</firstname></author>
+		</authorgroup>
+		<legalnotice>
+			<para>© SpringSource Inc., 2012</para>
+		</legalnotice>
+	</bookinfo>
+
+	<toc></toc>
+
+	<part id="whats-new-part">
+		<title>What's new?</title>
+		<partintro id="spring-integration-intro">
+			<para>
+				If you are interested in the changes and features, that were introduced in
+                earlier versions, please take a look at chapter:
+
+				<xref linkend="history" />
+
+			</para>
+		</partintro>
+		<xi:include href="./whats-new.xml" />
+	</part>
+
+	<part id="spring-integration-adapters">
+		<title>Integration Adapters</title>
+		<partintro id="spring-integration-adapters">
+			<para>
+                Spring Integration adapter for SMPP (Short Message Peer-to-Peer) includes
+                inbound channel adapter to receive sms from SMSC (Short Message Service Center),
+                outbound channel adapter to send sms through SMSC, and gateways to
+                send/receive from SMSC.
+			</para>
+		</partintro>
+		<xi:include href="./smpp.xml" />
+	</part>
+	<part id="spring-integration-appendices">
+		<title>Appendices</title>
+		<partintro id="spring-integration-adapters">
+			<para>Advanced Topics and Additional Resources</para>
+		</partintro>
+		<xi:include href="./history.xml" />
+	</part>
+</book>
