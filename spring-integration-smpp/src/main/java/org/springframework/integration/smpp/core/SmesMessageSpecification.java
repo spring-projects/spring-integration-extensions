@@ -62,7 +62,7 @@ public class SmesMessageSpecification {
 		mb.setHeader(SmppConstants.SMS, dsm);
 		mb.setHeader(SmppConstants.REPLACE_IF_PRESENT, dsm.getReplaceIfPresent());
 		mb.setHeader(SmppConstants.SHORT_MESSAGE, dsm.getShortMessage());
-		mb.setHeader(SmppConstants.OPTIONAL_PARAMETES, dsm.getOptionalParametes());
+		mb.setHeader(SmppConstants.OPTIONAL_PARAMETERS, dsm.getOptionalParameters());
 		mb.setHeader(SmppConstants.UDHI_AND_REPLY_PATH, dsm.isUdhiAndReplyPath());
 		mb.setHeader(SmppConstants.VALIDITY_PERIOD, dsm.getValidityPeriod());
 		mb.setHeader(SmppConstants.COMMAND_LENGTH, dsm.getCommandLength());
@@ -157,8 +157,7 @@ public class SmesMessageSpecification {
 			return (DataCoding)dc ;
 		}
 		if( dc instanceof  Byte){
-			return DataCoding.newInstance((Byte)dc);
-
+			return DataCodings.newInstance((Byte)dc);
 		}
 
 		return null ;
@@ -198,8 +197,6 @@ public class SmesMessageSpecification {
 	 * @param smppSession the SMPPSession instance against which we should work.
 	 * @see SmesMessageSpecification#SmesMessageSpecification()
 	 */
-
-	@SuppressWarnings("unused")
 	SmesMessageSpecification(SMPPSession smppSession) {
 		this.smppSession = smppSession;
 	}
@@ -244,7 +241,6 @@ public class SmesMessageSpecification {
 	/**
 	 * use the builder API, but we need this to cleanly proxy
 	 */
-	@SuppressWarnings("unused")
 	SmesMessageSpecification() {
 		this(null);
 	}
@@ -485,7 +481,6 @@ public class SmesMessageSpecification {
 	 * @param maxLengthSmsMessages the length of sms messages
 	 * @see #setShortTextMessage(String)
 	 */
-	@SuppressWarnings("unused")
 	public void setMaxLengthSmsMessages(int maxLengthSmsMessages) {
 		this.maxLengthSmsMessages = maxLengthSmsMessages;
 	}
@@ -517,7 +512,7 @@ public class SmesMessageSpecification {
 		validityPeriod = null;
 		registeredDelivery = new RegisteredDelivery(SMSCDeliveryReceipt.DEFAULT);
 		replaceIfPresentFlag = 0;
-		dataCoding = new GeneralDataCoding(false, true, MessageClass.CLASS1, Alphabet.ALPHA_DEFAULT);
+		dataCoding = new GeneralDataCoding(Alphabet.ALPHA_DEFAULT, MessageClass.CLASS1, false);
 		smDefaultMsgId = 0;
 		shortMessage = null; // the bytes to the 140 character text message
 		smppSession = null;

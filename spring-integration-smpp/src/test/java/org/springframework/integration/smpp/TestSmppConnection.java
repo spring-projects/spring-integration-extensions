@@ -69,7 +69,7 @@ public class TestSmppConnection {
 
         outboundChannel.send(messageOut);
 
-        Thread.sleep(60000);
+        Thread.sleep(5000);
 	}
 
 

@@ -1,7 +1,7 @@
 package org.springframework.integration.smpp.core;
 
 /**
- *  
+ *
  *
  * @author Josh Long
  */
@@ -48,5 +48,5 @@ public abstract class SmppConstants {
 	public static final String SM_DEFAULT_MSG_ID = "SM_DEFAULT_MSG_ID";
 	public static final String REPLY_PATH = "REPLY_PATH";
 	public static final String DEST_ADDRESS = DST_ADDR;
-	public static final String OPTIONAL_PARAMETES = "OPTIONAL_PARAMETES";
+	public static final String OPTIONAL_PARAMETERS = "OPTIONAL_PARAMETERS";
 }

@@ -77,8 +77,6 @@ public class TestSmppInboundGateway {
 
 		// launch the whole thing
 
-
-
 	 	Thread.sleep(1000 * 10);
 
 		Assert.assertEquals(this.count.intValue(),1);

@@ -1,40 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:int="http://www.springframework.org/schema/integration"
-       xmlns:int-smpp="http://www.springframework.org/schema/integration/smpp"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-smpp="http://www.springframework.org/schema/integration/smpp"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/integration/smpp http://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+		http://www.springframework.org/schema/integration/smpp http://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!-- smpp configuration properties to test the gateway against real smpp connection -->
-    <context:property-placeholder location="smpp.properties"/>
-    <!-- uncomment below to test with real connection -->
-        <!--<bean class="org.springframework.integration.smpp.session.SmppSessionFactoryBean" id="session">
-        <property name="host" value="${smpp.host}"/>
-        <property name="port" value="${smpp.port}"/>
-        <property name="bindType" value="BIND_TRX"/>
-        <property name="password" value="${smpp.password}"/>
-        <property name="systemId" value="${smpp.systemId}" />
-    </bean>-->
+	<!-- smpp configuration properties to test the gateway against real smpp
+		connection -->
+	<context:property-placeholder location="smpp.properties" />
+	<!-- uncomment below to test with real connection -->
+	<!--<bean class="org.springframework.integration.smpp.session.SmppSessionFactoryBean"
+		id="session"> <property name="host" value="${smpp.host}"/> <property name="port"
+		value="${smpp.port}"/> <property name="bindType" value="BIND_TRX"/> <property
+		name="password" value="${smpp.password}"/> <property name="systemId" value="${smpp.systemId}"
+		/> </bean> -->
 
-    <bean id="messagingTemplate" class="org.springframework.integration.core.MessagingTemplate">
-        <property name="receiveTimeout" value="5000"/>
-    </bean>
+	<bean id="messagingTemplate" class="org.springframework.integration.core.MessagingTemplate">
+		<property name="receiveTimeout" value="5000" />
+	</bean>
 
-    <int:channel id="target"/>
+	<int:channel id="target" />
 
-    <bean   id="session"
-            class="org.springframework.integration.smpp.config.xml.MockSmppSessionFactory"
-            factory-method="getOutSmppSession">
-    </bean>
+	<bean id="session"
+		class="org.springframework.integration.smpp.config.xml.MockSmppSessionFactory"
+		factory-method="getOutSmppSession">
+	</bean>
 
-	<int-smpp:outbound-channel-adapter id="smppOutboundChannelAdapter"
-                                       smpp-session-ref="session"
-                                       source-address="12345"
-                                       source-ton="SUBSCRIBER_NUMBER"
-			channel="target">
+	<int-smpp:outbound-channel-adapter
+		id="smppOutboundChannelAdapter" smpp-session-ref="session"
+		source-address="12345" source-ton="SUBSCRIBER_NUMBER" channel="target">
 	</int-smpp:outbound-channel-adapter>
 
 </beans>
