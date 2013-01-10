@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +44,8 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 	private final Map<InputStream, BasicState> streamState = new ConcurrentHashMap<InputStream, BasicState>();
 
 	protected final ByteArrayCrLfSerializer crlfDeserializer = new ByteArrayCrLfSerializer();
+
+	private static final Pattern requestLinePattern = Pattern.compile("GET *([^ ]+) *HTTP/");
 
 	public void setMaxMessageSize(int maxMessageSize) {
 		this.maxMessageSize = maxMessageSize;
@@ -69,14 +73,31 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 		if (isStreaming == null) { //Consume the headers - TODO - check status
 			StringBuilder headersBuilder = new StringBuilder();
 			byte[] headers = new byte[this.maxMessageSize];
+			String path = null;
+			String queryString = null;
 			int headersLength;
 			do {
 				headersLength = this.crlfDeserializer.fillToCrLf(inputStream, headers);
 				String header = new String(headers, 0, headersLength, "UTF-8");
+				if (path == null) {
+					if (header.startsWith("GET")) {
+						Matcher requestLineMatcher = requestLinePattern.matcher(header);
+						if (requestLineMatcher.find()) {
+							path = requestLineMatcher.group(1);
+							if (path.contains("?")) {
+								int queryStarts = path.indexOf("?");
+								queryString = path.substring(queryStarts + 1);
+								path = path.substring(0, queryStarts);
+							}
+						}
+					}
+				}
 				headersBuilder.append(header).append("\r\n");
 			}
 			while (headersLength > 0);
 			BasicState basicState = createState();
+			basicState.setPath(path);
+			basicState.setQueryString(queryString);
 			List<DataFrame> dataList = new ArrayList<DataFrame>();
 			List<DataFrame> decodedHeaders = decodeHeaders(headersBuilder.toString(), basicState, dataList);
 			this.streamState.put(inputStream, basicState);
@@ -119,6 +140,10 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 
 	public static class BasicState {
 
+		private volatile String path;
+
+		private volatile String queryString;
+
 		private volatile DataFrame pendingFrame;
 
 		private final List<byte[]> fragments = new ArrayList<byte[]>();
@@ -135,11 +160,31 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 			return fragments;
 		}
 
-		@Override
-		public String toString() {
-			return "BasicState [pendingFrame=" + pendingFrame + ", fragments.size()=" + fragments.size() + "]";
+		public String getPath() {
+			return path;
 		}
 
+		private void setPath(String path) {
+			this.path = path;
+		}
+
+		public String getQueryString() {
+			return queryString;
+		}
+
+		private void setQueryString(String queryString) {
+			this.queryString = queryString;
+		}
+
+		@Override
+		public String toString() {
+			return "BasicState [" +
+					(this.path != null ? ("path=" + this.path) : "") +
+					(this.queryString != null ? (", queryString=" + this.queryString) : "") +
+					(this.pendingFrame != null ? (", pendingFrame=" + this.pendingFrame) : "") +
+					(this.fragments.size() > 0 ? (", fragments.size()=" + this.fragments.size()) : "") +
+					"]";
+		}
 
 	}
 

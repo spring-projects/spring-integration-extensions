@@ -115,8 +115,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 			WebSocketState state = (WebSocketState) this.getRequiredDeserializer().getState(inputStream);
 			Assert.notNull(state, "State must not be null:" + message);
-			if (logger.isDebugEnabled()) {
-				logger.debug(state);
+			if (logger.isTraceEnabled()) {
+				logger.trace(state);
 			}
 			if (payload.getRsv() > 0) {
 				if (logger.isDebugEnabled()) {
@@ -184,7 +184,16 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				}
 			}
 			else if (this.shook) {
-				return super.onMessage(message);
+				MessageBuilder<?> messageBuilder = MessageBuilder.fromMessage(message);
+				// TODO: Move to subclass of TcpMessageMapper when INT-2877 is merged
+				if (state.getPath() != null) {
+					messageBuilder.setHeader(WebSocketHeaders.PATH, state.getPath());
+				}
+				if (state.getQueryString() != null) {
+					messageBuilder.setHeader(WebSocketHeaders.QUERY_STRING, state.getQueryString());
+				}
+				return super.onMessage(
+						messageBuilder.build());
 			}
 			else {
 				try {

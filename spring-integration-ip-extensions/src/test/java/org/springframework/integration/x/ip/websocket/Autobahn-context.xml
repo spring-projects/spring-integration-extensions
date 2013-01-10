@@ -9,16 +9,49 @@
 		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+	<!-- ws://localhost:18080 -->
+
 	<int-ip:tcp-connection-factory id="ws"
 		type="server" port="18080"
-		using-nio="true"
+		using-nio="false"
 		so-timeout="600000"
 		interceptor-factory-chain="interceptors"
 		serializer="wsSerializer"
 		deserializer="wsSerializer" />
 
+	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="echoChannel" />
+
+	<!-- wss://localhost:28080 -->
+
+	<!-- We MUST use apply-sequence with NIO so we can resequence frames -->
+
+	<int-ip:tcp-connection-factory id="wss"
+		type="server" port="28080"
+		using-nio="true" apply-sequence="true"
+		so-timeout="600000"
+		ssl-context-support="sslCtxSup"
+		interceptor-factory-chain="interceptors"
+		serializer="wsSerializer"
+		deserializer="wsSerializer" />
+
+	<bean id="sslCtxSup" class="org.springframework.integration.ip.tcp.connection.support.DefaultTcpSSLContextSupport">
+		<constructor-arg value="key.store"/>
+		<constructor-arg value="trust.store"/>
+		<constructor-arg value="secret"/>
+		<constructor-arg value="secret"/>
+	</bean>
+
+	<int-ip:tcp-inbound-channel-adapter connection-factory="wss" channel="addSSLHeader" />
+
+	<int:header-enricher input-channel="addSSLHeader" output-channel="echoChannel">
+		<int:header name="SSL" value="true"/>
+	</int:header-enricher>
+
+	<!-- End SSL config -->
+
 	<bean id="wsSerializer" class="org.springframework.integration.x.ip.websocket.WebSocketSerializer">
 		<property name="server" value="true" />
+		<property name="validateUtf8" value="true" />
 	</bean>
 
 	<bean id="interceptors" class="org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorFactoryChain">
@@ -27,27 +60,30 @@
 		</property>
 	</bean>
 
-	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="startStopChannel" />
+	<bean id="service" class="org.springframework.integration.x.ip.websocket.WebSocketServerTests$DemoService" />
 
-	<bean id="service" class="org.springframework.integration.x.ip.sockjs.WebSocketServerTests$DemoService" />
-
-	<int:chain input-channel="startStopChannel">
-		<!-- payload is a SockJsFrame with the data in its payload property -->
-		<int:transformer expression="payload.payload" />
-		<int:service-activator method="startStop" ref="service" />
+	<int:chain input-channel="echoChannel" output-channel="toChooseBrowser">
+		<!-- payload is a DataFrame -->
+		<int:service-activator expression="payload" />
 	</int:chain>
 
-	<!-- outbound send to websocket -->
+	<int:header-value-router input-channel="toChooseBrowser"
+							 header-name="SSL" default-output-channel="toBrowser">
+		<int:mapping value="false" channel="toBrowser"/>
+		<int:mapping value="true" channel="toBrowserSSL"/>
+	</int:header-value-router>
 
-	<int:inbound-channel-adapter ref="service" method="getNext" channel="out">
-		<int:poller fixed-delay="1000" error-channel="removeSocket" />
-	</int:inbound-channel-adapter>
-
-	<int:splitter input-channel="out" output-channel="toBrowser" />
+	<!-- outbound send to websocket (ws:) -->
 
 	<int:channel id="toBrowser" />
 
 	<int-ip:tcp-outbound-channel-adapter connection-factory="ws" channel="toBrowser" />
+
+	<!-- outbound send to websocket (wss:) -->
+
+	<int:channel id="toBrowserSSL" />
+
+	<int-ip:tcp-outbound-channel-adapter connection-factory="wss" channel="toBrowserSSL" />
 
 	<int:channel id="stdOut" />
 
