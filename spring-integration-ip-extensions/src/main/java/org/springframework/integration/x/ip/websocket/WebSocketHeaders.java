@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.x.ip.sockjs;
-
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+package org.springframework.integration.x.ip.websocket;
 
 /**
  * @author Gary Russell
  * @since 3.0
  *
  */
-public class AutobahnTests {
+public class WebSocketHeaders {
 
-	public static void main(String[] args) throws Exception {
-		new ClassPathXmlApplicationContext("Autobahn-context.xml", AutobahnTests.class);
-		System.out.println("Hit Enter To Terminate...");
-		System.in.read();
-		System.exit(0);
-	}
+	private WebSocketHeaders() {}
+
+	private final static String WS = "websocket_";
+
+	public final static String PATH = WS + "path";
+
+	public final static String QUERY_STRING = WS + "queryString";
 
 }
