@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.Message;
 import org.springframework.integration.annotation.Header;
@@ -44,7 +45,7 @@ public class WebSocketServerTests {
 		System.exit(0);
 	}
 
-	public static class DemoService {
+	public static class DemoService implements ApplicationListener<WebSocketEvent> {
 
 		private static final Log logger = LogFactory.getLog(DemoService.class);
 
@@ -91,6 +92,17 @@ public class WebSocketServerTests {
 		public void remove(String connetionId) {
 			logger.warn("Error on write; removing " + connetionId);
 			clients.remove(connetionId);
+		}
+
+		@Override
+		public void onApplicationEvent(WebSocketEvent event) {
+			logger.info(event);
+			if (WebSocketEvent.HANDSHAKE_COMPLETE.equals(event.getType())) {
+				startStop("start", event.getConnectionId());
+			}
+			else if (WebSocketEvent.WEBSOCKET_CLOSED.equals(event.getType())) {
+				clients.remove(event.getConnectionId());
+			}
 		}
 	}
 
