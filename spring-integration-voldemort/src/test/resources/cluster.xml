@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cluster>
+    <name>test-cluster</name>
+    <server>
+        <id>0</id>
+        <host>localhost</host>
+        <http-port>8080</http-port>
+        <socket-port>6666</socket-port>
+        <admin-port>6667</admin-port>
+        <partitions>0, 1</partitions>
+    </server>
+</cluster>

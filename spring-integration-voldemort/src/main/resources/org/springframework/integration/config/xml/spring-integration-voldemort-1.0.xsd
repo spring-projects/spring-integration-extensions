@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/integration/voldemort"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            xmlns:integration="http://www.springframework.org/schema/integration"
+            targetNamespace="http://www.springframework.org/schema/integration/voldemort"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xsd:import namespace="http://www.springframework.org/schema/beans"/>
+    <xsd:import namespace="http://www.springframework.org/schema/tool"/>
+    <xsd:import namespace="http://www.springframework.org/schema/integration"
+                schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd"/>
+
+    <xsd:annotation>
+        <xsd:documentation><![CDATA[
+			Defines the configuration elements for the Spring Integration
+			Voldemort Adapter.
+		]]></xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:element name="outbound-channel-adapter">
+        <xsd:annotation>
+            <xsd:documentation>
+                Defines an Outbound Channel Adapter that writes messages to
+                Voldemort key-value store.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attributeGroup ref="voldemortAdapterAttributes"/>
+            <xsd:attribute name="store-key" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Specifies the key for Voldemort store. If an expression
+                        is needed, use 'store-key-expression' attribute.
+                        Both options are mutually exclusive.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="store-key-expression" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Spring Expression Language statement used to determine
+                        desired entry key in Voldemort store.
+                        Default expression equals 'headers.voldemort_key'.
+                        This attribute is mutually exclusive with 'store-key' attribute.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="persist-mode" use="optional" default="PUT">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Defines default persist mode for outbound-channel-adapter.
+                        By default values are added or updated in the underlying
+                        Voldemort database. Hereby behavior can be overridden using
+                        VoldemortHeaders.PERSIST_MODE message header.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:union memberTypes="persistMode xsd:string"/>
+                </xsd:simpleType>
+            </xsd:attribute>
+            <xsd:attribute name="order">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Specifies the order for invocation when this endpoint is connected as a
+                        subscriber to SubscribableChannel.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="inbound-channel-adapter">
+        <xsd:annotation>
+            <xsd:documentation>
+                Defines an Inbound Channel Adapter that reads records from Voldemort
+                key-value store.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
+            </xsd:sequence>
+            <xsd:attributeGroup ref="voldemortAdapterAttributes"/>
+            <xsd:attribute name="search-key" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        String key that is being searched.
+                        This attribute is mutually exclusive
+                        with 'search-key-expression' attribute.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="search-key-expression" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Spring Expression Language statement that returns
+                        desired entry key.
+                        This attribute is mutually exclusive with 'search-key' attribute.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="delete-after-poll" default="false" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Indicates whether returned object should be removed
+                        from Voldemort database after polling into Spring
+                        Integration channel.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:union memberTypes="xsd:boolean xsd:string" />
+                </xsd:simpleType>
+            </xsd:attribute>
+            <xsd:attribute name="extract-value" default="true" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Flag controlling value extraction from Voldemort's
+                        Versioned object.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:union memberTypes="xsd:boolean xsd:string" />
+                </xsd:simpleType>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:attributeGroup name="voldemortAdapterAttributes">
+        <xsd:annotation>
+            <xsd:documentation>
+                Common configuration for Voldemort adapters.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:attribute name="id" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Identifies the underlying Spring bean definition.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="channel" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <xsd:documentation>
+                        Reference to a MessageChannel that will be utilized to
+                        "receive from" or "send to" messages depending on the
+                        adapter type (e.g. inbound or outbound).
+                    </xsd:documentation>
+                    <tool:annotation kind="ref">
+                        <tool:expected-type type="org.springframework.integration.MessageChannel"/>
+                    </tool:annotation>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="store-client" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <xsd:documentation>
+                        Native Voldemort store client.
+                    </xsd:documentation>
+                    <tool:annotation kind="ref">
+                        <tool:expected-type type="voldemort.client.StoreClient"/>
+                    </tool:annotation>
+                </xsd:appinfo>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="auto-startup" default="true" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Flag to indicate that the component should start automatically
+                    on startup (default true).
+                </xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+                <xsd:union memberTypes="xsd:boolean xsd:string"/>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:attributeGroup>
+
+    <xsd:simpleType name="persistMode">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="PUT"/>
+            <xsd:enumeration value="DELETE"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>
