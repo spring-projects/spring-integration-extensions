@@ -1,0 +1,1 @@
+http\://www.springframework.org/schema/integration/voldemort=org.springframework.integration.voldemort.config.xml.VoldemortNamespaceHandler

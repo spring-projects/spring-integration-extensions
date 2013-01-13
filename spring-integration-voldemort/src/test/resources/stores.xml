@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stores>
+    <store>
+        <name>test-store</name>
+        <owners>lukasz.antoniak@gmail.com</owners>
+        <persistence>bdb</persistence>
+        <routing>client</routing>
+        <replication-factor>1</replication-factor>
+        <required-reads>1</required-reads>
+        <required-writes>1</required-writes>
+        <key-serializer>
+            <type>string</type>
+            <schema-info>UTF-8</schema-info>
+        </key-serializer>
+        <value-serializer>
+            <type>java-serialization</type>
+        </value-serializer>
+    </store>
+    <store>
+        <name>test-object-store</name>
+        <owners>lukasz.antoniak@gmail.com</owners>
+        <persistence>bdb</persistence>
+        <routing>client</routing>
+        <replication-factor>1</replication-factor>
+        <required-reads>1</required-reads>
+        <required-writes>1</required-writes>
+        <key-serializer>
+            <type>java-serialization</type>
+        </key-serializer>
+        <value-serializer>
+            <type>java-serialization</type>
+        </value-serializer>
+    </store>
+</stores>

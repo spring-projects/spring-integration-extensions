@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="history"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>Change History</title>
+    <table frame="all">
+        <title>Change History</title>
+        <tgroup cols="3">
+            <thead>
+                <row>
+                    <entry>Release</entry>
+                    <entry>Date</entry>
+                    <entry>Changes</entry>
+                </row>
+            </thead>
+            <tbody>
+                <row>
+                    <entry>1.0.0</entry>
+                    <entry>13 Jan 2013</entry>
+                    <entry>Initial release providing basic capabilities for inbound and outbound adapters.</entry>
+                </row>
+            </tbody>
+        </tgroup>
+    </table>
+</appendix>

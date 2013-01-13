@@ -1,0 +1,9 @@
+Spring Integration Voldemort Adapter Changelog
+==============================================
+
+Changes in version 1.0.0 (13 Jan 2013)
+-------------------------------------
+
+** New Feature
+    * Voldemort Inbound Adapter
+    * Voldemort Outbound Adapter

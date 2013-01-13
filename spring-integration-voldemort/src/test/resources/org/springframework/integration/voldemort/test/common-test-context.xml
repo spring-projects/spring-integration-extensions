@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="config" class="voldemort.client.ClientConfig">
+        <property name="bootstrapUrls" value="tcp://localhost:6666" />
+    </bean>
+
+    <bean id="clientFactory" class="voldemort.client.SocketStoreClientFactory" destroy-method="close">
+        <constructor-arg name="config" ref="config" />
+    </bean>
+
+    <bean id="storeClient" factory-bean="clientFactory" factory-method="getStoreClient">
+        <constructor-arg value="test-store" />
+    </bean>
+
+    <bean id="messageConverter" class="org.springframework.integration.voldemort.test.domain.PersonMessageConverter" />
+</beans>

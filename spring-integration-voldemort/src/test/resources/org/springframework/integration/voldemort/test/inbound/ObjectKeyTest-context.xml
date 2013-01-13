@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-voldemort="http://www.springframework.org/schema/integration/voldemort"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+			http://www.springframework.org/schema/integration/voldemort http://www.springframework.org/schema/integration/voldemort/spring-integration-voldemort.xsd">
+    <import resource="../common-test-context.xml" />
+
+    <bean id="objectStoreClient" factory-bean="clientFactory" factory-method="getStoreClient">
+        <constructor-arg value="test-object-store" />
+    </bean>
+
+    <int:channel id="voldemortInboundChannel">
+        <int:queue />
+    </int:channel>
+
+    <bean id="messageObjectConverter" class="org.springframework.integration.voldemort.test.domain.CarMessageConverter" />
+
+    <bean id="keyProducer" class="org.springframework.integration.voldemort.test.inbound.ObjectKeyTest$ObjectKeyProducer" />
+
+    <int-voldemort:inbound-channel-adapter id="voldemortInObjectKey" channel="voldemortInboundChannel"
+                                           search-key-expression="@keyProducer.value" store-client="objectStoreClient"
+                                           message-converter="messageObjectConverter">
+        <int:poller fixed-rate="1000" />
+    </int-voldemort:inbound-channel-adapter>
+</beans>
