@@ -41,11 +41,11 @@ public class WebSocketEvent extends TcpConnectionEvent {
 		this.queryString = queryString;
 	}
 
-	protected String getPath() {
+	public String getPath() {
 		return path;
 	}
 
-	protected String getQueryString() {
+	public String getQueryString() {
 		return queryString;
 	}
 
