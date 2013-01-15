@@ -8,6 +8,13 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:property-placeholder location="smpp.properties" />
+
+    <bean id="mockSmppServer" class="org.springframework.integration.smpp.MockSmppServer">
+        <constructor-arg value="${smpp.port}"/>
+        <constructor-arg value="${smpp.systemId}"/>
+        <constructor-arg value="${smpp.password}"/>
+    </bean>
+
 	<context:annotation-config />
 
 	<!-- SENDS SMSs to a specific number -->
@@ -17,7 +24,7 @@
 		<property name="host" value="${smpp.host}" />
 		<property name="port" value="${smpp.port}" />
 		<property name="password" value="${smpp.password}" />
-		<property name="addressRange" value="${test.dst.number}" />
+		<property name="addressRange" value="1111" />
 		<property name="systemId" value="${smpp.systemId}" />
 	</bean>
 
@@ -39,17 +46,24 @@
 		<property name="replyChannel" ref="out1" />
 	</bean>
 
-	<!-- <bean class="org.springframework.integration.smpp.inbound.SmppInboundChannelAdapter"
-		id="smppInboundChannelAdapter"> <property name="smppSession" ref="inboundSession"/>
-		<property name="channel" ref="inbound"/> </bean> <bean class="org.springframework.integration.smpp.outbound.SmppOutboundChannelAdapter"
-		id="smppOutboundChannelAdapter"> <property name="smppSession" ref="outboundSession"/>
-		</bean> -->
+    <!-- listening for inbound traffic for the original sender for reply from inbound-gw -->
+    <bean class="org.springframework.integration.smpp.inbound.SmppInboundChannelAdapter"
+          id="smppInboundChannelAdapter">
+        <property name="smppSession" ref="outboundSession"/>
+        <property name="channel" ref="in2"/>
+    </bean>
 
-	<!--<int:outbound-channel-adapter ref="smppOutboundChannelAdapter" channel="outbound"/> -->
+    <!--<bean class="org.springframework.integration.smpp.outbound.SmppOutboundChannelAdapter"
+          id="smppOutboundChannelAdapter">
+        <property name="smppSession" ref="outboundSession"/>
+    </bean>
+	<int:outbound-channel-adapter ref="smppOutboundChannelAdapter" channel="out2"/>-->
 
+    <!-- channels for internal receive and reply -->
 	<int:channel id="out1" />
 	<int:channel id="in1" />
 
+    <!-- channels for sending outgoing and receive reply -->
 	<int:channel id="out2" />
 	<int:channel id="in2" />
 

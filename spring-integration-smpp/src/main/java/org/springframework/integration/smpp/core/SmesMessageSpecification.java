@@ -24,7 +24,7 @@ import static org.springframework.integration.smpp.core.SmppConstants.*;
  */
 public class SmesMessageSpecification {
 
-	private Log log = LogFactory.getLog(getClass());
+	private static Log log = LogFactory.getLog(SmesMessageSpecification.class);
 	private TimeFormatter timeFormatter = new AbsoluteTimeFormatter();
 
 	private int maxLengthSmsMessages = 140;
@@ -108,7 +108,7 @@ public class SmesMessageSpecification {
 	 * @return a {@link SmesMessageSpecification}
 	 */
 	public static SmesMessageSpecification fromMessage(ClientSession smppSession, Message<?> msg) {
-        System.out.println("Message: "+msg);
+        if (log.isDebugEnabled()) log.debug("Message: "+msg);
 		String srcAddy = valueIfHeaderExists(SRC_ADDR, msg);
 		String dstAddy = valueIfHeaderExists(DST_ADDR, msg);
 		String smsTxt = valueIfHeaderExists(SMS_MSG, msg);
@@ -203,8 +203,8 @@ public class SmesMessageSpecification {
 
 	/**
 	 * tries to safely extract the ESMClass
-	 * @param im
-	 * @return
+	 * @param im message
+	 * @return esm class
 	 */
 	static private  ESMClass esmClassFromHeader( Message<?> im){
 		String h = ESM_CLASS ;
