@@ -78,8 +78,7 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 					Message<?> response = sendAndReceiveMessage(msg);
 					logger.debug("received a reply message; will handle as in outbound adapter");
 
-					// todo copy all the code from the outbound adapter related to defaults
-					/// todo also make sure that we simply flip the inbound to outbound
+					/// todo figure out relationship between inbound-gw and replyChannel
 					applyDefaults(msg, response, SmesMessageSpecification.fromMessage(smppSession, response)).send();
 					logger.debug("the reply SMS message has been sent.");
 				}
@@ -88,8 +87,8 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 	/**
 	 * among other things this method simply 'flips' the src/dst
 	 *
-	 * @param request									req
-	 * @param response								 res
+	 * @param request req
+	 * @param response res
 	 * @param smesMessageSpecification spec
 	 * @return same spec reflecting new switches
 	 */
@@ -104,7 +103,7 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 		if (request.getHeaders().containsKey(SmppConstants.DEST_ADDRESS)) {
 			from = (String) request.getHeaders().get(SmppConstants.DEST_ADDRESS);
 			if (StringUtils.hasText(from))
-				smesMessageSpecification.setSourceAddressIfRequired(from);
+				smesMessageSpecification.setSourceAddress(from);
 		}
 		if (defaultSourceAddressTypeOfNumber != null)
 			smesMessageSpecification.setSourceAddressTypeOfNumberIfRequired(this.defaultSourceAddressTypeOfNumber);
