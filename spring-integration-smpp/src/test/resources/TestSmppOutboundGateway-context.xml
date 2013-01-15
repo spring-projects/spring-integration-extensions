@@ -8,6 +8,13 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:property-placeholder location="smpp.properties" />
+
+    <bean id="mockSmppServer" class="org.springframework.integration.smpp.MockSmppServer">
+        <constructor-arg value="${smpp.port}"/>
+        <constructor-arg value="${smpp.systemId}"/>
+        <constructor-arg value="${smpp.password}"/>
+    </bean>
+
 	<context:annotation-config />
 
 	<bean

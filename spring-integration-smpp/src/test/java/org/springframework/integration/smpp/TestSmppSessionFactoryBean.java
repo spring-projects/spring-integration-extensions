@@ -16,6 +16,7 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.smpp.session.DelegatingMessageReceiverListener;
 import org.springframework.integration.smpp.session.ExtendedSmppSession;
 import org.springframework.integration.smpp.session.ExtendedSmppSessionAdaptingDelegate;
@@ -47,13 +48,17 @@ public class TestSmppSessionFactoryBean {
 
 	private AbsoluteTimeFormatter timeFormatter = new AbsoluteTimeFormatter();
 
-	private String host = "127.0.0.1";
+    @Value("${smpp.host}")
+	private String host;
 
-	private int port = 2775;
+    @Value("${smpp.port}")
+	private int port;
 
-	private String systemId = "smppclient1";
+    @Value("${smpp.systemId}")
+	private String systemId;
 
-	private String password = "password";
+    @Value("${smpp.password}")
+	private String password;
 
 	@Test
 	public void testSmppSessionFactory() throws Throwable {
