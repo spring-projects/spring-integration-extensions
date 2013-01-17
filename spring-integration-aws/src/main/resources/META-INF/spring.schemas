@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/aws/spring-integration-aws-1.0.xsd=org/springframework/integration/aws/config/xml/spring-integration-aws-1.0.xsd
+http\://www.springframework.org/schema/integration/aws/spring-integration-aws.xsd=org/springframework/integration/aws/config/xml/spring-integration-aws-1.0.xsd
