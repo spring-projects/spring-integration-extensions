@@ -28,7 +28,7 @@ import com.amazonaws.services.sqs.AmazonSQSClient;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public class AWSClientFactoryTest {

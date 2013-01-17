@@ -24,7 +24,7 @@ import java.util.Properties;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public abstract class BaseTestCase {

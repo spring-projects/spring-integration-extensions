@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public abstract class AbstractAWSOutboundChannelAdapterParser extends

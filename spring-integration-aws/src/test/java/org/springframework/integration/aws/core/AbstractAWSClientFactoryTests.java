@@ -30,7 +30,7 @@ import com.amazonaws.AmazonWebServiceClient;
  * The abstract test class for Amazon WebService client factory tests
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public abstract class AbstractAWSClientFactoryTests<T extends AmazonWebServiceClient> {

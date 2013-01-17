@@ -34,7 +34,7 @@ import com.amazonaws.AmazonWebServiceClient;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient> implements AWSClientFactory<T> {

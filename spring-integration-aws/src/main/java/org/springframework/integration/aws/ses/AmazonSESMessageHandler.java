@@ -26,7 +26,7 @@ import org.springframework.mail.javamail.JavaMailSender;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public class AmazonSESMessageHandler extends MailSendingMessageHandler {

@@ -15,7 +15,6 @@
  */
 package org.springframework.integration.aws.ses.core;
 
-import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import org.junit.BeforeClass;
@@ -38,7 +37,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 *
 * @author Amol Nayak
 *
-* @since 1.0
+* @since 0.5
 *
 */
 public class DefaultAmazonSESMailSenderAWSTests {
@@ -96,8 +95,7 @@ public class DefaultAmazonSESMailSenderAWSTests {
 	 */
 	@Test
 	public void sendMimeMessage() throws Exception {
-		Session session = sender.getSession();
-		MimeMessageHelper helper = new MimeMessageHelper(new MimeMessage(session));
+		MimeMessageHelper helper = new MimeMessageHelper(sender.createMimeMessage());
 		helper.setText("Some HTML Text", true);
 		helper.setTo(TO_EMAIL_ID);
 		helper.setFrom(TO_EMAIL_ID);
@@ -111,16 +109,15 @@ public class DefaultAmazonSESMailSenderAWSTests {
 	 */
 	@Test
 	public void sendMimeMessageArray() throws Exception {
-		Session session = sender.getSession();
 		MimeMessage[] messages = new MimeMessage[2];
-		MimeMessageHelper helper = new MimeMessageHelper(new MimeMessage(session));
+		MimeMessageHelper helper = new MimeMessageHelper(sender.createMimeMessage());
 		helper.setText("Some HTML Text One", true);
 		helper.setTo(TO_EMAIL_ID);
 		helper.setFrom(TO_EMAIL_ID);
 		helper.setSubject("Some HTML Message's Subject Line One");
 		MimeMessage message = helper.getMimeMessage();
 		messages[0] = message;
-		helper = new MimeMessageHelper(new MimeMessage(session));
+		helper = new MimeMessageHelper(sender.createMimeMessage());
 		helper.setText("Some HTML Text Two", true);
 		helper.setTo(TO_EMAIL_ID);
 		helper.setFrom(TO_EMAIL_ID);

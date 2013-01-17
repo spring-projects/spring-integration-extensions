@@ -23,7 +23,7 @@ import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHa
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public class AWSNamespaceHandler extends

@@ -32,7 +32,7 @@ import org.springframework.integration.test.util.TestUtils;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public abstract class AbstractAWSOutboundChannelAdapterParserTests<T extends MessageHandler> {

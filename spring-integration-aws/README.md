@@ -1,18 +1,16 @@
 Spring Integration Extension for Amazon Web Services (AWS)
 ==========================================================
 
+# Introduction
+## Amazon Web Services (AWS)
 
-##Small Introduction to Amazon Web Services (AWS)
+Launched in 2006, [Amazon Web Services][] (AWS) provides key infrastructure services for business through its cloud computing platform. Using cloud computing businesses can adopt a new business model whereby they do not have to plan and invest in procuring their own IT infrastructure. They can use the infrastructure and services provided by the cloud service provider and pay as they use the services. Visit [http://aws.amazon.com/products/] for more details about various products offered by Amazon as a part their cloud computing services.
 
+*Spring Integration Extension for Amazon Web Services* provides Spring Integration adapters for the various services provided by the [AWS SDK for Java][].
 
-Launched in 2006, Amazon Web Services (AWS) started providing key infrastructure for business as web services, which, also known as cloud computing. Using cloud computing businesses can adopt a new business model whereby they do not have to plan and invest in procuring their own IT infrastructure. They can use the infrastructure and services provided by the cloud service provider and pay as they use the services.
-Visit [http://aws.amazon.com/products/] for more details about various products offered by Amazon as a part their cloud computing services.
+## Spring Integration's extensions to AWS
 
-##Introduction to Spring Integration's extensions to AWS
-
-This guide intends to explain in brief about various adapters available for the AWS and sample xml tag definition for each of them and code snippets wherever necessary,
-
-The library aims to provide adapters for following AWS Services
+This guide intends to explain briefly the various adapters available for [Amazon Web Services][] such as:
 
 * **Amazon Simple Email Service (SES)**
 * **Amazon Simple Storage Service (S3)** (Development complete, coming soon)
@@ -21,34 +19,26 @@ The library aims to provide adapters for following AWS Services
 * **Amazon SimpleDB** (Not initiated)
 * **Amazon SNS** (Not initiated)
 
-Of the above libraries, SES and SNS have outbound adapters only. All other
-services have inbound and outbound adapters. The SQS inbound adapter is capable of receiving notifications sent out from SNS where the topic is an SQS Queue.
-For DymamoDB and SimpleDB, apart from inbound and outbound adapters we shall provide a *MessageStore* implementation too.
+Sample XML Namespace configurations for each adapter as well as sample code snippets are provided wherever necessary. Of the above libraries, *SES* and *SNS* provide outbound adapters only. All other services have inbound and outbound adapters. The *SQS* inbound adapter is capable of receiving notifications sent out from *SNS* where the topic is an *SQS* Queue.
 
+For *DymamoDB* and *SimpleDB*, besides providing *Inbound*- and *Outbound Adapters*, a *MessageStore* implementation is provided, too.
 
-###Executing the test cases.
+# Executing the test cases.
 
-All the test cases for the adapters are present in the *src/test/java* folder. On executing the build, maven's surefire plugin will execute all
-the tests. Please note that all the tests ending with **AWSTests.java* connect
-to the actual webservices and are excluded by default in the maven build.
-All other tests rely on mocking to test the functionality. You need to execute the **AWSTests.java*
-explicitly, manually to test the conectivity to AWS using your credentials.
-All these **AWSTests.java* tests look for the file *awscredentials.properties* in the classpath.
-To be on the safer side create one at location *src/test/resources* as this file
-*spring-integration-aws/src/test/resources/awscredentials.properties* is added to *.gitignore* file.
-This will prevent this file to be checked in accidently and revealing your credentials.
-This file needs to have two properties *accessKey* and *secretKey* holding the values of your access key and secret key respectively.
-> **Note: AWS Services are chargeable and we recommend not to execute the **AWSTests.java* as part of your regular builds.
-AWS does provide a free tier which is sufficient to perform your tests without being
-charged (not true for DynamoDB though), however keep a check on your account usage regularly.
-Get more information about AWS free tier at [http://aws.amazon.com/free/][]**
+All test cases for the adapters are present in the *src/test/java* folder. On executing the build, maven's surefire plugin will execute all the tests.
 
+> Please note that all the tests ending with **AWSTests.java* connect to the actual [Amazon Web Services][] and are excluded by default in the maven build. All other tests rely on mocking to test the functionality. You need to execute the **AWSTests.java* manually to test the connectivity to AWS using your credentials.
 
+All these **AWSTests.java* tests look for the file *awscredentials.properties* in the classpath. To be on the safe side, create the following file at *src/test/resources*:
+*spring-integration-aws/src/test/resources/awscredentials.properties*. It is added to the *.gitignore* file by default. This will prevent this file to be checked in accidentally and revealing your credentials.
+
+This file needs to have two properties *accessKey* and *secretKey*, holding the values of your access key and secret key respectively.
+
+> **Note: AWS Services are chargeable and we recommend not to execute the **AWSTests.java* as part of your regular builds. AWS does provide a free tier which is sufficient to perform your tests without being charged (not true for DynamoDB though), however keep a check on your account usage regularly. Get more information about AWS free tier at [http://aws.amazon.com/free/][]**
 
 #Adapters
 
 ##Simple Email Service (SES)
-
 
 ###Introduction
 
@@ -134,7 +124,8 @@ We shall now see a java code snippet to send a mail using the SNS adapter
 
 	The messages over this channel are consumed by the outbound SES adapter and the mail is sent out using SES.
 
-
+[AWS SDK for Java]: http://aws.amazon.com/sdkforjava/
+[Amazon Web Services]: http://aws.amazon.com/
 [http://aws.amazon.com/products/]: http://aws.amazon.com/products/
 [http://aws.amazon.com/ses/]: http://aws.amazon.com/ses/
 [http://aws.amazon.com/documentation/ses/]: http://aws.amazon.com/documentation/ses/

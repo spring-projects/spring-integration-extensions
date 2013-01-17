@@ -20,7 +20,7 @@ package org.springframework.integration.aws.core;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public interface AWSCredentials {

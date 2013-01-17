@@ -15,22 +15,25 @@
  */
 package org.springframework.integration.aws.ses.config.xml;
 
+import java.util.Properties;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
 import org.springframework.integration.test.util.TestUtils;
+
+import com.amazonaws.services.simpleemail.AWSJavaMailTransport;
 
 /**
  * The test class for the AmazonSESOutboundAdapterParser
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public class AmazonSESOutboundAdapterParserTests {
@@ -79,10 +82,11 @@ public class AmazonSESOutboundAdapterParserTests {
 		Assert.assertNotNull("Expected a non null EventDrivenConsumer", consumer);
 		MessageHandler handler = TestUtils.getPropertyValue(consumer, "handler", MessageHandler.class);
 		Assert.assertNotNull("Expected a non null messagehandler", handler);
-		AWSCredentials credentials =  TestUtils.getPropertyValue(handler, "mailSender.credentials", AWSCredentials.class);
-		Assert.assertNotNull("Expected a non null instance of credentials", credentials);
-		Assert.assertEquals("dummy", credentials.getAccessKey());
-		Assert.assertEquals("dummy", credentials.getSecretKey());
+
+		Properties properties = TestUtils.getPropertyValue(handler, "mailSender.javaMailSender.javaMailProperties", Properties.class);
+		Assert.assertNotNull("Expected a non null instance of credentials", properties);
+		Assert.assertEquals("dummy", properties.getProperty(AWSJavaMailTransport.AWS_ACCESS_KEY_PROPERTY));
+		Assert.assertEquals("dummy", properties.getProperty(AWSJavaMailTransport.AWS_SECRET_KEY_PROPERTY));
 	}
 
 	/**

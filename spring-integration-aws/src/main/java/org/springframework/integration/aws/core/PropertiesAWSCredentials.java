@@ -21,6 +21,7 @@ import java.util.Properties;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
@@ -30,7 +31,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public class PropertiesAWSCredentials extends BasicAWSCredentials implements InitializingBean {
@@ -44,11 +45,13 @@ public class PropertiesAWSCredentials extends BasicAWSCredentials implements Ini
 	private String propertyFileName;
 
 	/**.
-	 * Constructor accepting the properties file
-	 * @param propertyFileName
+	 * Constructor accepting the properties file.
+	 *
+	 * @param propertyFileName Must not be null or empty
 	 */
 	public PropertiesAWSCredentials(String propertyFileName) {
 		super();
+		Assert.hasText(propertyFileName, "The propertyFileName parameter must not be null or empty.");
 		this.propertyFileName = propertyFileName;
 	}
 
@@ -95,10 +98,12 @@ public class PropertiesAWSCredentials extends BasicAWSCredentials implements Ini
 	}
 
 	/**.
-	 * Sets the name of the file that will hold the AW credentials
-	 * @param propertyFileName
+	 * Sets the name of the file that will hold the AW credentials.
+	 *
+	 * @param propertyFileName Must not be null or empty
 	 */
 	public void setPropertyFileName(String propertyFileName) {
+		Assert.hasText(propertyFileName, "The propertyFileName parameter must not be null or empty.");
 		this.propertyFileName = propertyFileName;
 	}
 

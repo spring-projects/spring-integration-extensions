@@ -23,7 +23,7 @@ import com.amazonaws.AmazonWebServiceClient;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public interface AWSClientFactory<T extends AmazonWebServiceClient> {

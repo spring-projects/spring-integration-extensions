@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public final class AmazonWSParserUtils {

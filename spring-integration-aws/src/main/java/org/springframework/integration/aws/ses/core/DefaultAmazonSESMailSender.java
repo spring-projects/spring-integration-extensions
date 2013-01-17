@@ -15,94 +15,107 @@
  */
 package org.springframework.integration.aws.ses.core;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.Properties;
 
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.MimeMessage;
 
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.core.AWSOperationException;
 import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessagePreparator;
 
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.amazonaws.services.simpleemail.model.RawMessage;
-import com.amazonaws.services.simpleemail.model.SendRawEmailRequest;
+import com.amazonaws.services.simpleemail.AWSJavaMailTransport;
 
 /**
  * The implementation class for sending mail using the Amazon SES service
  *
  * @author Amol Nayak
+ * @author Gunnar Hillert
  *
- * @since 1.0
+ * @since 0.5
  *
  */
-public class DefaultAmazonSESMailSender extends JavaMailSenderImpl {
-
-	/**.
-	 * The API class used for sending email using Amazon SES
-	 */
-	private final AmazonSimpleEmailServiceClient emailService;
-
-	private final AWSCredentials credentials;
+public class DefaultAmazonSESMailSender implements JavaMailSender {
 
 	public DefaultAmazonSESMailSender(AWSCredentials credentials) {
-		if(credentials == null)
+
+		if(credentials == null) {
 			throw new AWSOperationException(null, "Credentials cannot be null, provide a non null valid set of credentials");
-		this.credentials = credentials;
+		}
 
-		emailService = new AmazonSimpleEmailServiceClient(
-				new BasicAWSCredentials(credentials.getAccessKey(),
-								credentials.getSecretKey()));
+		/*
+		 * Setup JavaMail to use the Amazon Simple Email Service by specifying
+		 * the "aws" protocol.
+		 */
+		Properties properties = new Properties();
+		properties.setProperty("mail.transport.protocol", "aws");
+
+		properties.setProperty(AWSJavaMailTransport.AWS_ACCESS_KEY_PROPERTY, credentials.getAccessKey());
+		properties.setProperty(AWSJavaMailTransport.AWS_SECRET_KEY_PROPERTY, credentials.getSecretKey());
+
+		javaMailSender.setJavaMailProperties(properties);
+
 	}
 
+	private JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl() {
 
-	/**
-	 * The Actual implementation of the sending of the mail message using the AWS SES
-	 * SDK
-	 */
+		@Override
+		protected Transport getTransport(Session session)
+				throws NoSuchProviderException {
+			return new AWSJavaMailTransport(session, null);
+		}
+
+	};
+
 	@Override
-	protected void doSend(MimeMessage[] mimeMessages, Object[] originalMessages)
+	public void send(SimpleMailMessage simpleMessage) throws MailException {
+		javaMailSender.send(simpleMessage);
+	}
+
+	@Override
+	public void send(SimpleMailMessage[] simpleMessages) throws MailException {
+		javaMailSender.send(simpleMessages);
+	}
+
+	@Override
+	public MimeMessage createMimeMessage() {
+		return javaMailSender.createMimeMessage();
+	}
+
+	@Override
+	public MimeMessage createMimeMessage(InputStream contentStream)
 			throws MailException {
-		Map<Object, Exception> failedMessageMap = new HashMap<Object, Exception>();
-		if(mimeMessages != null && mimeMessages.length > 0) {
-			int index = 0;
-			for(MimeMessage mailMessage:mimeMessages) {
-				try {
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					mailMessage.writeTo(baos);
-					RawMessage rawMessage = new RawMessage(ByteBuffer.wrap(baos.toByteArray()));
-					SendRawEmailRequest rawMail = new SendRawEmailRequest(rawMessage);
-					emailService.sendRawEmail(rawMail);
-					index++;
-				} catch (Exception e) {
-					failedMessageMap.put(originalMessages != null? originalMessages[index]:mailMessage, e);
-				}
-			}
-		}
-
-		if(!failedMessageMap.isEmpty()) {
-			throw new AmazonSESMailSendException(credentials.getAccessKey(),
-			"Exception while sending one or more messages, see failedMessages for more details",
-			failedMessageMap);
-		}
+		return javaMailSender.createMimeMessage(contentStream);
 	}
 
 	@Override
-	public void setPort(int port) {
-		throw new UnsupportedOperationException("AWS SES Implementation of mail " +
-				"sender does not allow setting the port number");
+	public void send(MimeMessage mimeMessage) throws MailException {
+		javaMailSender.send(mimeMessage);
 	}
-
 
 	@Override
-	public void setHost(String host) {
-		throw new UnsupportedOperationException("AWS SES Implementation of mail " +
-		"sender does not allow setting the host name. It is already configured with an endpoint");
+	public void send(MimeMessage[] mimeMessages) throws MailException {
+		javaMailSender.send(mimeMessages);
 	}
 
-	//Should we disallow setSession?
+	@Override
+	public void send(MimeMessagePreparator mimeMessagePreparator)
+			throws MailException {
+		javaMailSender.send(mimeMessagePreparator);
+
+	}
+
+	@Override
+	public void send(MimeMessagePreparator[] mimeMessagePreparators)
+			throws MailException {
+		javaMailSender.send(mimeMessagePreparators);
+	}
+
 }

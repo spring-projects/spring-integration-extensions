@@ -24,7 +24,7 @@ import org.springframework.integration.aws.core.AWSOperationException;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public class AmazonSESMailSendException extends AWSOperationException {

@@ -25,7 +25,7 @@ import org.springframework.integration.core.MessageHandler;
  *
  * @author Amol Nayak
  *
- * @since 1.0
+ * @since 0.5
  *
  */
 public class AmazonSESOutboundAdapterParser extends
