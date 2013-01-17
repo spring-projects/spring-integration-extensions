@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xmlns:int-mail="http://www.springframework.org/schema/integration/mail"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/mail http://www.springframework.org/schema/integration/mail/spring-integration-mail.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/file http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:property-placeholder />
+
+	<bean id="tcpIpUtils" class="org.springframework.integration.test.util.SocketUtils" />
+
+	<bean id="serverPort" class="java.lang.Integer">
+		<constructor-arg value="#{tcpIpUtils.findAvailableServerSocket(12000)}"/>
+	</bean>
+
+	<beans profile="default">
+		<bean id="wiser" class="org.subethamail.wiser.Wiser" init-method="start">
+			<property name="port" ref="serverPort"/>
+		</bean>
+		<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+			<property name="port" ref="serverPort"/>
+		</bean>
+	</beans>
+
+	<beans profile="aws">
+		<bean id="mailSender" class="org.springframework.integration.aws.ses.core.DefaultAmazonSESMailSender">
+			<constructor-arg name="credentials">
+				<bean class="org.springframework.integration.aws.core.BasicAWSCredentials">
+					<property name="accessKey" value="${accessKey}"/>
+					<property name="secretKey" value="${secretKey}"/>
+				</bean>
+			</constructor-arg>
+		</bean>
+	</beans>
+
+</beans>
