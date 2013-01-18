@@ -4,8 +4,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.Message;
+import org.springframework.integration.MessagingException;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.core.SubscribableChannel;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
@@ -21,13 +24,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class TestSmppInboundGateway {
 
+    private final Logger logger = LoggerFactory.getLogger(TestSmppInboundGateway.class);
+
 	@Value("#{out1}") SubscribableChannel out1;
 	@Value("#{out2}") SubscribableChannel out2;
 	@Value("#{in1}") SubscribableChannel in1;
 	@Value("#{in2}") SubscribableChannel in2;
 
 	// test data
-	String toPhone = "33333";   // todo make sure the gateway automatically 'flips' with the to/from on the reply SMS
+	String toPhone = "33333";
 	String fromPhone = "1111";
 	long now = System.currentTimeMillis();
 	String smsRequest = "this is a request created at " + now;
@@ -61,11 +66,11 @@ public class TestSmppInboundGateway {
 		// anyway....
 		//1) lets send an outbound message so that our gateway has something to listen for
 
-		SmesMessageSpecification.newSmesMessageSpecification(outSession, this.fromPhone, this.toPhone, this.smsRequest).send();
 
 		MessageHandler inboundMessageHandler = new AbstractReplyProducingMessageHandler() {
 			 @Override
 			 protected Object handleRequestMessage(Message<?> requestMessage) {
+                 logger.debug("Processing incoming message for inbound-gw and produce a reply");
 				 Assert.assertEquals(requestMessage.getPayload(), smsRequest);
 				 count.incrementAndGet();
 				 return MessageBuilder.withPayload(
@@ -75,7 +80,25 @@ public class TestSmppInboundGateway {
 		 };
 		this.in1.subscribe(inboundMessageHandler);
 
-		// launch the whole thing
+        // this is handler for reply from inbound-gateway
+        MessageHandler replyHandler = new MessageHandler() {
+            @Override
+            public void handleMessage(Message<?> message) throws MessagingException {
+                logger.debug("Reply handler receives: "+message.getPayload());
+                Assert.assertEquals(message.getPayload(), smsResponse);
+            }
+        };
+        this.in2.subscribe(replyHandler);
+
+        // outbound gateway send
+        logger.debug("Sending message from: {} to: {} message: '{}'", new String[] {fromPhone, toPhone, smsRequest});
+        SmesMessageSpecification.newSmesMessageSpecification(outSession, this.fromPhone, this.toPhone, this.smsRequest).send();
+        /*Message<String> smsMsg = MessageBuilder.withPayload(smsRequest)
+                .setHeader(SmppConstants.SRC_ADDR, fromPhone)
+                .setHeader(SmppConstants.DST_ADDR, toPhone)
+                .setHeader(SmppConstants.REGISTERED_DELIVERY_MODE, SMSCDeliveryReceipt.SUCCESS)
+                .build();
+        out2.send(smsMsg);*/
 
 	 	Thread.sleep(1000 * 10);
 

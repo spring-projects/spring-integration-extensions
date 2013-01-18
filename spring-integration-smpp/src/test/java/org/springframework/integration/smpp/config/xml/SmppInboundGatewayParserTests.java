@@ -70,9 +70,9 @@ public class SmppInboundGatewayParserTests {
         assertEquals("errorChannel", errorChannel.getComponentName());
 
         // mappers
-        InboundMessageMapper inboundMessageMapper = TestUtils.getPropertyValue(gateway, "requestMapper", InboundMessageMapper.class);
+        InboundMessageMapper<?> inboundMessageMapper = TestUtils.getPropertyValue(gateway, "requestMapper", InboundMessageMapper.class);
         assertNotNull(inboundMessageMapper);
-        OutboundMessageMapper outboundMessageMapper = TestUtils.getPropertyValue(gateway, "messageConverter.outboundMessageMapper", OutboundMessageMapper.class);
+        OutboundMessageMapper<?> outboundMessageMapper = TestUtils.getPropertyValue(gateway, "messageConverter.outboundMessageMapper", OutboundMessageMapper.class);
         assertNotNull(outboundMessageMapper);
 
 	}
