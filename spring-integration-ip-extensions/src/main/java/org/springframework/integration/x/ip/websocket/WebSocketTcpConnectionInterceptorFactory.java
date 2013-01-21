@@ -210,10 +210,12 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			else {
 				try {
 					doHandshake(payload, message.getHeaders());
-					this.shook = true;
-					WebSocketEvent event = new WebSocketEvent(this.getTheConnection(),
-							WebSocketEvent.HANDSHAKE_COMPLETE, state.getPath(), state.getQueryString());
-					publish(event);
+					if (this.isOpen()) {
+						this.shook = true;
+						WebSocketEvent event = new WebSocketEvent(this.getTheConnection(),
+								WebSocketEvent.HANDSHAKE_COMPLETE, state.getPath(), state.getQueryString());
+						publish(event);
+					}
 				}
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Handshake failed", e);
