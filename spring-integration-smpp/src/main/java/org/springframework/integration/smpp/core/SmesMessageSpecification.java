@@ -1,3 +1,18 @@
+/*
+ * Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp.core;
 
 import org.apache.commons.logging.Log;
@@ -20,11 +35,11 @@ import static org.springframework.integration.smpp.core.SmppConstants.*;
  * fluent API to help make specifying all these parameters just a <em>tiny</em> bit easier. For internal use only.
  *
  * @author Josh Long
- * @since 2.1
+ * @since 1.0
  */
 public class SmesMessageSpecification {
 
-	private Log log = LogFactory.getLog(getClass());
+	private static Log log = LogFactory.getLog(SmesMessageSpecification.class);
 	private TimeFormatter timeFormatter = new AbsoluteTimeFormatter();
 
 	private int maxLengthSmsMessages = 140;
@@ -103,12 +118,12 @@ public class SmesMessageSpecification {
 	 * this method will take an inbound Spring Integration {@link Message} and map it to a {@link SmesMessageSpecification}
 	 * which we can use to send the SMS message.
 	 *
-	 * @param msg				 a new {@link Message}
+	 * @param msg a new {@link Message}
 	 * @param smppSession the SMPPSession
 	 * @return a {@link SmesMessageSpecification}
 	 */
 	public static SmesMessageSpecification fromMessage(ClientSession smppSession, Message<?> msg) {
-        System.out.println("Message: "+msg);
+		if (log.isDebugEnabled()) log.debug("Message: "+msg);
 		String srcAddy = valueIfHeaderExists(SRC_ADDR, msg);
 		String dstAddy = valueIfHeaderExists(DST_ADDR, msg);
 		String smsTxt = valueIfHeaderExists(SMS_MSG, msg);
@@ -203,8 +218,8 @@ public class SmesMessageSpecification {
 
 	/**
 	 * tries to safely extract the ESMClass
-	 * @param im
-	 * @return
+	 * @param im message
+	 * @return esm class
 	 */
 	static private  ESMClass esmClassFromHeader( Message<?> im){
 		String h = ESM_CLASS ;

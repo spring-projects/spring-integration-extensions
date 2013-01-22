@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,40 +26,40 @@ import org.w3c.dom.Element;
  * The Parser for Smpp Inbound Gateway.
  *
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppInboundGatewayParser extends AbstractInboundGatewayParser {
 
-    @Override
-    protected Class<?> getBeanClass(Element element) {
-        return SmppInboundGateway.class;
-    }
+	@Override
+	protected Class<?> getBeanClass(Element element) {
+		return SmppInboundGateway.class;
+	}
 
-    @Override
-    protected boolean isEligibleAttribute(String n) {
-        return !n.equals("source-address") && !n.equals("source-ton") && !n.equals("smpp-session-ref")
-                && !n.equals("request-mapper") && !n.equals("reply-mapper")
-                && super.isEligibleAttribute(n);
-    }
+	@Override
+	protected boolean isEligibleAttribute(String n) {
+		return !n.equals("source-address") && !n.equals("source-ton") && !n.equals("smpp-session-ref")
+				&& !n.equals("request-mapper") && !n.equals("reply-mapper")
+				&& super.isEligibleAttribute(n);
+	}
 
-    @Override
-    protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-        super.doParse(element, parserContext, builder);
-        // because session need parserContext
-        SmppParserUtils.setSession(element, "smpp-session-ref", "session", "smppSession", parserContext, builder);
-    }
+	@Override
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		super.doParse(element, parserContext, builder);
+		// because session need parserContext
+		SmppParserUtils.setSession(element, "smpp-session-ref", "session", "smppSession", parserContext, builder);
+	}
 
-    @Override
-    protected void doPostProcess(BeanDefinitionBuilder builder, Element e) {
-        // value
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "source-address", "defaultSourceAddress");
-        SmppParserUtils.setTon(e, "source-ton", "defaultSourceAddressTypeOfNumber", builder);
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "reply-timeout", "replyTimeout");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "request-timeout", "requestTimeout");
+	@Override
+	protected void doPostProcess(BeanDefinitionBuilder builder, Element e) {
+		// value
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "source-address", "defaultSourceAddress");
+		SmppParserUtils.setTon(e, "source-ton", "defaultSourceAddressTypeOfNumber", builder);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "reply-timeout", "replyTimeout");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "request-timeout", "requestTimeout");
 
-        // reference
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "request-mapper", "requestMapper");
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "reply-mapper", "replyMapper");
-    }
+		// reference
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "request-mapper", "requestMapper");
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "reply-mapper", "replyMapper");
+	}
 }

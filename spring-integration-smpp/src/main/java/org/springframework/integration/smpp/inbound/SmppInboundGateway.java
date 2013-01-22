@@ -1,3 +1,18 @@
+/*
+ * Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp.inbound;
 
 import org.jsmpp.bean.BindType;
@@ -14,10 +29,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * what'running an inbound gateway in this case? Receive a text message and then automatically send a response.
+ * What'running an inbound gateway in this case? Receive a text message and then automatically send a response.
  *
  * @author Josh Long
- * @since 2.1
+ * @since 1.0
  */
 public class SmppInboundGateway extends MessagingGatewaySupport {
 
@@ -25,18 +40,18 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 	private TypeOfNumber defaultSourceAddressTypeOfNumber;
 	private String defaultSourceAddress;
 
-    /**
-     * Set default source address type of number.
-     * @param defaultSourceAddressTypeOfNumber default address type of number.
-     */
+	/**
+	 * Set default source address type of number.
+	 * @param defaultSourceAddressTypeOfNumber default address type of number.
+	 */
 	public void setDefaultSourceAddressTypeOfNumber(TypeOfNumber defaultSourceAddressTypeOfNumber) {
 		this.defaultSourceAddressTypeOfNumber = defaultSourceAddressTypeOfNumber;
 	}
 
-    /**
-     * Set default source address.
-     * @param defaultSourceAddress default source address
-     */
+	/**
+	 * Set default source address.
+	 * @param defaultSourceAddress default source address
+	 */
 	public void setDefaultSourceAddress(String defaultSourceAddress) {
 		this.defaultSourceAddress = defaultSourceAddress;
 	}
@@ -78,8 +93,7 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 					Message<?> response = sendAndReceiveMessage(msg);
 					logger.debug("received a reply message; will handle as in outbound adapter");
 
-					// todo copy all the code from the outbound adapter related to defaults
-					/// todo also make sure that we simply flip the inbound to outbound
+					/// todo figure out relationship between inbound-gw and replyChannel
 					applyDefaults(msg, response, SmesMessageSpecification.fromMessage(smppSession, response)).send();
 					logger.debug("the reply SMS message has been sent.");
 				}
@@ -88,8 +102,8 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 	/**
 	 * among other things this method simply 'flips' the src/dst
 	 *
-	 * @param request									req
-	 * @param response								 res
+	 * @param request req
+	 * @param response res
 	 * @param smesMessageSpecification spec
 	 * @return same spec reflecting new switches
 	 */
@@ -104,7 +118,7 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 		if (request.getHeaders().containsKey(SmppConstants.DEST_ADDRESS)) {
 			from = (String) request.getHeaders().get(SmppConstants.DEST_ADDRESS);
 			if (StringUtils.hasText(from))
-				smesMessageSpecification.setSourceAddressIfRequired(from);
+				smesMessageSpecification.setSourceAddress(from);
 		}
 		if (defaultSourceAddressTypeOfNumber != null)
 			smesMessageSpecification.setSourceAddressTypeOfNumberIfRequired(this.defaultSourceAddressTypeOfNumber);
@@ -127,8 +141,8 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 		this.smppSession.stop();
 	}
 
-    @Override
-    public String getComponentType() {
-        return "smpp:inbound-gateway";
-    }
+	@Override
+	public String getComponentType() {
+		return "smpp:inbound-gateway";
+	}
 }

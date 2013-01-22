@@ -16,7 +16,8 @@
 	<int:channel id="outboundChannel" />
 	<int:channel id="receiptChannel" />
 
-<!-- 	<bean id="session" class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
+	<bean id="session"
+		class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
 		<property name="host" value="${smpp.host}" />
 		<property name="port" ref="smppPort" />
 		<property name="password" value="${smpp.password}" />
@@ -24,19 +25,10 @@
 		<property name="bindType" value="BIND_RX" />
 		<property name="autoStartup" value="true" />
 		<property name="addressRange" value="${smpp.systemId}" />
-	</bean> -->
-
-	<bean id="session" class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
-		<property name="host" value="smpp.activexperts-labs.com" />
-		<property name="port" value="2775" />
-		<property name="password" value="812056" />
-		<property name="systemId" value="AX005" />
-		<property name="bindType" value="BIND_RX" />
-		<property name="autoStartup" value="true" />
-		<property name="addressRange" value="${smpp.systemId}" />
 	</bean>
 
-	<bean id="session2" class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
+	<bean id="session2"
+		class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
 		<property name="host" value="${smpp.host}" />
 		<property name="port" ref="smppPort" />
 		<property name="password" value="${smpp.password}" />

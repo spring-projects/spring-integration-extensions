@@ -1,3 +1,17 @@
+/* Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp;
 
 import org.junit.Before;
@@ -22,55 +36,58 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Demonstrates that the {@link org.springframework.integration.smpp.session.SmppSessionFactoryBean} works, too.
  *
  * @author Josh Long
- * @since 2.1
+ * @since 1.0
  */
 @ContextConfiguration("classpath:TestSmppConnection-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class TestSmppConnection {
 
-    @Value("${smpp.systemId}")
-    String destination;
+	@Value("${smpp.systemId}")
+	private String destination;
 
-    @Autowired SubscribableChannel inboundChannel;
-    @Autowired MessageChannel outboundChannel;
-    @Autowired SubscribableChannel receiptChannel;
+	@Autowired
+	private SubscribableChannel inboundChannel;
 
-    Message<String> messageOut;
+	@Autowired
+	private MessageChannel outboundChannel;
 
-    AtomicInteger count = new AtomicInteger();
+	@Autowired
+	private SubscribableChannel receiptChannel;
 
-    @Before
-    public void setUp() {
-        messageOut = MessageBuilder.withPayload("This is the message")
-                .setHeader(SmppConstants.DST_ADDR, destination)
-                .setHeader(SmppConstants.SRC_ADDR, destination)
-                .build();
-    }
+	private Message<String> messageOut;
 
+	private AtomicInteger count = new AtomicInteger();
+
+	@Before
+	public void setUp() {
+		messageOut = MessageBuilder.withPayload("This is the message")
+				.setHeader(SmppConstants.DST_ADDR, destination)
+				.setHeader(SmppConstants.SRC_ADDR, destination)
+				.build();
+	}
 
 	@Test
 	public void testSmppConnection() throws Throwable {
-        MessageHandler standardInboundHandler = new MessageHandler() {
-            @Override
-            public void handleMessage(Message<?> message) throws MessagingException {
-                System.out.println("Standard Inbound channel receive: " + message);
-                count.incrementAndGet();
-            }
-        };
-        MessageHandler receiptHandler = new MessageHandler() {
-            @Override
-            public void handleMessage(Message<?> message) throws MessagingException {
-                String received = message.getPayload().toString();
-                System.out.println("Outbound channel output receive receipt: " + received);
-            }
-        };
-        inboundChannel.subscribe(standardInboundHandler);
-        receiptChannel.subscribe(receiptHandler);
+		MessageHandler standardInboundHandler = new MessageHandler() {
+			@Override
+			public void handleMessage(Message<?> message) throws MessagingException {
+				System.out.println("Standard Inbound channel receive: " + message);
+				count.incrementAndGet();
+			}
+		};
+		MessageHandler receiptHandler = new MessageHandler() {
+			@Override
+			public void handleMessage(Message<?> message) throws MessagingException {
+				String received = message.getPayload().toString();
+				System.out.println("Outbound channel output receive receipt: " + received);
+			}
+		};
+		inboundChannel.subscribe(standardInboundHandler);
+		receiptChannel.subscribe(receiptHandler);
 
-        outboundChannel.send(messageOut);
+		outboundChannel.send(messageOut);
 
-        Thread.sleep(5000);
+		Thread.sleep(5000);
 	}
-
 
 }

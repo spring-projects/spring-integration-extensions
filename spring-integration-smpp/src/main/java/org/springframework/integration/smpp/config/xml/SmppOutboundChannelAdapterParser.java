@@ -1,5 +1,5 @@
 /*
-   * Copyright 2002-2012 the original author or authors.
+   * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
  * The parser for the Smpp Outbound Channel Adapter.
  *
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppOutboundChannelAdapterParser extends AbstractOutboundChannelAdapterParser {
@@ -40,12 +40,12 @@ public class SmppOutboundChannelAdapterParser extends AbstractOutboundChannelAda
 	@Override
 	protected AbstractBeanDefinition parseConsumer(Element e, ParserContext parserContext) {
 		final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SmppOutboundChannelAdapter.class);
-        // value attributes
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "source-address", "defaultSourceAddress");
-        SmppParserUtils.setTon(e, "source-ton", "defaultSourceAddressTypeOfNumber", builder);
-        // reference attributes
-        SmppParserUtils.setSession(e, "smpp-session-ref", "session", "smppSession", parserContext, builder);
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "time-formatter", "timeFormatter");
+		// value attributes
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "source-address", "defaultSourceAddress");
+		SmppParserUtils.setTon(e, "source-ton", "defaultSourceAddressTypeOfNumber", builder);
+		// reference attributes
+		SmppParserUtils.setSession(e, "smpp-session-ref", "session", "smppSession", parserContext, builder);
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "time-formatter", "timeFormatter");
 		return builder.getBeanDefinition();
 	}
 

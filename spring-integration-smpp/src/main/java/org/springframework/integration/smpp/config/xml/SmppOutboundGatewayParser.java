@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,25 +24,25 @@ import org.w3c.dom.Element;
 
 /**
  * The Parser for Smpp Outbound Gateway.
- * 
+ *
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppOutboundGatewayParser extends AbstractConsumerEndpointParser  {
 	@Override
 	protected BeanDefinitionBuilder parseHandler(Element e, ParserContext parserContext) {
 		final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SmppOutboundGateway.class);
-        // value attributes
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "source-address", "defaultSourceAddress");
+		// value attributes
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "source-address", "defaultSourceAddress");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "reply-timeout", "sendTimeout");
-        SmppParserUtils.setTon(e, "source-ton", "defaultSourceAddressTypeOfNumber", builder);
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "order");
-        // reference attributes
-        SmppParserUtils.setSession(e, "smpp-session-ref", "session", "smppSession", parserContext, builder);
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "reply-channel", "outputChannel");
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "time-formatter", "timeFormatter");
-        return builder;
+		SmppParserUtils.setTon(e, "source-ton", "defaultSourceAddressTypeOfNumber", builder);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "order");
+		// reference attributes
+		SmppParserUtils.setSession(e, "smpp-session-ref", "session", "smppSession", parserContext, builder);
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "reply-channel", "outputChannel");
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, e, "time-formatter", "timeFormatter");
+		return builder;
 	}
 
 	@Override

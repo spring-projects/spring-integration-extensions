@@ -1,55 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/integration  http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:property-placeholder location="smpp.properties" />
-	<context:annotation-config />
+	<import resource="classpath:smppConnection-context.xml"/>
 
 	<!-- SENDS SMSs to a specific number -->
-	<bean
-		class="org.springframework.integration.smpp.session.SmppSessionFactoryBean"
-		id="outboundSession">
+	<bean id="outboundSession"
+		class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
 		<property name="host" value="${smpp.host}" />
-		<property name="port" value="${smpp.port}" />
+		<property name="port" ref="smppPort" />
 		<property name="password" value="${smpp.password}" />
-		<property name="addressRange" value="${test.dst.number}" />
+		<property name="addressRange" value="1111" />
 		<property name="systemId" value="${smpp.systemId}" />
 	</bean>
 
 	<!-- RECEIVES SMSs from a specific number -->
-	<bean
-		class="org.springframework.integration.smpp.session.SmppSessionFactoryBean"
-		id="inboundSession">
+	<bean id="inboundSession"
+		class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
 		<property name="host" value="${smpp.host}" />
-		<property name="port" value="${smpp.port}" />
+		<property name="port" ref="smppPort" />
 		<property name="password" value="${smpp.password}" />
 		<property name="addressRange" value="33333" />
 		<property name="systemId" value="${smpp.systemId}" />
 	</bean>
 
-	<bean class="org.springframework.integration.smpp.inbound.SmppInboundGateway"
-		id="inboundGateway">
+	<bean id="inboundGateway" class="org.springframework.integration.smpp.inbound.SmppInboundGateway">
 		<property name="smppSession" ref="inboundSession" />
 		<property name="requestChannel" ref="in1" />
 		<property name="replyChannel" ref="out1" />
 	</bean>
 
-	<!-- <bean class="org.springframework.integration.smpp.inbound.SmppInboundChannelAdapter"
-		id="smppInboundChannelAdapter"> <property name="smppSession" ref="inboundSession"/>
-		<property name="channel" ref="inbound"/> </bean> <bean class="org.springframework.integration.smpp.outbound.SmppOutboundChannelAdapter"
+	<!-- listening for inbound traffic for the original sender for reply from
+		inbound-gw -->
+	<bean id="smppInboundChannelAdapter"
+		class="org.springframework.integration.smpp.inbound.SmppInboundChannelAdapter">
+		<property name="smppSession" ref="outboundSession" />
+		<property name="channel" ref="in2" />
+	</bean>
+
+	<!--<bean class="org.springframework.integration.smpp.outbound.SmppOutboundChannelAdapter"
 		id="smppOutboundChannelAdapter"> <property name="smppSession" ref="outboundSession"/>
-		</bean> -->
+		</bean> <int:outbound-channel-adapter ref="smppOutboundChannelAdapter" channel="out2"/> -->
 
-	<!--<int:outbound-channel-adapter ref="smppOutboundChannelAdapter" channel="outbound"/> -->
-
+	<!-- channels for internal receive and reply -->
 	<int:channel id="out1" />
 	<int:channel id="in1" />
 
+	<!-- channels for sending outgoing and receive reply -->
 	<int:channel id="out2" />
 	<int:channel id="in2" />
 

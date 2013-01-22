@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,29 +27,29 @@ import org.w3c.dom.Element;
  * The Smpp Inbound Channel adapter parser
  *
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppInboundChannelAdapterParser extends AbstractChannelAdapterParser {
 
-    @Override
-    protected boolean shouldGenerateId() {
-        return false;
-    }
+	@Override
+	protected boolean shouldGenerateId() {
+		return false;
+	}
 
-    @Override
-    protected boolean shouldGenerateIdAsFallback() {
-        return true;
-    }
+	@Override
+	protected boolean shouldGenerateIdAsFallback() {
+		return true;
+	}
 
-    @Override
-    protected AbstractBeanDefinition doParse(Element e, ParserContext context, String channelName) {
-        final BeanDefinitionBuilder builder = BeanDefinitionBuilder
-                .genericBeanDefinition(SmppInboundChannelAdapter.class);
-        SmppParserUtils.setSession(e, "smpp-session-ref", "session", "smppSession", context, builder);
-        builder.addPropertyReference("channel", channelName);
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "auto-startup","autoStartup");
-        return builder.getBeanDefinition();
-    }
+	@Override
+	protected AbstractBeanDefinition doParse(Element e, ParserContext context, String channelName) {
+		final BeanDefinitionBuilder builder = BeanDefinitionBuilder
+				.genericBeanDefinition(SmppInboundChannelAdapter.class);
+		SmppParserUtils.setSession(e, "smpp-session-ref", "session", "smppSession", context, builder);
+		builder.addPropertyReference("channel", channelName);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, e, "auto-startup","autoStartup");
+		return builder.getBeanDefinition();
+	}
 
 }

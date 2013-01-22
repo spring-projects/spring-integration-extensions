@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  *
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppOutboundChannelAdapterParserTests {
@@ -52,29 +52,29 @@ public class SmppOutboundChannelAdapterParserTests {
 		final AbstractMessageChannel inputChannel = TestUtils.getPropertyValue(this.consumer, "inputChannel", AbstractMessageChannel.class);
 		assertEquals("target", inputChannel.getComponentName());
 
-        final SmppOutboundChannelAdapter gateway = TestUtils.getPropertyValue(this.consumer, "handler", SmppOutboundChannelAdapter.class);
+		final SmppOutboundChannelAdapter gateway = TestUtils.getPropertyValue(this.consumer, "handler", SmppOutboundChannelAdapter.class);
 
-        ExtendedSmppSession session = TestUtils.getPropertyValue(gateway, "smppSession", ExtendedSmppSession.class);
-        assertNotNull(session);
+		ExtendedSmppSession session = TestUtils.getPropertyValue(gateway, "smppSession", ExtendedSmppSession.class);
+		assertNotNull(session);
 
-        TypeOfNumber ton = TestUtils.getPropertyValue(gateway, "defaultSourceAddressTypeOfNumber", TypeOfNumber.class);
-        assertEquals(ton, TypeOfNumber.SUBSCRIBER_NUMBER);
+		TypeOfNumber ton = TestUtils.getPropertyValue(gateway, "defaultSourceAddressTypeOfNumber", TypeOfNumber.class);
+		assertEquals(ton, TypeOfNumber.SUBSCRIBER_NUMBER);
 
-        String sourceAddress = TestUtils.getPropertyValue(gateway, "defaultSourceAddress", String.class);
-        assertEquals("12345", sourceAddress);
+		String sourceAddress = TestUtils.getPropertyValue(gateway, "defaultSourceAddress", String.class);
+		assertEquals("12345", sourceAddress);
 
-        // this is not set, should be default value
-        TimeFormatter timeFormatter = TestUtils.getPropertyValue(gateway, "timeFormatter", TimeFormatter.class);
-        assertNotNull(timeFormatter);
+		// this is not set, should be default value
+		TimeFormatter timeFormatter = TestUtils.getPropertyValue(gateway, "timeFormatter", TimeFormatter.class);
+		assertNotNull(timeFormatter);
 
-        // I send message
-        Message<String> message = MessageBuilder.withPayload("Yuhuu !!! i am connected using Spring Integration namespace")
-                .setHeader(SmppConstants.SRC_ADDR, "pavel")
-                .setHeader(SmppConstants.DST_ADDR, "pavel")
-                .build();
+		// I send message
+		Message<String> message = MessageBuilder.withPayload("Yuhuu !!! i am connected using Spring Integration namespace")
+				.setHeader(SmppConstants.SRC_ADDR, "pavel")
+				.setHeader(SmppConstants.DST_ADDR, "pavel")
+				.build();
 
-        MessagingTemplate template = context.getBean("messagingTemplate", MessagingTemplate.class);
-        template.send("target", message);
+		MessagingTemplate template = context.getBean("messagingTemplate", MessagingTemplate.class);
+		template.send("target", message);
 	}
 
 	@After

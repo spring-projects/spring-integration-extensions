@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppOutboundGatewayParserTests {
@@ -52,27 +52,25 @@ public class SmppOutboundGatewayParserTests {
 		long sendTimeout = TestUtils.getPropertyValue(gateway, "messagingTemplate.sendTimeout", Long.class);
 		assertEquals(100, sendTimeout);
 
-        ExtendedSmppSession session = TestUtils.getPropertyValue(gateway, "smppSession", ExtendedSmppSession.class);
-        assertNotNull(session);
+		ExtendedSmppSession session = TestUtils.getPropertyValue(gateway, "smppSession", ExtendedSmppSession.class);
+		assertNotNull(session);
 
-        TypeOfNumber ton = TestUtils.getPropertyValue(gateway, "defaultSourceAddressTypeOfNumber", TypeOfNumber.class);
-        assertEquals(ton, TypeOfNumber.NETWORK_SPECIFIC);
+		TypeOfNumber ton = TestUtils.getPropertyValue(gateway, "defaultSourceAddressTypeOfNumber", TypeOfNumber.class);
+		assertEquals(ton, TypeOfNumber.NETWORK_SPECIFIC);
 
-        String sourceAddress = TestUtils.getPropertyValue(gateway, "defaultSourceAddress", String.class);
-        assertEquals("123456789", sourceAddress);
+		String sourceAddress = TestUtils.getPropertyValue(gateway, "defaultSourceAddress", String.class);
+		assertEquals("123456789", sourceAddress);
 
-        int order = TestUtils.getPropertyValue(gateway, "order", Integer.class);
-        assertEquals(17, order);
+		int order = TestUtils.getPropertyValue(gateway, "order", Integer.class);
+		assertEquals(17, order);
 
-        AbstractMessageChannel outputChannel = TestUtils.getPropertyValue(gateway, "outputChannel", AbstractMessageChannel.class);
-        assertEquals("out", outputChannel.getComponentName());
+		AbstractMessageChannel outputChannel = TestUtils.getPropertyValue(gateway, "outputChannel", AbstractMessageChannel.class);
+		assertEquals("out", outputChannel.getComponentName());
 
-        // this is not set, should be default value
-        TimeFormatter timeFormatter = TestUtils.getPropertyValue(gateway, "timeFormatter", TimeFormatter.class);
-        assertNotNull(timeFormatter);
+		// this is not set, should be default value
+		TimeFormatter timeFormatter = TestUtils.getPropertyValue(gateway, "timeFormatter", TimeFormatter.class);
+		assertNotNull(timeFormatter);
 	}
-
-
 
 	@After
 	public void tearDown() {
