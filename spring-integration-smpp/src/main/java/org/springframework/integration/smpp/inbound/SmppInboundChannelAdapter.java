@@ -1,3 +1,18 @@
+/*
+ * Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp.inbound;
 
 import org.jsmpp.bean.BindType;
@@ -16,9 +31,9 @@ import org.springframework.util.Assert;
  * Supports receiving messages of a payload specified by the SMPP protocol from a <em>short message service center</em> (SMSC).
  *
  * @author Josh Long
- * @since 2.1
- *        <p/>
- *        todo find some way to configure the {@link java.util.concurrent.Executor}running for the JSMPP library
+ * @since 1.0
+ *
+ * TODO find some way to configure the {@link java.util.concurrent.Executor} running for the JSMPP library
  */
 public class SmppInboundChannelAdapter extends AbstractEndpoint {
 
@@ -46,27 +61,27 @@ public class SmppInboundChannelAdapter extends AbstractEndpoint {
 						"receiving messages or both sending *and* receiving messages!");
 	}
 
-    /**
-     * Set smpp session
-     * @param s smpp session
-     */
+	/**
+	 * Set smpp session
+	 * @param s smpp session
+	 */
 	public void setSmppSession(ExtendedSmppSession s) {
 		this.smppSession = s;
 	}
 
-    private AbstractReceivingMessageListener abstractReceivingMessageListener =
-			new AbstractReceivingMessageListener() {
-				@Override
-				protected void onDeliveryReceipt(DeliverSm deliverSm, String ogMessageId, DeliveryReceipt deliveryReceipt) throws Exception {
-					// noop don't care
-				}
+	private AbstractReceivingMessageListener abstractReceivingMessageListener =
+		new AbstractReceivingMessageListener() {
+			@Override
+			protected void onDeliveryReceipt(DeliverSm deliverSm, String ogMessageId, DeliveryReceipt deliveryReceipt) throws Exception {
+				// noop don't care
+			}
 
-				@Override
-				protected void onTextMessage(DeliverSm deliverSm, String txtMessage) throws Exception {
-					Message<?> msg = SmesMessageSpecification.toMessageFromSms(deliverSm, txtMessage);
-					messagingTemplate.send(msg);
-				}
-			};
+			@Override
+			protected void onTextMessage(DeliverSm deliverSm, String txtMessage) throws Exception {
+				Message<?> msg = SmesMessageSpecification.toMessageFromSms(deliverSm, txtMessage);
+				messagingTemplate.send(msg);
+			}
+		};
 
 	@Override
 	protected void doStart() {
@@ -79,9 +94,8 @@ public class SmppInboundChannelAdapter extends AbstractEndpoint {
 		this.smppSession.stop();
 	}
 
-
-    @Override
-    public String getComponentType() {
-        return "smpp:inbound-channel-adapter";
-    }
+	@Override
+	public String getComponentType() {
+		return "smpp:inbound-channel-adapter";
+	}
 }

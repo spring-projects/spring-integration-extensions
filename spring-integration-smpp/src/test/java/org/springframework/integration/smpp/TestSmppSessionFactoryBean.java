@@ -1,4 +1,21 @@
+/* Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp;
+
+import java.lang.reflect.Field;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,8 +28,8 @@ import org.jsmpp.session.DataSmResult;
 import org.jsmpp.session.MessageReceiverListener;
 import org.jsmpp.session.SMPPSession;
 import org.jsmpp.session.Session;
-import org.jsmpp.util.AbsoluteTimeFormatter;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,12 +38,10 @@ import org.springframework.integration.smpp.session.DelegatingMessageReceiverLis
 import org.springframework.integration.smpp.session.ExtendedSmppSession;
 import org.springframework.integration.smpp.session.ExtendedSmppSessionAdaptingDelegate;
 import org.springframework.integration.smpp.session.SmppSessionFactoryBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.Field;
-import java.util.Set;
 
 /**
  * Simple test, more of the SMPP API than anything, at the moment.
@@ -34,10 +49,11 @@ import java.util.Set;
  * Demonstrates that the {@link org.springframework.integration.smpp.session.SmppSessionFactoryBean} works, too.
  *
  * @author Josh Long
- * @since 2.1
+ * @since 1.0
  */
 @ContextConfiguration("classpath:TestSmppSessionFactoryBean-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
+@DirtiesContext
 public class TestSmppSessionFactoryBean {
 
 	private Log logger = LogFactory.getLog(getClass());
@@ -46,18 +62,16 @@ public class TestSmppSessionFactoryBean {
 	@Qualifier("session")
 	private ExtendedSmppSessionAdaptingDelegate smppSession;
 
-	private AbsoluteTimeFormatter timeFormatter = new AbsoluteTimeFormatter();
-
-    @Value("${smpp.host}")
+	@Value("${smpp.host}")
 	private String host;
 
-    @Value("${smpp.port}")
+	@Value("#{smppPort}")
 	private int port;
 
-    @Value("${smpp.systemId}")
+	@Value("${smpp.systemId}")
 	private String systemId;
 
-    @Value("${smpp.password}")
+	@Value("${smpp.password}")
 	private String password;
 
 	@Test
@@ -128,6 +142,6 @@ public class TestSmppSessionFactoryBean {
 
 		BindType bindType = smppSession.getBindType();
 
- 		Assert.assertNotNull("the bind type should not be null", bindType);
+		Assert.assertNotNull("the bind type should not be null", bindType);
 	}
 }

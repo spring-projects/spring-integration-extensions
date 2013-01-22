@@ -1,7 +1,21 @@
+/* Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jsmpp.bean.SMSCDeliveryReceipt;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,23 +33,22 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 @ContextConfiguration("classpath:TestSmppInboundChannelAdapter-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class TestSmppInboundChannelAdapter {
 
 	private String smsMessageToSend = "test SMPP message being sent from this time:"+ System.currentTimeMillis()+".";
 
-	@Value("${test.dst.number}") String number;
-
-	private Log log = LogFactory.getLog(getClass());
+	@Value("${test.dst.number}")
+	private String number;
 
 	private AtomicInteger atomicInteger = new AtomicInteger();
 
-	@Value("#{outbound}") SubscribableChannel out;
+	@Value("#{outbound}")
+	private SubscribableChannel out;
 
-	@Value("#{inbound}") SubscribableChannel in;
+	@Value("#{inbound}")
+	private SubscribableChannel in;
 
 	@Autowired
 	private ApplicationContext context;
@@ -45,7 +58,7 @@ public class TestSmppInboundChannelAdapter {
 		Assert.assertNotNull(this.number);
 	}
 
-	 String lastReceivedSms = null ;
+	private String lastReceivedSms = null ;
 
 	@Test
 	public void testReceiving() throws Throwable {

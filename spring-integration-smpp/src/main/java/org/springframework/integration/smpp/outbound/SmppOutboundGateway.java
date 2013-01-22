@@ -1,3 +1,17 @@
+/* Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp.outbound;
 
 import org.jsmpp.bean.BindType;
@@ -26,12 +40,12 @@ import org.springframework.util.StringUtils;
  * <p/>
  *
  * @author Josh Long
- * @since 2.1
+ * @since 1.0
  */
 public class SmppOutboundGateway extends AbstractReplyProducingMessageHandler {
 	@Override
 	protected void onInit() {
-		Assert.isTrue(	
+		Assert.isTrue(
 				this.smppSession.getBindType().equals(BindType.BIND_TX) ||
 						this.smppSession.getBindType().equals(BindType.BIND_TRX),
 				"the smppSession's bindType must be BindType.BIND_TX or BindType.BIND_TRX");
@@ -65,17 +79,14 @@ public class SmppOutboundGateway extends AbstractReplyProducingMessageHandler {
 
 	private ExtendedSmppSession smppSession;
 
-	@SuppressWarnings("unused")
 	public void setDefaultSourceAddress(String defaultSourceAddress) {
 		this.defaultSourceAddress = defaultSourceAddress;
 	}
 
-	@SuppressWarnings("unused")
 	public void setDefaultSourceAddressTypeOfNumber(TypeOfNumber defaultSourceAddressTypeOfNumber) {
 		this.defaultSourceAddressTypeOfNumber = defaultSourceAddressTypeOfNumber;
 	}
 
-	@SuppressWarnings("unused")
 	public void setTimeFormatter(TimeFormatter timeFormatter) {
 		this.timeFormatter = timeFormatter;
 	}
@@ -95,8 +106,8 @@ public class SmppOutboundGateway extends AbstractReplyProducingMessageHandler {
 		this.smppSession = s;
 	}
 
-    @Override
-    public String getComponentType() {
-        return "smpp:outbound-gateway";
-    }
+	@Override
+	public String getComponentType() {
+		return "smpp:outbound-gateway";
+	}
 }

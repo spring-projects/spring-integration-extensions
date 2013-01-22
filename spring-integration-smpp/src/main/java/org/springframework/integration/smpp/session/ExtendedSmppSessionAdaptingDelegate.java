@@ -1,3 +1,17 @@
+/* Copyright 2002-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.integration.smpp.session;
 
 import org.apache.commons.logging.Log;
@@ -18,7 +32,7 @@ import java.io.IOException;
  * Adapts to the {@link ClientSession} API, while also providing the callbacks for the Spring container
  *
  * @author Josh Long
- * @since 2.1
+ * @since 1.0
  */
 public class ExtendedSmppSessionAdaptingDelegate implements /*Lifecycle,*/ ExtendedSmppSession, InitializingBean {
 
@@ -92,8 +106,8 @@ public class ExtendedSmppSessionAdaptingDelegate implements /*Lifecycle,*/ Exten
 	}
 
 	public String submitShortMessage(String serviceType, TypeOfNumber sourceAddrTon, NumberingPlanIndicator sourceAddrNpi,
-																	 String sourceAddr, TypeOfNumber destAddrTon, NumberingPlanIndicator destAddrNpi,
-																	 String destinationAddr, ESMClass esmClass, byte protocolId, byte priorityFlag, String scheduleDeliveryTime, String validityPeriod, RegisteredDelivery registeredDelivery, byte replaceIfPresentFlag, DataCoding dataCoding, byte smDefaultMsgId, byte[] shortMessage, OptionalParameter... optionalParameters) throws PDUException, ResponseTimeoutException, InvalidResponseException, NegativeResponseException, IOException {
+																	String sourceAddr, TypeOfNumber destAddrTon, NumberingPlanIndicator destAddrNpi,
+																	String destinationAddr, ESMClass esmClass, byte protocolId, byte priorityFlag, String scheduleDeliveryTime, String validityPeriod, RegisteredDelivery registeredDelivery, byte replaceIfPresentFlag, DataCoding dataCoding, byte smDefaultMsgId, byte[] shortMessage, OptionalParameter... optionalParameters) throws PDUException, ResponseTimeoutException, InvalidResponseException, NegativeResponseException, IOException {
 		return session.submitShortMessage(serviceType, sourceAddrTon, sourceAddrNpi, sourceAddr, destAddrTon, destAddrNpi, destinationAddr, esmClass, protocolId, priorityFlag, scheduleDeliveryTime, validityPeriod, registeredDelivery, replaceIfPresentFlag, dataCoding, smDefaultMsgId, shortMessage, optionalParameters);
 	}
 
@@ -108,7 +122,7 @@ public class ExtendedSmppSessionAdaptingDelegate implements /*Lifecycle,*/ Exten
 	}
 
 	public void cancelShortMessage(String serviceType, String messageId, TypeOfNumber sourceAddrTon, NumberingPlanIndicator sourceAddrNpi, String sourceAddr,
-																 TypeOfNumber destAddrTon, NumberingPlanIndicator destAddrNpi, String destinationAddress) throws PDUException, ResponseTimeoutException, InvalidResponseException, NegativeResponseException, IOException {
+																TypeOfNumber destAddrTon, NumberingPlanIndicator destAddrNpi, String destinationAddress) throws PDUException, ResponseTimeoutException, InvalidResponseException, NegativeResponseException, IOException {
 		session.cancelShortMessage(serviceType, messageId, sourceAddrTon, sourceAddrNpi, sourceAddr, destAddrTon, destAddrNpi, destinationAddress);
 	}
 
@@ -165,6 +179,6 @@ public class ExtendedSmppSessionAdaptingDelegate implements /*Lifecycle,*/ Exten
 	}
 
 	public void afterPropertiesSet() throws Exception {
-	    log.debug( "afterPropertiesSet!");
+		log.debug( "afterPropertiesSet!");
 	}
 }

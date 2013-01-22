@@ -31,7 +31,7 @@ def customizePom(pom, gradleProject) {
 		generatedPom.project {
 			name = gradleProject.description
 			description = gradleProject.description
-			url = 'https://github.com/SpringSource/spring-integration'
+			url = 'https://github.com/SpringSource/spring-integration-extensions'
 			organization {
 				name = 'SpringSource'
 				url = 'http://springsource.org'
@@ -44,16 +44,26 @@ def customizePom(pom, gradleProject) {
 				}
 			}
 			scm {
-				url = 'https://github.com/SpringSource/spring-integration'
-				connection = 'scm:git:git://github.com/SpringSource/spring-integration'
-				developerConnection = 'scm:git:git://github.com/SpringSource/spring-integration'
+				url = 'https://github.com/SpringSource/spring-integration-extensions'
+				connection = 'scm:git:git://github.com/SpringSource/spring-integration-extensions'
+				developerConnection = 'scm:git:git://github.com/SpringSource/spring-integration-extensions'
 			}
 
 			developers {
 				developer {
-					id = 'not specified'
+					id = 'otnateos'
 					name = 'Johanes Soetanto'
 					email = 'not specified'
+				}
+				developer {
+					id = 'ghillert'
+					name = 'Gunnar Hillert'
+					email = 'ghillert@vmware.com'
+				}
+				developer {
+					id = 'joshlong'
+					name = 'Josh Long'
+					email = 'jolong@vmware.com'
 				}
 			}
 		}

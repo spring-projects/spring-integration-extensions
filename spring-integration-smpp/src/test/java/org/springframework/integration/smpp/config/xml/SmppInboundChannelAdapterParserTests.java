@@ -1,5 +1,5 @@
 /*
-uytea * Copyright 2002-2012 the original author or authors.
+uytea * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 /**
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppInboundChannelAdapterParserTests {
@@ -45,10 +45,10 @@ public class SmppInboundChannelAdapterParserTests {
 		assertEquals("out", outputChannel.getComponentName());
 
 		ExtendedSmppSession session = TestUtils.getPropertyValue(consumer, "smppSession", ExtendedSmppSession.class);
-        assertNotNull(session);
+		assertNotNull(session);
 
-        boolean autoStartup = TestUtils.getPropertyValue(consumer, "autoStartup" , Boolean.class);
-        assertTrue(autoStartup);
+		boolean autoStartup = TestUtils.getPropertyValue(consumer, "autoStartup" , Boolean.class);
+		assertTrue(autoStartup);
 	}
 
 	@After

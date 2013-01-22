@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Johanes Soetanto
- * @since 2.2
+ * @since 1.0
  *
  */
 public class SmppInboundGatewayParserTests {
@@ -43,41 +43,39 @@ public class SmppInboundGatewayParserTests {
 	public void testRetrievingInboundGatewayParser() throws Exception {
 		setUp("SmppInboundGatewayParserTests.xml", getClass(), "smppInboundGateway");
 
-        // reply timeout
+		// reply timeout
 		long requestTimeout = TestUtils.getPropertyValue(gateway, "messagingTemplate.sendTimeout", Long.class);
 		assertEquals(10000, requestTimeout);
 
-        // request timeout
-        long replyTimeout = TestUtils.getPropertyValue(gateway, "messagingTemplate.receiveTimeout", Long.class);
-        assertEquals(5000, replyTimeout);
+		// request timeout
+		long replyTimeout = TestUtils.getPropertyValue(gateway, "messagingTemplate.receiveTimeout", Long.class);
+		assertEquals(5000, replyTimeout);
 
-        ExtendedSmppSession session = TestUtils.getPropertyValue(gateway, "smppSession", ExtendedSmppSession.class);
-        assertNotNull(session);
-        System.out.println("Session: "+session);
+		ExtendedSmppSession session = TestUtils.getPropertyValue(gateway, "smppSession", ExtendedSmppSession.class);
+		assertNotNull(session);
+		System.out.println("Session: "+session);
 
-        TypeOfNumber ton = TestUtils.getPropertyValue(gateway, "defaultSourceAddressTypeOfNumber", TypeOfNumber.class);
-        assertEquals(ton, TypeOfNumber.INTERNATIONAL);
+		TypeOfNumber ton = TestUtils.getPropertyValue(gateway, "defaultSourceAddressTypeOfNumber", TypeOfNumber.class);
+		assertEquals(ton, TypeOfNumber.INTERNATIONAL);
 
-        String sourceAddress = TestUtils.getPropertyValue(gateway, "defaultSourceAddress", String.class);
-        assertEquals("123456789", sourceAddress);
+		String sourceAddress = TestUtils.getPropertyValue(gateway, "defaultSourceAddress", String.class);
+		assertEquals("123456789", sourceAddress);
 
-        // channels
-        AbstractMessageChannel requestChannel = TestUtils.getPropertyValue(gateway, "requestChannel", AbstractMessageChannel.class);
-        assertEquals("requestChannel", requestChannel.getComponentName());
-        AbstractMessageChannel outputChannel = TestUtils.getPropertyValue(gateway, "replyChannel", AbstractMessageChannel.class);
-        assertEquals("replyChannel", outputChannel.getComponentName());
-        AbstractMessageChannel errorChannel = TestUtils.getPropertyValue(gateway, "errorChannel", AbstractMessageChannel.class);
-        assertEquals("errorChannel", errorChannel.getComponentName());
+		// channels
+		AbstractMessageChannel requestChannel = TestUtils.getPropertyValue(gateway, "requestChannel", AbstractMessageChannel.class);
+		assertEquals("requestChannel", requestChannel.getComponentName());
+		AbstractMessageChannel outputChannel = TestUtils.getPropertyValue(gateway, "replyChannel", AbstractMessageChannel.class);
+		assertEquals("replyChannel", outputChannel.getComponentName());
+		AbstractMessageChannel errorChannel = TestUtils.getPropertyValue(gateway, "errorChannel", AbstractMessageChannel.class);
+		assertEquals("errorChannel", errorChannel.getComponentName());
 
-        // mappers
-        InboundMessageMapper<?> inboundMessageMapper = TestUtils.getPropertyValue(gateway, "requestMapper", InboundMessageMapper.class);
-        assertNotNull(inboundMessageMapper);
-        OutboundMessageMapper<?> outboundMessageMapper = TestUtils.getPropertyValue(gateway, "messageConverter.outboundMessageMapper", OutboundMessageMapper.class);
-        assertNotNull(outboundMessageMapper);
+		// mappers
+		InboundMessageMapper<?> inboundMessageMapper = TestUtils.getPropertyValue(gateway, "requestMapper", InboundMessageMapper.class);
+		assertNotNull(inboundMessageMapper);
+		OutboundMessageMapper<?> outboundMessageMapper = TestUtils.getPropertyValue(gateway, "messageConverter.outboundMessageMapper", OutboundMessageMapper.class);
+		assertNotNull(outboundMessageMapper);
 
 	}
-
-
 
 	@After
 	public void tearDown() {
