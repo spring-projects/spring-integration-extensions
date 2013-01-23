@@ -39,7 +39,7 @@ The Inbound channel adapter is used to read data from Splunk and output a messag
 
 
 ### Saved search:
- 
+
 ```xml
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		savedSearch="test" splunk-server-ref="splunkServer"
@@ -61,7 +61,7 @@ The Inbound channel adapter is used to read data from Splunk and output a messag
 
 ### Export:
 
-```xml	
+```xml
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="true" search="search spring:example" splunk-server-ref="splunkServer" channel="inputFromSplunk"
 		mode="EXPORT" earliestTime="-5d" latestTime="now" initEarliestTime="-1d">
@@ -86,8 +86,8 @@ The outbound channel adapter requires a child *-writer element which defines rel
 	<int-splunk:outbound-channel-adapter
 		id="splunkOutboundChannelAdapter"
 		channel="outputToSplunk"
-		splunk-server-ref="splunkServer" 
-		sourceType="spring-integration" 
+		splunk-server-ref="splunkServer"
+		sourceType="spring-integration"
 		source="example2">
 		<int-splunk:submit-writer index="foo"/>
 	</int-splunk:outbound-channel-adapter>
@@ -98,7 +98,7 @@ The outbound channel adapter requires a child *-writer element which defines rel
 ```xml
 	<int-splunk:outbound-channel-adapter
 		id="splunkOutboundChannelAdapter"
-		channel="outputToSplunk" 
+		channel="outputToSplunk"
 		splunk-server-ref="splunkServer"
 	 >
 		<int-splunk:index-writer index="someIndex"/>
@@ -109,30 +109,30 @@ The outbound channel adapter requires a child *-writer element which defines rel
 
 ```xml
 	<int-splunk:outbound-channel-adapter
-		id="splunkOutboundChannelAdapter" 
-		channel="outputToSplunk" 
+		id="splunkOutboundChannelAdapter"
+		channel="outputToSplunk"
 		splunk-server-ref="splunkServer"
 	  >
 		<int-splunk:tcp-writer port="9999"/>
 	</int-splunk:outbound-channel-adapter>
 ```
-	
+
 *NOTE: The input must exist and be enabled on the server*
 
 ### Configuring The Splunk Server connection
 
 ```xml
 	<int-splunk:server id="splunkServer" username="admin" password="password" timeout="5000" host="somehost.someplace.com" port="9000" />
-```	
-	
-Additional server properties include (see [splunk](http://docs.splunk.com/Documentation/Splunk/latest) documentation for details): 
+```
+
+Additional server properties include (see [splunk](http://docs.splunk.com/Documentation/Splunk/latest) documentation for details):
 
 * app
 * scheme
 * scope
 * owner
 
-The default host is *localhost* and the default port is *8089*. The *timeout* attribute indicates how long to wait for a connection in miliseconds. 
+The default host is *localhost* and the default port is *8089*. The *timeout* attribute indicates how long to wait for a connection in miliseconds.
 
 
 Development
