@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.integration.splunk.entity.SplunkServer;
+import org.springframework.integration.splunk.support.SplunkServer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -46,7 +46,7 @@ public class SplunkServerParserTests {
 
 		Assert.assertEquals("test.splunk.server", server.getHost());
 		Assert.assertEquals(8089, server.getPort());
-		Assert.assertEquals("admin", server.getUserName());
+		Assert.assertEquals("admin", server.getUsername());
 		Assert.assertEquals("password", server.getPassword());
 		Assert.assertEquals("https", server.getScheme());
 		Assert.assertEquals("admin", server.getOwner());

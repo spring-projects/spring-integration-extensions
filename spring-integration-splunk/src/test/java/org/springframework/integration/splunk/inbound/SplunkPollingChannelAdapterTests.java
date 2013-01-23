@@ -25,7 +25,7 @@ import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.integration.splunk.event.SplunkEvent;
 import org.springframework.integration.splunk.support.SplunkExecutor;
 
 /**
@@ -50,13 +50,13 @@ public class SplunkPollingChannelAdapterTests {
 	 */
 	@Test
 	public void testReceive() {
-		List<SplunkData> data = new ArrayList<SplunkData>();
-		SplunkData sd = new SplunkData("spring", "spring:example");
+		List<SplunkEvent> data = new ArrayList<SplunkEvent>();
+		SplunkEvent sd = new SplunkEvent("spring", "spring:example");
 		sd.setCommonDesc("description");
 		data.add(sd);
 		when(executor.poll()).thenReturn(data);
 
-		List<SplunkData> received = inboundAdapter.receive().getPayload();
+		List<SplunkEvent> received = inboundAdapter.receive().getPayload();
 		Assert.assertEquals(1, received.size());
 	}
 

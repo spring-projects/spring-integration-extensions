@@ -19,7 +19,6 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.springframework.integration.splunk.core.ConnectionFactory;
-import org.springframework.integration.splunk.entity.SplunkServer;
 
 import com.splunk.Service;
 

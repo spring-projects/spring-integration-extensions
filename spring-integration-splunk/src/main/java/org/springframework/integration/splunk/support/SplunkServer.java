@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.splunk.entity;
+package org.springframework.integration.splunk.support;
+
+import com.splunk.Service;
 
 /**
  * Splunk server entity
@@ -24,13 +26,14 @@ package org.springframework.integration.splunk.entity;
  */
 public class SplunkServer {
 
-	private String host;
-	private int port;
-	private String scheme;
+	private String host = Service.DEFAULT_HOST;
+	private int port = Service.DEFAULT_PORT;
+	private String scheme = Service.DEFAULT_SCHEME;
 	private String app;
 	private String owner;
-	private String userName;
+	private String username;
 	private String password;
+	private int timeout;
 
 	/**
 	 * @return the host
@@ -60,26 +63,50 @@ public class SplunkServer {
 		this.port = port;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public String getScheme() {
 		return scheme;
 	}
 
+	/**
+	 * 
+	 * @param scheme
+	 */
 	public void setScheme(String scheme) {
 		this.scheme = scheme;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public String getApp() {
 		return app;
 	}
 
+	/**
+	 * 
+	 * @param app
+	 */
 	public void setApp(String app) {
 		this.app = app;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public String getOwner() {
 		return owner;
 	}
 
+	/**
+	 * 
+	 * @param owner
+	 */
 	public void setOwner(String owner) {
 		this.owner = owner;
 	}
@@ -87,15 +114,15 @@ public class SplunkServer {
 	/**
 	 * @return the userName
 	 */
-	public String getUserName() {
-		return userName;
+	public String getUsername() {
+		return username;
 	}
 
 	/**
-	 * @param userName the userName to set
+	 * @param username the username to set
 	 */
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	/**
@@ -112,6 +139,18 @@ public class SplunkServer {
 		this.password = password;
 	}
 
-
-
+	/**
+	 * @return the timeout in ms.
+	 */
+	public int getTimeout() {
+		return timeout;
+	}
+	
+	/**
+	 * set the timeout in ms.
+	 * @param timeout
+	 */
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.springframework.integration.splunk.support;
 
 import org.springframework.integration.splunk.core.Connection;
 import org.springframework.integration.splunk.core.ConnectionFactory;
-import org.springframework.integration.splunk.entity.SplunkServer;
 
 import com.splunk.Service;
 
@@ -25,13 +24,14 @@ import com.splunk.Service;
  * Factory to create Splunk connection.
  *
  * @author Jarred Li
+ * @author David Turanski
  * @since 1.0
  *
  */
 public class SplunkConnectionFactory implements ConnectionFactory<Service> {
 
 	private SplunkServer splunkServer;
-
+	private SplunkConnection connection;
 	public SplunkConnectionFactory(SplunkServer server) {
 		this.splunkServer = server;
 	}
@@ -39,8 +39,11 @@ public class SplunkConnectionFactory implements ConnectionFactory<Service> {
 	/* (non-Javadoc)
 	 * @see org.springframework.integration.splunk.core.ServiceFactory#getService()
 	 */
-	public Connection<Service> getConnection() throws Exception {
-		return new SplunkConnection(splunkServer);
+	public synchronized Connection<Service> getConnection() throws Exception {
+		if (connection == null || !connection.isOpen()) {
+			connection = new SplunkConnection(splunkServer);
+		}
+		return connection;
 	}
 
 }

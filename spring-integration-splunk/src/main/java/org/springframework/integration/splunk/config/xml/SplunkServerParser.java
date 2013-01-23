@@ -20,7 +20,7 @@ import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.splunk.entity.SplunkServer;
+import org.springframework.integration.splunk.support.SplunkServer;
 import org.w3c.dom.Element;
 
 /**
@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
  * The XML element is like this:
  * <pre>
  * {@code
- * <splunk:server id="splunkServer" host="host" port="8089" userName="admin" password="password"
+ * <splunk:server id="splunkServer" host="host" port="8089" username="admin" password="password"
  *                scheme="https" owner="admin" app="search"/>
  * }
  *
@@ -54,8 +54,9 @@ public class SplunkServerParser extends AbstractSimpleBeanDefinitionParser {
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "scheme");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "app");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "owner");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "userName");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "username");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "password");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "timeout");
 
 	}
 
