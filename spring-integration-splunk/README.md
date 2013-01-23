@@ -146,3 +146,4 @@ Development
 To generate Eclipse metadata (e.g., .classpath and .project files), do the following:
 
 	./gradlew eclipse
+
