@@ -15,14 +15,15 @@
  */
 package org.springframework.integration.splunk.config.xml;
 
+import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.integration.splunk.support.IngestType;
-import org.springframework.integration.splunk.support.SplunkDataWriter;
+import org.springframework.integration.splunk.support.AbstractSplunkDataWriter;
+import org.springframework.integration.splunk.support.SplunkIndexWriter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -46,19 +47,10 @@ public class SplunkOutboundChannelAdapterParserStreamTests {
 		Object adapter = appContext.getBean("splunkOutboundChannelAdapter");
 		Assert.assertNotNull(adapter);
 
-		SplunkDataWriter writer = appContext.getBean("splunkOutboundChannelAdapter.splunkExecutor.writer",
-				SplunkDataWriter.class);
+		AbstractSplunkDataWriter writer = appContext.getBean("splunkOutboundChannelAdapter.splunkExecutor.writer",
+				AbstractSplunkDataWriter.class);
 		Assert.assertNotNull(writer);
-
-		IngestType ingest = IngestType.STREAM;
-		Assert.assertEquals(ingest, writer.getIngest());
-
-		String host = "test.host";
-		Assert.assertEquals(host, writer.getHost());
-
-		String hostRegex = "test.host.*";
-		Assert.assertEquals(hostRegex, writer.getHostRegex());
-
+		 assertTrue(writer instanceof SplunkIndexWriter);
 	}
 
 }

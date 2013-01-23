@@ -20,7 +20,7 @@ import java.util.List;
 import org.springframework.integration.Message;
 import org.springframework.integration.context.IntegrationObjectSupport;
 import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.integration.splunk.event.SplunkEvent;
 import org.springframework.integration.splunk.support.SplunkExecutor;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.util.Assert;
@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
  * @since 1.0
  *
  */
-public class SplunkPollingChannelAdapter extends IntegrationObjectSupport implements MessageSource<List<SplunkData>> {
+public class SplunkPollingChannelAdapter extends IntegrationObjectSupport implements MessageSource<List<SplunkEvent>> {
 
 	private final SplunkExecutor splunkExecutor;
 
@@ -62,8 +62,8 @@ public class SplunkPollingChannelAdapter extends IntegrationObjectSupport implem
 	 * If {@link SplunkExecutor#poll()} returns null, this method will return
 	 * <code>null</code>. Otherwise, a new {@link Message} is constructed and returned.
 	 */
-	public Message<List<SplunkData>> receive() {
-		List<SplunkData> payload = splunkExecutor.poll();
+	public Message<List<SplunkEvent>> receive() {
+		List<SplunkEvent> payload = splunkExecutor.poll();
 		if (payload == null) {
 			return null;
 		}

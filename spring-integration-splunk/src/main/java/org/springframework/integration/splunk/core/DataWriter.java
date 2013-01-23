@@ -15,7 +15,7 @@
  */
 package org.springframework.integration.splunk.core;
 
-import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.integration.splunk.event.SplunkEvent;
 
 /**
  * Data writer to write Splunk data into Splunk
@@ -26,6 +26,6 @@ import org.springframework.integration.splunk.entity.SplunkData;
  */
 public interface DataWriter {
 
-	void write(SplunkData data) throws Exception;
+	void write(SplunkEvent data) throws Exception;
 
 }

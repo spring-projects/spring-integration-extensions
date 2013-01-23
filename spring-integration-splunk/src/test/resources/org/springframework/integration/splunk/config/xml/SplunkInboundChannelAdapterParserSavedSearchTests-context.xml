@@ -16,9 +16,9 @@
 	<int-splunk:inbound-channel-adapter id="splunkInboundChannelAdapter"
 		auto-startup="false"
 		splunk-server-ref="splunkServer"
-		channel="inputFromSplunk" mode="SAVEDSEARCH" earliestTime="-1d" latestTime="now"
-		initEarliestTime="-1d" count="1000"
-		savedSearch="savedSearch" owner="admin" app="search">
+		channel="inputFromSplunk" mode="SAVEDSEARCH" earliest-time="-1d" latest-time="now"
+		init-earliest-time="-1d" count="1000"
+		saved-search="savedSearch" owner="admin" app="search">
 		<int:poller fixed-rate="5000"/>
 	</int-splunk:inbound-channel-adapter>
 

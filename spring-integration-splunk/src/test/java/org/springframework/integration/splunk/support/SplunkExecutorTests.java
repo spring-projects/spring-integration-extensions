@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.springframework.integration.Message;
 import org.springframework.integration.splunk.core.DataReader;
 import org.springframework.integration.splunk.core.DataWriter;
-import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.integration.splunk.event.SplunkEvent;
 import org.springframework.integration.support.MessageBuilder;
 
 /**
@@ -59,9 +59,9 @@ public class SplunkExecutorTests {
 	 */
 	@Test
 	public void testHandleMessage() throws Exception {
-		SplunkData sd = new SplunkData("spring", "spring:example");
+		SplunkEvent sd = new SplunkEvent("spring", "spring:example");
 		sd.setCommonDesc("description");
-		Message<SplunkData> message = MessageBuilder.withPayload(sd).build();
+		Message<SplunkEvent> message = MessageBuilder.withPayload(sd).build();
 		executor.handleMessage(message);
 		verify(writer).write(sd);
 	}
@@ -72,17 +72,17 @@ public class SplunkExecutorTests {
 	 */
 	@Test
 	public void testPoll() throws Exception {
-		List<SplunkData> data = new ArrayList<SplunkData>();
-		SplunkData sd = new SplunkData("spring", "spring:example");
+		List<SplunkEvent> data = new ArrayList<SplunkEvent>();
+		SplunkEvent sd = new SplunkEvent("spring", "spring:example");
 		sd.setCommonDesc("description");
 		data.add(sd);
 
-		sd = new SplunkData("spring", "spring:example");
+		sd = new SplunkEvent("spring", "spring:example");
 		sd.setCommonDesc("description");
 		data.add(sd);
 		when(reader.search()).thenReturn(data);
 
-		List<SplunkData> result = executor.poll();
+		List<SplunkEvent> result = executor.poll();
 		Assert.assertEquals(2, result.size());
 
 	}

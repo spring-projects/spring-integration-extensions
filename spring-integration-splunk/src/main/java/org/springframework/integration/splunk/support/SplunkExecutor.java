@@ -25,7 +25,7 @@ import org.springframework.integration.MessageHandlingException;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.splunk.core.DataReader;
 import org.springframework.integration.splunk.core.DataWriter;
-import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.integration.splunk.event.SplunkEvent;
 
 /**
  * Bundles common core logic for the Splunk components.
@@ -57,7 +57,7 @@ public class SplunkExecutor implements InitializingBean {
 	 */
 	public Object executeOutboundOperation(final Message<?> message) {
 		try {
-			SplunkData payload = (SplunkData) message.getPayload();
+			SplunkEvent payload = (SplunkEvent) message.getPayload();
 			writer.write(payload);
 		} catch (Exception e) {
 			String errorMsg = "error in writing data into Splunk";
@@ -74,9 +74,9 @@ public class SplunkExecutor implements InitializingBean {
 	/**
 	 * Execute the Splunk operation.
 	 */
-	public List<SplunkData> poll() {
+	public List<SplunkEvent> poll() {
 		logger.debug("poll start:");
-		List<SplunkData> queryData = null;
+		List<SplunkEvent> queryData = null;
 		try {
 			queryData = reader.search();
 		} catch (Exception e) {

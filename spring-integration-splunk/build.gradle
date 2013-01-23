@@ -21,20 +21,8 @@ repositories {
 	maven { url 'http://repo.springsource.org/plugins-release' } // for bundlor
 }
 
-sourceCompatibility=1.5
-targetCompatibility=1.5
-
-ext {
-	cglibVersion = '2.2'
-	junitVersion = '4.8.2'
-	log4jVersion = '1.2.12'
-	mockitoVersion = '1.9.0'
-	springVersion = '3.1.2.RELEASE'
-	springIntegrationVersion = '2.1.2.RELEASE'
-	commonsLangVersion = '2.6'
-	commonsPoolVersion = '1.6'
-	splunkVersion = '0.8.0'
-}
+sourceCompatibility=1.6
+targetCompatibility=1.6
 
 // See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
 // and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html

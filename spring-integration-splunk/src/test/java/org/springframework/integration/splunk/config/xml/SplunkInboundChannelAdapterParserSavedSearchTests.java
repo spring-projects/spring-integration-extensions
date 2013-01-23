@@ -15,6 +15,7 @@
  */
 package org.springframework.integration.splunk.config.xml;
 
+import static org.junit.Assert.*;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -47,23 +48,22 @@ public class SplunkInboundChannelAdapterParserSavedSearchTests {
 	public void testParseSourceElementParserContext() {
 		SourcePollingChannelAdapter adapter = appContext.getBean("splunkInboundChannelAdapter",
 				SourcePollingChannelAdapter.class);
-		Assert.assertNotNull(adapter);
-
+		 assertNotNull(adapter);
 		SplunkDataReader reader = appContext.getBean("splunkInboundChannelAdapter.splunkExecutor.reader",
 				SplunkDataReader.class);
-		Assert.assertNotNull(reader);
+		 assertNotNull(reader);
 
 		SearchMode mode = SearchMode.SAVEDSEARCH;
-		Assert.assertEquals(mode, reader.getMode());
+		assertEquals(mode, reader.getMode());
 
 		String savedSearch = "savedSearch";
-		Assert.assertEquals(savedSearch, reader.getSavedSearch());
+		assertEquals(savedSearch, reader.getSavedSearch());
 
 		String owner = "admin";
-		Assert.assertEquals(owner, reader.getOwner());
+		assertEquals(owner, reader.getOwner());
 
 		String app = "search";
-		Assert.assertEquals(app, reader.getApp());
+		assertEquals(app, reader.getApp());
 	}
 
 }
