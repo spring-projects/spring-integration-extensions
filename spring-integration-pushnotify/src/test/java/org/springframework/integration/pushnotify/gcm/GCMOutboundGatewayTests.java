@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyService.COLLAPSE_KEY;
-import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyService.DELAY_WHILE_IDLE;
-import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyService.TIME_TO_LIVE;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.COLLAPSE_KEY;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.DELAY_WHILE_IDLE;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.TIME_TO_LIVE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +40,7 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.MessagingException;
+import org.springframework.integration.pushnotify.PushNotifyService;
 import org.springframework.integration.pushnotify.gcm.outbound.GCMOutboundGateway;
 import org.springframework.integration.support.MessageBuilder;
 
@@ -53,7 +54,7 @@ import org.springframework.integration.support.MessageBuilder;
  */
 public class GCMOutboundGatewayTests {
 
-	private static GCMPushNotifyService service;
+	private static PushNotifyService service;
 	private static List<String> receiverIds = new ArrayList<String>();
 	private static Map<String, String> payload;
 	private static Map<String, String> attributes;
@@ -62,7 +63,7 @@ public class GCMOutboundGatewayTests {
 	@SuppressWarnings("unchecked")
 	@BeforeClass
 	public static void setup() throws IOException {
-		service = mock(GCMPushNotifyService.class);
+		service = mock(PushNotifyService.class);
 		when(service.push(anyMap(), anyMap(), (String[])anyVararg()))
 		.then(new Answer<GCMPushResponse>() {
 

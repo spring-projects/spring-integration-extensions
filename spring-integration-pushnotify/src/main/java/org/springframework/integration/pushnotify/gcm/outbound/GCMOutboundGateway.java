@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package org.springframework.integration.pushnotify.gcm.outbound;
 
-import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyService.COLLAPSE_KEY;
-import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyService.DELAY_WHILE_IDLE;
-import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyService.TIME_TO_LIVE;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.COLLAPSE_KEY;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.DELAY_WHILE_IDLE;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.TIME_TO_LIVE;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -35,7 +35,6 @@ import org.springframework.integration.Message;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.pushnotify.PushNotifyService;
-import org.springframework.integration.pushnotify.gcm.GCMPushNotifyService;
 import org.springframework.integration.pushnotify.gcm.GCMPushResponse;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package org.springframework.integration.pushnotify.gcm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.COLLAPSE_KEY;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.DELAY_WHILE_IDLE;
+import static org.springframework.integration.pushnotify.gcm.GCMPushNotifyServiceImpl.TIME_TO_LIVE;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,6 +30,7 @@ import java.util.Properties;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.integration.pushnotify.PushNotifyService;
 
 /**
  * The test class for {@link GCMPushNotifyServiceImpl}
@@ -56,7 +60,7 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test(expected=IllegalArgumentException.class)
 	public void withNullMessage() throws IOException {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl("1");
+		PushNotifyService service = new GCMPushNotifyServiceImpl("1");
 		service.push(null, null, "1");
 	}
 
@@ -65,7 +69,7 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test(expected=IllegalArgumentException.class)
 	public void withNullReceiverId() throws IOException  {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl("1");
+		PushNotifyService service = new GCMPushNotifyServiceImpl("1");
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("Data", "Some Data");
 		data.put("Data2", "Some Data 2");
@@ -77,7 +81,7 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test
 	public void withNullAttributes() throws IOException  {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
+		PushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("Data", "Some Data");
 		data.put("Data2", "Some Data 2");
@@ -94,7 +98,7 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test
 	public void withInvalidSenderId() throws IOException  {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl("123");
+		PushNotifyService service = new GCMPushNotifyServiceImpl("123");
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("Data", "Some Data");
 		data.put("Data2", "Some Data 2");
@@ -110,7 +114,7 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test
 	public void withInvalidDeviceId() throws IOException {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
+		PushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("Data", "Some Data");
 		data.put("Data2", "Some Data 2");
@@ -128,7 +132,7 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test
 	public void withInvalidKey() throws IOException {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
+		PushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("google.Data", "Some Data");
 		GCMPushResponse response = (GCMPushResponse)service.push(data, null, receiverId);
@@ -147,7 +151,7 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test
 	public void publishWithAdditionalAttributes() throws IOException {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
+		PushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("Data", "Some Data");
 		data.put("Data2", "Some Data 2");
@@ -166,14 +170,14 @@ public class GCMPushNotifyServiceImplTests {
 	 */
 	@Test
 	public void publishToMultipleInvalidSenders() throws IOException {
-		GCMPushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
+		PushNotifyService service = new GCMPushNotifyServiceImpl(senderId);
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("Data", "Some Data");
 		data.put("Data2", "Some Data 2");
 		Map<String, String> attributes = new HashMap<String, String>();
-		attributes.put(GCMPushNotifyService.TIME_TO_LIVE, "1000");
-		attributes.put(GCMPushNotifyService.COLLAPSE_KEY, "Update Available");
-		attributes.put(GCMPushNotifyService.DELAY_WHILE_IDLE, "1");
+		attributes.put(TIME_TO_LIVE, "1000");
+		attributes.put(COLLAPSE_KEY, "Update Available");
+		attributes.put(DELAY_WHILE_IDLE, "1");
 		GCMPushResponse response = (GCMPushResponse)service.push(data, attributes, receiverId, "123");
 		assertNotNull(response);
 		assertEquals(1, response.getSuccessfulMessages());
