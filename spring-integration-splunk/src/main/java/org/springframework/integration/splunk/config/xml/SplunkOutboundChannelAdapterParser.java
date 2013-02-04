@@ -1,5 +1,5 @@
 /*
-   * Copyright 2002-2012 the original author or authors.
+   * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,20 @@ import org.springframework.integration.config.xml.AbstractOutboundChannelAdapter
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.splunk.outbound.SplunkOutboundChannelAdapter;
 import org.springframework.integration.splunk.support.ConnectionFactoryFactoryBean;
-import org.springframework.integration.splunk.support.SplunkDataWriter;
+import org.springframework.integration.splunk.support.SplunkArgsFactoryBean;
 import org.springframework.integration.splunk.support.SplunkConnectionFactory;
+import org.springframework.integration.splunk.support.SplunkIndexWriter;
+import org.springframework.integration.splunk.support.SplunkSubmitWriter;
+import org.springframework.integration.splunk.support.SplunkTcpWriter;
 import org.springframework.util.StringUtils;
+import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
  * The parser for the Splunk Outbound Channel Adapter.
  *
  * @author Jarred Li
+ * @author David Turanski
  * @since 1.0
  *
  */
@@ -53,18 +58,16 @@ public class SplunkOutboundChannelAdapterParser extends AbstractOutboundChannelA
 
 		BeanDefinitionBuilder splunkOutboundChannelAdapterBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkOutboundChannelAdapter.class);
 		BeanDefinitionBuilder splunkExecutorBuilder = SplunkParserUtils.getSplunkExecutorBuilder(element, parserContext);
-
-		BeanDefinitionBuilder splunkDataWriterBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkDataWriter.class);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataWriterBuilder, element, "sourceType");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataWriterBuilder, element, "source");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataWriterBuilder, element, "index");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataWriterBuilder, element, "ingest");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataWriterBuilder, element, "tcpPort");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataWriterBuilder, element, "host");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataWriterBuilder, element, "hostRegex");
-		BeanDefinitionBuilder connectionFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkConnectionFactory.class);
-
-		String splunkServerBeanName = element.getAttribute("splunk-server-ref");
+		BeanDefinitionBuilder argsBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkArgsFactoryBean.class);
+		
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(argsBuilder, element, "source-type");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(argsBuilder, element, "source");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(argsBuilder, element, "host");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(argsBuilder, element, "host-regex");
+	 	 	
+	 	BeanDefinitionBuilder connectionFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkConnectionFactory.class);
+	 	
+	 	String splunkServerBeanName = element.getAttribute("splunk-server-ref");
 		if (StringUtils.hasText(splunkServerBeanName)) {
 			connectionFactoryBuilder.addConstructorArgReference(splunkServerBeanName);
 		}
@@ -72,14 +75,17 @@ public class SplunkOutboundChannelAdapterParser extends AbstractOutboundChannelA
 		BeanDefinitionBuilder connectionFactoryFactoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConnectionFactoryFactoryBean.class);
 		connectionFactoryFactoryBeanBuilder.addConstructorArgValue(connectionFactoryBuilder.getBeanDefinition());
 		connectionFactoryFactoryBeanBuilder.addConstructorArgValue(element.getAttribute("pool-server-connection"));
-		splunkDataWriterBuilder.addConstructorArgValue(connectionFactoryFactoryBeanBuilder.getBeanDefinition());
-
+		
+		BeanDefinitionBuilder dataWriterBuilder = parseDataWriter(element, parserContext);
+		dataWriterBuilder.addConstructorArgValue(connectionFactoryFactoryBeanBuilder.getBeanDefinition());
+		dataWriterBuilder.addConstructorArgValue(argsBuilder.getBeanDefinition());
+			
 		String channelAdapterId = this.resolveId(element, splunkOutboundChannelAdapterBuilder.getRawBeanDefinition(),
 				parserContext);
 		String splunkExecutorBeanName = channelAdapterId + ".splunkExecutor";
 		String splunkDataWriterBeanName = splunkExecutorBeanName + ".writer";
 
-		parserContext.registerBeanComponent(new BeanComponentDefinition(splunkDataWriterBuilder.getBeanDefinition(),
+		parserContext.registerBeanComponent(new BeanComponentDefinition(dataWriterBuilder.getBeanDefinition(),
 				splunkDataWriterBeanName));
 		splunkExecutorBuilder.addPropertyReference("writer", splunkDataWriterBeanName);
 
@@ -92,6 +98,32 @@ public class SplunkOutboundChannelAdapterParser extends AbstractOutboundChannelA
 
 		return splunkOutboundChannelAdapterBuilder.getBeanDefinition();
 
+	}
+	
+	private BeanDefinitionBuilder parseDataWriter(Element element, ParserContext parserContext) {
+		BeanDefinitionBuilder dataWriterBuilder = null;
+		 Element dataWriter = null;
+		 if (DomUtils.getChildElementByTagName(element, "index-writer") != null) {
+			 dataWriter = DomUtils.getChildElementByTagName(element, "index-writer");
+			 dataWriterBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkIndexWriter.class);
+			 IntegrationNamespaceUtils.setValueIfAttributeDefined(dataWriterBuilder, dataWriter, "index");
+
+		 }
+		 if (DomUtils.getChildElementByTagName(element, "submit-writer") != null) {
+			 dataWriter = DomUtils.getChildElementByTagName(element, "submit-writer");
+			 dataWriterBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkSubmitWriter.class);
+			 IntegrationNamespaceUtils.setValueIfAttributeDefined(dataWriterBuilder, dataWriter, "index");
+		 }
+		 if (DomUtils.getChildElementByTagName(element, "tcp-writer") != null) {
+			 dataWriter = DomUtils.getChildElementByTagName(element, "tcp-writer");
+			 dataWriterBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkTcpWriter.class);
+			 IntegrationNamespaceUtils.setValueIfAttributeDefined(dataWriterBuilder, dataWriter, "port");
+			 
+		 }
+		
+		 IntegrationNamespaceUtils.setValueIfAttributeDefined(dataWriterBuilder, element, "auto-startup");
+			
+		 return dataWriterBuilder;
 	}
 
 }

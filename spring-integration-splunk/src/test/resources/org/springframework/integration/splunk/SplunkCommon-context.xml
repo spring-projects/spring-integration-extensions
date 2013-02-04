@@ -14,6 +14,6 @@
 	<context:component-scan base-package="org.springframework.integration.splunk.support"></context:component-scan>
 	<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean"/>
 
-	<int-splunk:server id="splunkServer" host="10.112.127.51" port="8089" userName="admin" password="password" owner="admin"/>
+	<int-splunk:server id="splunkServer"  username="admin" password="password" owner="admin" timeout="5000"/>
 
 </beans>

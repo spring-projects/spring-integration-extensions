@@ -9,7 +9,7 @@
 	<xsd:import namespace="http://www.springframework.org/schema/beans" />
 	<xsd:import namespace="http://www.springframework.org/schema/tool" />
 	<xsd:import namespace="http://www.springframework.org/schema/integration"
-		schemaLocation="http://www.springframework.org/schema/integration/spring-integration-2.2.xsd" />
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd" />
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -85,7 +85,7 @@ Indicates the Splunk server owner name
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="userName" use="required">
+			<xsd:attribute name="username" use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
 Indicates the userName to login Splunk server
@@ -110,7 +110,19 @@ Indicates the password to login Splunk server
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="scope" type="xsd:string" use="optional" />
-			<xsd:attribute name="id" type="xsd:ID" use="required" />
+			<xsd:attribute name="id" type="xsd:string" use="required" />
+			<xsd:attribute name="timeout" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the connection timeout in ms.
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.Integer" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 
@@ -168,7 +180,7 @@ Indicates the password to login Splunk server
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="fieldList" type="xsd:string">
+			<xsd:attribute name="field-list" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						A comma-separated list of the fields to return
@@ -182,28 +194,28 @@ Indicates the password to login Splunk server
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="earliestTime" type="xsd:string">
+			<xsd:attribute name="earliest-time" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Time modifier for the start of the time window.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="latestTime" type="xsd:string">
+			<xsd:attribute name="latest-time" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Time modifier for the  end of the time window.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-						<xsd:attribute name="initEarliestTime" type="xsd:string" use="required">
+						<xsd:attribute name="init-earliest-time" type="xsd:string" use="required">
 				<xsd:annotation>
 					<xsd:documentation>
 						Time modifier for the start of the time window for the first search.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="savedSearch" type="xsd:string">
+			<xsd:attribute name="saved-search" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Saved search.
@@ -226,6 +238,26 @@ Indicates the password to login Splunk server
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:complexType name="indexWriterType">
+		<xsd:attribute name="index" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						Index to write to.
+					</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	
+	<xsd:complexType name="tcpWriterType">
+		<xsd:attribute name="port" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation>
+						The port corresponding to a tcp Input
+					</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
 
 	<xsd:element name="outbound-channel-adapter">
 		<xsd:annotation>
@@ -237,6 +269,29 @@ Indicates the password to login Splunk server
 			<xsd:sequence>
 				<xsd:element ref="integration:poller" minOccurs="0"
 					maxOccurs="1" />
+				<xsd:choice>
+					<xsd:element name="index-writer" type="indexWriterType">
+						<xsd:annotation>
+							<xsd:documentation>
+								Defines a Data Writer for streaming data to an index, or the default index if not specified.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="tcp-writer" type="tcpWriterType">
+						<xsd:annotation>
+							<xsd:documentation>
+								Defines a Data Writer for streaming data to a tcp input port.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="submit-writer" type="indexWriterType">
+						<xsd:annotation>
+							<xsd:documentation>
+								Defines a Data Writer to submit data, using the REST interface, to an index, or the default index if not specified.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:choice>
 			</xsd:sequence>
 			<xsd:attributeGroup ref="coreSplunkComponentAttributes" />
 			<xsd:attribute name="channel" type="xsd:string">
@@ -272,34 +327,14 @@ Indicates the password to login Splunk server
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="sourceType" type="xsd:string">
+			<xsd:attribute name="source-type" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Splunk event source type
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="index" type="xsd:string">
-				<xsd:annotation>
-					<xsd:documentation>
-						Splunk index name
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="ingest" type="xsd:string">
-				<xsd:annotation>
-					<xsd:documentation>
-						Splunk ingest method: tcp, streaming, submit. Default stream.
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="tcpPort" type="xsd:integer">
-				<xsd:annotation>
-					<xsd:documentation>
-						Splunk ingest method: tcp, streaming, submit. Default stream.
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
+			 
 			<xsd:attribute name="host" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -307,7 +342,8 @@ Indicates the password to login Splunk server
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="hostRegex" type="xsd:string">
+			
+			<xsd:attribute name="host-regex" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Host regex can be provided so Splunk can dynamically extract the host value from the log event

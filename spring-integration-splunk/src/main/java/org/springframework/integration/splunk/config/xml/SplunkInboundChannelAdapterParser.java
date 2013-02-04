@@ -52,22 +52,14 @@ public class SplunkInboundChannelAdapterParser extends AbstractPollingInboundCha
 			splunkDataReaderBuilder.addPropertyValue("count", count);
 		}
 
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "fieldList");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "field-list");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "search");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "savedSearch");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "saved-search");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "owner");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "app");
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "initEarliestTime");
-
-		String earliestTime = element.getAttribute("earliestTime");
-		if (StringUtils.hasText(earliestTime)) {
-			splunkDataReaderBuilder.addPropertyValue("earliestTime", earliestTime);
-		}
-
-		String latestTime = element.getAttribute("latestTime");
-		if (StringUtils.hasText(latestTime)) {
-			splunkDataReaderBuilder.addPropertyValue("latestTime", latestTime);
-		}
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "init-earliest-time");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "earliest-time");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "latest-time");
 
 
 		BeanDefinitionBuilder connectionFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkConnectionFactory.class);

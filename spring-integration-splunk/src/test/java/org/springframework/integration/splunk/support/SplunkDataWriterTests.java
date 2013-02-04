@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.integration.splunk.core.Connection;
 import org.springframework.integration.splunk.core.ConnectionFactory;
-import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.integration.splunk.event.SplunkEvent;
 
 import com.splunk.Args;
 import com.splunk.Receiver;
@@ -35,31 +35,36 @@ import com.splunk.Service;
  */
 public class SplunkDataWriterTests {
 
-	private SplunkDataWriter writer;
+	private AbstractSplunkDataWriter writer;
 
 	private static Receiver receiver = mock(Receiver.class);
 
+	private Args args;
 	@Before
 	public void before() {
-		writer = new SplunkDataWriter(new TestConnectioniFactory());
+		args = new Args();
+		writer = new SplunkSubmitWriter(new TestConnectionFactory(),args);
+		writer.start();
 	}
 
 	/**
-	 * Test method for {@link org.springframework.integration.splunk.support.SplunkDataWriter#write(org.springframework.integration.splunk.entity.SplunkData)}.
+	 * Test method for {@link org.springframework.integration.splunk.support.AbstractSplunkDataWriter#write(org.springframework.integration.splunk.event.SplunkEvent)}.
 	 * @throws Exception
 	 */
 	@Test
 	public void testWrite() throws Exception {
-		writer.setIngest(IngestType.SUBMIT);
+		 
 
-		SplunkData sd = new SplunkData("spring", "spring:example");
+		SplunkEvent sd = new SplunkEvent("spring", "spring:example");
 		sd.setCommonDesc("description");
 		writer.write(sd);
-		Args args = new Args();
-		verify(receiver).submit(eq(args), matches(".*spring:example.*"));
+		
+		verify(receiver).submit(eq(args), matches(".*spring:example.*\n"));
+		
+		writer.stop();
 	}
 
-	public static class TestConnectioniFactory implements ConnectionFactory<Service> {
+	public static class TestConnectionFactory implements ConnectionFactory<Service> {
 
 		/* (non-Javadoc)
 		 * @see org.springframework.integration.splunk.core.ConnectionFactory#getConnection()

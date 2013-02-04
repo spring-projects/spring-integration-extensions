@@ -17,7 +17,7 @@ package org.springframework.integration.splunk.core;
 
 import java.util.List;
 
-import org.springframework.integration.splunk.entity.SplunkData;
+import org.springframework.integration.splunk.event.SplunkEvent;
 
 /**
  * Data reader to read Splunk data from the service.
@@ -27,6 +27,6 @@ import org.springframework.integration.splunk.entity.SplunkData;
  */
 public interface DataReader {
 
-	List<SplunkData> search() throws Exception;
+	List<SplunkEvent> search() throws Exception;
 
 }

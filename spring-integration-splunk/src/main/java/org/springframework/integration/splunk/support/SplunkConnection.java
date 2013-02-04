@@ -17,9 +17,13 @@ package org.springframework.integration.splunk.support;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.integration.splunk.core.Connection;
-import org.springframework.integration.splunk.entity.SplunkServer;
 
 import com.splunk.Service;
 
@@ -33,9 +37,10 @@ import com.splunk.Service;
 public class SplunkConnection implements Connection<Service> {
 
 	private Service service;
+	 
 
 	public SplunkConnection(SplunkServer splunkServer) {
-		Map<String, Object> args = new HashMap<String, Object>();
+		final Map<String, Object> args = new HashMap<String, Object>();
 		if (splunkServer.getHost() != null) {
 			args.put("host", splunkServer.getHost());
 		}
@@ -52,9 +57,28 @@ public class SplunkConnection implements Connection<Service> {
 			args.put("owner", splunkServer.getOwner());
 		}
 
-		args.put("username", splunkServer.getUserName());
+		args.put("username", splunkServer.getUsername());
 		args.put("password", splunkServer.getPassword());
-		service = Service.connect(args);
+		
+		 ExecutorService executor = Executors.newSingleThreadExecutor();
+		 
+		 Future<Service> future = executor.submit(new Callable<Service>(){
+			public Service call() throws Exception {
+				return Service.connect(args);
+			}
+		});
+		
+		 try {
+			if (splunkServer.getTimeout() > 0) {
+				service = future.get(splunkServer.getTimeout(),TimeUnit.MILLISECONDS);
+			} else {
+				service = future.get();
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(String.format("could not connect to Splunk Server @ %s:%d - %s",
+					splunkServer.getHost(),splunkServer.getPort(),e.getMessage()));
+		}
+		
 	}
 
 	/* (non-Javadoc)
@@ -76,6 +100,7 @@ public class SplunkConnection implements Connection<Service> {
 		}
 		return result;
 	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.springframework.integration.splunk.core.IService#getService()

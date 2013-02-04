@@ -15,14 +15,17 @@
  */
 package org.springframework.integration.splunk.config.xml;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.integration.splunk.support.IngestType;
-import org.springframework.integration.splunk.support.SplunkDataWriter;
+import org.springframework.integration.splunk.support.AbstractSplunkDataWriter;
+import org.springframework.integration.splunk.support.SplunkSubmitWriter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -46,19 +49,19 @@ public class SplunkOutboundChannelAdapterParserTests {
 		Object adapter = appContext.getBean("splunkOutboundChannelAdapter");
 		Assert.assertNotNull(adapter);
 
-		SplunkDataWriter writer = appContext.getBean("splunkOutboundChannelAdapter.splunkExecutor.writer",
-				SplunkDataWriter.class);
-		Assert.assertNotNull(writer);
-
+		AbstractSplunkDataWriter writer = appContext.getBean("splunkOutboundChannelAdapter.splunkExecutor.writer",
+				AbstractSplunkDataWriter.class);
+		 assertNotNull(writer);
+		
+		 assertTrue(writer instanceof SplunkSubmitWriter);
+		 assertEquals(false,writer.isAutoStartup());
+		 assertEquals(false,writer.isRunning());
+		
 		String sourceType = "spring-integration";
-		Assert.assertEquals(sourceType, writer.getSourceType());
+		 assertEquals(sourceType, writer.getArgs().get("sourcetype"));
 
 		String source = "example5";
-		Assert.assertEquals(source, writer.getSource());
-
-		IngestType ingest = IngestType.SUBMIT;
-		Assert.assertEquals(ingest, writer.getIngest());
-
+		 assertEquals(source, writer.getArgs().get("source"));
 
 	}
 
