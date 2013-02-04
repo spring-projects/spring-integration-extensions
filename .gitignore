@@ -18,3 +18,4 @@ logs
 nohup.out
 out
 target
+spring-integration-aws/src/test/resources/awscredentials.properties

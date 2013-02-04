@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<import resource="classpath:smppConnection-context.xml"/>
+
+	<bean id="session"
+		class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
+		<property name="host" value="${smpp.host}" />
+		<property name="port" ref="smppPort" />
+		<property name="bindType" value="BIND_TX" />
+		<property name="password" value="${smpp.password}" />
+		<property name="systemId" value="${smpp.systemId}" />
+	</bean>
+
+	<bean id="adapter" class="org.springframework.integration.smpp.outbound.SmppOutboundChannelAdapter">
+		<property name="smppSession" ref="session" />
+	</bean>
+
+	<int:channel id="outboundSms" />
+
+	<int:outbound-channel-adapter channel="outboundSms" ref="adapter" />
+</beans>

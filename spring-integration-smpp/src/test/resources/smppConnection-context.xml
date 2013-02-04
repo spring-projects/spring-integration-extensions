@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	xmlns:smpp="http://www.springframework.org/schema/integration/smpp"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/smpp http://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd">
+
+	<context:property-placeholder location="smpp.properties" />
+
+	<bean id="tcpIpUtils" class="org.springframework.integration.test.util.SocketUtils" />
+
+	<bean id="smppPort" class="java.lang.Integer">
+		<constructor-arg value="#{tcpIpUtils.findAvailableServerSocket(13000)}"/>
+	</bean>
+
+	<bean id="mockSmppServer" class="org.springframework.integration.smpp.MockSmppServer">
+		<constructor-arg ref="smppPort" />
+		<constructor-arg value="${smpp.systemId}" />
+		<constructor-arg value="${smpp.password}" />
+	</bean>
+
+</beans>

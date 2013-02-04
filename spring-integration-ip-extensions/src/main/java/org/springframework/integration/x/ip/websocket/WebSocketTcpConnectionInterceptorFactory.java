@@ -22,6 +22,8 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.serializer.Deserializer;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
@@ -47,13 +49,20 @@ import org.springframework.util.Assert;
  * @since 3.0
  *
  */
-public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionInterceptorFactory {
+public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionInterceptorFactory,
+	ApplicationEventPublisherAware {
 
 	private static final Log logger = LogFactory.getLog(WebSocketTcpConnectionInterceptor.class);
+
+	private volatile ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
 	public TcpConnectionInterceptor getInterceptor() {
 		return new WebSocketTcpConnectionInterceptor();
+	}
+
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.applicationEventPublisher = applicationEventPublisher;
 	}
 
 	private class WebSocketTcpConnectionInterceptor extends AbstractTcpConnectionInterceptor {
@@ -115,8 +124,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 
 			WebSocketState state = (WebSocketState) this.getRequiredDeserializer().getState(inputStream);
 			Assert.notNull(state, "State must not be null:" + message);
-			if (logger.isDebugEnabled()) {
-				logger.debug(state);
+			if (logger.isTraceEnabled()) {
+				logger.trace(state);
 			}
 			if (payload.getRsv() > 0) {
 				if (logger.isDebugEnabled()) {
@@ -136,6 +145,9 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 						}
 						this.send(message);
 					}
+					WebSocketEvent event = new WebSocketEvent(this.getTheConnection(),
+							WebSocketEvent.WEBSOCKET_CLOSED, state.getPath(), state.getQueryString());
+					publish(event);
 					this.close();
 				}
 				catch (Exception e) {
@@ -184,18 +196,41 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				}
 			}
 			else if (this.shook) {
-				return super.onMessage(message);
+				MessageBuilder<?> messageBuilder = MessageBuilder.fromMessage(message);
+				// TODO: Move to subclass of TcpMessageMapper when INT-2877 is merged
+				if (state.getPath() != null) {
+					messageBuilder.setHeader(WebSocketHeaders.PATH, state.getPath());
+				}
+				if (state.getQueryString() != null) {
+					messageBuilder.setHeader(WebSocketHeaders.QUERY_STRING, state.getQueryString());
+				}
+				return super.onMessage(
+						messageBuilder.build());
 			}
 			else {
 				try {
 					doHandshake(payload, message.getHeaders());
 					this.shook = true;
+					WebSocketEvent event = new WebSocketEvent(this.getTheConnection(),
+							WebSocketEvent.HANDSHAKE_COMPLETE, state.getPath(), state.getQueryString());
+					publish(event);
 				}
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Handshake failed", e);
 				}
 			}
 			return true;
+		}
+
+		private void publish(WebSocketEvent event) {
+			if (WebSocketTcpConnectionInterceptorFactory.this.applicationEventPublisher != null) {
+				WebSocketTcpConnectionInterceptorFactory.this.applicationEventPublisher.publishEvent(event);
+			}
+			else {
+				if (logger.isWarnEnabled()) {
+					logger.warn("No publisher available for " + event);
+				}
+			}
 		}
 
 		private void protocolViolation(Message<?> message) {

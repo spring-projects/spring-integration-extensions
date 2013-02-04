@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="resources"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Additional Resources</title>
+
+  <section id="resources-home">
+    <title>Spring Integration Home</title>
+    <para>
+      The definitive source of information about Spring Integration is the
+      <ulink url="http://www.springsource.org/spring-integration">Spring Integration Home</ulink> at
+      <ulink url="http://www.springsource.org">http://www.springsource.org</ulink>. That site serves as a hub of
+      information and is the best place to find up-to-date announcements about the project as well as links to
+      articles, blogs, and new sample applications.
+    </para>
+  </section>
+
+    <section id="smpp-home">
+        <title>SMPP Home</title>
+        <para>
+            You can get more information on SMPP from <ulink url="http://en.wikipedia.org/wiki/Short_Message_Peer-to-Peer"/>
+        </para>
+        <para>
+            This adapter uses jsmpp as the underlying library to communicate with SMPP. Jsmpp is Java implementation of
+            SMPP protocol v3.4 and can be retrieved from <ulink url="http://code.google.com/p/jsmpp/"/>
+        </para>
+        <para>
+            You can get SMSC simulator from <ulink url="http://opensmpp.logica.com/CommonPart/Introduction/Introduction.htm#simulator"/>
+        </para>
+
+    </section>
+
+</appendix>
