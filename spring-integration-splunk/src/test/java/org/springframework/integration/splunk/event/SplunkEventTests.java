@@ -11,10 +11,11 @@
  * specific language governing permissions and limitations under the License.
  */
 package org.springframework.integration.splunk.event;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.Test;
 
 /**
@@ -57,6 +58,7 @@ public class SplunkEventTests {
 		assertEquals(event.useInternalDate,event2.useInternalDate);
 		Map<String,String> eventData = event.getEventData();
 		Map<String,String> event2Data = event2.getEventData();
+
 		assertEquals(eventData.size(),event2Data.size());
 		for (String key: eventData.keySet()) {
 			assertEquals(eventData.get(key),event2Data.get(key));
