@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
 import org.springframework.integration.MessagingException;
@@ -31,31 +30,21 @@ import org.springframework.integration.splunk.event.SplunkEvent;
  * Bundles common core logic for the Splunk components.
  *
  * @author Jarred Li
+ * @author David Turanski
  * @since 1.0
  *
  */
-public class SplunkExecutor implements InitializingBean {
+public class SplunkExecutor {
 
 	private static final Log logger = LogFactory.getLog(SplunkExecutor.class);
 
 	private DataReader reader;
 	private DataWriter writer;
 
-	public SplunkExecutor() {
-	}
-
-	/**
-	 * Verifies and sets the parameters. E.g. initializes the to be used
-	 */
-	public void afterPropertiesSet() {
-
-	}
-
 	/**
 	 * Executes the outbound Splunk Operation.
-	 *
 	 */
-	public Object executeOutboundOperation(final Message<?> message) {
+	public Object write(final Message<?> message) {
 		try {
 			SplunkEvent payload = (SplunkEvent) message.getPayload();
 			writer.write(payload);
@@ -68,7 +57,7 @@ public class SplunkExecutor implements InitializingBean {
 	}
 
 	public void handleMessage(final Message<?> message) {
-		executeOutboundOperation(message);
+		write(message);
 	}
 
 	/**
@@ -78,7 +67,7 @@ public class SplunkExecutor implements InitializingBean {
 		logger.debug("poll start:");
 		List<SplunkEvent> queryData = null;
 		try {
-			queryData = reader.search();
+			queryData = reader.read();
 		} catch (Exception e) {
 			String errorMsg = "search Splunk data failed";
 			logger.warn(errorMsg, e);

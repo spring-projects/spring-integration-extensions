@@ -15,10 +15,6 @@
  */
 package org.springframework.integration.splunk.support;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,9 +25,9 @@ import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.integration.splunk.core.Connection;
-import org.springframework.integration.splunk.core.ConnectionFactory;
+import org.springframework.integration.splunk.core.ServiceFactory;
 import org.springframework.integration.splunk.event.SplunkEvent;
 
 import com.splunk.Job;
@@ -49,7 +45,8 @@ public class SplunkDataReaderTests {
 
 	@Before
 	public void before() {
-		reader = new SplunkDataReader(new TestConnectioniFactory());
+		ServiceFactory serviceFactory =serviceFactory();
+		reader = new SplunkDataReader(serviceFactory);
 	}
 
 	/**
@@ -60,7 +57,7 @@ public class SplunkDataReaderTests {
 	public void testBlockingSearch() throws Exception {
 		reader.setMode(SearchMode.BLOCKING);
 		reader.setSearch("search spring:example");
-		List<SplunkEvent> data = reader.search();
+		List<SplunkEvent> data = reader.read();
 		Assert.assertNotNull(data);
 		Assert.assertEquals(5, data.size());
 	}
@@ -69,7 +66,7 @@ public class SplunkDataReaderTests {
 	public void testNonBlockingSearch() throws Exception {
 		reader.setMode(SearchMode.NORMAL);
 		reader.setSearch("search spring:example");
-		List<SplunkEvent> data = reader.search();
+		List<SplunkEvent> data = reader.read();
 		Assert.assertNotNull(data);
 		Assert.assertEquals(5, data.size());
 	}
@@ -79,65 +76,34 @@ public class SplunkDataReaderTests {
 	public void testRealtimeSearch() throws Exception {
 		reader.setMode(SearchMode.REALTIME);
 		reader.setSearch("search spring:example");
-		List<SplunkEvent> data = reader.search();
+		List<SplunkEvent> data = reader.read();
 		Assert.assertNotNull(data);
 		Assert.assertEquals(5, data.size());
 	}
 
-	public static class TestConnectioniFactory implements ConnectionFactory<Service> {
+	private ServiceFactory serviceFactory() {
+		InputStream is = null;
 
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.ConnectionFactory#getConnection()
-		 */
-		public Connection<Service> getConnection() throws Exception {
-			return new TestConnection();
+		try {
+			is = new ClassPathResource("splunk-data.xml").getInputStream();
+		} catch (FileNotFoundException e) {
+			Assert.fail("can not read splunk data file");
+		} catch (IOException e) {
+			Assert.fail("can not read splunk data file");
 		}
+
+		Service service = mock(Service.class);
+		service.setToken("token");
+		JobCollection jobCollection = mock(JobCollection.class);
+		Job blockingJob = mock(Job.class);
+		when(blockingJob.isDone()).thenReturn(true);
+		when(blockingJob.getResultCount()).thenReturn(5);
+		when(blockingJob.getResults(any(Map.class))).thenReturn(is);
+		when(jobCollection.create(any(String.class), any(Map.class))).thenReturn(blockingJob);
+		when(service.getJobs()).thenReturn(jobCollection);
+
+		ServiceFactory serviceFactory = mock(ServiceFactory.class);
+		when(serviceFactory.getService()).thenReturn(service);
+		return serviceFactory;
 	}
-
-	public static class TestConnection implements Connection<Service> {
-
-		private Service service = mock(Service.class);
-
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.Connection#getTarget()
-		 */
-		public Service getTarget() {
-			InputStream is = null;
-
-			try {
-				is = new ClassPathResource("splunk-data.xml").getInputStream();
-			} catch (FileNotFoundException e) {
-				Assert.fail("can not read splunk data file");
-			} catch (IOException e) {
-				Assert.fail("can not read splunk data file");
-			}
-
-
-			service.setToken("token");
-			JobCollection jobCollection = mock(JobCollection.class);
-			Job blockingJob = mock(Job.class);
-			when(blockingJob.isDone()).thenReturn(true);
-			when(blockingJob.getResultCount()).thenReturn(5);
-			when(blockingJob.getResults(any(Map.class))).thenReturn(is);
-			when(jobCollection.create(any(String.class), any(Map.class))).thenReturn(blockingJob);
-			when(service.getJobs()).thenReturn(jobCollection);
-			return service;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.Connection#close()
-		 */
-		public void close() {
-
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.Connection#isOpen()
-		 */
-		public boolean isOpen() {
-			return true;
-		}
-
-	}
-
 }

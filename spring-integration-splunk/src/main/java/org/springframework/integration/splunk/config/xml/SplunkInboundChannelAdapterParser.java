@@ -23,9 +23,8 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractPollingInboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.splunk.inbound.SplunkPollingChannelAdapter;
-import org.springframework.integration.splunk.support.ConnectionFactoryFactoryBean;
-import org.springframework.integration.splunk.support.SplunkConnectionFactory;
 import org.springframework.integration.splunk.support.SplunkDataReader;
+import org.springframework.integration.splunk.support.SplunkServiceFactory;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -61,18 +60,14 @@ public class SplunkInboundChannelAdapterParser extends AbstractPollingInboundCha
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "earliest-time");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "latest-time");
 
-
-		BeanDefinitionBuilder connectionFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkConnectionFactory.class);
+		BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
 
 		String splunkServerBeanName = element.getAttribute("splunk-server-ref");
 		if (StringUtils.hasText(splunkServerBeanName)) {
-			connectionFactoryBuilder.addConstructorArgReference(splunkServerBeanName);
+			serviceFactoryBuilder.addConstructorArgReference(splunkServerBeanName);
 		}
 
-		BeanDefinitionBuilder connectionFactoryFactoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConnectionFactoryFactoryBean.class);
-		connectionFactoryFactoryBeanBuilder.addConstructorArgValue(connectionFactoryBuilder.getBeanDefinition());
-		connectionFactoryFactoryBeanBuilder.addConstructorArgValue(element.getAttribute("pool-server-connection"));
-		splunkDataReaderBuilder.addConstructorArgValue(connectionFactoryFactoryBeanBuilder.getBeanDefinition());
+		splunkDataReaderBuilder.addConstructorArgValue(serviceFactoryBuilder.getBeanDefinition());
 
 		String channelAdapterId = this.resolveId(element, splunkPollingChannelAdapterBuilder.getRawBeanDefinition(),
 				parserContext);

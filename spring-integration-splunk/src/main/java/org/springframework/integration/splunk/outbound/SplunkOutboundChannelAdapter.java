@@ -58,7 +58,7 @@ public class SplunkOutboundChannelAdapter extends AbstractReplyProducingMessageH
 	@Override
 	protected Object handleRequestMessage(Message<?> requestMessage) {
 		final Object result;
-		result = this.splunkExecutor.executeOutboundOperation(requestMessage);
+		result = this.splunkExecutor.write(requestMessage);
 		if (result == null || !producesReply) {
 			return null;
 		}

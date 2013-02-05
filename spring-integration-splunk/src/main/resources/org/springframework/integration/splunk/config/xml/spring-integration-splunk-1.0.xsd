@@ -387,14 +387,6 @@ Indicates the connection timeout in ms.
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="pool-server-connection" use="optional" default="true"
-			type="xsd:string">
-			<xsd:annotation>
-				<xsd:documentation>
-					Whether pool the Splunk connection.
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
 	</xsd:attributeGroup>
 
 </xsd:schema>

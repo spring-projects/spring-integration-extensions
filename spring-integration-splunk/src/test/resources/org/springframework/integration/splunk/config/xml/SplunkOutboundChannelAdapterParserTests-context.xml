@@ -16,7 +16,7 @@
 	<int-splunk:outbound-channel-adapter
 		id="splunkOutboundChannelAdapter" auto-startup="false" order="1"
 		channel="outputToSplunk" splunk-server-ref="splunkServer"
-		pool-server-connection="true" source-type="spring-integration" source="example5"
+		 source-type="spring-integration" source="example5"
 		>
 		 <int-splunk:submit-writer/>
 	</int-splunk:outbound-channel-adapter>

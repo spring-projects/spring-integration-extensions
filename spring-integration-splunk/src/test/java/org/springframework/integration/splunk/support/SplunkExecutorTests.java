@@ -80,7 +80,7 @@ public class SplunkExecutorTests {
 		sd = new SplunkEvent("spring", "spring:example");
 		sd.setCommonDesc("description");
 		data.add(sd);
-		when(reader.search()).thenReturn(data);
+		when(reader.read()).thenReturn(data);
 
 		List<SplunkEvent> result = executor.poll();
 		Assert.assertEquals(2, result.size());
