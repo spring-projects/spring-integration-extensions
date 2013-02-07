@@ -40,13 +40,13 @@ public class SplunkEventTests {
 		Map<String,String> eventData = event.getEventData();
 		assertEquals(0,eventData.size());
 	}
-	
+
 	@Test(expected=RuntimeException.class)
 	public void testKeyCannotBeNull() {
 		SplunkEvent event = new SplunkEvent();
 		event.addPair(null, "foo");
 	}
-	
+
 	@Test
 	public void testCopyConstructor() {
 		Map<String,String> data = new HashMap<String,String>();
