@@ -36,7 +36,7 @@ dependencies {
 	compile "org.springframework:spring-context:$springVersion"
 	compile "org.springframework:spring-expression:$springVersion"
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile "commons-lang:commons-lang:$commonsLangVersion"
+	compile "joda-time:joda-time:$jodaTimeVersion"
 	compile "commons-pool:commons-pool:$commonsPoolVersion"
 
 	testCompile "org.mockito:mockito-all:$mockitoVersion"
