@@ -15,7 +15,7 @@ package org.springframework.integration.splunk.support;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.springframework.integration.splunk.core.ConnectionFactory;
+import org.springframework.integration.splunk.core.ServiceFactory;
 import org.springframework.util.Assert;
 
 import com.splunk.Args;
@@ -41,8 +41,8 @@ public class SplunkIndexWriter extends AbstractSplunkDataWriter {
 	 * @param connectionFactory
 	 * @param args
 	 */
-	public SplunkIndexWriter(ConnectionFactory<Service> connectionFactory, Args args) {
-		super(connectionFactory, args);
+	public SplunkIndexWriter(ServiceFactory serviceFactory, Args args) {
+		super(serviceFactory, args);
 	}
 	
 	/* (non-Javadoc)

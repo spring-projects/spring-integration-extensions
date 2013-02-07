@@ -27,6 +27,6 @@ import org.springframework.integration.splunk.event.SplunkEvent;
  */
 public interface DataReader {
 
-	List<SplunkEvent> search() throws Exception;
+	List<SplunkEvent> read() throws Exception;
 
 }
