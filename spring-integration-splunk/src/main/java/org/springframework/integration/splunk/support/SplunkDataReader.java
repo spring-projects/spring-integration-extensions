@@ -27,9 +27,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.integration.splunk.core.Connection;
-import org.springframework.integration.splunk.core.ConnectionFactory;
 import org.springframework.integration.splunk.core.DataReader;
+import org.springframework.integration.splunk.core.ServiceFactory;
 import org.springframework.integration.splunk.event.SplunkEvent;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -65,8 +64,6 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 
 	private static final Log logger = LogFactory.getLog(SplunkDataReader.class);
 
-	private ConnectionFactory<Service> connectionFactory;
-
 	private SearchMode mode;
 
 	private int count = 0;
@@ -89,8 +86,10 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 
 	private transient Calendar lastSuccessfulReadTime;
 
-	public SplunkDataReader(ConnectionFactory<Service> f) {
-		this.connectionFactory = f;
+	private final ServiceFactory serviceFactory;
+
+	public SplunkDataReader(ServiceFactory serviceFactory) {
+		this.serviceFactory = serviceFactory;
 	}
 
 	public void setSearch(String searchStr) {
@@ -176,7 +175,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		return app;
 	}
 
-	public List<SplunkEvent> search() throws Exception {
+	public List<SplunkEvent> read() throws Exception {
 		logger.debug("mode:" + mode);
 		switch (mode) {
 		case SAVEDSEARCH: {
@@ -217,7 +216,6 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		return result;
 	}
 
-
 	/**
 	 * get earliest time for realtime search
 	 *
@@ -253,12 +251,10 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		String lTime = null;
 		if (StringUtils.hasText(latestTime)) {
 			lTime = latestTime;
-		}
-		else {
+		} else {
 			if (realtime) {
 				lTime = "rt";
-			}
-			else {
+			} else {
 				DateFormat df = new SimpleDateFormat(DATE_FORMAT);
 				lTime = df.format(startTime.getTime());
 			}
@@ -271,18 +267,15 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 
 		if (lastSuccessfulReadTime == null) {
 			eTime = initEarliestTime;
-		}
-		else {
+		} else {
 			if (StringUtils.hasText(earliestTime)) {
 				eTime = earliestTime;
-			}
-			else {
+			} else {
 				String calculatedEarliestTime = calculateEarliestTime(startTime, realtime);
 				if (calculatedEarliestTime != null) {
 					if (realtime) {
 						eTime = "rt" + calculatedEarliestTime;
-					}
-					else {
+					} else {
 						eTime = calculatedEarliestTime;
 					}
 				}
@@ -291,18 +284,14 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		return eTime;
 	}
 
-
 	private List<SplunkEvent> runQuery(Args queryArgs) throws Exception {
-		Connection<Service> connection = connectionFactory.getConnection();
-		try {
-			Job job = connection.getTarget().getJobs().create(search, queryArgs);
-			while (!job.isDone()) {
-				Thread.sleep(2000);
-			}
-			return extractData(job);
-		} finally {
-			connection.close();
+		Service service = serviceFactory.getService();
+		Job job = service.getJobs().create(search, queryArgs);
+		while (!job.isDone()) {
+			Thread.sleep(2000);
 		}
+		return extractData(job);
+
 	}
 
 	private List<SplunkEvent> blockingSearch() throws Exception {
@@ -317,7 +306,6 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		return data;
 	}
 
-
 	private List<SplunkEvent> nonBlockingSearch() throws Exception {
 		logger.debug("non block search start");
 
@@ -330,7 +318,6 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		lastSuccessfulReadTime = startTime;
 		return data;
 	}
-
 
 	/**
 	 * @return
@@ -364,20 +351,15 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		populateArgs(queryArgs, startTime, false);
 		queryArgs.put("output_mode", "xml");
 
-		Connection<Service> connection = connectionFactory.getConnection();
-		try {
-			InputStream os = connection.getTarget().export(search, queryArgs);
-			ResultsReaderXml resultsReader = new ResultsReaderXml(os);
-			while ((data = resultsReader.getNextEvent()) != null) {
-				splunkData = new SplunkEvent(data);
-				result.add(splunkData);
-			}
-			return result;
-		} finally {
-			connection.close();
+		Service service = serviceFactory.getService();
+		InputStream os = service.export(search, queryArgs);
+		ResultsReaderXml resultsReader = new ResultsReaderXml(os);
+		while ((data = resultsReader.getNextEvent()) != null) {
+			splunkData = new SplunkEvent(data);
+			result.add(splunkData);
 		}
+		return result;
 	}
-
 
 	private List<SplunkEvent> savedSearch() throws Exception {
 		logger.debug("saved search start");
@@ -392,13 +374,14 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		}
 
 		Calendar startTime = Calendar.getInstance();
-		Connection<Service> connection = connectionFactory.getConnection();
-		try {
+
 			SavedSearch search = null;
 			Job job = null;
 			String latestTime = getLatestTime(startTime, false);
 			String earliestTime = getEarliestTime(startTime, false);
-			SavedSearchCollection savedSearches = connection.getTarget().getSavedSearches(queryArgs);
+
+			Service service = serviceFactory.getService();
+			SavedSearchCollection savedSearches = service.getSavedSearches(queryArgs);
 			for (SavedSearch s : savedSearches.values()) {
 				if (s.getName().equals(savedSearch)) {
 					search = s;
@@ -417,9 +400,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 			List<SplunkEvent> data = extractData(job);
 			this.lastSuccessfulReadTime = startTime;
 			return data;
-		} finally {
-			connection.close();
-		}
+
 	}
 
 	private List<SplunkEvent> extractData(Job job) throws Exception {
@@ -440,8 +421,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 				splunkData = new SplunkEvent(data);
 				result.add(splunkData);
 			}
-		}
-		else {
+		} else {
 			int offset = 0;
 			while (offset < total) {
 				InputStream stream = null;
@@ -464,7 +444,5 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		Assert.notNull(initEarliestTime, "initial earliest time can not be null");
 	}
-
-
 
 }

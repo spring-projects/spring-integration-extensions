@@ -17,23 +17,25 @@ package org.springframework.integration.splunk.event;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.time.FastDateFormat;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.util.Assert;
 
 /**
  * Splunk data entity
  *
  * @author Jarred Li
  * @author Damien Dallimore damien@dtdsoftware.com
+ * @author David Turanski
  * @since 1.0
  *
  */
 
 @SuppressWarnings("serial")
 public class SplunkEvent implements Serializable {
-
-	private Map<String, String> eventData;
 
 	/**
 	 * Contents of the event message
@@ -65,11 +67,11 @@ public class SplunkEvent implements Serializable {
 	/**
 	 * default date format is using internal generated date
 	 */
-	protected static final String DATEFORMATPATTERN = "yyyy-MM-dd HH:mm:ss:SSSZ";
+	protected static final String DATEFORMATPATTERN = "yyyy-MM-dd\tHH:mm:ss:SSSZ";
 	/**
-	 * Date Formatter instance
+	 * Date Formatter
 	 */
-	protected static FastDateFormat DATEFORMATTER = FastDateFormat.getInstance(DATEFORMATPATTERN);
+	protected static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern(DATEFORMATPATTERN);
 
 	/**
 	 * Event prefix fields
@@ -85,7 +87,7 @@ public class SplunkEvent implements Serializable {
 	protected static final String THROWABLE_STACKTRACE_ELEMENTS = "stacktrace_elements";
 
 	protected static final String LINEBREAK = "\n";
-	
+
 	// ----------------------------------
 	// Common event fields
 	// ----------------------------------
@@ -227,26 +229,33 @@ public class SplunkEvent implements Serializable {
 	 */
 	public static String UPDATE_PACKAGE = "package";
 
-
+	/**
+	 * A Constructor to load data from a Map
+	 * @param data the map
+	 */
 	public SplunkEvent(Map<String, String> data) {
 		this.eventMessage = new StringBuffer();
-		this.eventData = data;
 		for (String key : data.keySet()) {
 			this.addPair(key, data.get(key));
 		}
 	}
 
 	/**
-	 * Constructor.
-	 *
-	 * @param eventName
-	 *            the event name
-	 * @param eventID
-	 *            the event id
-	 * @param useInternalDate
-	 *            Whether or not to add a date to the event string
-	 * @param quoteValues
-	 *            Whether or not to put quotes around values
+	 * A Copy constructor
+	 * @param splunkEvent
+	 */
+	public SplunkEvent(SplunkEvent splunkEvent) {
+		this.eventMessage = splunkEvent.eventMessage;
+		this.quoteValues = splunkEvent.quoteValues;
+		this.useInternalDate = splunkEvent.useInternalDate;
+	}
+
+	/**
+	 * Constructor to create a generic event
+	 * @param eventName the event name
+	 * @param eventID the event id
+	 * @param useInternalDate whether or not to add a date to the event string
+	 * @param quoteValues whether or not to put quotes around values
 	 */
 	public SplunkEvent(String eventName, String eventID, boolean useInternalDate, boolean quoteValues) {
 
@@ -259,13 +268,10 @@ public class SplunkEvent implements Serializable {
 	}
 
 	/**
-	 * Constructor.Will add internally generated date and put quotes around
-	 * values.
+	 * Constructor to create a generic event with the default format
 	 *
-	 * @param eventName
-	 *            the event name
-	 * @param eventID
-	 *            the event ID
+	 * @param eventName the event name
+	 * @param eventID the event ID
 	 */
 	public SplunkEvent(String eventName, String eventID) {
 
@@ -279,20 +285,27 @@ public class SplunkEvent implements Serializable {
 		this.eventMessage = new StringBuffer();
 	}
 
-	/**
-	 * Simple shallow cloning method
-	 */
-	public SplunkEvent clone() {
-		SplunkEvent clone = new SplunkEvent();
-		clone.quoteValues = this.quoteValues;
-		clone.useInternalDate = this.useInternalDate;
-		clone.eventMessage.append(this.eventMessage);
-
-		return clone;
-	}
-
-
 	public Map<String, String> getEventData() {
+		Map<String, String> eventData = new HashMap<String, String>();
+		String eventEntries = eventMessage.toString();
+
+		String[] entries = eventEntries.split(PAIRDELIM);
+
+		String quote = new String(new char[] { QUOTE });
+
+		for (String entry : entries) {
+			String[] pair = entry.split(KVDELIM);
+
+			Assert.isTrue(pair.length == 2, String.format("invalid event data [%s]", entry));
+
+			String key = pair[0].replaceAll(quote, "");
+			String value = pair[1].replaceAll(quote, "");
+			if ("null".equals(value)) {
+				value = null;
+			}
+
+			eventData.put(key, value);
+		}
 		return eventData;
 	}
 
@@ -417,7 +430,7 @@ public class SplunkEvent implements Serializable {
 	 * @param value
 	 */
 	public void addPair(String key, String value) {
-
+		Assert.notNull(key, "key cannot be null");
 		if (quoteValues)
 			this.eventMessage.append(key).append(KVDELIM).append(QUOTE).append(value).append(QUOTE).append(PAIRDELIM);
 		else
@@ -435,13 +448,13 @@ public class SplunkEvent implements Serializable {
 
 		if (useInternalDate) {
 			StringBuffer clonedMessage = new StringBuffer();
-			clonedMessage.append(DATEFORMATTER.format(new Date())).append(PAIRDELIM).append(this.eventMessage);
+			clonedMessage.append(DATE_FORMATTER.print(new Date().getTime())).append(PAIRDELIM)
+					.append(this.eventMessage);
 			event = clonedMessage.toString();
-		}
-		else
+		} else
 			event = eventMessage.toString();
 		// trim off trailing pair delim char(s)
-		String result = event.substring(0, event.length() - PAIRDELIM.length())  + LINEBREAK;
+		String result = event.substring(0, event.length() - PAIRDELIM.length()) + LINEBREAK;
 		return result;
 	}
 

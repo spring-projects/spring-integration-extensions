@@ -47,7 +47,7 @@ public class SplunkOutboundChannelAdapterTests {
 	@Test
 	public void testHandleRequestMessage() {
 		Message<?> message = null;
-		when(executor.executeOutboundOperation(message)).thenReturn(null);
+		when(executor.write(message)).thenReturn(null);
 
 		Object ret = outboundAdapter.handleRequestMessage(message);
 		Assert.assertNull(ret);

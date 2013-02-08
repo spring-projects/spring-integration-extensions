@@ -15,13 +15,15 @@
  */
 package org.springframework.integration.splunk.support;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.matches;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.integration.splunk.core.Connection;
-import org.springframework.integration.splunk.core.ConnectionFactory;
+import org.springframework.integration.splunk.core.ServiceFactory;
 import org.springframework.integration.splunk.event.SplunkEvent;
 
 import com.splunk.Args;
@@ -40,10 +42,11 @@ public class SplunkDataWriterTests {
 	private static Receiver receiver = mock(Receiver.class);
 
 	private Args args;
+
 	@Before
-	public void before() {
+	public void before() throws Exception {
 		args = new Args();
-		writer = new SplunkSubmitWriter(new TestConnectionFactory(),args);
+		writer = new SplunkSubmitWriter(serviceFactory(), args);
 		writer.start();
 	}
 
@@ -53,53 +56,24 @@ public class SplunkDataWriterTests {
 	 */
 	@Test
 	public void testWrite() throws Exception {
-		 
 
 		SplunkEvent sd = new SplunkEvent("spring", "spring:example");
 		sd.setCommonDesc("description");
 		writer.write(sd);
-		
+
 		verify(receiver).submit(eq(args), matches(".*spring:example.*\n"));
-		
+
 		writer.stop();
 	}
 
-	public static class TestConnectionFactory implements ConnectionFactory<Service> {
+	private ServiceFactory serviceFactory() throws Exception {
+		ServiceFactory serviceFactory = mock(ServiceFactory.class);
 
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.ConnectionFactory#getConnection()
-		 */
-		public Connection<Service> getConnection() throws Exception {
-			return new TestConnection();
-		}
+		Service service = mock(Service.class);
+		service.setToken("token");
+		when(service.getReceiver()).thenReturn(receiver);
+		when(serviceFactory.getService()).thenReturn(service);
+		return serviceFactory;
 	}
 
-	public static class TestConnection implements Connection<Service> {
-
-		private Service service = mock(Service.class);
-
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.Connection#getTarget()
-		 */
-		public Service getTarget() {
-			service.setToken("token");
-			when(service.getReceiver()).thenReturn(receiver);
-			return service;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.Connection#close()
-		 */
-		public void close() {
-
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.integration.splunk.core.Connection#isOpen()
-		 */
-		public boolean isOpen() {
-			return true;
-		}
-
-	}
 }

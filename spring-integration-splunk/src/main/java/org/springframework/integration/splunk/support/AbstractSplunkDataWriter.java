@@ -24,9 +24,8 @@ import java.net.Socket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.SmartLifecycle;
-import org.springframework.integration.splunk.core.Connection;
-import org.springframework.integration.splunk.core.ConnectionFactory;
 import org.springframework.integration.splunk.core.DataWriter;
+import org.springframework.integration.splunk.core.ServiceFactory;
 import org.springframework.integration.splunk.event.SplunkEvent;
 import org.springframework.util.Assert;
 
@@ -45,8 +44,6 @@ public abstract class AbstractSplunkDataWriter implements DataWriter, SmartLifec
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	protected ConnectionFactory<Service> connectionFactory;
-	 
 	protected Socket socket;
 	
 	protected Service service;
@@ -58,12 +55,14 @@ public abstract class AbstractSplunkDataWriter implements DataWriter, SmartLifec
 	private int phase;
 
 	private boolean autoStartup = true;
+
+	private final ServiceFactory serviceFactory;
 	
 
 	 
-	protected AbstractSplunkDataWriter(ConnectionFactory<Service> connectionFactory, Args args) {
-		Assert.notNull(connectionFactory,"connectionFactory cannot be null");
-		this.connectionFactory = connectionFactory;
+	protected AbstractSplunkDataWriter(ServiceFactory serviceFactory, Args args) {
+		Assert.notNull(serviceFactory,"service factory cannot be null");
+		this.serviceFactory = serviceFactory;
 		
 		Assert.notNull(args, "args cannot be null");
 		this.args = args;
@@ -96,10 +95,8 @@ public abstract class AbstractSplunkDataWriter implements DataWriter, SmartLifec
 	 */
 	public synchronized void start() {
 		try {
-		Connection<Service> connection = connectionFactory.getConnection();
-		this.service = connection.getTarget();
-		 
-		socket = createSocket(service);
+			service = serviceFactory.getService();
+			socket = createSocket(service);
 		 
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -118,8 +115,6 @@ public abstract class AbstractSplunkDataWriter implements DataWriter, SmartLifec
 			if (socket != null) {
 				socket.close();
 			}
-	
-			connectionFactory.getConnection().close();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
