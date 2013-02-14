@@ -20,6 +20,13 @@
                 </emphasis>
             </para>
         </listitem>
+        <listitem>
+            <para>
+                <emphasis>
+                    <link linkend='voldemort-message-store'>Message Store</link>
+                </emphasis>
+            </para>
+        </listitem>
     </itemizedlist>
 
     <para>
@@ -41,30 +48,11 @@
     <constructor-arg value="test-store" />
 </bean>]]></programlisting>
 
-    <para>
-        Inbound and outbound adapters delegate the transformation between Spring Integration message and Voldemort
-        record to <interfacename>VoldemortConverter</interfacename>. Concrete implementation depends on the
-        representation of key and value objects stored in the underlying database, as well as message payload type,
-        so needs to be defined by the application developer.
-    </para>
-
-    <programlisting language="java"><![CDATA[public class PersonMessageConverter implements VoldemortConverter<String, Person, Person> {
-    @Override
-    public KeyValue<String, Person> toKeyValue(Message<Person> message) {
-        return KeyValue.make( message.getPayload().getId(), message.getPayload() );
-    }
-
-    @Override
-    public Message<Person> toMessage(String key, Versioned<Person> versioned) {
-        return MessageBuilder.withPayload( versioned.getValue() ).build();
-    }
-}]]></programlisting>
-
     <section id="voldemort-common-configuration-attributes">
         <title>Common Configuration Attributes</title>
         <para>
-            Certain configuration parameters that are shared amongst all Voldemort
-            components have been described below.
+            Certain configuration parameters that are shared amongst inbound and
+            outbound adapters have been described below.
         </para>
 
         <table frame="all">
@@ -122,6 +110,25 @@
                 </tbody>
             </tgroup>
         </table>
+
+        <para>
+            Inbound and outbound adapters delegate the transformation between Spring Integration message and Voldemort
+            record to <interfacename>VoldemortConverter</interfacename>. Concrete implementation depends on the
+            representation of key and value objects stored in the underlying database, as well as message payload type,
+            so needs to be defined by the application developer.
+        </para>
+
+        <programlisting language="java"><![CDATA[public class PersonMessageConverter implements VoldemortConverter<String, Person, Person> {
+    @Override
+    public KeyValue<String, Person> toKeyValue(Message<Person> message) {
+        return KeyValue.make( message.getPayload().getId(), message.getPayload() );
+    }
+
+    @Override
+    public Message<Person> toMessage(String key, Versioned<Person> versioned) {
+        return MessageBuilder.withPayload( versioned.getValue() ).build();
+    }
+}]]></programlisting>
     </section>
 
     <section id="voldemort-outbound-channel-adapter">
@@ -190,5 +197,16 @@
                 </para>
             </callout>
         </calloutlist>
+    </section>
+    <section id="voldemort-message-store">
+        <title>Message Store</title>
+        <para>
+            Message Store allows to persist Spring Integration messages in Voldemort database.
+        </para>
+        <programlisting language="xml"><![CDATA[<bean id="voldemortMessageStore" class="org.springframework.integration.voldemort.store.VoldemortMessageStore">
+    <constructor-arg name="client" ref="storeClient" />
+</bean>
+
+<int:aggregator input-channel="inputChannel" output-channel="outputChannel" message-store="voldemortMessageStore" />]]></programlisting>
     </section>
 </chapter>

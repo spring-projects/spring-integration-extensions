@@ -28,5 +28,8 @@
                 <listitem>Control adapter startup time.</listitem>
             </itemizedlist>
         </listitem>
+        <listitem>
+            Message store allows to persist Spring Integration messages in Voldemort database.
+        </listitem>
     </orderedlist>
 </chapter>

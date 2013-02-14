@@ -17,7 +17,10 @@
                 <row>
                     <entry>1.0.0</entry>
                     <entry>13 Jan 2013</entry>
-                    <entry>Initial release providing basic capabilities for inbound and outbound adapters.</entry>
+                    <entry>
+                        Initial release providing basic capabilities for message store,
+                        inbound and outbound adapters.
+                    </entry>
                 </row>
             </tbody>
         </tgroup>

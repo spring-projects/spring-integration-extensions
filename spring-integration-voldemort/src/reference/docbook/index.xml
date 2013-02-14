@@ -47,9 +47,10 @@
         <partintro id="spring-integration-adapters">
             <para>
                 Spring Integration adapter for Voldemort enables users to persist data
-                transferred through message channel in the underlying key-value store,
+                transferred through message channel in the destination key-value store,
                 as well as to poll records from the Voldemort database and process them
-                inside Spring Integration flow.
+                inside Spring Integration flow. Hereby extension provides also the
+                implementation of a message store.
             </para>
         </partintro>
         <xi:include href="./voldemort.xml"/>
