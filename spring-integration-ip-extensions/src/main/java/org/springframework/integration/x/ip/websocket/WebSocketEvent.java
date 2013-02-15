@@ -15,8 +15,8 @@
  */
 package org.springframework.integration.x.ip.websocket;
 
-import org.springframework.integration.ip.tcp.connection.TcpConnection;
-import org.springframework.integration.x.ip.tcp.TcpConnectionEvent;
+import org.springframework.integration.ip.tcp.connection.TcpConnectionEvent;
+import org.springframework.integration.ip.tcp.connection.TcpConnectionSupport;
 
 /**
  * @author Gary Russell
@@ -27,15 +27,16 @@ public class WebSocketEvent extends TcpConnectionEvent {
 
 	private static final long serialVersionUID = -6788341703196233248L;
 
-	public static final String HANDSHAKE_COMPLETE = "HANDSHAKE_COMPLETE";
-
-	public static final String WEBSOCKET_CLOSED = "WEBSOCKET_CLOSED";
+	public enum WebSocketEventType implements EventType {
+		HANDSHAKE_COMPLETE,
+		WEBSOCKET_CLOSED
+	}
 
 	private final String path;
 
 	private final String queryString;
 
-	public WebSocketEvent(TcpConnection connection, String type, String path, String queryString) {
+	public WebSocketEvent(TcpConnectionSupport connection, WebSocketEventType type, String path, String queryString) {
 		super(connection, type, "unknown");
 		this.path = path;
 		this.queryString = queryString;
