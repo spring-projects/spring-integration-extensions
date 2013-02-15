@@ -15,15 +15,12 @@
  */
 package org.springframework.integration.x.ip.websocket;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.DirectFieldAccessor;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.serializer.Deserializer;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
@@ -34,13 +31,13 @@ import org.springframework.integration.aggregator.ResequencingMessageHandler;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
-import org.springframework.integration.ip.tcp.connection.AbstractTcpConnectionInterceptor;
 import org.springframework.integration.ip.tcp.connection.TcpConnection;
-import org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptor;
 import org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorFactory;
-import org.springframework.integration.ip.tcp.connection.TcpNetConnection;
+import org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorSupport;
+import org.springframework.integration.ip.tcp.connection.TcpConnectionSupport;
 import org.springframework.integration.ip.tcp.connection.TcpNioConnection;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.x.ip.websocket.WebSocketEvent.WebSocketEventType;
 import org.springframework.integration.x.ip.websocket.WebSocketSerializer.WebSocketState;
 import org.springframework.util.Assert;
 
@@ -49,27 +46,25 @@ import org.springframework.util.Assert;
  * @since 3.0
  *
  */
-public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionInterceptorFactory,
-	ApplicationEventPublisherAware {
+public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionInterceptorFactory {
 
 	private static final Log logger = LogFactory.getLog(WebSocketTcpConnectionInterceptor.class);
 
-	private volatile ApplicationEventPublisher applicationEventPublisher;
+	private final Map<TcpConnection, WebSocketTcpConnectionInterceptor> connections =
+			new ConcurrentHashMap<TcpConnection, WebSocketTcpConnectionInterceptor>();
 
 	@Override
-	public TcpConnectionInterceptor getInterceptor() {
+	public TcpConnectionInterceptorSupport getInterceptor() {
 		return new WebSocketTcpConnectionInterceptor();
 	}
 
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.applicationEventPublisher = applicationEventPublisher;
+	public WebSocketTcpConnectionInterceptor locateInterceptor(TcpConnection connection) {
+		return this.connections.get(connection);
 	}
 
-	private class WebSocketTcpConnectionInterceptor extends AbstractTcpConnectionInterceptor {
+	public class WebSocketTcpConnectionInterceptor extends TcpConnectionInterceptorSupport {
 
 		private volatile boolean shook;
-
-		private volatile InputStream theInputStream;
 
 		private final DirectChannel resequenceChannel = new DirectChannel();
 
@@ -114,16 +109,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		public boolean doOnMessage(Message<?> message) {
 			Assert.isInstanceOf(WebSocketFrame.class, message.getPayload());
 			WebSocketFrame payload = (WebSocketFrame) message.getPayload();
-			InputStream inputStream = null;
-			try {
-				inputStream = this.getTheInputStream();
-			}
-			catch (IOException e1) {
-				this.protocolViolation(message);
-			}
-
-			WebSocketState state = (WebSocketState) this.getRequiredDeserializer().getState(inputStream);
-			Assert.notNull(state, "State must not be null:" + message);
+			WebSocketState state = getState(message);
 			if (logger.isTraceEnabled()) {
 				logger.trace(state);
 			}
@@ -146,8 +132,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 						this.send(message);
 					}
 					WebSocketEvent event = new WebSocketEvent(this.getTheConnection(),
-							WebSocketEvent.WEBSOCKET_CLOSED, state.getPath(), state.getQueryString());
-					publish(event);
+							WebSocketEventType.WEBSOCKET_CLOSED, state.getPath(), state.getQueryString());
+					this.getTheConnection().publishEvent(event);
 					this.close();
 				}
 				catch (Exception e) {
@@ -196,24 +182,15 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				}
 			}
 			else if (this.shook) {
-				MessageBuilder<?> messageBuilder = MessageBuilder.fromMessage(message);
-				// TODO: Move to subclass of TcpMessageMapper when INT-2877 is merged
-				if (state.getPath() != null) {
-					messageBuilder.setHeader(WebSocketHeaders.PATH, state.getPath());
-				}
-				if (state.getQueryString() != null) {
-					messageBuilder.setHeader(WebSocketHeaders.QUERY_STRING, state.getQueryString());
-				}
-				return super.onMessage(
-						messageBuilder.build());
+				return super.onMessage(message);
 			}
 			else {
 				try {
 					doHandshake(payload, message.getHeaders());
 					this.shook = true;
 					WebSocketEvent event = new WebSocketEvent(this.getTheConnection(),
-							WebSocketEvent.HANDSHAKE_COMPLETE, state.getPath(), state.getQueryString());
-					publish(event);
+							WebSocketEventType.HANDSHAKE_COMPLETE, state.getPath(), state.getQueryString());
+					this.getTheConnection().publishEvent(event);
 				}
 				catch (Exception e) {
 					throw new MessageHandlingException(message, "Handshake failed", e);
@@ -222,15 +199,13 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			return true;
 		}
 
-		private void publish(WebSocketEvent event) {
-			if (WebSocketTcpConnectionInterceptorFactory.this.applicationEventPublisher != null) {
-				WebSocketTcpConnectionInterceptorFactory.this.applicationEventPublisher.publishEvent(event);
-			}
-			else {
-				if (logger.isWarnEnabled()) {
-					logger.warn("No publisher available for " + event);
-				}
-			}
+		private WebSocketState getState(Object object) {
+			Object stateKey = null;
+			stateKey = this.getTheConnection().getDeserializerStateKey();
+			Assert.notNull(stateKey, "StateKey must not be null:" + object);
+			WebSocketState state = (WebSocketState) this.getRequiredDeserializer().getState(stateKey);
+			Assert.notNull(state, "State must not be null:" + object);
+			return state;
 		}
 
 		private void protocolViolation(Message<?> message) {
@@ -242,50 +217,30 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			WebSocketFrame close = new WebSocketFrame(WebSocketFrame.TYPE_CLOSE, error);
 			close.setStatus(frame.getType() == WebSocketFrame.TYPE_INVALID_UTF8 ? (short) 1007 : (short) 1002);
 			try {
-				((WebSocketState) this.getRequiredDeserializer().getState(this.getTheInputStream())).setCloseInitiated(true);
-				this.send(MessageBuilder.withPayload(close)
-						.copyHeaders(message.getHeaders())
-						.build());
+				Object stateKey = this.getTheConnection().getDeserializerStateKey();
+				if (stateKey != null) {
+					WebSocketState webSocketState = (WebSocketState) this.getRequiredDeserializer().getState(stateKey);
+					if (webSocketState != null) {
+						webSocketState.setCloseInitiated(true);
+					}
+					this.send(MessageBuilder.withPayload(close)
+							.copyHeaders(message.getHeaders())
+							.build());
+				}
 			}
 			catch (Exception e) {
-				throw new MessageHandlingException(message, "Send failed", e);			}
+				throw new MessageHandlingException(message, "Send failed", e);
+			}
 		}
 
 		@Override
 		public void close() {
-			try {
-				InputStream inputStream = getTheInputStream();
-				if (inputStream != null) {
-					this.getRequiredDeserializer().removeState(inputStream);
-				}
-			}
-			catch (IOException e) {
+			connections.remove(this.getTheConnection());
+			Object stateKey = this.getTheConnection().getDeserializerStateKey();
+			if (stateKey != null) {
+				this.getRequiredDeserializer().removeState(stateKey);
 			}
 			super.close();
-		}
-
-		/**
-		 * Hack - need to add getInputStream() to TcpConnection.
-		 * @return
-		 * @throws IOException
-		 */
-		private InputStream getTheInputStream() throws IOException {
-			if (this.theInputStream != null) {
-				return this.theInputStream;
-			}
-			TcpConnection theConnection = this.getTheConnection();
-			InputStream inputStream = null;
-			if (theConnection instanceof TcpNioConnection) {
-				inputStream = (InputStream) new DirectFieldAccessor(theConnection).getPropertyValue("pipedInputStream");
-			}
-			else if (theConnection instanceof TcpNetConnection) {
-				Socket socket = (Socket) new DirectFieldAccessor(theConnection).getPropertyValue("socket");
-				if (socket != null) {
-					inputStream = socket.getInputStream();
-				}
-			}
-			this.theInputStream = inputStream;
-			return inputStream;
 		}
 
 		private void doHandshake(WebSocketFrame frame, MessageHeaders messageHeaders) throws Exception {
@@ -311,6 +266,24 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			Assert.state(deserializer instanceof WebSocketSerializer,
 					"Deserializer must be a WebSocketSerializer");
 			return (WebSocketSerializer) deserializer;
+		}
+
+		public Map<String, String> getAdditionalHeaders() {
+			Map<String, String> headers = new HashMap<String, String>();
+			WebSocketState state = this.getState(this.getConnectionId());
+			if (state.getPath() != null) {
+				headers.put(WebSocketHeaders.PATH, state.getPath());
+			}
+			if (state.getQueryString() != null) {
+				headers.put(WebSocketHeaders.QUERY_STRING, state.getQueryString());
+			}
+			return headers;
+		}
+
+		@Override
+		public void setTheConnection(TcpConnectionSupport theConnection) {
+			connections.put(theConnection, this);
+			super.setTheConnection(theConnection);
 		}
 	}
 

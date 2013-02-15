@@ -74,6 +74,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		return new WebSocketState();
 	}
 
+	@Override
 	public void serialize(final Object frame, OutputStream outputStream)
 			throws IOException {
 		String data = "";
@@ -199,7 +200,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		int maskInx = 0;
 		int rsv = 0;
 		while (!done ) {
-			bite = inputStream.read();
+			bite = inputStream.read() & 0xff;
 //			logger.debug("Read:" + Integer.toHexString(bite));
 			if (bite < 0 && n == 0) {
 				throw new SoftEndOfStreamException("Stream closed between payloads");
