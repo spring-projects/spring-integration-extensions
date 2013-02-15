@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.integration.ip.tcp.serializer.ByteArrayCrLfSerializer;
 
 /**
  * Base class for (de)Serializers that start with an HTTP-like protocol then
@@ -55,6 +56,7 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 		return crlfDeserializer;
 	}
 
+	@Override
 	public abstract DataFrame deserialize(InputStream inputStream) throws IOException;
 
 	protected BasicState getStreamState(InputStream inputStream) {
@@ -130,6 +132,7 @@ public abstract class AbstractHttpSwitchingDeserializer implements StatefulDeser
 		return new DataFrame(type, frameData);
 	}
 
+	@Override
 	public void removeState(Object key) {
 		this.streamState.remove(key);
 	}

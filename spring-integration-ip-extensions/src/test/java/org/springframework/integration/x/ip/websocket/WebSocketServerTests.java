@@ -28,8 +28,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.Message;
 import org.springframework.integration.annotation.Header;
+import org.springframework.integration.annotation.Headers;
 import org.springframework.integration.ip.IpHeaders;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.x.ip.websocket.WebSocketEvent.WebSocketEventType;
 
 /**
  * @author Gary Russell
@@ -53,7 +55,16 @@ public class WebSocketServerTests {
 
 		private final Map<String, AtomicInteger> paused = new HashMap<String, AtomicInteger>();
 
-		public void startStop(String command, @Header(IpHeaders.CONNECTION_ID) String connectionId) {
+		public void startStop(String command, @Header(IpHeaders.CONNECTION_ID) String connectionId,
+				@Headers Map<String, ?> headers) {
+			if (headers != null) {
+				logger.info("Received '"
+						+ command
+						+ "' from '"
+						+ connectionId
+						+ "' path:"
+						+ headers.get(WebSocketHeaders.PATH) + " query-string:" + headers.get(WebSocketHeaders.QUERY_STRING));
+			}
 			if ("stop".equalsIgnoreCase(command)) {
 				AtomicInteger clientInt = clients.remove(connectionId);
 				if (clientInt != null) {
@@ -97,10 +108,10 @@ public class WebSocketServerTests {
 		@Override
 		public void onApplicationEvent(WebSocketEvent event) {
 			logger.info(event);
-			if (WebSocketEvent.HANDSHAKE_COMPLETE.equals(event.getType())) {
-				startStop("start", event.getConnectionId());
+			if (WebSocketEventType.HANDSHAKE_COMPLETE.equals(event.getType())) {
+				startStop("start", event.getConnectionId(), null);
 			}
-			else if (WebSocketEvent.WEBSOCKET_CLOSED.equals(event.getType())) {
+			else if (WebSocketEventType.WEBSOCKET_CLOSED.equals(event.getType())) {
 				clients.remove(event.getConnectionId());
 			}
 		}

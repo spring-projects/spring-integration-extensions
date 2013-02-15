@@ -15,17 +15,23 @@
 		so-timeout="600000"
 		interceptor-factory-chain="interceptors"
 		serializer="wsSerializer"
-		deserializer="wsSerializer" />
+		deserializer="wsSerializer"
+		mapper="mapper" />
+
+	<bean id="mapper" class="org.springframework.integration.x.ip.websocket.WebSocketMessageMapper">
+		<constructor-arg ref="webSocketInterceptorFactory"/>
+	</bean>
 
 	<bean id="wsSerializer" class="org.springframework.integration.x.ip.websocket.WebSocketSerializer">
 		<property name="server" value="true" />
 	</bean>
 
 	<bean id="interceptors" class="org.springframework.integration.ip.tcp.connection.TcpConnectionInterceptorFactoryChain">
-		<property name="interceptors">
-			<bean class="org.springframework.integration.x.ip.websocket.WebSocketTcpConnectionInterceptorFactory" />
-		</property>
+		<property name="interceptors" ref="webSocketInterceptorFactory" />
 	</bean>
+
+	<bean id="webSocketInterceptorFactory"
+		class="org.springframework.integration.x.ip.websocket.WebSocketTcpConnectionInterceptorFactory" />
 
 	<int-ip:tcp-inbound-channel-adapter connection-factory="ws" channel="startStopChannel" />
 
