@@ -25,7 +25,7 @@
 <script type="text/javascript">
 	var webSocket;
 	if (window.WebSocket) {
-		webSocket = new WebSocket("ws://localhost:18080/myapp?foo");
+		webSocket = new WebSocket("ws://localhost:18080/myapp");
 		webSocket.onmessage = function(event) {
 			document.getElementById("theField").value = event.data;
 		}

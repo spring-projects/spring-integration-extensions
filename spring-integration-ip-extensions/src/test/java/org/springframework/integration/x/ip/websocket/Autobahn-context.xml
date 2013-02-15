@@ -34,7 +34,7 @@
 		serializer="wsSerializer"
 		deserializer="wsSerializer" />
 
-	<bean id="sslCtxSup" class="org.springframework.integration.ip.tcp.connection.DefaultTcpSSLContextSupport">
+	<bean id="sslCtxSup" class="org.springframework.integration.ip.tcp.connection.support.DefaultTcpSSLContextSupport">
 		<constructor-arg value="key.store"/>
 		<constructor-arg value="trust.store"/>
 		<constructor-arg value="secret"/>
