@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.core.serializer.Serializer;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.ip.tcp.serializer.SoftEndOfStreamException;
@@ -202,6 +203,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		while (!done ) {
 			bite = inputStream.read() & 0xff;
 //			logger.debug("Read:" + Integer.toHexString(bite));
+			bite = checkclosed(bite, inputStream);
 			if (bite < 0 && n == 0) {
 				throw new SoftEndOfStreamException("Stream closed between payloads");
 			}
@@ -414,6 +416,31 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 			frame.setRsv(rsv);
 		}
 		return frame;
+	}
+
+	/**
+	 * TODO: workaround for INT-2936
+	 */
+	private int checkclosed(int bite, InputStream inputStream) {
+		int theBite = bite;
+		if (theBite == 0xff) { // possibly a closed stream
+			String streamClass = inputStream.getClass().getName();
+			if (streamClass.endsWith("TcpNioConnection$ChannelInputStream")) {
+				DirectFieldAccessor dfa = new DirectFieldAccessor(inputStream);
+				try {
+					if ((Boolean) dfa.getPropertyValue("isClosed") &&
+							inputStream.available() == 0) {
+						theBite = -1;
+					}
+				}
+				catch (Exception e) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Failed to check closed", e);
+					}
+				}
+			}
+		}
+		return theBite;
 	}
 
 	private boolean validateUtf8IfNecessary(byte[] buffer, int offset, String data) {
