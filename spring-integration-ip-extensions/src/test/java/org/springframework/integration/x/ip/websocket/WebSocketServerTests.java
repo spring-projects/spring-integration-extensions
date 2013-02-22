@@ -24,12 +24,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.Message;
 import org.springframework.integration.annotation.Header;
 import org.springframework.integration.annotation.Headers;
 import org.springframework.integration.ip.IpHeaders;
+import org.springframework.integration.ip.tcp.connection.AbstractConnectionFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.x.ip.websocket.WebSocketEvent.WebSocketEventType;
 
@@ -38,7 +42,7 @@ import org.springframework.integration.x.ip.websocket.WebSocketEvent.WebSocketEv
  * @since 3.0
  *
  */
-public class WebSocketServerTests {
+public class WebSocketServerTests{
 
 	public static void main(String[] args) throws Exception {
 		new ClassPathXmlApplicationContext(WebSocketServerTests.class.getSimpleName() + "-context.xml", WebSocketServerTests.class);
@@ -47,13 +51,20 @@ public class WebSocketServerTests {
 		System.exit(0);
 	}
 
-	public static class DemoService implements ApplicationListener<WebSocketEvent> {
+	public static class DemoService implements ApplicationListener<WebSocketEvent>, ApplicationContextAware  {
 
 		private static final Log logger = LogFactory.getLog(DemoService.class);
 
 		private final Map<String, AtomicInteger> clients = new HashMap<String, AtomicInteger>();
 
 		private final Map<String, AtomicInteger> paused = new HashMap<String, AtomicInteger>();
+
+		private volatile ApplicationContext applicationContext;
+
+		@Override
+		public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+			this.applicationContext = applicationContext;
+		}
 
 		public void startStop(String command, @Header(IpHeaders.CONNECTION_ID) String connectionId,
 				@Headers Map<String, ?> headers) {
@@ -110,6 +121,14 @@ public class WebSocketServerTests {
 			logger.info(event);
 			if (WebSocketEventType.HANDSHAKE_COMPLETE.equals(event.getType())) {
 				startStop("start", event.getConnectionId(), null);
+				try {
+					logger.info("Handshake complete for new connection on port "
+							+ this.applicationContext.getBean(event.getConnectionFactoryName(),
+									AbstractConnectionFactory.class).getPort());
+				}
+				catch (Exception e) {
+					logger.error("Failed to get port", e);
+				}
 			}
 			else if (WebSocketEventType.WEBSOCKET_CLOSED.equals(event.getType())) {
 				clients.remove(event.getConnectionId());

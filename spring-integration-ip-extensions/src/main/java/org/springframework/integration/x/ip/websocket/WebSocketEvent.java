@@ -15,6 +15,7 @@
  */
 package org.springframework.integration.x.ip.websocket;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.integration.ip.tcp.connection.TcpConnectionEvent;
 import org.springframework.integration.ip.tcp.connection.TcpConnectionSupport;
 
@@ -37,7 +38,7 @@ public class WebSocketEvent extends TcpConnectionEvent {
 	private final String queryString;
 
 	public WebSocketEvent(TcpConnectionSupport connection, WebSocketEventType type, String path, String queryString) {
-		super(connection, type, "unknown");
+		super(connection, type, (String) new DirectFieldAccessor(connection).getPropertyValue("connectionFactoryName"));
 		this.path = path;
 		this.queryString = queryString;
 	}
