@@ -28,7 +28,7 @@ import org.springframework.util.StringUtils;
  *      smb://[[[domain;]username[:password]@]server[:port]/[[share/[dir/]file]]][?[param=value[param2=value2[...]]]
  *
  * @author Markus Spann
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbConfig {
 
@@ -149,8 +149,8 @@ public class SmbConfig {
 	 * @return the object
 	 */
 	public final SmbConfig validate() {
-        Assert.hasText(getHost(), "host must not be empty in " + this);
-        Assert.isTrue(getPort() >= 0, "port must be >= 0 in " + this);
+		Assert.hasText(getHost(), "host must not be empty in " + this);
+		Assert.isTrue(getPort() >= 0, "port must be >= 0 in " + this);
 		Assert.hasText(getShareAndDir(), "share must not be empty in " + this);
 		return this;
 	}
@@ -160,17 +160,17 @@ public class SmbConfig {
 	}
 
 	public final String getUrl(boolean _includePassword) {
-	    String domainUserPass = getDomainUserPass(_includePassword);
+		String domainUserPass = getDomainUserPass(_includePassword);
 		if (domainUserPass != null) {
 			try {
 				domainUserPass = URLEncoder.encode(domainUserPass, "UTF8");
-				// CHECKSTYLE:OFF
-			} catch (UnsupportedEncodingException _ex) {
-				// CHECKSTYLE:ON
+			}
+			catch (UnsupportedEncodingException ex) {
+				throw new IllegalStateException(ex);
 			}
 		}
 		return String.format("smb://%s@%s/%s", domainUserPass, getHostPort(), StringUtils.cleanPath(this.shareAndDir));
-    }
+	}
 
 	@Override
 	public String toString() {

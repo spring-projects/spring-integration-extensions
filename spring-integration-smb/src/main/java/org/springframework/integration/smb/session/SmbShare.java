@@ -26,6 +26,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.core.NestedIOException;
 import org.springframework.util.Assert;
 
+/**
+ * @author Markus Spann
+ * @since 1.0
+ */
 public class SmbShare extends SmbFile {
 
 	private final Log           logger      = LogFactory.getLog(SmbShare.class);
@@ -93,8 +97,8 @@ public class SmbShare extends SmbFile {
 	}
 
 	public String newTempFileSuffix() {
-	    return "-" + Long.toHexString(Double.doubleToLongBits(Math.random())) + ".tmp";
-    }
+		return "-" + Long.toHexString(Double.doubleToLongBits(Math.random())) + ".tmp";
+	}
 
 	@Override
 	public String toString() {

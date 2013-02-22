@@ -27,7 +27,7 @@ import org.springframework.integration.file.remote.session.SessionFactory;
  * The SMB session factory.
  *
  * @author Markus Spann
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFile> {
 
@@ -35,7 +35,7 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 
 	public SmbSessionFactory() {
 		logger.debug("New " + getClass().getName() + " created.");
-    }
+	}
 
 	public final SmbSession getSession() {
 		try {
@@ -56,11 +56,11 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 		logger.debug("SMB share initialized.");
 
 		return new SmbSession(smbShare);
-    }
+	}
 
 	@Override
-    public String toString() {
+	public String toString() {
 		return super.toString();
-    }
+	}
 
 }

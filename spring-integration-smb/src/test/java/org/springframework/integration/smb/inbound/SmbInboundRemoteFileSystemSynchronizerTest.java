@@ -1,5 +1,5 @@
 /**
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,8 @@
  */
 package org.springframework.integration.smb.inbound;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -33,19 +27,17 @@ import java.util.List;
 import jcifs.smb.SmbFile;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.integration.Message;
 import org.springframework.integration.smb.AbstractBaseTest;
-import org.springframework.integration.smb.filters.SmbRegexPatternFileListFilter;
 import org.springframework.integration.smb.session.SmbSession;
 import org.springframework.integration.smb.session.SmbSessionFactory;
 
 /**
  * @author Markus Spann
- * @since 2.1.1
+ * @author Gunnar Hillert
+ * @since 1.0
  */
 public class SmbInboundRemoteFileSystemSynchronizerTest extends AbstractBaseTest {
 

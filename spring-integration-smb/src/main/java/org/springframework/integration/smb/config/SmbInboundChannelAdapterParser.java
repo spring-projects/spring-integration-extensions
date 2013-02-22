@@ -21,7 +21,7 @@ import org.springframework.integration.file.config.AbstractRemoteFileInboundChan
  * Parser for the SMB 'inbound-channel-adapter' element.
  *
  * @author Markus Spann
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbInboundChannelAdapterParser extends AbstractRemoteFileInboundChannelAdapterParser {
 

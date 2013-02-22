@@ -1,5 +1,5 @@
 /**
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package org.springframework.integration.smb;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,14 +48,12 @@ public abstract class AbstractBaseTest {
 		return logger;
 	}
 
-	// CHECKSTYLE:OFF
 	@Rule // requires JUnit 4.7 or later
 	public final TestName testMethodName = new TestName();
-	// CHECKSTYLE:ON
 
 	private String getTestMethodName() {
-	    return getClass().getSimpleName() + '.' + testMethodName.getMethodName() + "()";
-    }
+		return getClass().getSimpleName() + '.' + testMethodName.getMethodName() + "()";
+	}
 
 	@Before
 	public final void logTestBegin() {
@@ -98,38 +96,38 @@ public abstract class AbstractBaseTest {
 	 * Writes the specified input stream to file.
 	 * @param _inputStream input stream
 	 * @param _path output file path
-	 * @throws IOException in case of I/O errors 
+	 * @throws IOException in case of I/O errors
 	 */
 	public static void writeToFile(InputStream _inputStream, String _path) throws IOException {
-        FileOutputStream fos = new FileOutputStream(_path);
+		FileOutputStream fos = new FileOutputStream(_path);
 		try {
-	        FileCopyUtils.copy(_inputStream, fos);
-        } finally {
-    		fos.close();
-        }
-    }
+			FileCopyUtils.copy(_inputStream, fos);
+		} finally {
+			fos.close();
+		}
+	}
 
 	/**
 	 * Writes the specified byte array to the output stream.
 	 * @param _bytes byte array
 	 * @param _outputStream output stream
-	 * @throws IOException in case of I/O errors 
+	 * @throws IOException in case of I/O errors
 	 */
 	public static void writeToFile(byte[] _bytes, OutputStream _outputStream) throws IOException {
 		FileCopyUtils.copy(_bytes, _outputStream);
-    }
+	}
 
 	/**
 	 * Writes the specified byte array to the an output file.
 	 * @param _bytes byte array
 	 * @param _fileName output file
-	 * @throws IOException in case of I/O errors 
+	 * @throws IOException in case of I/O errors
 	 */
-    public static void writeToFile(byte[] _bytes, String _fileName) throws IOException {
-    	FileOutputStream fos = new FileOutputStream(_fileName);
-    	writeToFile(_bytes, fos);
+	public static void writeToFile(byte[] _bytes, String _fileName) throws IOException {
+		FileOutputStream fos = new FileOutputStream(_fileName);
+		writeToFile(_bytes, fos);
 		fos.close();
-    }
+	}
 
 	/**
 	 * Creates a new file of the given name.
@@ -158,29 +156,29 @@ public abstract class AbstractBaseTest {
 	protected void delete(String... _files) {
 		for (String fileName : _files) {
 			if (fileName == null) {
-	            continue;
-            }
+				continue;
+			}
 			File file = new File(fileName);
 			if (file.exists()) {
 				getLogger().debug("Deleting file [" + fileName + "].");
 				if (!file.delete()) {
 					file.deleteOnExit();
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+	}
 
 	/**
 	 * Checks if a directory exists, if not creates it and adds it to the DeleteOnExit hook.
 	 * @param _dir directory
 	 */
 	protected void ensureExists(String _dir) {
-	    File dir = new File(_dir);
+		File dir = new File(_dir);
 		if (!dir.exists()) {
 			dir.mkdirs();
 			dir.deleteOnExit();
 		}
-    }
+	}
 
 	/**
 	 * Retrieves class name and method name at the specified stacktrace index.
@@ -216,11 +214,11 @@ public abstract class AbstractBaseTest {
 	 */
 	public static final File assertFileExists(File _file) {
 		return assertFileExists(_file, true);
-    }
+	}
 
 	public static final File assertFileNotExists(File _file) {
 		return assertFileExists(_file, false);
-    }
+	}
 
 	/**
 	 * Asserts that the specified file exists or does not exists.
@@ -232,15 +230,15 @@ public abstract class AbstractBaseTest {
 		assertNotNull("File object is null.", _file);
 		if (_exists) {
 			assertTrue("File [" + _file.getAbsolutePath() + "] does not exist.", _file.exists());
-        } else {
-    		assertTrue("File [" + _file.getAbsolutePath() + "] exists.", !_file.exists());
-        }
+		} else {
+			assertTrue("File [" + _file.getAbsolutePath() + "] exists.", !_file.exists());
+		}
 		return _file;
-    }
+	}
 
 	public static final File assertFileExists(String _file) {
 		return assertFileExists(new File(_file));
-    }
+	}
 
 	/**
 	 * Invokes one or more test methods on the specified test class.
@@ -250,33 +248,33 @@ public abstract class AbstractBaseTest {
 	 */
 	protected static void runTests(Class<? extends AbstractBaseTest> _testClass, String... _methodNames) {
 		AbstractBaseTest test;
-        Method[] methods = new Method[_methodNames.length];
-        String methodName = null;
+		Method[] methods = new Method[_methodNames.length];
+		String methodName = null;
 
-        try {
-	        test = _testClass.newInstance();
-	        for (int i = 0; i < _methodNames.length; i++) {
+		try {
+			test = _testClass.newInstance();
+			for (int i = 0; i < _methodNames.length; i++) {
 				methodName = _methodNames[i];
 				methods[i] = _testClass.getMethod(methodName, (Class<?>[]) null);
-            }
-        } catch (Exception _ex) {
+			}
+		} catch (Exception _ex) {
 			System.err.println("Test setup failed for " + _testClass + "." + methodName + "().");
 			_ex.printStackTrace();
 			return;
-        }
+		}
 
 		Method method = null;
 		try {
 
-	        for (int i = 0; i < methods.length; i++) {
+			for (int i = 0; i < methods.length; i++) {
 				method = methods[i];
 				method.invoke(test, (Object[]) null);
-            }
+			}
 
-    	} catch (Exception _ex) {
+		} catch (Exception _ex) {
 			System.err.println("Test execution failed for " + _testClass + "." + method.getName() + ".");
-    		_ex.printStackTrace();
-    	}
+			_ex.printStackTrace();
+		}
 
 	}
 

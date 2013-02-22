@@ -21,30 +21,34 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+/**
+ * @author Markus Spann
+ * @since 1.0
+ */
 public abstract class SmbUtils {
 
 	private SmbUtils() {
 	}
 
 	/**
-     * Read the specified file into a byte array.
-     * @param _file file
-     * @return byte array of file contents
-     * @throws IOException
-     */
-    public static byte[] readFile(File _file) throws IOException {
-    	FileInputStream stream = new FileInputStream(_file);
-    	try {
-    		FileChannel fc = stream.getChannel();
-    		MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-    		return bb.array();
-    
-    		/* Instead of using default, pass in a decoder. */
-    		// return Charset.defaultCharset().decode(bb).toString();
-    
-    	} finally {
-    		stream.close();
-    	}
-    }
+	 * Read the specified file into a byte array.
+	 * @param _file file
+	 * @return byte array of file contents
+	 * @throws IOException
+	 */
+	public static byte[] readFile(File _file) throws IOException {
+		FileInputStream stream = new FileInputStream(_file);
+		try {
+			FileChannel fc = stream.getChannel();
+			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+			return bb.array();
+
+			/* Instead of using default, pass in a decoder. */
+			// return Charset.defaultCharset().decode(bb).toString();
+
+		} finally {
+			stream.close();
+		}
+	}
 
 }

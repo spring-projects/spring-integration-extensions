@@ -26,7 +26,7 @@ import org.springframework.integration.file.remote.synchronizer.AbstractInboundF
  * An implementation of {@link AbstractInboundFileSynchronizer} for SMB.
  *
  * @author Markus Spann
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbInboundFileSynchronizer extends AbstractInboundFileSynchronizer<SmbFile> {
 
@@ -35,7 +35,7 @@ public class SmbInboundFileSynchronizer extends AbstractInboundFileSynchronizer<
 	private final String toString;
 
 	/**
-	 * Create a synchronizer with the {@link SessionFactory} used to acquire 
+	 * Create a synchronizer with the {@link SessionFactory} used to acquire
 	 * {@link org.springframework.integration.file.remote.session.Session} instances.
 	 */
 	public SmbInboundFileSynchronizer(SessionFactory<SmbFile> _sessionFactory) {

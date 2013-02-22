@@ -1,5 +1,5 @@
 /**
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,51 +15,57 @@
  */
 package org.springframework.integration.smb.config;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.util.Comparator;
 import java.util.Map;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import org.springframework.integration.file.remote.session.CachingSessionFactory;
-import org.springframework.integration.smb.AbstractBaseTest;
 import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizer;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizingMessageSource;
 import org.springframework.integration.smb.session.SmbSession;
 import org.springframework.integration.smb.session.SmbSessionFactory;
 import org.springframework.integration.test.util.TestUtils;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Markus Spann
+ * @author Gunnar Hillert
  */
-public class SmbInboundChannelAdapterParserTests extends AbstractBaseTest {
+@ContextConfiguration
+@RunWith(SpringJUnit4ClassRunner.class)
+public class SmbInboundChannelAdapterParserTests {
 
-	@SuppressWarnings("unchecked")
-	@Test(timeout = 10000)
+	@Autowired
+	ApplicationContext applicationContext;
+
+	@Test(timeout = 100000)
 	public void testSmbInboundChannelAdapterComplete() throws Exception{
-		ApplicationContext ac = 
-			new ClassPathXmlApplicationContext(getApplicationContextXmlFile(), this.getClass());
-		SourcePollingChannelAdapter adapter = ac.getBean("smbInbound", SourcePollingChannelAdapter.class);
-		Comparator<File> comparator = TestUtils.getPropertyValue(adapter, "source.fileSource.toBeReceived.q.comparator", Comparator.class);
-		assertNotNull(comparator);
+
+		final SourcePollingChannelAdapter adapter = this.applicationContext.getBean("smbInbound", SourcePollingChannelAdapter.class);
+		final PriorityBlockingQueue<?> queue = TestUtils.getPropertyValue(adapter, "source.fileSource.toBeReceived", PriorityBlockingQueue.class);
+
+		assertNotNull(queue.comparator());
 		assertEquals("smbInbound", adapter.getComponentName());
 		assertEquals("smb:inbound-channel-adapter", adapter.getComponentType());
 		assertNotNull(TestUtils.getPropertyValue(adapter, "poller"));
-		assertEquals(ac.getBean("smbChannel"), TestUtils.getPropertyValue(adapter, "outputChannel"));
-		SmbInboundFileSynchronizingMessageSource inbound = 
+		assertEquals(applicationContext.getBean("smbChannel"), TestUtils.getPropertyValue(adapter, "outputChannel"));
+		SmbInboundFileSynchronizingMessageSource inbound =
 			(SmbInboundFileSynchronizingMessageSource) TestUtils.getPropertyValue(adapter, "source");
-		
-		SmbInboundFileSynchronizer fisync = 
+
+		SmbInboundFileSynchronizer fisync =
 			(SmbInboundFileSynchronizer) TestUtils.getPropertyValue(inbound, "synchronizer");
 		assertEquals(".working.tmp", TestUtils.getPropertyValue(fisync, "temporaryFileSuffix", String.class));
 		String remoteFileSeparator = (String) TestUtils.getPropertyValue(fisync, "remoteFileSeparator");
@@ -73,11 +79,10 @@ public class SmbInboundChannelAdapterParserTests extends AbstractBaseTest {
 
 	@Test(timeout = 10000)
 	public void cachingSessionFactoryByDefault() throws Exception{
-		ApplicationContext ac = new ClassPathXmlApplicationContext(getApplicationContextXmlFile(), this.getClass());
-		SourcePollingChannelAdapter adapter = ac.getBean("simpleAdapter", SourcePollingChannelAdapter.class);
+		SourcePollingChannelAdapter adapter = applicationContext.getBean("simpleAdapter", SourcePollingChannelAdapter.class);
 		Object sessionFactory = TestUtils.getPropertyValue(adapter, "source.synchronizer.sessionFactory");
 		assertEquals(CachingSessionFactory.class, sessionFactory.getClass());
-		SmbInboundFileSynchronizer fisync = 
+		SmbInboundFileSynchronizer fisync =
 			TestUtils.getPropertyValue(adapter, "source.synchronizer", SmbInboundFileSynchronizer.class);
 		String remoteFileSeparator = (String) TestUtils.getPropertyValue(fisync, "remoteFileSeparator");
 		assertNotNull(remoteFileSeparator);
@@ -86,9 +91,8 @@ public class SmbInboundChannelAdapterParserTests extends AbstractBaseTest {
 
 	@Test(timeout = 10000)
 	public void testSmbInboundChannelAdapterCompleteNoId() throws Exception{
-		ApplicationContext ac = 
-			new ClassPathXmlApplicationContext(getApplicationContextXmlFile(), this.getClass());
-		Map<String, SourcePollingChannelAdapter> spcas = ac.getBeansOfType(SourcePollingChannelAdapter.class);
+
+		Map<String, SourcePollingChannelAdapter> spcas = applicationContext.getBeansOfType(SourcePollingChannelAdapter.class);
 		SourcePollingChannelAdapter adapter = null;
 		for (String key : spcas.keySet()) {
 			if (!key.equals("smbInbound") && !key.equals("simpleAdapter")){
@@ -101,18 +105,18 @@ public class SmbInboundChannelAdapterParserTests extends AbstractBaseTest {
 
 	public static class TestSessionFactoryBean implements FactoryBean<SmbSessionFactory> {
 
-        public SmbSessionFactory getObject() throws Exception {
+		public SmbSessionFactory getObject() throws Exception {
 			SmbSessionFactory smbFactory = mock(SmbSessionFactory.class);
 			SmbSession session = mock(SmbSession.class);
 			when(smbFactory.getSession()).thenReturn(session);
 			return smbFactory;
 		}
 
-        public Class<?> getObjectType() {
+		public Class<?> getObjectType() {
 			return SmbSessionFactory.class;
 		}
 
-        public boolean isSingleton() {
+		public boolean isSingleton() {
 			return true;
 		}
 	}
