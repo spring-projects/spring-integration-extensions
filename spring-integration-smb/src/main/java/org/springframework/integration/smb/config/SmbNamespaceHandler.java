@@ -22,11 +22,11 @@ import org.springframework.integration.file.config.RemoteFileOutboundChannelAdap
  * Provides namespace support for using SMB.
  *
  * @author Markus Spann
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbNamespaceHandler extends AbstractIntegrationNamespaceHandler {
 
-    public void init() {
+	public void init() {
 		registerBeanDefinitionParser("inbound-channel-adapter",  new SmbInboundChannelAdapterParser());
 		registerBeanDefinitionParser("outbound-channel-adapter", new RemoteFileOutboundChannelAdapterParser()); // TODO need implementation for SMB?
 	}

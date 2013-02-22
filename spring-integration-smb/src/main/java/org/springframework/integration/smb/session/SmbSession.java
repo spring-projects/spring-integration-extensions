@@ -45,13 +45,14 @@ import org.springframework.util.StringUtils;
  * See <a href="http://en.wikipedia.org/wiki/Server_Message_Block">Server Message Block</a>
  * for more details.
  *
- * Inspired by the sprint-integration-ftp implementation done by Mark Fisher and Oleg Zhurakousky.
+ * Inspired by the spring-integration-ftp implementation done by Mark Fisher
+ * and Oleg Zhurakousky.
  *
  * @author Markus Spann
  * @author Mark Fisher
  * @author Oleg Zhurakousky
  *
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbSession implements Session<SmbFile> {
 
@@ -131,11 +132,11 @@ public class SmbSession implements Session<SmbFile> {
 		try {
 			SmbFile smbDir = createSmbDirectoryObject(_path);
 			if (!smbDir.exists()) {
-            	logger.warn("Remote directory [" + _path + "] does not exist. Cannot list resources.");
-            	return files;
+				logger.warn("Remote directory [" + _path + "] does not exist. Cannot list resources.");
+				return files;
 			} else if (!smbDir.isDirectory()) {
 				throw new NestedIOException("Resource [" + _path + "] is not a directory. Cannot list resources.");
-            }
+			}
 
 			files = smbDir.listFiles();
 
@@ -224,7 +225,7 @@ public class SmbSession implements Session<SmbFile> {
 
 	/**
 	 * Convenience method to write a local file object to a remote location.
-	 * @see org.springframework.integration.smb.session.SmbSession.write(InputStream, String)
+	 * @see org.springframework.integration.smb.session.SmbSession#write(InputStream, String)
 	 */
 	public SmbFile write(File _file, String _path) throws IOException {
 		return writeAndClose(new FileInputStream(_file), _path);
@@ -232,7 +233,7 @@ public class SmbSession implements Session<SmbFile> {
 
 	/**
 	 * Convenience method to write a byte array to a remote location.
-	 * @see org.springframework.integration.smb.session.SmbSession.write(InputStream, String)
+	 * @see org.springframework.integration.smb.session.SmbSession#write(InputStream, String)
 	 */
 	public SmbFile write(byte[] _contents, String _path) throws IOException {
 		return writeAndClose(new ByteArrayInputStream(_contents), _path);
@@ -370,80 +371,80 @@ public class SmbSession implements Session<SmbFile> {
 	 * @throws IOException on error conditions returned by a CIFS server
 	 */
 	SmbFile writeAndClose(InputStream _inputStream, String _path) throws IOException {
-    	write(_inputStream, _path);
-    	_inputStream.close();
-    	return createSmbFileObject(_path);
-    }
+		write(_inputStream, _path);
+		_inputStream.close();
+		return createSmbFileObject(_path);
+	}
 
 	/**
-     * Factory method for new SmbFile objects under this session's share for the specified path.
-     * @param _path remote path
-     * @param _isDirectory Boolean object to indicate the path is a directory, may be null
-     * @return SmbFile object for path
-     * @throws IOException in case of I/O errors
-     */
-    private SmbFile createSmbFileObject(String _path, Boolean _isDirectory) throws IOException {
+	 * Factory method for new SmbFile objects under this session's share for the specified path.
+	 * @param _path remote path
+	 * @param _isDirectory Boolean object to indicate the path is a directory, may be null
+	 * @return SmbFile object for path
+	 * @throws IOException in case of I/O errors
+	 */
+	private SmbFile createSmbFileObject(String _path, Boolean _isDirectory) throws IOException {
 		String path = StringUtils.cleanPath(_path);
 		if (!StringUtils.hasText(path)) {
 			return smbShare;
 		}
 
-    	SmbFile smbFile = new SmbFile(smbShare, path);
+		SmbFile smbFile = new SmbFile(smbShare, path);
 
-    	boolean appendFileSeparator = !path.endsWith(FILE_SEPARATOR);
-    	if (appendFileSeparator) {
-    		try {
-    			appendFileSeparator = smbFile.isDirectory() || (_isDirectory != null && _isDirectory);
-    		} catch (Exception _ex) {
-    			appendFileSeparator = false;
-    		}
-    	}
-    	if (appendFileSeparator) {
-    		smbFile = createSmbFileObject(path + FILE_SEPARATOR);
-    	}
-    	if (logger.isDebugEnabled()) {
-    		logger.debug("Created new " + SmbFile.class.getName() + "[" + smbFile + "] for path [" + path + "].");
-    	}
-    	return smbFile;
-    }
+		boolean appendFileSeparator = !path.endsWith(FILE_SEPARATOR);
+		if (appendFileSeparator) {
+			try {
+				appendFileSeparator = smbFile.isDirectory() || (_isDirectory != null && _isDirectory);
+			} catch (Exception _ex) {
+				appendFileSeparator = false;
+			}
+		}
+		if (appendFileSeparator) {
+			smbFile = createSmbFileObject(path + FILE_SEPARATOR);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Created new " + SmbFile.class.getName() + "[" + smbFile + "] for path [" + path + "].");
+		}
+		return smbFile;
+	}
 
 	/**
 	 * Creates an SMB file object pointing to a remote file.
 	 */
 	public SmbFile createSmbFileObject(String _path) throws IOException {
-    	return createSmbFileObject(_path, null);
-    }
+		return createSmbFileObject(_path, null);
+	}
 
 	/**
 	 * Creates an SMB file object pointing to a remote directory.
 	 */
 	public SmbFile createSmbDirectoryObject(String _path) throws IOException {
-    	return createSmbFileObject(_path, true);
-    }
+		return createSmbFileObject(_path, true);
+	}
 
 	/**
 	 * Static configuration of the JCIFS library.
 	 * The log level of this class is mapped to a suitable <code>jcifs.util.loglevel</code>
 	 */
 	static void configureJcifs() {
-        // TODO jcifs.Config.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
-    	// TODO jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
+		// TODO jcifs.Config.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
+		// TODO jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
 
-    	// set JCIFS SMB client library' log level unless already configured by system property
-    	final String sysPropLogLevel = "jcifs.util.loglevel";
+		// set JCIFS SMB client library' log level unless already configured by system property
+		final String sysPropLogLevel = "jcifs.util.loglevel";
 
-    	if (jcifs.Config.getProperty(sysPropLogLevel) == null) {
-    		// set log level according to this class' logger's log level.
-    		Log log = LogFactory.getLog(SmbSession.class);
-    		if (log.isTraceEnabled()) {
-    			jcifs.Config.setProperty(sysPropLogLevel, "N");
-    		} else if (log.isDebugEnabled()) {
-    			jcifs.Config.setProperty(sysPropLogLevel, "3");
-    		} else {
-    			jcifs.Config.setProperty(sysPropLogLevel, "1");
-    		}
-    	}
-    }
+		if (jcifs.Config.getProperty(sysPropLogLevel) == null) {
+			// set log level according to this class' logger's log level.
+			Log log = LogFactory.getLog(SmbSession.class);
+			if (log.isTraceEnabled()) {
+				jcifs.Config.setProperty(sysPropLogLevel, "N");
+			} else if (log.isDebugEnabled()) {
+				jcifs.Config.setProperty(sysPropLogLevel, "3");
+			} else {
+				jcifs.Config.setProperty(sysPropLogLevel, "1");
+			}
+		}
+	}
 
 	@Override
 	public String[] listNames(String path) throws IOException {

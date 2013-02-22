@@ -27,13 +27,11 @@ import org.springframework.integration.file.remote.synchronizer.AbstractInboundF
  * A {@link org.springframework.integration.core.MessageSource} implementation for SMB.
  *
  * @author Markus Spann
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbInboundFileSynchronizingMessageSource extends AbstractInboundFileSynchronizingMessageSource<SmbFile> {
 
-	// CHECKSTYLE:OFF
 	private final static String componentType = "smb:inbound-channel-adapter";
-	// CHECKSTYLE:ON
 	private final String        toString;
 
 	public SmbInboundFileSynchronizingMessageSource(AbstractInboundFileSynchronizer<SmbFile> _synchronizer) {
