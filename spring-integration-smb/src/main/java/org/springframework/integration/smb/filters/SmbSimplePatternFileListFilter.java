@@ -21,8 +21,10 @@ import org.springframework.integration.file.filters.AbstractSimplePatternFileLis
 
 /**
  * Implementation of {@link AbstractSimplePatternFileListFilter} for SMB.
- * 
+ *
  * @author Markus Spann
+ * @since 1.0
+ *
  */
 public class SmbSimplePatternFileListFilter extends AbstractSimplePatternFileListFilter<SmbFile> {
 

@@ -23,9 +23,9 @@ import org.springframework.integration.file.filters.AbstractRegexPatternFileList
 
 /**
  * Implementation of {@link AbstractRegexPatternFileListFilter} for SMB.
- * 
+ *
  * @author Markus Spann
- * @since 2.1.1
+ * @since 1.0
  */
 public class SmbRegexPatternFileListFilter extends AbstractRegexPatternFileListFilter<SmbFile> {
 

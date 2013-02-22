@@ -1,5 +1,5 @@
 /**
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.springframework.integration.smb.config;
 
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -35,12 +35,13 @@ import org.springframework.integration.test.util.TestUtils;
 
 /**
  * System tests that perform SMB access without any mocking.
- * These tests are annotated with '@Ignore', as they requires real SMB share configured 
+ * These tests are annotated with '@Ignore', as they requires real SMB share configured
  * in the application context/smbClientFactory in order to succeed.
  * The test cases create directories and files autonomously and perform clean-up
  * on a best effort basis.
  *
  * @author Markus Spann
+ * @author Gunnar Hillert
  */
 public class SmbInboundOutboundSample extends AbstractBaseTest {
 
