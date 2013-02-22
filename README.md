@@ -12,6 +12,10 @@ The Spring Integration Extensions project provides extension modules for [Spring
 * [Splunk][] Support
 * [Amazon Web Services (AWS)][] Support
 
+## Samples
+
+Under the `samples` directory, you will find samples for the various modules. Please refer to the documentation of each sample for further details.
+
 ## Getting support
 
 Check out the [Spring Integration forums][] and the [spring-integration][spring-integration tag] tag
