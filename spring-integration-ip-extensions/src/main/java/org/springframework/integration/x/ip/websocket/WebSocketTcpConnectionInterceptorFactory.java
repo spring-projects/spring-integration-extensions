@@ -15,8 +15,10 @@
  */
 package org.springframework.integration.x.ip.websocket;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -29,6 +31,7 @@ import org.springframework.integration.MessagingException;
 import org.springframework.integration.aggregator.ResequencingMessageGroupProcessor;
 import org.springframework.integration.aggregator.ResequencingMessageHandler;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.context.IntegrationObjectSupport;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
 import org.springframework.integration.ip.tcp.connection.TcpConnection;
@@ -39,6 +42,7 @@ import org.springframework.integration.ip.tcp.connection.TcpNioConnection;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.x.ip.websocket.WebSocketEvent.WebSocketEventType;
 import org.springframework.integration.x.ip.websocket.WebSocketSerializer.WebSocketState;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.Assert;
 
 /**
@@ -46,12 +50,72 @@ import org.springframework.util.Assert;
  * @since 3.0
  *
  */
-public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionInterceptorFactory {
+public class WebSocketTcpConnectionInterceptorFactory extends IntegrationObjectSupport
+		implements TcpConnectionInterceptorFactory {
+
+	private static final Message<WebSocketFrame> PING = MessageBuilder.withPayload(
+			new WebSocketFrame(WebSocketFrame.TYPE_PING, "Ping from SI")).build();
 
 	private static final Log logger = LogFactory.getLog(WebSocketTcpConnectionInterceptor.class);
 
 	private final Map<TcpConnection, WebSocketTcpConnectionInterceptor> connections =
 			new ConcurrentHashMap<TcpConnection, WebSocketTcpConnectionInterceptor>();
+
+	private volatile TaskScheduler taskScheduler;
+
+	private volatile long pingInterval = 25000;
+
+	private final Runnable pinger = new Runnable() {
+
+		@Override
+		public void run() {
+			long pingFilter = System.currentTimeMillis() - pingInterval;
+			for (Entry<TcpConnection, WebSocketTcpConnectionInterceptor> entry : connections.entrySet()) {
+				TcpConnection connection = entry.getKey();
+				String connectionId = connection.getConnectionId();
+				if (entry.getValue().getLastSend() <= pingFilter) {
+					try {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Sending Ping to " + connectionId);
+						}
+						connection.send(PING);
+					}
+					catch (Exception e) {
+						logger.error("Failed to send Ping to " + connectionId, e);
+						connection.close();
+					}
+				}
+				else {
+					if (logger.isTraceEnabled()) {
+						logger.trace("Skipping PING for " + connectionId + "  due to recent send");
+					}
+				}
+			}
+			if (pingInterval > 0) {
+				taskScheduler.schedule(pinger, new Date(System.currentTimeMillis() + pingInterval));
+			}
+		}
+	};
+
+	@Override
+	public void setTaskScheduler(TaskScheduler taskScheduler) {
+		this.taskScheduler = taskScheduler;
+	}
+
+	public void setPingInterval(long pingInterval) {
+		this.pingInterval = pingInterval;
+	}
+
+	@Override
+	protected void onInit() throws Exception {
+		super.onInit();
+		if (this.pingInterval > 0) {
+			if (this.taskScheduler == null) {
+				this.taskScheduler = this.getTaskScheduler();
+			}
+			this.taskScheduler.schedule(this.pinger, new Date(System.currentTimeMillis() + this.pingInterval));
+		}
+	}
 
 	@Override
 	public TcpConnectionInterceptorSupport getInterceptor() {
@@ -62,6 +126,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		return this.connections.get(connection);
 	}
 
+
 	public class WebSocketTcpConnectionInterceptor extends TcpConnectionInterceptorSupport {
 
 		private volatile boolean shook;
@@ -69,6 +134,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 		private final DirectChannel resequenceChannel = new DirectChannel();
 
 		private final EventDrivenConsumer resequencer;
+
+		private long lastSend;
 
 		public WebSocketTcpConnectionInterceptor() {
 			super();
@@ -87,6 +154,10 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			});
 			this.resequencer.afterPropertiesSet();
 			this.resequencer.start();
+		}
+
+		public long getLastSend() {
+			return lastSend;
 		}
 
 		/**
@@ -160,7 +231,8 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			else if (payload.getType() == WebSocketFrame.TYPE_PING) {
 				try {
 					if (logger.isDebugEnabled()) {
-						logger.debug("Ping:" + new String(payload.getBinary(), "UTF-8"));
+						logger.debug("Ping received on " + this.getConnectionId() + ":"
+								+ new String(payload.getBinary(), "UTF-8"));
 					}
 					if (payload.getBinary().length > 125) {
 						this.protocolViolation(message);
@@ -178,7 +250,7 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 			}
 			else if (payload.getType() == WebSocketFrame.TYPE_PONG) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("Pong");
+					logger.debug("Pong received on " + this.getConnectionId());
 				}
 			}
 			else if (this.shook) {
@@ -241,6 +313,13 @@ public class WebSocketTcpConnectionInterceptorFactory implements TcpConnectionIn
 				this.getRequiredDeserializer().removeState(stateKey);
 			}
 			super.close();
+		}
+
+
+		@Override
+		public void send(Message<?> message) throws Exception {
+			super.send(message);
+			this.lastSend = System.currentTimeMillis();
 		}
 
 		private void doHandshake(WebSocketFrame frame, MessageHeaders messageHeaders) throws Exception {

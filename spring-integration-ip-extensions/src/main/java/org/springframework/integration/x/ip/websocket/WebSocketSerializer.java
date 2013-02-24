@@ -95,6 +95,7 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		int lenBytes;
 		int payloadLen = this.server ? 0 : 0x80; //masked
 		boolean close = theFrame.getType() == WebSocketFrame.TYPE_CLOSE;
+		boolean ping = theFrame.getType() == WebSocketFrame.TYPE_PING;
 		boolean pong = theFrame.getType() == WebSocketFrame.TYPE_PONG;
 		byte[] bytes = theFrame.getBinary() != null ? theFrame.getBinary() : data.getBytes("UTF-8");
 
@@ -116,7 +117,10 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		}
 		int mask = (int) System.currentTimeMillis();
 		ByteBuffer buffer = ByteBuffer.allocate(length + 6 + lenBytes);
-		if (pong) {
+		if (ping) {
+			buffer.put((byte) 0x89);
+		}
+		else if (pong) {
 			buffer.put((byte) 0x8a);
 		}
 		else if (close) {
