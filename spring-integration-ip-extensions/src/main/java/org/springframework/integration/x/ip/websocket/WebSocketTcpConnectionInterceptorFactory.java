@@ -69,11 +69,12 @@ public class WebSocketTcpConnectionInterceptorFactory extends IntegrationObjectS
 
 		@Override
 		public void run() {
-			long pingFilter = System.currentTimeMillis() - pingInterval;
+			// Add 100ms to allow for heuristics
+			long pingFilter = System.currentTimeMillis() - pingInterval + 100;
 			for (Entry<TcpConnection, WebSocketTcpConnectionInterceptor> entry : connections.entrySet()) {
 				TcpConnection connection = entry.getKey();
 				String connectionId = connection.getConnectionId();
-				if (entry.getValue().getLastSend() <= pingFilter) {
+				if (entry.getValue().getLastReceiveTime() <= pingFilter) {
 					try {
 						if (logger.isDebugEnabled()) {
 							logger.debug("Sending Ping to " + connectionId);
@@ -102,6 +103,11 @@ public class WebSocketTcpConnectionInterceptorFactory extends IntegrationObjectS
 		this.taskScheduler = taskScheduler;
 	}
 
+	/**
+	 * The time between PINGs sent for idle connections. Must be less than half the
+	 * socket timeout (if any).
+	 * @param pingInterval
+	 */
 	public void setPingInterval(long pingInterval) {
 		this.pingInterval = pingInterval;
 	}
@@ -135,7 +141,7 @@ public class WebSocketTcpConnectionInterceptorFactory extends IntegrationObjectS
 
 		private final EventDrivenConsumer resequencer;
 
-		private long lastSend;
+		private long lastReceiveTime;
 
 		public WebSocketTcpConnectionInterceptor() {
 			super();
@@ -156,8 +162,8 @@ public class WebSocketTcpConnectionInterceptorFactory extends IntegrationObjectS
 			this.resequencer.start();
 		}
 
-		public long getLastSend() {
-			return lastSend;
+		public long getLastReceiveTime() {
+			return lastReceiveTime;
 		}
 
 		/**
@@ -168,6 +174,7 @@ public class WebSocketTcpConnectionInterceptorFactory extends IntegrationObjectS
 		 */
 		@Override
 		public boolean onMessage(Message<?> message) {
+			this.lastReceiveTime = System.currentTimeMillis();
 			if (this.getTheConnection() instanceof TcpNioConnection && message.getHeaders().getCorrelationId() != null) {
 				resequenceChannel.send(message);
 				return true;
@@ -313,13 +320,6 @@ public class WebSocketTcpConnectionInterceptorFactory extends IntegrationObjectS
 				this.getRequiredDeserializer().removeState(stateKey);
 			}
 			super.close();
-		}
-
-
-		@Override
-		public void send(Message<?> message) throws Exception {
-			super.send(message);
-			this.lastSend = System.currentTimeMillis();
 		}
 
 		private void doHandshake(WebSocketFrame frame, MessageHeaders messageHeaders) throws Exception {

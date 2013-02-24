@@ -12,7 +12,7 @@
 	<int-ip:tcp-connection-factory id="ws"
 		type="server" port="18080"
 		using-nio="true"
-		so-timeout="600000"
+		so-timeout="60000"
 		interceptor-factory-chain="interceptors"
 		serializer="wsSerializer"
 		deserializer="wsSerializer"
