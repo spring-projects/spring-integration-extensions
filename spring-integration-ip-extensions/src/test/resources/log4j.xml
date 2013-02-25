@@ -19,6 +19,14 @@
 		<level value="info" />
 	</logger>
 
+	<logger name="org.springframework.integration.x">
+		<level value="info" />
+	</logger>
+
+	<logger name="org.springframework.integration.endpoint.SourcePollingChannelAdapter">
+		<level value="info" />
+	</logger>
+
 	<logger name="org.springframework.integration.samples">
 		<level value="debug" />
 	</logger>

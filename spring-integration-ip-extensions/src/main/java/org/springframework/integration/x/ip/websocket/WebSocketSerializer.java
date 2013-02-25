@@ -53,6 +53,12 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 
 	private boolean validateUtf8;
 
+	private volatile Boolean streamChecked;
+
+	private volatile boolean nio;
+
+	private volatile DirectFieldAccessor streamAccessor;
+
 	public void setServer(boolean server) {
 		this.server = server;
 	}
@@ -164,6 +170,11 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 
 	@Override
 	public DataFrame deserialize(InputStream inputStream) throws IOException {
+		if (this.streamChecked == null) {
+			this.nio = inputStream.getClass().getName().endsWith("TcpNioConnection$ChannelInputStream");
+			this.streamAccessor = new DirectFieldAccessor(inputStream);
+			this.streamChecked = Boolean.TRUE;
+		}
 		DataFrame frame = null;
 		BasicState state = this.getState(inputStream);
 		if (state != null) {
@@ -205,9 +216,11 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 		int maskInx = 0;
 		int rsv = 0;
 		while (!done ) {
-			bite = inputStream.read() & 0xff;
+			bite = inputStream.read();
 //			logger.debug("Read:" + Integer.toHexString(bite));
-			bite = checkclosed(bite, inputStream);
+			if (this.nio) {
+				bite = checkclosed(bite, inputStream);
+			}
 			if (bite < 0 && n == 0) {
 				throw new SoftEndOfStreamException("Stream closed between payloads");
 			}
@@ -426,25 +439,26 @@ public class WebSocketSerializer extends AbstractHttpSwitchingDeserializer imple
 	 * TODO: workaround for INT-2936
 	 */
 	private int checkclosed(int bite, InputStream inputStream) {
-		int theBite = bite;
-		if (theBite == 0xff) { // possibly a closed stream
-			String streamClass = inputStream.getClass().getName();
-			if (streamClass.endsWith("TcpNioConnection$ChannelInputStream")) {
-				DirectFieldAccessor dfa = new DirectFieldAccessor(inputStream);
-				try {
-					if ((Boolean) dfa.getPropertyValue("isClosed") &&
-							inputStream.available() == 0) {
-						theBite = -1;
-					}
+		if (bite < 0) { // possibly a closed stream
+			try {
+				if ((Boolean) streamAccessor.getPropertyValue("isClosed") &&
+						inputStream.available() == 0) {
+					return -1;
 				}
-				catch (Exception e) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Failed to check closed", e);
-					}
+				else {
+					return bite & 0xff;
 				}
 			}
+			catch (Exception e) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Failed to check closed", e);
+				}
+				return bite;
+			}
 		}
-		return theBite;
+		else {
+			return bite;
+		}
 	}
 
 	private boolean validateUtf8IfNecessary(byte[] buffer, int offset, String data) {
