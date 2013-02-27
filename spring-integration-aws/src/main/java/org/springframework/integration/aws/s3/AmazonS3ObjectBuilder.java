@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,7 +48,6 @@ public class AmazonS3ObjectBuilder {
 	private Map<String, Object> metaData;
 	private Map<String, String> userMetaData;
 	private AmazonS3ObjectACL objectACL;
-	private final Pattern validEmailId = Pattern.compile("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 
 	/**
 	 * Gets a new instance of the builder
@@ -130,14 +128,14 @@ public class AmazonS3ObjectBuilder {
 				if(isCanonicalId(key)) {
 					addPermissions(key, GranteeType.CANONICAL_GRANTEE_TYPE, objectACL.get(key));
 				}
-				else if(isEmailIdentifier(key)) {
-					addPermissions(key, GranteeType.EMAIL_GRANTEE_TYPE, objectACL.get(key));
-				}
 				else if(isGroupIdentifier(key)) {
 					addPermissions(key, GranteeType.GROUP_GRANTEE_TYPE, objectACL.get(key));
 				}
 				else {
-					throw new IllegalArgumentException("Grantee \"" + key + "\" cannot be recognized to any of the valid supported grantee types");
+					//assuming thats an email identifier, not using regex to validate the email
+					//id. We can add email validation if needed and throw an eexception
+					//if some unexpected value comes up.
+					addPermissions(key, GranteeType.EMAIL_GRANTEE_TYPE, objectACL.get(key));
 				}
 			}
 		}
@@ -207,19 +205,6 @@ public class AmazonS3ObjectBuilder {
 					|| trimmedIdentifier.equals("http://acs.amazonaws.com/groups/global/AuthenticatedUsers");
 		}
 		return false;
-	}
-
-	/**
-	 * Checks if the given id is a valid email id String
-	 * @param identifier
-	 * @return
-	 */
-	private boolean isEmailIdentifier(String identifier) {
-		if(StringUtils.hasText(identifier)) {
-			return validEmailId.matcher(identifier.trim()).matches();
-		}
-		else
-			return false;
 	}
 
 	/**

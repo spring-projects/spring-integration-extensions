@@ -126,7 +126,7 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 	public void setNonExistentDirectory() {
 		//getting the current time in millis and hope no folder with that name exists
 		long current = System.currentTimeMillis();
-		AmazonS3OperationsImpl s3Service = new AmazonS3OperationsImpl(credentials);
+		DefaultAmazonS3Operations s3Service = new DefaultAmazonS3Operations(credentials);
 		s3Service.setTemporaryDirectory("./" + current);
 	}
 

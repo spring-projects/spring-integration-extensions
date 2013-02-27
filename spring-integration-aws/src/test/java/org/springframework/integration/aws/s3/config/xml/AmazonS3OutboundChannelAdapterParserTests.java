@@ -32,7 +32,7 @@ import org.springframework.integration.Message;
 import org.springframework.integration.aws.s3.AmazonS3MessageHandler;
 import org.springframework.integration.aws.s3.FileNameGenerationStrategy;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
-import org.springframework.integration.aws.s3.core.AmazonS3OperationsImpl;
+import org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
 
 /**
@@ -72,7 +72,7 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:s3-valid-outbound-cases.xml");
 		EventDrivenConsumer consumer = ctx.getBean("withDefaultServices",EventDrivenConsumer.class);
 		AmazonS3MessageHandler handler = getPropertyValue(consumer, "handler", AmazonS3MessageHandler.class);
-		assertEquals(AmazonS3OperationsImpl.class, getPropertyValue(handler, "operations").getClass());
+		assertEquals(DefaultAmazonS3Operations.class, getPropertyValue(handler, "operations").getClass());
 		Expression expression =
 			getPropertyValue(handler, "remoteDirectoryProcessor.expression",Expression.class);
 		assertNotNull(expression);

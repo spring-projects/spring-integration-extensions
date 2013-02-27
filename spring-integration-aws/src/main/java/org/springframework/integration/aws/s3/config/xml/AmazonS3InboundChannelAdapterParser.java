@@ -46,8 +46,8 @@ public class AmazonS3InboundChannelAdapterParser extends
 	private static final String S3_OPERATIONS					=	"s3-operations";
 	private static final String AWS_ENDPOINT					=	"aws-endpoint";
 	private static final String REMOTE_DIRECTORY				=	"remote-directory";
-	private static final String LOCAL_DIRECTORY					=	"directory";
-	private static final String LOCAL_DIRECTORY_EXPRESSION		=	"directory-expression";
+	private static final String LOCAL_DIRECTORY					=	"local-directory";
+	private static final String LOCAL_DIRECTORY_EXPRESSION		=	"local-directory-expression";
 	private static final String AWS_CREDENTIAL					=	"credentials";
 	private static final String MAX_OBJECTS_PER_BATCH			=	"max-objects-per-batch";
 	private static final String FILE_NAME_WILDCARD				=	"file-name-wildcard";

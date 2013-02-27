@@ -27,7 +27,7 @@ import org.springframework.integration.Message;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.s3.core.AbstractAmazonS3Operations;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
-import org.springframework.integration.aws.s3.core.AmazonS3OperationsImpl;
+import org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations;
 import org.springframework.integration.context.IntegrationObjectSupport;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.support.MessageBuilder;
@@ -52,7 +52,7 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 	private volatile String remoteDirectory;
 	private volatile File directory;
 	private volatile AWSCredentials credentials;
-	private volatile String temporarySuffix;
+	private volatile String temporarySuffix = ".writing";
 	private volatile int maxObjectsPerBatch;
 	private volatile String fileNameWildcard;
 	private volatile String fileNameRegex;
@@ -94,13 +94,16 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 		String directoryPath = directoryExpression.getValue(ctx,String.class);
 		directory = new File(directoryPath);
 
-		Assert.isTrue(directory != null && directory.exists() && directory.isDirectory(),
-		"Please provide a valid local directory to synchronize the remote files");
-
+		Assert.notNull(directory, "Please provide a valid local directory to synchronize the remote files");
+//		TODO: Uncomment this once we start supporting auto-create-local-directory
+//		Assert.isTrue(directory.exists(),
+//				String.format("Provided directory %s does not exist", directoryPath));
+		Assert.isTrue(directory.isDirectory(),
+				String.format("Provided path %s is not a directory", directoryPath));
 
 		//instantiate the S3Operations instance
 		if(s3Operations == null) {
-			s3Operations = new AmazonS3OperationsImpl(credentials);
+			s3Operations = new DefaultAmazonS3Operations(credentials);
 		}
 
 		if(AbstractAmazonS3Operations.class.isAssignableFrom(s3Operations.getClass())) {

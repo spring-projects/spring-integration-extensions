@@ -24,7 +24,7 @@ import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.aws.config.xml.AbstractAWSOutboundChannelAdapterParser;
 import org.springframework.integration.aws.s3.AmazonS3MessageHandler;
 import org.springframework.integration.aws.s3.DefaultFileNameGenerationStrategy;
-import org.springframework.integration.aws.s3.core.AmazonS3OperationsImpl;
+import org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations;
 import org.springframework.integration.config.ExpressionFactoryBean;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.core.MessageHandler;
@@ -91,7 +91,7 @@ public class AmazonS3OutboundChannelAdapterParser extends
 			operationsService = s3Operations;
 		}
 		else {
-			BeanDefinitionBuilder s3OpBuilder = BeanDefinitionBuilder.genericBeanDefinition(AmazonS3OperationsImpl.class);
+			BeanDefinitionBuilder s3OpBuilder = BeanDefinitionBuilder.genericBeanDefinition(DefaultAmazonS3Operations.class);
 			s3OpBuilder.addConstructorArgReference(awsCredentialsGeneratedName);
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, MULTIPART_THRESHOLD);
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, TEMPORARY_DIRECTORY);

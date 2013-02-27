@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.springframework.integration.aws.core.PropertiesAWSCredentials;
 
 /**
- * The test class for the {@link AmazonS3OperationsImpl}, the default implementation that
+ * The test class for the {@link DefaultAmazonS3Operations}, the default implementation that
  * uses the AWS SDK to implement the functionality. The tests are present in the superclass
  * {@link AbstractAmazonS3OperationsImplAWSTests}
  *
@@ -43,17 +43,17 @@ import org.springframework.integration.aws.core.PropertiesAWSCredentials;
  * @since 0.5
  *
  */
-public class AmazonS3OperationsImplAWSTests extends AbstractAmazonS3OperationsImplAWSTests {
+public class DefaultAmazonS3OperationsAWSTests extends AbstractAmazonS3OperationsImplAWSTests {
 
 
-	private static AmazonS3OperationsImpl impl;
+	private static DefaultAmazonS3Operations impl;
 
 	@BeforeClass
 	public static void setupS3Operations() throws Exception {
 		PropertiesAWSCredentials credentials =
 			new PropertiesAWSCredentials("classpath:awscredentials.properties");
 		credentials.afterPropertiesSet();
-		impl = new AmazonS3OperationsImpl(credentials);
+		impl = new DefaultAmazonS3Operations(credentials);
 	}
 	/**
 	 * Sets the thread pool executor to a non null value, execution should

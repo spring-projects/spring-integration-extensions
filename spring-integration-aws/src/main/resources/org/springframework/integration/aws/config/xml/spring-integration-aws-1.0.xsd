@@ -134,17 +134,23 @@
 				<xsd:annotation>
 					<xsd:documentation>
 						Relevant only when the payload of the message to the outbound adapter is of
-						type java.lang.String.
+						type java.lang.String. The default charset is UTF-8.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute name="multipart-upload-threshold" type="xsd:integer">
 				<xsd:annotation>
 					<xsd:documentation>
-						AWS S3 provides a facility to upload the file in multipart in parallel
-						threads.  This integer value is used to provide the threshold after which
-						the uploads to the S3 bucket will be done in multi part. Amazon recommends
-						the size to to 100 MB.
+						Using 'Amazon Multipart Upload' you can upload data as a set of parts using
+						parallel threads. This non-negative integer value representing bytes which is used
+						to provide the threshold after which the upload to the S3 bucket will be done
+						using 'Amazon Multipart Upload'. Amazon recommends the size to be 100 MB.
+						The minimum threshold for 'Amazon Multipart Upload' is 5120 bytes.
+						If the attribute is not specified, then the value used is the default value used
+						by the underlying implementation. The default implementation uses AWS SDK which
+						uses Multi part upload after 16 MB. The maximum value for this is 2 GB. Any value
+						greater than 2 GB will not throw an exception but the value will be set to
+						2 GB internally for the threshold.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -237,10 +243,10 @@
 						<tool:expected-type type="org.springframework.integration.aws.s3.core.AmazonS3Operations"/>
 					</xsd:appinfo>
 					<xsd:documentation>
-						Reference to the beanwith an implementation of org.springframework.integration.aws.s3.core.AmazonS3Operations
+						Reference to the bean with an implementation of org.springframework.integration.aws.s3.core.AmazonS3Operations
 						that would be used to perform the operations on the S3 bucket. If not provided, the
 						default implementation used is
-						org.springframework.integration.aws.s3.core.AmazonS3OperationsImpl which is the
+						org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations which is the
 						implementation using the AWS SDK.
 					</xsd:documentation>
 				</xsd:annotation>
@@ -304,8 +310,7 @@
 						Reference to the beanwith an implementation of org.springframework.integration.aws.s3.core.AmazonS3Operations
 						that would be used to perform the operations on the S3 bucket. If not provided, the
 						default implementation used is
-						org.springframework.integration.aws.s3.core.AmazonS3OperationsImpl which is the
-						implementation using the AWS SDK.
+						org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations which uses AWS SDK.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -326,21 +331,21 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="directory" type="xsd:string">
+			<xsd:attribute name="local-directory" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						The attribute specifying the directory on the local file system where
-						the objects from S3 bucket would be synchronized to. Either of directory
-						or the directory-expression are mandatory.
+						the objects from S3 bucket would be synchronized to. Either of local-directory
+						or the local-directory-expression are mandatory.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="directory-expression" type="xsd:string">
+			<xsd:attribute name="local-directory-expression" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						The attribute specifying the expression to find the directory on the local file
-						system where the objects from S3 bucket would be synchronized to. Either of directory
-						or the directory-expression are mandatory.
+						system where the objects from S3 bucket would be synchronized to. Either of local-directory
+						or the locl-directory-expression are mandatory.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>

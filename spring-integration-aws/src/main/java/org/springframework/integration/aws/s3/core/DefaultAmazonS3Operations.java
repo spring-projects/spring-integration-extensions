@@ -54,7 +54,7 @@ import com.amazonaws.services.s3.transfer.Upload;
  * @since 0.5
  *
  */
-public class AmazonS3OperationsImpl extends AbstractAmazonS3Operations {
+public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 
 	private final AWSCredentials credentials;
 
@@ -70,7 +70,7 @@ public class AmazonS3OperationsImpl extends AbstractAmazonS3Operations {
 	 * Constructor
 	 * @param credentials
 	 */
-	public AmazonS3OperationsImpl(final AWSCredentials credentials) {
+	public DefaultAmazonS3Operations(final AWSCredentials credentials) {
 		super(credentials);
 		this.credentials = credentials;
 		s3Factory = new AbstractAWSClientFactory<AmazonS3Client>() {

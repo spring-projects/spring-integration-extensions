@@ -146,7 +146,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param temporaryFileSuffix
 	 */
 	public void setTemporaryFileSuffix(String temporaryFileSuffix) {
-		Assert.hasText(temporaryFileSuffix, "Temporary file suffix provided is non null, non empty");
+		Assert.hasText(temporaryFileSuffix, "The temporary file suffix must not be null or empty");
 		if(!temporaryFileSuffix.startsWith(".")) {
 			temporaryFileSuffix = "." + temporaryFileSuffix;
 		}

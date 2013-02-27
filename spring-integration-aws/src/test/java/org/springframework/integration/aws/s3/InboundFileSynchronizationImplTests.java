@@ -68,7 +68,7 @@ public class InboundFileSynchronizationImplTests {
 		//3. create a folder sub1/sub11 and add a file test.txt to it with content sub1/sub11/test.txt.
 		//4. create a folder sub2 and add a file test.txt to it with content sub/test.txt.
 
-//		AmazonS3OperationsImpl operations = new AmazonS3OperationsImpl(AmazonWSTestUtils.getCredentials());
+//		DefaultAmazonS3Operations operations = new DefaultAmazonS3Operations(AmazonWSTestUtils.getCredentials());
 //		try {
 //			operations.afterPropertiesSet();
 //		} catch (Exception e) {

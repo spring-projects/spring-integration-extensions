@@ -164,22 +164,6 @@ public class AmazonS3ObjectBuilderTests {
 	/**
 	 * Constructs the {@link AmazonS3Object} with an invalid ACL identifier
 	 */
-	@SuppressWarnings("unchecked")
-	@Test(expected=IllegalArgumentException.class)
-	public void withInvalidACL() throws Exception {
-		File tempFile = temp.newFile("Temp.txt");
-		Map<String, Collection<String>> acls = new HashMap<String, Collection<String>>();
-		acls.put("invalid", Collections.EMPTY_LIST);
-		AmazonS3ObjectBuilder
-		.getInstance()
-		.fromFile(tempFile)
-		.withObjectACL(acls);
-	}
-
-
-	/**
-	 * Constructs the {@link AmazonS3Object} with an invalid ACL identifier
-	 */
 	@Test
 	public void withValidACL() throws Exception {
 		File tempFile = temp.newFile("Temp.txt");

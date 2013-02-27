@@ -27,7 +27,7 @@ import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.aws.s3.AmazonS3InboundSynchronizationMessageSource;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
-import org.springframework.integration.aws.s3.core.AmazonS3OperationsImpl;
+import org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 
 /**
@@ -67,7 +67,7 @@ public class AmazonS3InboundChannelAdapterParserTests {
 		valid = ctx.getBean("withAWSEndpoint", SourcePollingChannelAdapter.class);
 		source = getPropertyValue(valid, "source", AmazonS3InboundSynchronizationMessageSource.class);
 		s3Operations = getPropertyValue(source, "s3Operations", AmazonS3Operations.class);
-		assertEquals(AmazonS3OperationsImpl.class, s3Operations.getClass());
+		assertEquals(DefaultAmazonS3Operations.class, s3Operations.getClass());
 		assertEquals("https://s3-eu-west-1.amazonaws.com", getPropertyValue(s3Operations, "client.endpoint", URI.class).toString());
 
 
