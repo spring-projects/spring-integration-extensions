@@ -2,6 +2,7 @@ Spring Integration Extension for Amazon Web Services (AWS)
 ==========================================================
 
 # Introduction
+
 ## Amazon Web Services (AWS)
 
 Launched in 2006, [Amazon Web Services][] (AWS) provides key infrastructure services for business through its cloud computing platform. Using cloud computing businesses can adopt a new business model whereby they do not have to plan and invest in procuring their own IT infrastructure. They can use the infrastructure and services provided by the cloud service provider and pay as they use the services. Visit [http://aws.amazon.com/products/] for more details about various products offered by Amazon as a part their cloud computing services.
@@ -13,7 +14,7 @@ Launched in 2006, [Amazon Web Services][] (AWS) provides key infrastructure serv
 This guide intends to explain briefly the various adapters available for [Amazon Web Services][] such as:
 
 * **Amazon Simple Email Service (SES)**
-* **Amazon Simple Storage Service (S3)** (Development complete, coming soon)
+* **Amazon Simple Storage Service (S3)**
 * **Amazon Simple Queue Service (SQS)** (Development complete, coming soon)
 * **Amazon DynamoDB** (Analysis ongoing)
 * **Amazon SimpleDB** (Not initiated)
@@ -37,6 +38,13 @@ This file needs to have two properties *accessKey* and *secretKey*, holding the 
 > **Note: AWS Services are chargeable and we recommend not to execute the **AWSTests.java* as part of your regular builds. AWS does provide a free tier which is sufficient to perform your tests without being charged (not true for DynamoDB though), however keep a check on your account usage regularly. Get more information about AWS free tier at [http://aws.amazon.com/free/][]**
 
 #Adapters
+
+##Amazon Simple Storage Service (Amazon S3)
+
+###Introduction
+
+###Outbound Channel Adapter
+###Inbound Channel Adapter
 
 ##Simple Email Service (SES)
 

@@ -15,11 +15,13 @@
  */
 package org.springframework.integration.aws.config.xml;
 
+import org.springframework.integration.aws.s3.config.xml.AmazonS3InboundChannelAdapterParser;
+import org.springframework.integration.aws.s3.config.xml.AmazonS3OutboundChannelAdapterParser;
 import org.springframework.integration.aws.ses.config.xml.AmazonSESOutboundAdapterParser;
 import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHandler;
 
 /**
- * The namepsace handler for "int-aws" namespace
+ * The namespace handler for "int-aws" namespace
  *
  * @author Amol Nayak
  *
@@ -32,6 +34,8 @@ public class AWSNamespaceHandler extends
 
 	public void init() {
 		this.registerBeanDefinitionParser("ses-outbound-channel-adapter", new AmazonSESOutboundAdapterParser());
+		this.registerBeanDefinitionParser("s3-outbound-channel-adapter",new AmazonS3OutboundChannelAdapterParser());
+		this.registerBeanDefinitionParser("s3-inbound-channel-adapter", new AmazonS3InboundChannelAdapterParser());
 	}
 
 }
