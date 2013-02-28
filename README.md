@@ -14,7 +14,7 @@ The Spring Integration Extensions project provides extension modules for [Spring
 * [Splunk][] Support
 * [Voldemort][] Support
 * [XQuery][] Support
-
+* Zip Support (Compression and Uncompression)
 
 ## Samples
 
