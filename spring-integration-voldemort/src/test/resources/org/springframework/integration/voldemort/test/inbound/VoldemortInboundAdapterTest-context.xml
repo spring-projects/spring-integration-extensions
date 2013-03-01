@@ -13,19 +13,18 @@
     </int:channel>
 
     <int-voldemort:inbound-channel-adapter id="voldemortInKey" channel="voldemortInboundChannel" search-key="lukasz"
-                                           store-client="storeClient" message-converter="messageConverter">
+                                           store-client="storeClient">
         <int:poller fixed-rate="1000" />
     </int-voldemort:inbound-channel-adapter>
 
     <int-voldemort:inbound-channel-adapter id="voldemortInExpr" channel="voldemortInboundChannel"
                                            search-key-expression="new String('KINGA').toLowerCase()"
-                                           store-client="storeClient" message-converter="messageConverter">
+                                           store-client="storeClient" extract-value="false">
         <int:poller fixed-rate="1000" />
     </int-voldemort:inbound-channel-adapter>
 
     <int-voldemort:inbound-channel-adapter id="voldemortInDelete" channel="voldemortInboundChannel" search-key="robert"
-                                           store-client="storeClient" message-converter="messageConverter"
-                                           delete-after-poll="true">
+                                           store-client="storeClient" delete-after-poll="true">
         <int:poller fixed-rate="1000" />
     </int-voldemort:inbound-channel-adapter>
 </beans>

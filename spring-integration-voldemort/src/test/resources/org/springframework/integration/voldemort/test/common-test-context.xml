@@ -13,6 +13,4 @@
     <bean id="storeClient" factory-bean="clientFactory" factory-method="getStoreClient">
         <constructor-arg value="test-store" />
     </bean>
-
-    <bean id="messageConverter" class="org.springframework.integration.voldemort.test.domain.PersonMessageConverter" />
 </beans>

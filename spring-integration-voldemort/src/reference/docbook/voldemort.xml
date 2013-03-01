@@ -30,8 +30,8 @@
     </itemizedlist>
 
     <para>
-        Each of the components listed above requires to pass an implementation of
-        <interfacename>voldemort.client.StoreClient</interfacename> as one of the constructor parameters. This way
+        Each one of the components listed above requires to pass an implementation of
+        <interfacename>voldemort.client.StoreClient</interfacename> as constructor parameter. This way
         Voldemort Adapter does not need to introduce all configuration options required to build native store client
         and enables developers to choose the concrete implementation of hereby interface.
     </para>
@@ -94,13 +94,6 @@
                         </entry>
                     </row>
                     <row>
-                        <entry><literal>message-converter</literal></entry>
-                        <entry>
-                            Converter allowing to transform Spring Integration message to Voldemort record
-                            with desired key and value representation. <emphasis>Required</emphasis>.
-                        </entry>
-                    </row>
-                    <row>
                         <entry><literal>auto-startup</literal></entry>
                         <entry>
                             Lifecycle attribute signaling if this component should be started during application
@@ -110,25 +103,6 @@
                 </tbody>
             </tgroup>
         </table>
-
-        <para>
-            Inbound and outbound adapters delegate the transformation between Spring Integration message and Voldemort
-            record to <interfacename>VoldemortConverter</interfacename>. Concrete implementation depends on the
-            representation of key and value objects stored in the underlying database, as well as message payload type,
-            so needs to be defined by the application developer.
-        </para>
-
-        <programlisting language="java"><![CDATA[public class PersonMessageConverter implements VoldemortConverter<String, Person, Person> {
-    @Override
-    public KeyValue<String, Person> toKeyValue(Message<Person> message) {
-        return KeyValue.make( message.getPayload().getId(), message.getPayload() );
-    }
-
-    @Override
-    public Message<Person> toMessage(String key, Versioned<Person> versioned) {
-        return MessageBuilder.withPayload( versioned.getValue() ).build();
-    }
-}]]></programlisting>
     </section>
 
     <section id="voldemort-outbound-channel-adapter">
@@ -140,11 +114,27 @@
         <programlisting language="xml">&lt;int-voldemort:outbound-channel-adapter id="voldemortOutbound"
                                         channel="voldemortOutboundChannel"
                                         store-client="storeClient"
-                                        message-converter="messageConverter"
+                                        store-key="constant-key" <co id="voldemort#outbound#store-key" />
+                                        store-key-expression="payload.id" <co id="voldemort#outbound#store-key-expression" />
                                         persist-mode="DELETE" <co id="voldemort#outbound#persist-mode" />
                                         order="1" <co id="voldemort#outbound#order" />
                                         auto-startup="true" /&gt;</programlisting>
         <calloutlist>
+            <callout arearefs="voldemort#outbound#store-key">
+                <para>
+                    Specifies the key for Voldemort store. If an expression is needed, use
+                    <literal>store-key-expression</literal> attribute. Both options are mutually exclusive.
+                    <emphasis>Required</emphasis>.
+                </para>
+            </callout>
+            <callout arearefs="voldemort#outbound#store-key-expression">
+                <para>
+                    Spring Expression Language statement used to determine desired entry key in Voldemort store.
+                    Default expression equals <literal>headers.voldemort_key</literal>
+                    (see <classname>VoldemortHeaders.KEY</classname>). This option is mutually exclusive with
+                    <literal>store-key</literal> attribute. <emphasis>Required</emphasis>.
+                </para>
+            </callout>
             <callout arearefs="voldemort#outbound#persist-mode">
                 <para>
                     Defines default persist mode for outbound channel adapter. Normally values are added
@@ -175,6 +165,7 @@
            search-key="lukasz" <co id="voldemort#inbound#search-key" />
            search-key-expression="@keyProducer.value" <co id="voldemort#inbound#search-key-expression" />
            delete-after-poll="true" <co id="voldemort#inbound#delete-after-poll" />
+           extract-value="true" <co id="voldemort#inbound#extract-value" />
            auto-startup="true" /&gt;</programlisting>
         <calloutlist>
             <callout arearefs="voldemort#inbound#search-key">
@@ -196,12 +187,23 @@
                     Spring Integration channel. Defaults to <code>false</code>. <emphasis>Optional</emphasis>.
                 </para>
             </callout>
+            <callout arearefs="voldemort#inbound#extract-value">
+                <para>
+                    Flag controlling value extraction from Voldemort's
+                    <classname>voldemort.versioning.Versioned</classname> object.
+                    Defaults to <code>true</code>. <emphasis>Optional</emphasis>.
+                </para>
+            </callout>
         </calloutlist>
     </section>
     <section id="voldemort-message-store">
         <title>Message Store</title>
         <para>
-            Message Store allows to persist Spring Integration messages in Voldemort database.
+            Message Store allows to persist Spring Integration messages in Voldemort database. Hereby module provides
+            <classname>VoldemortMessageStore</classname> which is an implementation of both the
+            <classname>MessageStore</classname> strategy (mainly used by <emphasis>QueueChannel</emphasis> and
+            <emphasis>ClaimCheck</emphasis> patterns) and the <classname>MessageGroupStore</classname> strategy
+            (mainly used by <emphasis>Aggregator</emphasis> and <emphasis>Resequencer</emphasis> patterns).
         </para>
         <programlisting language="xml"><![CDATA[<bean id="voldemortMessageStore" class="org.springframework.integration.voldemort.store.VoldemortMessageStore">
     <constructor-arg name="client" ref="storeClient" />

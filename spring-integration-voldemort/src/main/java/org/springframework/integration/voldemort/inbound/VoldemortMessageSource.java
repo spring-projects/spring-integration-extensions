@@ -21,7 +21,8 @@ import org.springframework.integration.Message;
 import org.springframework.integration.context.IntegrationObjectSupport;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.expression.ExpressionUtils;
-import org.springframework.integration.voldemort.convert.VoldemortConverter;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.voldemort.support.VoldemortHeaders;
 import voldemort.client.StoreClient;
 import voldemort.versioning.Versioned;
 
@@ -31,26 +32,24 @@ import voldemort.versioning.Versioned;
  * @author Lukasz Antoniak
  * @since 1.0
  */
-public class VoldemortMessageSource extends IntegrationObjectSupport implements MessageSource<Object> {
+public class VoldemortMessageSource extends IntegrationObjectSupport implements MessageSource {
 	private final StoreClient client;
-	private final VoldemortConverter converter;
 
 	/**
 	 * Key expression which will be evaluated on every call to the {@link #receive()} method.
 	 */
 	private volatile Expression keyExpression;
 	private volatile StandardEvaluationContext evaluationContext;
+	private volatile boolean extractValue = true;
 	private volatile boolean deleteAfterPoll = false;
 
 	/**
 	 * Creates new message source.
 	 *
 	 * @param client Voldemort store client.
-	 * @param converter Message converter.
 	 */
-	public VoldemortMessageSource(StoreClient client, VoldemortConverter converter) {
+	public VoldemortMessageSource(StoreClient client) {
 		this.client = client;
-		this.converter = converter;
 	}
 
 	@Override
@@ -66,14 +65,15 @@ public class VoldemortMessageSource extends IntegrationObjectSupport implements 
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Message<Object> receive() {
+	public Message receive() {
 		final Object key = keyExpression.getValue( evaluationContext, Object.class );
 		final Versioned value = client.get( key );
 		if ( value != null ) {
 			if ( deleteAfterPoll ) {
 				client.delete( key );
 			}
-			return converter.toMessage( key, value );
+			return MessageBuilder.withPayload( extractValue ? value.getValue() : value )
+					.setHeader( VoldemortHeaders.KEY, key ).build();
 		}
 		return null;
 	}
@@ -93,5 +93,9 @@ public class VoldemortMessageSource extends IntegrationObjectSupport implements 
 
 	public void setKeyExpression(Expression keyExpression) {
 		this.keyExpression = keyExpression;
+	}
+
+	public void setExtractValue(boolean extractValue) {
+		this.extractValue = extractValue;
 	}
 }

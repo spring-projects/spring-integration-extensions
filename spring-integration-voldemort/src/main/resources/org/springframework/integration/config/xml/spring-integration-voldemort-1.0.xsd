@@ -27,6 +27,25 @@
         </xsd:annotation>
         <xsd:complexType>
             <xsd:attributeGroup ref="voldemortAdapterAttributes"/>
+            <xsd:attribute name="store-key" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Specifies the key for Voldemort store. If an expression
+                        is needed, use 'store-key-expression' attribute.
+                        Both options are mutually exclusive.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="store-key-expression" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Spring Expression Language statement used to determine
+                        desired entry key in Voldemort store.
+                        Default expression equals 'headers.voldemort_key'.
+                        This attribute is mutually exclusive with 'store-key' attribute.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
             <xsd:attribute name="persist-mode" use="optional" default="PUT">
                 <xsd:annotation>
                     <xsd:documentation>
@@ -93,6 +112,17 @@
                     <xsd:union memberTypes="xsd:boolean xsd:string" />
                 </xsd:simpleType>
             </xsd:attribute>
+            <xsd:attribute name="extract-value" default="true" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Flag controlling value extraction from Voldemort's
+                        Versioned object.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:union memberTypes="xsd:boolean xsd:string" />
+                </xsd:simpleType>
+            </xsd:attribute>
         </xsd:complexType>
     </xsd:element>
 
@@ -131,19 +161,6 @@
                     </xsd:documentation>
                     <tool:annotation kind="ref">
                         <tool:expected-type type="voldemort.client.StoreClient"/>
-                    </tool:annotation>
-                </xsd:appinfo>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="message-converter" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:appinfo>
-                    <xsd:documentation>
-                        Converter allowing to transform Spring Integration message
-                        to Voldemort record with desired key and value representation.
-                    </xsd:documentation>
-                    <tool:annotation kind="ref">
-                        <tool:expected-type type="org.springframework.integration.voldemort.convert.VoldemortConverter"/>
                     </tool:annotation>
                 </xsd:appinfo>
             </xsd:annotation>

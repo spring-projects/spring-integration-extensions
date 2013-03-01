@@ -12,14 +12,8 @@
         <constructor-arg value="test-object-store" />
     </bean>
 
-    <int:channel id="voldemortInboundChannel">
-        <int:queue />
-    </int:channel>
+    <int:channel id="voldemortOutboundPutChannel" />
 
-    <bean id="keyProducer" class="org.springframework.integration.voldemort.test.inbound.ObjectKeyTest$ObjectKeyProducer" />
-
-    <int-voldemort:inbound-channel-adapter id="voldemortInObjectKey" channel="voldemortInboundChannel"
-                                           search-key-expression="@keyProducer.value" store-client="objectStoreClient">
-        <int:poller fixed-rate="1000" />
-    </int-voldemort:inbound-channel-adapter>
+    <int-voldemort:outbound-channel-adapter id="voldemortPut" channel="voldemortOutboundPutChannel"
+                                            store-client="objectStoreClient" />
 </beans>

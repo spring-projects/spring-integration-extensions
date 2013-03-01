@@ -15,10 +15,13 @@
  */
 package org.springframework.integration.voldemort.outbound;
 
+import org.springframework.expression.Expression;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.integration.Message;
+import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.handler.AbstractMessageHandler;
-import org.springframework.integration.voldemort.convert.VoldemortConverter;
-import org.springframework.integration.voldemort.convert.KeyValue;
 import org.springframework.integration.voldemort.support.PersistMode;
 import org.springframework.integration.voldemort.support.VoldemortHeaders;
 import voldemort.client.StoreClient;
@@ -31,7 +34,9 @@ import voldemort.client.StoreClient;
  */
 public class VoldemortStoringMessageHandler extends AbstractMessageHandler {
 	private final StoreClient client;
-	private final VoldemortConverter converter;
+
+	private volatile StandardEvaluationContext evaluationContext;
+	private volatile Expression keyExpression = new SpelExpressionParser().parseExpression( "headers." + VoldemortHeaders.KEY );
 
 	private volatile PersistMode persistMode = PersistMode.PUT;
 
@@ -39,23 +44,32 @@ public class VoldemortStoringMessageHandler extends AbstractMessageHandler {
 	 * Creates new message sender.
 	 *
 	 * @param client Voldemort store client.
-	 * @param converter Message converter.
 	 */
-	public VoldemortStoringMessageHandler(StoreClient client, VoldemortConverter converter) {
+	public VoldemortStoringMessageHandler(StoreClient client) {
 		this.client = client;
-		this.converter = converter;
+	}
+
+	@Override
+	protected void onInit() throws Exception {
+		super.onInit();
+		if ( getBeanFactory() != null ) {
+			evaluationContext = ExpressionUtils.createStandardEvaluationContext( getBeanFactory() );
+		}
+		else {
+			evaluationContext = ExpressionUtils.createStandardEvaluationContext();
+		}
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-		final KeyValue pair = converter.toKeyValue( message );
+		final Object key = keyExpression.getValue( evaluationContext, message, Object.class );
 		switch ( determinePersistMode( message ) ) {
 			case PUT:
-				client.put( pair.getKey(), pair.getValue() );
+				client.put( key, message.getPayload() );
 				break;
 			case DELETE:
-				client.delete( pair.getKey() );
+				client.delete( key );
 				break;
 		}
 	}
@@ -82,6 +96,14 @@ public class VoldemortStoringMessageHandler extends AbstractMessageHandler {
 	@Override
 	public String getComponentType() {
 		return "voldemort:outbound-channel-adapter";
+	}
+
+	public void setKey(String key) {
+		setKeyExpression( new LiteralExpression( key ) );
+	}
+
+	public void setKeyExpression(Expression keyExpression) {
+		this.keyExpression = keyExpression;
 	}
 
 	public void setPersistMode(PersistMode persistMode) {

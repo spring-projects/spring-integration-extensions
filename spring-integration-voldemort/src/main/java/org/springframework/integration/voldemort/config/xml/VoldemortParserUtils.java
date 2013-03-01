@@ -26,12 +26,15 @@ import org.w3c.dom.Element;
  */
 abstract class VoldemortParserUtils {
 	static final String STORE_CLIENT = "store-client";
-	static final String MESSAGE_CONVERTER = "message-converter";
 	static final String PERSIST_MODE = "persist-mode";
 	static final String SEARCH_KEY = "search-key";
 	static final String SEARCH_KEY_EXPRESSION = "search-key-expression";
+	static final String STORE_KEY = "store-key";
+	static final String STORE_KEY_EXPRESSION = "store-key-expression";
 	static final String DELETE_AFTER_POLL = "delete-after-poll";
+	static final String EXTRACT_VALUE = "extract-value";
 
+	static final String KEY_PROPERTY = "key";
 	static final String KEY_EXPRESSION_PROPERTY = "keyExpression";
 
 	/**
@@ -39,8 +42,6 @@ abstract class VoldemortParserUtils {
 	 */
 	static void processCommonAttributes(Element element, BeanDefinitionBuilder builder) {
 		final String storeClient = element.getAttribute( VoldemortParserUtils.STORE_CLIENT );
-		final String messageConverter = element.getAttribute( VoldemortParserUtils.MESSAGE_CONVERTER );
 		builder.addConstructorArgReference( storeClient );
-		builder.addConstructorArgReference( messageConverter );
 	}
 }

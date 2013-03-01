@@ -47,12 +47,41 @@ public class VoldemortOutboundAdapterTest extends BaseFunctionalTestCase {
 		final Person lukasz = new Person( "1", "Lukasz", "Antoniak" );
 
 		// when
-		final Message<Person> message = MessageBuilder.withPayload( lukasz ).build();
+		final Message<Person> message = MessageBuilder.withPayload( lukasz ).setHeader( VoldemortHeaders.KEY, lukasz.getId() ).build();
 		voldemortOutboundPutChannel.send( message );
 
 		// then
 		final Versioned found = storeClient.get( lukasz.getId() );
 		Assert.assertEquals( lukasz, found.getValue() );
+
+		context.close();
+	}
+
+	@Test
+	public void testPutObjectsConstantKey() {
+		final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext( "VoldemortOutboundAdapterTest-context.xml", getClass() );
+		final StoreClient storeClient = context.getBean( "storeClient", StoreClient.class );
+		final MessageChannel voldemortOutboundChannel = context.getBean( "voldemortOutboundPutConstantKeyChannel", MessageChannel.class );
+
+		// given
+		final Person lukasz = new Person( "1", "Lukasz", "Antoniak" );
+
+		// when
+		final Message<Person> firstMessage = MessageBuilder.withPayload( lukasz ).build();
+		voldemortOutboundChannel.send( firstMessage );
+
+		// then
+		Assert.assertEquals( lukasz, storeClient.get( "constant-key" ).getValue() );
+
+		// given
+		final Person tomasz = new Person( "2", "Tomasz", "Antoniak" );
+
+		// when
+		final Message<Person> secondMessage = MessageBuilder.withPayload( tomasz ).build();
+		voldemortOutboundChannel.send( secondMessage );
+
+		// then
+		Assert.assertEquals( tomasz, storeClient.get( "constant-key" ).getValue() );
 
 		context.close();
 	}

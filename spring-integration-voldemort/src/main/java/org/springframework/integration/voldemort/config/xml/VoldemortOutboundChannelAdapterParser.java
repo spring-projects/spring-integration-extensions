@@ -15,9 +15,12 @@
  */
 package org.springframework.integration.voldemort.config.xml;
 
+import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.integration.config.ExpressionFactoryBean;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.voldemort.outbound.VoldemortStoringMessageHandler;
@@ -39,6 +42,23 @@ public class VoldemortOutboundChannelAdapterParser extends AbstractOutboundChann
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
 		final BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition( VoldemortStoringMessageHandler.class );
 		VoldemortParserUtils.processCommonAttributes( element, builder );
+		final boolean hasKey = element.hasAttribute( VoldemortParserUtils.STORE_KEY );
+		final boolean hasKeyExpression = element.hasAttribute( VoldemortParserUtils.STORE_KEY_EXPRESSION );
+		if ( hasKey && hasKeyExpression ) {
+			parserContext.getReaderContext().error( "At most one of '" + VoldemortParserUtils.STORE_KEY
+					+ "' or '" + VoldemortParserUtils.STORE_KEY_EXPRESSION + "' is allowed.", element );
+		}
+		if ( hasKey ) {
+			builder.addPropertyValue(
+					VoldemortParserUtils.KEY_PROPERTY,
+					new TypedStringValue( element.getAttribute( VoldemortParserUtils.STORE_KEY ) )
+			);
+		}
+		if ( hasKeyExpression ) {
+			RootBeanDefinition expressionDef = new RootBeanDefinition( ExpressionFactoryBean.class );
+			expressionDef.getConstructorArgumentValues().addGenericArgumentValue( element.getAttribute( VoldemortParserUtils.STORE_KEY_EXPRESSION ) );
+			builder.addPropertyValue( VoldemortParserUtils.KEY_EXPRESSION_PROPERTY, expressionDef );
+		}
 		IntegrationNamespaceUtils.setValueIfAttributeDefined( builder, element, VoldemortParserUtils.PERSIST_MODE );
 		return builder.getBeanDefinition();
 	}

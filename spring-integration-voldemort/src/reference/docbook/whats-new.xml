@@ -4,7 +4,7 @@
          xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>Changes in 1.0.0</title>
     <para>
-        This chapter provides an overview of the new features and improvements
+        This chapter provides an overview of new features and improvements
         that have been added to the Voldemort Adapter.
     </para>
     <orderedlist>

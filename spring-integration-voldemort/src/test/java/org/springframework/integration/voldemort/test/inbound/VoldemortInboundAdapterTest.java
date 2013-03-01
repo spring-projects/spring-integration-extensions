@@ -69,10 +69,11 @@ public class VoldemortInboundAdapterTest extends BaseFunctionalTestCase {
 		storeClient.put( kinga.getId(), kinga );
 
 		// when
-		final Message<Person> received = (Message<Person>) inboundChannel.receive();
+		final Message<Versioned<Person>> received = (Message<Versioned<Person>>) inboundChannel.receive();
 
 		// then
-		Assert.assertEquals( kinga, received.getPayload() );
+		final Versioned found = storeClient.get( kinga.getId() );
+		Assert.assertEquals( found, received.getPayload() );
 
 		context.close();
 	}
