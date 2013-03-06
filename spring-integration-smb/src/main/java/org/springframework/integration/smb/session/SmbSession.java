@@ -58,6 +58,7 @@ public class SmbSession implements Session<SmbFile> {
 
 	private final Log           logger         = LogFactory.getLog(SmbSession.class);
 	private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+	private static final String SMB_FILE_SEPARATOR = "/";
 
 	static {
 		configureJcifs();
@@ -378,29 +379,31 @@ public class SmbSession implements Session<SmbFile> {
 
 	/**
 	 * Factory method for new SmbFile objects under this session's share for the specified path.
-	 * @param _path remote path
-	 * @param _isDirectory Boolean object to indicate the path is a directory, may be null
+	 * @param path remote path
+	 * @param isDirectory Boolean object to indicate the path is a directory, may be null
 	 * @return SmbFile object for path
 	 * @throws IOException in case of I/O errors
 	 */
-	private SmbFile createSmbFileObject(String _path, Boolean _isDirectory) throws IOException {
-		String path = StringUtils.cleanPath(_path);
-		if (!StringUtils.hasText(path)) {
+	private SmbFile createSmbFileObject(String path, Boolean isDirectory) throws IOException {
+
+		final String cleanedPath = StringUtils.cleanPath(path);
+
+		if (!StringUtils.hasText(cleanedPath)) {
 			return smbShare;
 		}
 
-		SmbFile smbFile = new SmbFile(smbShare, path);
+		SmbFile smbFile = new SmbFile(smbShare, cleanedPath);
 
-		boolean appendFileSeparator = !path.endsWith(FILE_SEPARATOR);
+		boolean appendFileSeparator = !cleanedPath.endsWith(SMB_FILE_SEPARATOR);
 		if (appendFileSeparator) {
 			try {
-				appendFileSeparator = smbFile.isDirectory() || (_isDirectory != null && _isDirectory);
-			} catch (Exception _ex) {
-				appendFileSeparator = false;
+					appendFileSeparator = smbFile.isDirectory() || (isDirectory != null && isDirectory);
+			} catch (SmbException ex) {
+					appendFileSeparator = false;
 			}
 		}
 		if (appendFileSeparator) {
-			smbFile = createSmbFileObject(path + FILE_SEPARATOR);
+			smbFile = createSmbFileObject(cleanedPath + SMB_FILE_SEPARATOR);
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("Created new " + SmbFile.class.getName() + "[" + smbFile + "] for path [" + path + "].");

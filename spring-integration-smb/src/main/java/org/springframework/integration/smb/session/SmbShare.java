@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.NestedIOException;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Markus Spann
@@ -40,8 +41,8 @@ public class SmbShare extends SmbFile {
 
 	private final AtomicBoolean useTempFile = new AtomicBoolean(false);
 
-	public SmbShare(String _url) throws IOException {
-		super(_url);
+	public SmbShare(String url) throws IOException {
+		super(StringUtils.cleanPath(url));
 	}
 
 	public SmbShare(SmbConfig _smbConfig) throws IOException {
