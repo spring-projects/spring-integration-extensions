@@ -89,7 +89,6 @@ public class InboundLocalFileOperationsImpl implements
 
 	/**
 	 * Returns true if create directories if required flag is set to true
-	 * @return
 	 */
 	public boolean isCreateDirectoriesIfRequired() {
 		return createDirectoriesIfRequired;
@@ -215,7 +214,6 @@ public class InboundLocalFileOperationsImpl implements
 	 *
 	 * @param fileToWrite
 	 * @param dest
-	 * @return
 	 */
 	private boolean renameFile(final File from, final File to) {
 		final boolean isSuccessful;

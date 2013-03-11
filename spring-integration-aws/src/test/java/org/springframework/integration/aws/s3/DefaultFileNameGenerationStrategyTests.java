@@ -19,7 +19,7 @@ package org.springframework.integration.aws.s3;
 import java.io.File;
 import java.util.UUID;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 import org.springframework.integration.Message;

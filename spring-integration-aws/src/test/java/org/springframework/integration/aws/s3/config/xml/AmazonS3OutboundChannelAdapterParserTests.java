@@ -15,8 +15,8 @@
  */
 package org.springframework.integration.aws.s3.config.xml;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.springframework.integration.test.util.TestUtils.getPropertyValue;
 
 import java.net.URI;

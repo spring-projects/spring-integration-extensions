@@ -29,7 +29,6 @@ public interface FileNameGenerationStrategy {
 
 	/**
 	 * Generates the file name from the given message
-	 * @return
 	 */
 	String generateFileName(Message<?> message);
 }

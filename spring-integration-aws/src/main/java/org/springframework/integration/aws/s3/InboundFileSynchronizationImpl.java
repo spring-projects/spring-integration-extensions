@@ -279,13 +279,12 @@ public class InboundFileSynchronizationImpl implements InboundFileSynchronizer,I
 	 * and hence this method will return false.
 	 *
 	 * @param eTag
-	 * @return
 	 */
 	private boolean isEtagMD5Hash(String eTag) {
 		if (eTag == null || eTag.length() != 32) {
-            return false;
-        }
-        return eTag.replaceAll("[a-f0-9A-F]", "").length() == 0;
+			return false;
+		}
+		return eTag.replaceAll("[a-f0-9A-F]", "").length() == 0;
 
 	}
 

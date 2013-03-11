@@ -18,7 +18,7 @@ package org.springframework.integration.aws.core;
 import java.net.URI;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,26 +44,22 @@ public abstract class AbstractAWSClientFactoryTests<T extends AmazonWebServiceCl
 
 	/**
 	 * The subclass is responsible for returning the appropriate factory implementation
-	 * @return
 	 */
 	protected abstract AbstractAWSClientFactory<T> getFactory();
 
 	/**
 	 * Gets the endpoint for the service in US-EAST-1 region
-	 * @return
 	 */
 	protected abstract String getUSEast1Endpoint();
 
 
 	/**
 	 * Gets the endpoint for the service in US-EAST-1 region
-	 * @return
 	 */
 	protected abstract String getEUWest1Endpoint();
 
 	/**
 	 * Gets the Suffix for the endpoint URL which is service specific
-	 * @return
 	 */
 	protected abstract String getSuffix();
 

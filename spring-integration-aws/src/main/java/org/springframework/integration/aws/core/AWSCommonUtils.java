@@ -46,7 +46,6 @@ public class AWSCommonUtils {
 	/**
 	 * Generates the MD5 hash of the file provided
 	 * @param file
-	 * @return
 	 */
 	public static byte[] getContentsMD5AsBytes(File file) {
 
@@ -78,23 +77,20 @@ public class AWSCommonUtils {
 
 	/**
 	 * Compute the MD5 hash of the provided String
-	 * @param the String whose MD5 sun is to be computed
-	 * @return
+	 * @param contents The String whose MD5 sun is to be computed
 	 */
 	public static byte[] getContentsMD5AsBytes(String contents) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("MD5");
 			return digest.digest(contents.getBytes());
 		} catch (NoSuchAlgorithmException e) {
-			logger.error("Unable to digest the input String", e);
+			throw new IllegalStateException(String.format("Unable to digest the input String '%s' using MD5.", contents), e);
 		}
-		return null;
 	}
 
 	/**
 	 * Encodes the given raw bytes into hex
 	 * @param rawBytes
-	 * @return
 	 */
 	public static String encodeHex(byte[] rawBytes) throws UnsupportedEncodingException {
 		return new String(Hex.encodeHex(rawBytes));
@@ -104,7 +100,6 @@ public class AWSCommonUtils {
 	 * Decodes the given base 64 raw bytes
 	 *
 	 * @param rawBytes
-	 * @return
 	 */
 	public static byte[] decodeBase64(byte[] rawBytes) throws UnsupportedEncodingException {
 		return Base64.decodeBase64(rawBytes);

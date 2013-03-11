@@ -90,7 +90,6 @@ public class AmazonS3Object implements Serializable {
 
 	/**
 	 * Gets the User Metadata associated with given Amazon S3 object
-	 * @return
 	 */
 	public Map<String, String> getUserMetaData() {
 		return userMetaData;
@@ -98,7 +97,6 @@ public class AmazonS3Object implements Serializable {
 
 	/**
 	 * Gets the Metadata associated with the given Amazon S3 object
-	 * @return
 	 */
 	public Map<String, Object> getMetaData() {
 		return metaData;
@@ -106,7 +104,6 @@ public class AmazonS3Object implements Serializable {
 
 	/**
 	 * Gets the {@link InputStream} to the resource
-	 * @return
 	 */
 	public InputStream getInputStream() {
 		return inputStream;
@@ -114,7 +111,6 @@ public class AmazonS3Object implements Serializable {
 
 	/**
 	 * Gets the file source
-	 * @return
 	 */
 	public File getFileSource() {
 		return fileSource;
@@ -122,7 +118,6 @@ public class AmazonS3Object implements Serializable {
 
 	/**
 	 * Gets the Access controls associated with the S3 Object
-	 * @return
 	 */
 	public AmazonS3ObjectACL getObjectACL() {
 		return objectACL;

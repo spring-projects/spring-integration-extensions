@@ -120,8 +120,7 @@ public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient>
 	/**
 	 * Extracts the endpoint from the URL provided
 	 *
-	 * @param url
-	 * @return
+	 * @return Will return null if the provided url is empty
 	 */
 	private String getEndpointFromURL(String stringUrl) {
 		if(!StringUtils.hasText(stringUrl)) {
@@ -151,7 +150,6 @@ public abstract class AbstractAWSClientFactory<T extends AmazonWebServiceClient>
 
 	/**
 	 * The subclass needs to implement this method and return an appropriate implementation
-	 * @return
 	 */
 	protected abstract T getClientImplementation();
 

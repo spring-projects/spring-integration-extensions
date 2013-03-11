@@ -36,7 +36,6 @@ public interface FileEvent {
 
 	/**
 	 * The File on which the given occurred
-	 * @return
 	 */
 	File getFile();
 }
