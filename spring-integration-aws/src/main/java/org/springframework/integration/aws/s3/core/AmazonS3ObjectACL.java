@@ -35,7 +35,6 @@ public class AmazonS3ObjectACL {
 
 	/**
 	 * Gets all the grants on the object in the bucket
-	 * @return
 	 */
 	public Set<ObjectGrant> getGrants() {
 		return grants;

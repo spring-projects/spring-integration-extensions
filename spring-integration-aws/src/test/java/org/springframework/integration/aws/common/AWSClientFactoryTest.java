@@ -15,7 +15,7 @@
  */
 package org.springframework.integration.aws.common;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 import org.springframework.integration.aws.core.AbstractAWSClientFactory;

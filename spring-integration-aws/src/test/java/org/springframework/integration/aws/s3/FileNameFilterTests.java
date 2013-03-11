@@ -15,7 +15,7 @@
  */
 package org.springframework.integration.aws.s3;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

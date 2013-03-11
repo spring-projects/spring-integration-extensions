@@ -51,7 +51,6 @@ public class AmazonS3ObjectBuilder {
 
 	/**
 	 * Gets a new instance of the builder
-	 * @return
 	 */
 	public static AmazonS3ObjectBuilder getInstance() {
 		return new AmazonS3ObjectBuilder();
@@ -60,7 +59,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * Sets the file which is to be read for uploading into S3
 	 * @param file
-	 * @return
 	 */
 	public AmazonS3ObjectBuilder fromFile(File file) {
 		Assert.notNull(file,"null 'file' object provided");
@@ -76,7 +74,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * Convenience method for setting the File object from the String path
 	 * @param fileLocation
-	 * @return
 	 */
 	public AmazonS3ObjectBuilder fromLocation(String fileLocation) {
 		Assert.hasText(fileLocation, "'fileLocation should be non null, non empty string");
@@ -85,8 +82,7 @@ public class AmazonS3ObjectBuilder {
 
 	/**
 	 * Sets an InputStream from which the data to be uploaded to S3 will be read
-	 * @param in
-	 * @return
+	 * @param in The provided {@link InputStream} must not be null
 	 */
 	public AmazonS3ObjectBuilder fromInputStream(InputStream in) {
 		Assert.notNull(in, "The Stream object provided is null");
@@ -98,7 +94,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * Use the given user meta data for the file to be uploaded
 	 * @param userMetaData
-	 * @return
 	 */
 	public AmazonS3ObjectBuilder withUserMetaData(Map<String, String> userMetaData) {
 		this.userMetaData = userMetaData;
@@ -108,7 +103,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * uses the given metadata for the S3 object to be uploaded
 	 * @param metaData
-	 * @return
 	 */
 	public AmazonS3ObjectBuilder withMetaData(Map<String, Object> metaData) {
 		this.metaData = metaData;
@@ -118,7 +112,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * Sets the S3 Object ACL
 	 * @param objectACL
-	 * @return
 	 */
 	public AmazonS3ObjectBuilder withObjectACL(Map<String, Collection<String>> objectACL) {
 		//The key can be of three types, the email id, the canonical id of the user or the Group identifier
@@ -159,7 +152,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * Gets the Appropriate {@link ObjectPermissions} based on the String passed
 	 * @param permission
-	 * @return
 	 */
 	private ObjectPermissions getObjectPermission(String permission) {
 		//Types of permission are READ, READ_ACP, WRITE_ACP
@@ -180,7 +172,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * Method checks if the provided String is a canonical id of the AWS account
 	 * @param identifier
-	 * @return
 	 */
 	private boolean isCanonicalId(String identifier) {
 		//Note: we do not check if the given id is a valid canonical id with AWS, we just check if it is in the right format
@@ -196,7 +187,6 @@ public class AmazonS3ObjectBuilder {
 	/**
 	 * Checks if the given identifier corresponds to a group id
 	 * @param identifier
-	 * @return
 	 */
 	private boolean isGroupIdentifier(String identifier){
 		if(StringUtils.hasText(identifier)) {
@@ -209,7 +199,6 @@ public class AmazonS3ObjectBuilder {
 
 	/**
 	 * Builds the {@link AmazonS3Object} from the provided meta data, file/input stream and object ACLs
-	 * @return
 	 */
 	public AmazonS3Object build() {
 		Assert.isTrue(!(in == null && file == null),"One of File object or InputStream is required");

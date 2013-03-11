@@ -15,8 +15,8 @@
  */
 package org.springframework.integration.aws.s3;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.springframework.integration.aws.common.AWSTestUtils.md5Hash;
 import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.BUCKET;
 import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.mockAmazonS3Operations;

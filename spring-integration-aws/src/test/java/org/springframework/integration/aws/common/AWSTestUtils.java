@@ -27,7 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.integration.aws.core.AWSCredentials;
@@ -92,8 +92,7 @@ public final class AWSTestUtils {
 
 	/**
 	 * The static helper method that would be used by other AWS tests to
-	 * get the implementation of the {@link AmazonWSCredentials} instance
-	 * @return
+	 * get the implementation of the {@link AWSCredentials} instance
 	 * @throws Exception
 	 */
 	public static AWSCredentials getCredentials() {
@@ -114,7 +113,6 @@ public final class AWSTestUtils {
 	 * checked and the listing of the directories is retrieved.
 	 *
 	 * @param rootDirectory
-	 * @return
 	 */
 	public static List<File> getContentsRecursively(File rootDirectory) {
 		if(!rootDirectory.isDirectory()) {
@@ -150,7 +148,6 @@ public final class AWSTestUtils {
 	 * Helper method that will be used to generate the base64 encoded MD5 hash of the string
 	 *
 	 * @param input
-	 * @return
 	 */
 	public static String md5Hash(String input) {
 		try {

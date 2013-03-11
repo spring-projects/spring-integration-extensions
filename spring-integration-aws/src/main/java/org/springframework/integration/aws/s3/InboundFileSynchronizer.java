@@ -32,14 +32,13 @@ public interface InboundFileSynchronizer {
 	 * It retrieved new files and updates existing ones with the latest content from S3
 	 * Please note that this method will NOT delete any additional files present on the
 	 * local filesystem
-	 * @param localDirectory: The local directory that needs to be synchronized with the
-	 * 							Remote S3 bucket
-	 * @param bucketName: The name of the bucket whose contents are to be synchronized
-	 * @param remoteFolder: The folder name in S3 whose contents are to be synchronized
-	 * 						use / if the contents of the bucket starting from the root
-	 * 						are to be synchronized. This operation will only synchronize
-	 * 						the files resent in the given remote folder and will ignore
-	 * 						all the folders and sub folder in it.
+	 * @param localDirectory The local directory that needs to be synchronized with the Remote S3 bucket
+	 * @param bucketName The name of the bucket whose contents are to be synchronized
+	 * @param remoteFolder The folder name in S3 whose contents are to be synchronized
+	 *                     use / if the contents of the bucket starting from the root
+	 *                     are to be synchronized. This operation will only synchronize
+	 *                     the files resent in the given remote folder and will ignore
+	 *                     all the folders and sub folder in it.
 	 */
 	void synchronizeToLocalDirectory(File localDirectory,String bucketName,String remoteFolder);
 
@@ -63,8 +62,6 @@ public interface InboundFileSynchronizer {
 	/**
 	 * Sets the simple file name wildcard to match to match the file e.g., it can be
 	 * set to *.txt to accept all .txt files
-	 *
-	 * @param suffix of the file name to match
 	 */
 	void setFileWildcard(String wildcardString);
 

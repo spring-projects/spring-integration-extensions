@@ -29,31 +29,26 @@ public interface S3ObjectSummary {
 
 	/**
 	 * Gets the Bucket nane in which the object is kept on S3
-	 * @return
 	 */
 	String getBucketName();
 
 	/**
 	 * Gets the keys under which the Object is stored on S3
-	 * @return
 	 */
 	String getKey();
 
 	/**
 	 * Gets the Hex encoded 128 bit MD5 digest of the contents of the object uploaded on S3
-	 * @return
 	 */
 	String getETag();
 
 	/**
 	 * Gets the size of the object in bytes
-	 * @return
 	 */
 	long getSize();
 
 	/**
 	 * Gets the Date the object was last modified
-	 * @return
 	 */
 	Date getLastModified();
 }

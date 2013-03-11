@@ -30,7 +30,7 @@ import java.util.List;
 
 import javax.mail.internet.MimeMessage;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

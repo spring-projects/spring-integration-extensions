@@ -30,7 +30,7 @@ public interface PaginatedObjectsView {
 
 	/**
 	 * Gets the Paginated List of Object names
-	 * @return: A {@link List} of paginated object names
+	 * @return A {@link List} of paginated object names
 	 */
 	List<S3ObjectSummary> getObjectSummary();
 
@@ -41,10 +41,9 @@ public interface PaginatedObjectsView {
 	boolean hasMoreResults();
 
 	/**
-	 * Contains the merker that can be used to get the next listing of objects from the
+	 * Contains the marker that can be used to get the next listing of objects from the
 	 * S3. Contains a null value if the listing is complete, the hasMoreResults
 	 * method will return true if this marker contains a non null value.
-	 * @return
 	 */
 	String getNextMarker();
 

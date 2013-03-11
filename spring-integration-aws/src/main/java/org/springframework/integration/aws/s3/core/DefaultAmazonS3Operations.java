@@ -123,7 +123,6 @@ public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 	 * @param pageSize The max number of records to be retrieved in one list object operation.
 	 * @param prefix The prefix for the list operation, this can serve as the folder whose contents
 	 * 				 are to be listed.
-	 * @return
 	 */
 	@Override
 	protected PaginatedObjectsView doListObjects(String bucketName,
@@ -179,7 +178,7 @@ public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 	 *
 	 * @param bucketName
 	 * @param key
-	 * @return
+	 * @return The Amazon S3 Object representing the Object in S3, may be null.
 	 */
 	@Override
 	protected AmazonS3Object doGetObject(String bucketName, String key) {
@@ -212,7 +211,7 @@ public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 	 * @param file resource to be uploaded to S3
 	 * @param objectACL the Object's Access controls for the object to be uploaded
 	 * @param userMetadata The user's metadata to be associated with the object uploaded
-	 * @param The MD5 sum of the contents of the file to be uploaded
+	 * @param stringContentMD5 The MD5 sum of the contents of the file to be uploaded
 	 */
 	@Override
 	public void doPut(String bucketName, String key, File file, AmazonS3ObjectACL objectACL,
@@ -288,8 +287,6 @@ public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 
 	/**
 	 * Gets the {@link AccessControlList} from the given {@link AmazonS3ObjectACL}
-	 * @param acl
-	 * @return
 	 */
 	private AccessControlList getAccessControlList(String bucketName,String key,AmazonS3ObjectACL acl) {
 		AccessControlList accessControlList = null;
@@ -334,7 +331,6 @@ public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 	/**
 	 * Gets the thread pool executor that will be used to upload the object in multiparts
 	 * concurrently
-	 * @return
 	 */
 	public ThreadPoolExecutor getThreadPoolExecutor() {
 		return threadPoolExecutor;
@@ -345,7 +341,7 @@ public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 	 * Used only when we upload the data using multi part upload. The thread pool will be used
 	 * to upload the data concurrently
 	 *
-	 * @param threadPool
+	 * @param threadPoolExecutor May not be null
 	 */
 	public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor) {
 		Assert.notNull(threadPoolExecutor, "'threadPoolExecutor' is null");

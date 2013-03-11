@@ -65,7 +65,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 
 
 	/**
-	 * The constructor that accepts the {@link AmazonWSCredentials}
+	 * The constructor that accepts the {@link AWSCredentials}
 	 * @param credentials
 	 */
 	protected AbstractAmazonS3Operations(AWSCredentials credentials) {
@@ -76,7 +76,6 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 
 	/**
 	 * Get the threshold value in bytes above which multi part upload will be used
-	 * @return
 	 */
 	public long getMultipartUploadThreshold() {
 		return multipartUploadThreshold;
@@ -103,7 +102,6 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 
 	/**
 	 * Gets the temporary directory
-	 * @return
 	 */
 	public File getTemporaryDirectory() {
 		return temporaryDirectory;
@@ -134,7 +132,6 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	/**
 	 * Gets the temporary file suffix that is appended to the file while writing to
 	 * the temporary directory
-	 * @return
 	 */
 	public String getTemporaryFileSuffix() {
 		return temporaryFileSuffix;
@@ -158,7 +155,6 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * Gets the AWS endpoint to use for all the operations, by default if none is set then us-east-1 is
 	 * assumed.
 	 *
-	 * @return
 	 */
 	public String getAwsEndpoint() {
 		return awsEndpoint;
@@ -346,7 +342,6 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 *
 	 * @param folder
 	 * @param objectName
-	 * @return
 	 */
 	private String getKeyFromFolder(String folder, String objectName) {
 		if(objectName.startsWith(PATH_SEPARATOR)) {
@@ -387,10 +382,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param nextMarker The number of objects can be very large and this serves as the marker
 	 * 					 for remembering the last record fetch in the last retrieve operation.
 	 * @param pageSize The max number of records to be retrieved in one list object operation.
-	 * @param prefix The prefix for the list operation, this can serve as the folder whose contents
-	 * 				 are to be listed.
 	 *
-	 * @return
 	 */
 	public final PaginatedObjectsView listObjects(String bucketName, String folder, String nextMarker,int pageSize) {
 		Assert.hasText(bucketName, "Bucket name should be non null and non empty");
@@ -445,7 +437,6 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 *
 	 * @param bucketName
 	 * @param key
-	 * @return
 	 */
 	protected abstract AmazonS3Object doGetObject(String bucketName, String key);
 
@@ -459,7 +450,6 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param pageSize The max number of records to be retrieved in one list object operation.
 	 * @param prefix The prefix for the list operation, this can serve as the folder whose contents
 	 * 				 are to be listed.
-	 * @return
 	 */
 	protected abstract PaginatedObjectsView doListObjects(String bucketName,
 			String nextMarker, int pageSize, String prefix);
@@ -469,12 +459,12 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * The abstract method to be implemented by the subclass that would be doing the job
 	 * of uploading the given file against the given key in the given bucket
 	 *
-	 * @param bucketName The bucket on S3 where this object is to be put
+	 * @param bucket The bucket on S3 where this object is to be put
 	 * @param key The key against which this Object is to be stored in S3
 	 * @param file resource to be uploaded to S3
 	 * @param objectACL the Object's Access controls for the object to be uploaded
 	 * @param userMetadata The user's metadata to be associated with the object uploaded
-	 * @param The MD5 sum of the contents of the file to be uploaded
+	 * @param stringContentMD5 The MD5 sum of the contents of the file to be uploaded
 	 *
 	 */
 	protected abstract void doPut(String bucket,String key,File file,
