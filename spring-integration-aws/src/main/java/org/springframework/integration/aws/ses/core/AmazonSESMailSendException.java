@@ -87,7 +87,6 @@ public class AmazonSESMailSendException extends AWSOperationException {
 	/**
 	 * Gets the map of failed messages where the failed message is the key and the exception
 	 * while sending it is the value
-	 * @return
 	 */
 	public Map<Object, Exception> getFailedMessages() {
 		return failedMessages;

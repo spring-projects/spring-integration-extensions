@@ -18,7 +18,7 @@ package org.springframework.integration.aws.s3.core;
 import org.springframework.integration.aws.core.AWSOperationException;
 
 /**
- * A subclass of {@link AmazonWSOperationException} which indicates a failure in performing
+ * A subclass of {@link AWSOperationException} which indicates a failure in performing
  * an operation on the object in S3.
  *
  * @author Amol Nayak
@@ -105,7 +105,6 @@ public class AmazonS3OperationException extends AWSOperationException {
 
 	/**
 	 * Gets the bucket name for which an S3 operation failed
-	 * @return
 	 */
 	public String getBucket() {
 		return bucket;
@@ -113,7 +112,6 @@ public class AmazonS3OperationException extends AWSOperationException {
 
 	/**
 	 * Gets the object name where an S3 operation failed
-	 * @return
 	 */
 	public String getObjectName() {
 		return objectName;

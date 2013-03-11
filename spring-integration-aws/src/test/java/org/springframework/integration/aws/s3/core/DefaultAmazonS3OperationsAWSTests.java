@@ -18,9 +18,10 @@
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.integration.aws.core.PropertiesAWSCredentials;
 
@@ -43,6 +44,7 @@ import org.springframework.integration.aws.core.PropertiesAWSCredentials;
  * @since 0.5
  *
  */
+@Ignore
 public class DefaultAmazonS3OperationsAWSTests extends AbstractAmazonS3OperationsImplAWSTests {
 
 
@@ -60,6 +62,7 @@ public class DefaultAmazonS3OperationsAWSTests extends AbstractAmazonS3Operation
 	 * complete successfully
 	 *
 	 */
+	@Ignore
 	@Test
 	public void withNonNullThreadPoolExecutor() {
 		ThreadPoolExecutor executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(10);
@@ -71,6 +74,7 @@ public class DefaultAmazonS3OperationsAWSTests extends AbstractAmazonS3Operation
 	 * Sets the thread pool executor to a null value, should throw an
 	 * {@link IllegalArgumentException}
 	 */
+	@Ignore
 	@Test(expected=IllegalArgumentException.class)
 	public void withNullThreadPoolExecutor() {
 		impl.setThreadPoolExecutor(null);

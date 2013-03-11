@@ -21,6 +21,7 @@ import static org.springframework.integration.aws.s3.core.ObjectPermissions.WRIT
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,7 +54,7 @@ import org.springframework.integration.test.util.TestUtils;
 public class AmazonS3ObjectBuilderTests {
 
 	@Rule
-	public static TemporaryFolder temp = new TemporaryFolder();
+	public TemporaryFolder temp = new TemporaryFolder();
 
 	private static final String GROUP_GRANTEE = "http://acs.amazonaws.com/groups/global/AllUsers";
 	private static final String EMAIL_GRANTEE = "test@test.com";
@@ -79,7 +80,7 @@ public class AmazonS3ObjectBuilderTests {
 	 * Tries to construct the file which is a directory
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void withADirectory() {
+	public void withADirectory() throws IOException {
 		File dir = temp.newFolder("tempdir");
 		AmazonS3ObjectBuilder.getInstance().fromFile(dir);
 		dir.delete();
@@ -220,7 +221,6 @@ public class AmazonS3ObjectBuilderTests {
 
 	/**
 	 * Generate the object test ACLS
-	 * @return
 	 */
 	private Map<String, Collection<String>> generateObjectACLS() {
 		Map<String, Collection<String>> acls = new HashMap<String, Collection<String>>();

@@ -15,10 +15,10 @@
  */
 package org.springframework.integration.aws.s3;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.integration.aws.common.AWSTestUtils.assertFileContent;
 import static org.springframework.integration.aws.common.AWSTestUtils.getContentsRecursively;
 import static org.springframework.integration.aws.common.AWSTestUtils.md5Hash;

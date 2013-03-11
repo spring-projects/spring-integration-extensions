@@ -17,7 +17,7 @@ package org.springframework.integration.aws.ses.config.xml;
 
 import java.util.Properties;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;

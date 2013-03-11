@@ -56,8 +56,8 @@ public class PropertiesAWSCredentials extends BasicAWSCredentials implements Ini
 	}
 
 	/**.
-	 * Gets the property name which holds the
-	 * @return
+	 * Gets the property name which holds the AWS access key
+	 * @return the Access Key Property
 	 */
 	public String getAccessKeyProperty() {
 		return accessKeyProperty;
@@ -74,7 +74,6 @@ public class PropertiesAWSCredentials extends BasicAWSCredentials implements Ini
 
 	/**.
 	 * Gets the property name which holds the
-	 * @return
 	 */
 	public String getSecretKeyProperty() {
 		return secretKeyProperty;
@@ -83,7 +82,6 @@ public class PropertiesAWSCredentials extends BasicAWSCredentials implements Ini
 	/**.
 	 * Sets the name of the property that will be used as the key in the properties
 	 * file to hold the AWS secret key
-	 * @param accessKeyProperty
 	 */
 	public void setSecretKeyProperty(String secretKeyProperty) {
 		this.secretKeyProperty = secretKeyProperty;
@@ -91,7 +89,6 @@ public class PropertiesAWSCredentials extends BasicAWSCredentials implements Ini
 
 	/**.
 	 * Get the name of the property file that will hold the AWS credentials
-	 * @return
 	 */
 	public String getPropertyFileName() {
 		return propertyFileName;

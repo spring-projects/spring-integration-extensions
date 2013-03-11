@@ -15,7 +15,7 @@
  */
 package org.springframework.integration.aws.config.xml;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -78,7 +78,6 @@ public abstract class AbstractAWSOutboundChannelAdapterParserTests<T extends Mes
 	/**
 	 * Gets the Message handler implementation for the  given bean id
 	 * @param beanId
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	protected T getMessageHandlerForBeanDefinition(String beanId) {
@@ -92,15 +91,13 @@ public abstract class AbstractAWSOutboundChannelAdapterParserTests<T extends Mes
 	 * sub class should implement this method to return a value of the config to be used to create the
 	 * context
 	 *
-	 * @return
 	 */
 	protected abstract String getConfigFilePath();
 
 	/**
-	 * The subclass should return the {@link AmazonWSCredentials} instance that is being used
+	 * The subclass should return the {@link AWSCredentials} instance that is being used
 	 * to configure the adapters
 	 *
-	 * @return
 	 */
 	protected abstract AWSCredentials getCredentials();
 

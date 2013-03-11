@@ -27,9 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -56,12 +57,13 @@ import com.amazonaws.services.s3.model.S3Object;
  * @since 0.5
  *
  */
+@Ignore()
 public abstract class AbstractAmazonS3OperationsImplAWSTests {
 
 	private static final String VALID_CANONICAL_ID = "f854da004ee08cf4f8664334d288561c8512c508db9785388de7319ded85f8f3";
 
 	@Rule
-	public static final TemporaryFolder temp = new TemporaryFolder();
+	public final TemporaryFolder temp = new TemporaryFolder();
 
 	//private static final String UPLOAD_SOURCE_DIRECTORY = System.getProperty("java.io.tmpdir") + "upload";
 
@@ -572,7 +574,6 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 
 	/**
 	 * The private helper method that generates the test file to be uploaded
-	 * @return
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
@@ -607,7 +608,6 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 	 *
 	 * @param bucket
 	 * @param key
-	 * @return
 	 */
 	protected AccessControlList getObjectACL(String bucket,String key) {
 		return client.getObjectAcl(bucket, key);

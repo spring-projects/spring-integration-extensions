@@ -173,7 +173,7 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 	 * Sets the file's wildcard pattern that would be used to match the objects in S3 bucket
 	 * This attribute is mutually exclusive to fileName regex.
 	 *
-	 * @param fileWildcard
+	 * @param fileNameWildcard Must not be empty.
 	 */
 	public void setFileNameWildcard(String fileNameWildcard) {
 		Assert.hasText(fileNameWildcard, "Provided file wildcard is null or empty string");
@@ -217,7 +217,7 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 	/**
 	 * Sets the expression to find the local directory where the remote files are synchronized with.
 	 *
-	 * @param directory
+	 * @param directoryExpression Must not be null
 	 */
 	public void setDirectory(Expression directoryExpression) {
 		Assert.notNull(directoryExpression, "provided 'directoryExpression' is null");

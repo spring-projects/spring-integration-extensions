@@ -47,7 +47,6 @@ public class Grantee {
 
 	/**
 	 * Gets the particular identifier representing the grantee
-	 * @return
 	 */
 	public String getIdentifier() {
 		return identifier;
@@ -55,7 +54,6 @@ public class Grantee {
 
 	/**
 	 * Gets the Particular grantee Type
-	 * @return
 	 */
 	public GranteeType getGranteeType() {
 		return granteeType;

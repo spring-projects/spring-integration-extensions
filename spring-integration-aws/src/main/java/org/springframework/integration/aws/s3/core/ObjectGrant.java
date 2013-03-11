@@ -42,7 +42,6 @@ public class ObjectGrant {
 
 	/**
 	 * Gets the grantee for this particular object permission
-	 * @return
 	 */
 	public Grantee getGrantee() {
 		return grantee;
@@ -50,7 +49,6 @@ public class ObjectGrant {
 
 	/**
 	 * Gets the Corresponding object permission
-	 * @return
 	 */
 	public ObjectPermissions getPermission() {
 		return permission;

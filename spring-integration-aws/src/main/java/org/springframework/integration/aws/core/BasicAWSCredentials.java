@@ -62,7 +62,6 @@ public class BasicAWSCredentials implements AWSCredentials {
 
 	/**
 	 * Get the Access key to the Amazon WS account
-	 * @return
 	 */
 	public String getAccessKey() {
 		return accessKey;
@@ -70,7 +69,6 @@ public class BasicAWSCredentials implements AWSCredentials {
 
 	/**
 	 * Set the Access key to the Amazon WS account
-	 * @param accessKey
 	 */
 	public void setAccessKey(String accessKey) {
 		Assert.hasText(accessKey, "The accessKey parameter must not be null or empty.");
@@ -79,7 +77,6 @@ public class BasicAWSCredentials implements AWSCredentials {
 
 	/**
 	 * Get the Secret key to the Amazon WS account
-	 * @return
 	 */
 	public String getSecretKey() {
 		return secretKey;

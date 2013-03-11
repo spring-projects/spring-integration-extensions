@@ -54,7 +54,6 @@ public class AWSOperationException extends RuntimeException {
 
 	/**
 	 * Get the access key for the user who encountered the exception
-	 * @return
 	 */
 	public String getAccessKey() {
 		return accessKey;

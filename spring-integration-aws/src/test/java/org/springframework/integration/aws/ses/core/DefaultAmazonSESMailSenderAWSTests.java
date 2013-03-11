@@ -18,6 +18,7 @@ package org.springframework.integration.aws.ses.core;
 import javax.mail.internet.MimeMessage;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.integration.aws.core.PropertiesAWSCredentials;
 import org.springframework.mail.SimpleMailMessage;
@@ -40,6 +41,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 * @since 0.5
 *
 */
+@Ignore
 public class DefaultAmazonSESMailSenderAWSTests {
 
 	private static final String TO_EMAIL_ID = "amolnayak311@gmail.com";

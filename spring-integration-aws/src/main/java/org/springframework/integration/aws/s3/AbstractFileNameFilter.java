@@ -75,7 +75,6 @@ public abstract class AbstractFileNameFilter implements FileNameFilter {
 	/**
 	 * Gets the folder whose file are to be accepted, this path is relative to the
 	 * bucket.
-	 * @return
 	 */
 	public String getFolderName() {
 		return folderName;
@@ -87,21 +86,22 @@ public abstract class AbstractFileNameFilter implements FileNameFilter {
 	 * @param folderName
 	 */
 	public void setFolderName(String folderName) {
+
 		if(StringUtils.hasText(folderName)) {
-			folderName = folderName.trim();
-			if(folderName.equals("/")) {
-				folderName = null;
+			String trimmedFolderName = folderName.trim();
+			if("/".equals(trimmedFolderName)) {
+				trimmedFolderName = null;
 			}
 			else {
-				if(!folderName.endsWith("/")) {
-					folderName = folderName + "/";
+				if(!trimmedFolderName.endsWith("/")) {
+					trimmedFolderName = trimmedFolderName + "/";
 				}
 
-				if(folderName.startsWith("/")) {
-					folderName = folderName.substring(1);
+				if(trimmedFolderName.startsWith("/")) {
+					trimmedFolderName = trimmedFolderName.substring(1);
 				}
 			}
-			this.folderName = folderName;
+			this.folderName = trimmedFolderName;
 		}
 		else {
 			this.folderName = null;
@@ -109,11 +109,9 @@ public abstract class AbstractFileNameFilter implements FileNameFilter {
 
 	}
 
-
 	/**
 	 * Checks the flag if the sub folders are to be accepted or not.
 	 *
-	 * @return
 	 */
 	public boolean isAcceptSubFolders() {
 		return acceptSubFolders;

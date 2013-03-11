@@ -72,7 +72,7 @@ public class AmazonS3MessageHandler extends AbstractMessageHandler {
 
 	/**
 	 * The constructor that initializes {@link AmazonS3MessageHandler} with the provided
-	 * implementation of {@link AmazonS3Operations} and using the provided {@link AmazonWSCredentials}
+	 * implementation of {@link AmazonS3Operations} and using the provided {@link AWSCredentials}
 	 *
 	 * @param credentials
 	 * @param operations
@@ -162,7 +162,6 @@ public class AmazonS3MessageHandler extends AbstractMessageHandler {
 	 * @param message
 	 * @param headerName
 	 * @param expectedType
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	private <T> T getHeaderValue(Message<?> message, String headerName, Class<T> expectedType) {
