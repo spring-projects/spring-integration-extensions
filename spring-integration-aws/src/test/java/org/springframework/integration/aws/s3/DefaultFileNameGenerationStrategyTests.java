@@ -17,11 +17,14 @@
 package org.springframework.integration.aws.s3;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Rule;
 
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.springframework.integration.Message;
 import org.springframework.integration.support.MessageBuilder;
 
@@ -36,6 +39,9 @@ import org.springframework.integration.support.MessageBuilder;
  */
 public class DefaultFileNameGenerationStrategyTests {
 
+	@Rule
+	public TemporaryFolder tempFolder = new TemporaryFolder();
+
 	/**
 	 * Tests with the file name present in the predetermined header "file_name" of the message
 	 */
@@ -48,13 +54,13 @@ public class DefaultFileNameGenerationStrategyTests {
 		Assert.assertEquals("FileName.txt", strategy.generateFileName(message));
 	}
 
-
 	/**
 	 * Tests with a payload as a temp file payload
+	 * @throws IOException
 	 */
 	@Test
-	public void withATempFile() {
-		File file = new File(System.getProperty("java.io.tmpdir") + "TempFile.txt.writing");
+	public void withATempFile() throws IOException {
+		final File file = tempFolder.newFile("TempFile.txt.writing");
 		Message<File> message = MessageBuilder.withPayload(file)
 								.build();
 		DefaultFileNameGenerationStrategy strategy = new DefaultFileNameGenerationStrategy();
@@ -64,10 +70,11 @@ public class DefaultFileNameGenerationStrategyTests {
 
 	/**
 	 * Tests with a payload as a temp file payload
+	 * @throws IOException
 	 */
 	@Test
-	public void withANonTempFile() {
-		File file = new File(System.getProperty("java.io.tmpdir") + "TempFile.txt");
+	public void withANonTempFile() throws IOException {
+		final File file = tempFolder.newFile("TempFile.txt");
 		Message<File> message = MessageBuilder.withPayload(file)
 								.build();
 		DefaultFileNameGenerationStrategy strategy = new DefaultFileNameGenerationStrategy();
