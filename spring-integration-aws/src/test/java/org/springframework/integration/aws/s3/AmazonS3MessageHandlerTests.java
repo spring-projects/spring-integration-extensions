@@ -33,9 +33,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
-
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -61,6 +62,9 @@ public class AmazonS3MessageHandlerTests {
 
 	private static AmazonS3Operations operations;
 	private static PutObjectParameterHolder holder = new PutObjectParameterHolder();
+
+	@Rule
+	public TemporaryFolder tempFolder = new TemporaryFolder();
 
 	@BeforeClass
 	public static void setup() {
@@ -170,7 +174,7 @@ public class AmazonS3MessageHandlerTests {
 	 */
 	@Test
 	public void withTempFileTypePayload() throws Exception {
-		File file = new File(System.getProperty("java.io.tmpdir") + "TempFile.txt.writing");
+		final File file = tempFolder.newFile("TempFile.txt.writing");
 		messageWithFileTypePayload(file);
 	}
 
@@ -179,7 +183,7 @@ public class AmazonS3MessageHandlerTests {
 	 */
 	@Test
 	public void withFileTypePayload() throws Exception {
-		File file = new File(System.getProperty("java.io.tmpdir") + "TempFile.txt");
+		final File file = tempFolder.newFile("TempFile.txt");
 		messageWithFileTypePayload(file);
 	}
 
