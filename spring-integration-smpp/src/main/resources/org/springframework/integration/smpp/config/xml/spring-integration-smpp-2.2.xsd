@@ -66,6 +66,9 @@
         <xsd:complexType>
             <xsd:complexContent>
                 <xsd:extension base="smppGatewayType">
+                    <xsd:choice minOccurs="0" maxOccurs="1">
+                        <xsd:element minOccurs="0" maxOccurs="1" ref="session"/>
+                    </xsd:choice>
                     <xsd:attribute name="error-channel" type="xsd:string">
                         <xsd:annotation>
                             <xsd:appinfo>
@@ -106,8 +109,10 @@
             </xsd:documentation>
         </xsd:annotation>
         <xsd:complexType>
-            <xsd:choice minOccurs="0" maxOccurs="1">
+            <xsd:choice minOccurs="0" maxOccurs="2">
                 <xsd:element minOccurs="0" maxOccurs="1" ref="session"/>
+                <xsd:element name="request-handler-advice-chain"
+                             type="integration:adviceChainType" minOccurs="0" maxOccurs="1" />
             </xsd:choice>
             <xsd:attributeGroup ref="coreSmppComponentAttributes"/>
             <xsd:attribute name="channel" type="xsd:string">
@@ -166,6 +171,11 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="smppGatewayType">
+                    <xsd:choice minOccurs="0" maxOccurs="2">
+                        <xsd:element minOccurs="0" maxOccurs="1" ref="session"/>
+                        <xsd:element name="request-handler-advice-chain"
+                                     type="integration:adviceChainType" minOccurs="0" maxOccurs="1" />
+                    </xsd:choice>
                     <xsd:attribute name="time-formatter">
                         <xsd:annotation>
                             <xsd:documentation>
@@ -378,9 +388,6 @@
 				Defines common configuration for gateway adapters.
 			</xsd:documentation>
 		</xsd:annotation>
-        <xsd:choice minOccurs="0" maxOccurs="1">
-            <xsd:element minOccurs="0" maxOccurs="1" ref="session"/>
-        </xsd:choice>
         <xsd:attributeGroup ref="coreSmppComponentAttributes"/>
 		<xsd:attribute name="reply-channel" type="xsd:string">
 			<xsd:annotation>

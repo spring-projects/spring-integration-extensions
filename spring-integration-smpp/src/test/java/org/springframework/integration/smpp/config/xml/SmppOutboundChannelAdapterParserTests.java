@@ -20,8 +20,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.Message;
 import org.springframework.integration.channel.AbstractMessageChannel;
+import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.core.MessagingTemplate;
+import org.springframework.integration.endpoint.AbstractEndpoint;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
+import org.springframework.integration.handler.advice.AbstractRequestHandlerAdvice;
 import org.springframework.integration.smpp.core.SmppConstants;
 import org.springframework.integration.smpp.outbound.SmppOutboundChannelAdapter;
 import org.springframework.integration.smpp.session.ExtendedSmppSession;
@@ -77,6 +80,19 @@ public class SmppOutboundChannelAdapterParserTests {
 		template.send("target", message);
 	}
 
+    @Test
+    public void testWithAdvice() throws Exception {
+        context = new ClassPathXmlApplicationContext("SmppOutboundChannelAdapterParserTests.xml", getClass());
+        AbstractEndpoint endpoint = this.context.getBean("smppOutboundChannelAdapterWithChain", AbstractEndpoint.class);
+        MessageHandler handler = TestUtils.getPropertyValue(endpoint, "handler", MessageHandler.class);
+        Message<?> message = MessageBuilder.withPayload("foo")
+                .setHeader(SmppConstants.SRC_ADDR, "X")
+                .setHeader(SmppConstants.DST_ADDR, "Y")
+                .build();
+        handler.handleMessage(message);
+        assertEquals(1, adviceCalled);
+    }
+
 	@After
 	public void tearDown(){
 		if(context != null){
@@ -89,4 +105,12 @@ public class SmppOutboundChannelAdapterParserTests {
 		consumer   = this.context.getBean("smppOutboundChannelAdapter", EventDrivenConsumer.class);
 	}
 
+    private static int adviceCalled = 0;
+    public static class FooAdvice extends AbstractRequestHandlerAdvice {
+        @Override
+        protected Object doInvoke(ExecutionCallback callback, Object target, Message<?> message) throws Exception {
+            adviceCalled++;
+            return null;
+        }
+    }
 }
