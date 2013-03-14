@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,6 +53,9 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 	private String password;
 	private int port;
 	private Map<SMPPServerSession,String> connectionSessionMap = new HashMap<SMPPServerSession,String>();
+    private boolean run = true;
+    private int acceptConnectionTimeout = 5000;
+    private SMPPServerSessionListener sessionListener;
 
 	private final ExecutorService execService = Executors.newFixedThreadPool(5);
 	private final ExecutorService execServiceDelReceipt = Executors.newFixedThreadPool(100);
@@ -64,20 +69,40 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 
 	public void run() {
 		try {
-			SMPPServerSessionListener sessionListener = new SMPPServerSessionListener(port);
+			this.sessionListener = new SMPPServerSessionListener(port);
+            sessionListener.setTimeout(acceptConnectionTimeout);
+
 			logger.info("Listening on port {}", port);
-			while (true) {
-				SMPPServerSession serverSession = sessionListener.accept();
-				logger.info("Accepting connection for session {}", serverSession.getSessionId());
-				serverSession.setMessageReceiverListener(this);
-				serverSession.setResponseDeliveryListener(this);
-				execService.execute(new WaitBindTask(serverSession, systemId, password, connectionSessionMap));
+			while (run) {
+                try {
+                    SMPPServerSession serverSession = sessionListener.accept();
+                    logger.info("Accepting connection for session {}", serverSession.getSessionId());
+                    serverSession.setMessageReceiverListener(this);
+                    serverSession.setResponseDeliveryListener(this);
+                    execService.execute(new WaitBindTask(serverSession, systemId, password, connectionSessionMap));
+                }
+                catch (SocketTimeoutException ste) {}
+                catch (SocketException se) {}
 			}
 		}
 		catch (IOException e) {
 			logger.error("IO error occurred", e);
 		}
 	}
+
+    /**
+     * Forcing the server to stop.
+     * @throws InterruptedException
+     * @throws IOException
+     */
+    public void stop() throws InterruptedException, IOException {
+        run = false;
+        execService.shutdown();
+        sessionListener.close();
+        for (SMPPServerSession server : connectionSessionMap.keySet()) {
+            server.close();
+        }
+    }
 
 	public QuerySmResult onAcceptQuerySm(QuerySm querySm,
 										 SMPPServerSession source) throws ProcessRequestException {
@@ -131,7 +156,11 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 			throws ProcessRequestException {
 	}
 
-	private static class WaitBindTask implements Runnable {
+    public void setAcceptConnectionTimeout(int acceptConnectionTimeout) {
+        this.acceptConnectionTimeout = acceptConnectionTimeout;
+    }
+
+    private static class WaitBindTask implements Runnable {
 		private final SMPPServerSession serverSession;
 		private final String systemId;
 		private final String password;

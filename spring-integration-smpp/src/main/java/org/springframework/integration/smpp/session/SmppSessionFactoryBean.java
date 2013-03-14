@@ -22,6 +22,7 @@ import org.jsmpp.SynchronizedPDUSender;
 import org.jsmpp.bean.BindType;
 import org.jsmpp.bean.NumberingPlanIndicator;
 import org.jsmpp.bean.TypeOfNumber;
+import org.jsmpp.extra.SessionState;
 import org.jsmpp.session.MessageReceiverListener;
 import org.jsmpp.session.SMPPSession;
 import org.jsmpp.session.SessionStateListener;
@@ -29,6 +30,9 @@ import org.jsmpp.session.connection.Connection;
 import org.jsmpp.session.connection.ConnectionFactory;
 import org.jsmpp.session.connection.socket.SocketConnection;
 import org.jsmpp.util.DefaultComposer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.Lifecycle;
@@ -40,7 +44,6 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,14 +67,13 @@ import java.util.Set;
  * timeout			a good default value is 60000  (1 minute)
  *
  * @author Josh Long
- *         <p/>
- *         todo support a proxied SMPPSession that automatically recovers from disconnects a la the examples {@link org.jsmpp.examples.gateway.AutoReconnectGateway}
  * @see org.jsmpp.session.SMPPSession#SMPPSession()
  * @see org.jsmpp.session.SMPPSession#connectAndBind(String, int, org.jsmpp.session.BindParameter)
  * @see org.jsmpp.session.SMPPSession#connectAndBind(String, int, org.jsmpp.bean.BindType, String, String, String, org.jsmpp.bean.TypeOfNumber, org.jsmpp.bean.NumberingPlanIndicator, String, long)
  * @since 1.0
  */
-public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>, SmartLifecycle, InitializingBean {
+public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>, SmartLifecycle, InitializingBean,
+        DisposableBean {
 
 	/**
 	 * impl of {@link Lifecycle} that connects and disconnects respectively in
@@ -95,6 +97,9 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 	private String systemType = "cp";
 	private TypeOfNumber addrTon = TypeOfNumber.UNKNOWN;
 	private NumberingPlanIndicator addrNpi = NumberingPlanIndicator.UNKNOWN;
+    private long reconnectInterval = 5000L; // 5 seconds
+    private boolean reconnect = true; // flag whether we want to reconnect
+    private boolean destroyed = false; // flag that this session factory has been disposed
 
 	private ExtendedSmppSessionAdaptingDelegate product;
 
@@ -153,10 +158,6 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 		this.sessionStateListener = sessionStateListener;
 	}
 
-	public void setMessageReceiverListeners(MessageReceiverListener... listeners) {
-		setMessageReceiverListeners(new HashSet<MessageReceiverListener>(Arrays.asList(listeners)));
-	}
-
 	public void setMessageReceiverListeners(Set<MessageReceiverListener> messageReceiverListeners) {
 		this.messageReceiverListeners = messageReceiverListeners;
 	}
@@ -166,17 +167,25 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 	 * @throws Exception should anything go wrong
 	 */
 	private ExtendedSmppSessionAdaptingDelegate buildSmppSession() throws Exception {
-		SMPPSession smppSession = null;
+		final SMPPSession smppSession;
 		if (!ssl) {
 			smppSession = new SMPPSession();
 		} else {
 			smppSession = new SMPPSession(new SynchronizedPDUSender(new DefaultPDUSender(new DefaultComposer())), new DefaultPDUReader(), sslConnectionFactory);
 		}
 
-		ExtendedSmppSessionAdaptingDelegate extendedSmppSessionAdaptingDelegate = new ExtendedSmppSessionAdaptingDelegate(smppSession, new ConnectingLifecycle(smppSession));
+		ExtendedSmppSessionAdaptingDelegate extendedSmppSessionAdaptingDelegate =
+                new ExtendedSmppSessionAdaptingDelegate(smppSession, reconnect
+                        ? new AutoReconnectLifecycle(smppSession, reconnectInterval)
+                        : new ConnectingLifecycle(smppSession));
 
 		for (MessageReceiverListener mrl : this.messageReceiverListeners)
 			extendedSmppSessionAdaptingDelegate.addMessageReceiverListener(mrl);
+
+        // if session state listener not null, add it
+        if (sessionStateListener != null) {
+            extendedSmppSessionAdaptingDelegate.addSessionStateListener(sessionStateListener);
+        }
 
 		extendedSmppSessionAdaptingDelegate.setBindType(this.bindType);
 		return extendedSmppSessionAdaptingDelegate;
@@ -261,7 +270,25 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 		return true;
 	}
 
-	/**
+    /**
+     * Set whether we want to reconnect the session. Default is true.
+     *
+     * @param reconnect true/false
+     */
+    public void setReconnect(boolean reconnect) {
+        this.reconnect = reconnect;
+    }
+
+    /**
+     * Set session reconnection interval. Default is 5 seconds.
+     *
+     * @param reconnectInterval reconnection interval in milliseconds
+     */
+    public void setReconnectInterval(long reconnectInterval) {
+        this.reconnectInterval = reconnectInterval;
+    }
+
+    /**
 	 * {@inheritDoc}
 	 */
 	public void afterPropertiesSet() throws Exception {
@@ -276,7 +303,15 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 		this.product = buildSmppSession();
 	}
 
-	/**
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void destroy() throws Exception {
+        this.destroyed = true;
+    }
+
+    /**
 	 * singleton {@link ConnectionFactory} that handles SSL
 	 */
 	final private static ConnectionFactory sslConnectionFactory = new ConnectionFactory() {
@@ -312,11 +347,11 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 					try {
 						session.unbindAndClose();
 					} catch (Throwable t) {
-						log.warn("couldn't close and unbind the session", t);
+						log.warn("Couldn't close and unbind the session", t);
 					}
 				}
 			} else {
-				log.warn("the smppSession given to close is null");
+				log.warn("The smppSession given to close is null");
 			}
 		}
 
@@ -325,46 +360,137 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 				session.connectAndBind(host, port, bindType, systemId, password, systemType, addrTon, addrNpi, addressRange, timeout);
 				this.running = true;
 			} catch (IOException e) {
-				log.error("something happened when trying to connect", e);
+                if (log.isDebugEnabled())
+				    log.error("Error happened when trying to connect to " + host + ":" + port, e);
+                else
+                    log.error("Error happened when trying to connect to " + host + ":" + port + ". Cause: "
+                            + e.getMessage());
 			}
 		}
 	}
-}
 
-/*    private void reconnectAfter(final long timeInMillis) {
-        new Thread() {
-            @Override
-            public void run() {
-                logger.info("Schedule reconnect after " + timeInMillis + " millis");
-                try {
-                    Thread.sleep(timeInMillis);
-                } catch (InterruptedException e) {
-                }
+    /**
+     * Lifecycle implementation that will try to re-establish connection with specific interval. At the start of the
+     * connection.
+     *
+     * @author Johanes Soetanto
+     */
+    private class AutoReconnectLifecycle implements Lifecycle {
 
-                int attempt = 0;
-                while (session == null || session.getSessionState().equals(SessionState.CLOSED)) {
+        private final Logger log = LoggerFactory.getLogger(AutoReconnectLifecycle.class);
+        private final SMPPSession session;
+        private final long reconnectInterval;
+        private volatile boolean running;
+
+        /**
+         * Creating auto reconnect lifecycle using SMPP session and reconnect interval in milliseconds
+         * @param smppSession reference to SMPP session
+         * @param reconnectInterval reconnection interval
+         */
+        private AutoReconnectLifecycle(SMPPSession smppSession, long reconnectInterval) {
+            this.session = smppSession;
+            this.reconnectInterval = reconnectInterval;
+        }
+
+        @Override
+        public boolean isRunning() {
+            return this.running;
+        }
+
+        @Override
+        public void stop() {
+            if (session != null) {
+                if (session.getSessionState().isBound()) {
                     try {
-                        logger.info("Reconnecting attempt #" + (++attempt) + "...");
-                        session = newSession();
-                    } catch (IOException e) {
-                        logger.error("Failed opening connection and bind to " + remoteIpAddress + ":" + remotePort, e);
-                        // wait for a second
-                        try { Thread.sleep(1000); } catch (InterruptedException ee) {}
+                        session.unbindAndClose();
+                    } catch (Throwable t) {
+                        log.warn("Couldn't close and unbind the session", t);
                     }
                 }
+            } else {
+                log.warn("The smppSession given to close is null");
             }
-        }.start();
-    }
+        }
 
+        @Override
+        public void start() {
+            connect();
 
-     private class SessionStateListenerImpl implements SessionStateListener {
-        public void onStateChange(SessionState newState, SessionState oldState,
-                Object source) {
-            if (newState.equals(SessionState.CLOSED)) {
-                logger.info("Session closed");
-                reconnectAfter(reconnectInterval);
+            if (!running) {
+                log.debug("Try to connect at later time. The delay is {}ms", reconnectInterval);
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(reconnectInterval);
+                        } catch (InterruptedException e) {}
+
+                        int attempt = 0;
+                        // if this session is still not run and the session has not been destroyed, re-connect
+                        while (!running && !destroyed) {
+                            log.info("Reconnecting attempt #{} ...", ++attempt);
+                            connect();
+
+                            if (!running) {
+                                try {
+                                    Thread.sleep(reconnectInterval);
+                                } catch (InterruptedException e) {}
+                            }
+                        }
+
+                        // if finish re-connection loop and session is run we register session close listener
+                        if (running) {
+                            log.info("Successfully reconnect at attempt #{}", attempt);
+                            registerSessionCloseListener();
+                        }
+                    }
+                }.start();
+            } else {
+                registerSessionCloseListener();
+            }
+        }
+
+        /**
+         * Register session state listener to reconnect when session is closed by server.
+         */
+        private void registerSessionCloseListener() {
+            log.debug("Registering session close listener");
+            session.addSessionStateListener(new SessionStateListener() {
+                @Override
+                public void onStateChange(SessionState newState, SessionState oldState, Object source) {
+                    // when session is closed but client session has not been destroyed can indicates client
+                    // lose connection to server
+                    if (newState.equals(SessionState.CLOSED) && !destroyed) {
+                        log.info("Session to {}:{} has been closed. Try to reconnect later", host, port);
+                        try {
+                            product = buildSmppSession();
+                            product.start();
+
+                        } catch (Exception e) {
+                            log.error("Fail re-establish connection to {}:{}", host, port);
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Perform connection logic.
+         */
+        private void connect() {
+            try {
+                session.connectAndBind(host, port, bindType, systemId, password, systemType,
+                        addrTon, addrNpi, addressRange, timeout);
+                this.running = true;
+
+            } catch (IOException e) {
+                if (log.isDebugEnabled())
+                    log.error("Error happened when trying to connect to " + host + ":" + port, e);
+                else
+                    log.error("Error happened when trying to connect to {}:{}. Cause: {}",
+                            new Object[]{host, port, e.getMessage()});
             }
         }
     }
 
-    */
+}
