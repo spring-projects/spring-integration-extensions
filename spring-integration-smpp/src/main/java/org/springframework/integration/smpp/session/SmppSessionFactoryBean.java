@@ -55,16 +55,27 @@ import java.util.Set;
  * <p/>
  * Here is a breakdown of the supported parameters on this factory bean:
  * <p/>
- * host				 the SMSC host to which the session is bound   (think of this as the host of your email server)
- * port				 the SMSC port to which the session is bound (think of this as a port on your email server)
- * bindType		 values of type {@link org.jsmpp.bean.BindType}. the bind type specifies whether this {@link SMPPSession} can send ({@link org.jsmpp.bean.BindType#BIND_TX}), receive ({@link org.jsmpp.bean.BindType#BIND_RX}), or both send and receive ({@link org.jsmpp.bean.BindType#BIND_TRX}).
- * systemId		 the system ID for the server being bound to
- * password		 the password for the server being bound to
- * systemType	 the SMSC system type
- * addrTon			a value from the {@link org.jsmpp.bean.TypeOfNumber} enumeration. default is {@link org.jsmpp.bean.TypeOfNumber#UNKNOWN}
- * addrNpi			a value from  the {@link org.jsmpp.bean.NumberingPlanIndicator} enumeration. Default is {@link org.jsmpp.bean.NumberingPlanIndicator#UNKNOWN}
- * addressRange can be null. Specifies the address range.
- * timeout			a good default value is 60000  (1 minute)
+ * <ul>
+ *     <li>host - the SMSC host to which the session is bound   (think of this as the host of your email server)</li>
+ *     <li>port - the SMSC port to which the session is bound (think of this as a port on your email server)</li>
+ *     <li>bindType - values of type {@link org.jsmpp.bean.BindType}. The bind type specifies whether this
+ *     {@link SMPPSession} can send ({@link org.jsmpp.bean.BindType#BIND_TX}),
+ *     receive ({@link org.jsmpp.bean.BindType#BIND_RX}), or both send and receive
+ *     ({@link org.jsmpp.bean.BindType#BIND_TRX}).</li>
+ *     <li>systemId - the system ID for the server being bound to</li>
+ *     <li>password - the password for the server being bound to</li>
+ *     <li>systemType - the SMSC system type</li>
+ *     <li>addrTon - a value from the {@link org.jsmpp.bean.TypeOfNumber} enumeration. Default is
+ *     {@link org.jsmpp.bean.TypeOfNumber#UNKNOWN}</li>
+ *     <li>addrNpi - a value from  the {@link org.jsmpp.bean.NumberingPlanIndicator} enumeration.
+ *     Default is {@link org.jsmpp.bean.NumberingPlanIndicator#UNKNOWN}</li>
+ *     <li>addressRange - can be null. Specifies the address range.</li>
+ *     <li>timeout - a good default value is 60000  (1 minute)</li>
+ *     <li>transactionTimeout - timeout for doing work with session. e.g. sending message (default 2 seconds)</li>
+ *     <li>reconnect - boolean whether we allow the session to reconnect. (default true)</li>
+ *     <li>reconnectInterval - interval between reconnection in milliseconds. (default 5 seconds)</li>
+ * </ul>
+ *
  *
  * @author Josh Long
  * @see org.jsmpp.session.SMPPSession#SMPPSession()
@@ -75,12 +86,6 @@ import java.util.Set;
 public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>, SmartLifecycle, InitializingBean,
         DisposableBean {
 
-	/**
-	 * impl of {@link Lifecycle} that connects and disconnects respectively in
-	 * {@link org.springframework.context.Lifecycle#start()} and {@link org.springframework.context.Lifecycle#stop()}
-	 *
-	 * @author Josh Long
-	 */
 	private Set<MessageReceiverListener> messageReceiverListeners = new HashSet<MessageReceiverListener>();
 	private boolean autoStartup;
 	private volatile boolean running;
@@ -90,6 +95,7 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 	private String host = "127.0.0.1";
 	private String addressRange;
 	private long timeout = 60 * 1000;// 1 minute
+    private long transactionTimeout = 2 * 1000; // 2 seconds
 	private int port = 2775;	// good default though this has been known to change
 	private BindType bindType = BindType.BIND_TRX; // bind as a 'transceiver' - only 3.4 of the spec <em>requires</em> support for this
 	private String systemId = getClass().getSimpleName().toLowerCase();	 // what would typically be called 'user' in a user/pw scheme
@@ -97,7 +103,7 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 	private String systemType = "cp";
 	private TypeOfNumber addrTon = TypeOfNumber.UNKNOWN;
 	private NumberingPlanIndicator addrNpi = NumberingPlanIndicator.UNKNOWN;
-    private long reconnectInterval = 5000L; // 5 seconds
+    private long reconnectInterval = 5 * 1000; // 5 seconds
     private boolean reconnect = true; // flag whether we want to reconnect
     private boolean destroyed = false; // flag that this session factory has been disposed
 
@@ -150,11 +156,30 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 		this.addressRange = addressRange;
 	}
 
+    /**
+     * Setting timeout for the session. This value is used to establish connection to SMSC, e.g. trying to establish
+     * connection. (default is 1 minute). This should not be confused with {@link #setTransactionTimeout(long)} which
+     * is the timeout to perform request on the actual session after it has been established.
+     *
+     * @param timeout timeout in milliseconds
+     */
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}
 
-	public void setSessionStateListener(SessionStateListener sessionStateListener) {
+    /**
+     * Setting transaction timeout preforming request on the session. ({@link SMPPSession#setTransactionTimer(long)}.
+     * This transaction timeout is similar to the concept of send timeout / request timeout. (default 2 seconds).
+     * If you receive a lot of {@link org.jsmpp.extra.ResponseTimeoutException} for waiting response from your SMSC,
+     * this indicates you need to increase this value.
+     *
+     * @param transactionTimeout transaction timeout in milliseconds
+     */
+    public void setTransactionTimeout(long transactionTimeout) {
+        this.transactionTimeout = transactionTimeout;
+    }
+
+    public void setSessionStateListener(SessionStateListener sessionStateListener) {
 		this.sessionStateListener = sessionStateListener;
 	}
 
@@ -163,6 +188,7 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 	}
 
 	/**
+     * Logic to build smpp session
 	 * @return the configured SMPPSession
 	 * @throws Exception should anything go wrong
 	 */
@@ -173,6 +199,7 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 		} else {
 			smppSession = new SMPPSession(new SynchronizedPDUSender(new DefaultPDUSender(new DefaultComposer())), new DefaultPDUReader(), sslConnectionFactory);
 		}
+        smppSession.setTransactionTimer(transactionTimeout);
 
 		ExtendedSmppSessionAdaptingDelegate extendedSmppSessionAdaptingDelegate =
                 new ExtendedSmppSessionAdaptingDelegate(smppSession, reconnect

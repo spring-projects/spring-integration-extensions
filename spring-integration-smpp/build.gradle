@@ -34,7 +34,7 @@ ext {
 	log4jVersion = '1.2.12'
 	mockitoVersion = '1.9.0'
 	springVersion = '3.1.3.RELEASE'
-	springIntegrationVersion = '2.2.0.RELEASE'
+	springIntegrationVersion = '2.2.2.RELEASE'
 
 	idPrefix = 'smpp'
 }
@@ -64,7 +64,6 @@ dependencies {
 	compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
 	compile "commons-lang:commons-lang:$commonsLangVersion"
 	compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
-	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "junit:junit-dep:$junitVersion"
