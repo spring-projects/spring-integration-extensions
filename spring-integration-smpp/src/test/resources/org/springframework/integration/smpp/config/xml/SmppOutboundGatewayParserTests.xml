@@ -40,4 +40,15 @@
 		</int-smpp:session>
 	</int-smpp:outbound-gateway>
 
+    <int-smpp:outbound-gateway id="smppOutboundGatewayWithAdvice" request-channel="in" reply-channel="out">
+        <int-smpp:session>
+            <bean
+                    class="org.springframework.integration.smpp.config.xml.MockSmppSessionFactory"
+                    factory-method="getOutSmppSession" />
+        </int-smpp:session>
+        <int-smpp:request-handler-advice-chain>
+            <bean class="org.springframework.integration.smpp.config.xml.SmppOutboundGatewayParserTests$FooAdvice"/>
+        </int-smpp:request-handler-advice-chain>
+    </int-smpp:outbound-gateway>
+
 </beans>
