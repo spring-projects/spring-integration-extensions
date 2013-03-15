@@ -45,6 +45,7 @@ import org.springframework.util.StringUtils;
 public class SmppOutboundGateway extends AbstractReplyProducingMessageHandler {
 	@Override
 	protected void onInit() {
+        super.onInit();
 		Assert.isTrue(
 				this.smppSession.getBindType().equals(BindType.BIND_TX) ||
 						this.smppSession.getBindType().equals(BindType.BIND_TRX),

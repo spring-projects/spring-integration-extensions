@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-smpp="http://www.springframework.org/schema/integration/smpp"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration/smpp http://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd">
+
+    <import resource="classpath:smppConnection-context.xml"/>
+
+    <!-- this is channel for going out -->
+    <int:channel id="outChannel">
+        <int:interceptors>
+            <int:wire-tap channel="outChannelLogger"/>
+        </int:interceptors>
+    </int:channel>
+    <int:logging-channel-adapter id="outChannelLogger" logger-name="OUT" log-full-message="true" level="INFO"/>
+
+    <!-- this is the gateway for testing -->
+	<int-smpp:outbound-gateway request-channel="outChannel"
+                               reply-channel="replyChannel"
+                               smpp-session-ref="session">
+        <int-smpp:request-handler-advice-chain>
+            <ref bean="smppSendingRetryAdvice"/>
+        </int-smpp:request-handler-advice-chain>
+	</int-smpp:outbound-gateway>
+
+    <!-- this is channel to receive reply -->
+    <int:channel id="replyChannel">
+        <int:queue capacity="10"/>
+    </int:channel>
+
+    <!-- this is smpp session -->
+    <bean id="session"
+          class="org.springframework.integration.smpp.session.SmppSessionFactoryBean">
+        <property name="host" value="${smpp.host}" />
+        <property name="port" ref="smppPort" />
+        <property name="password" value="${smpp.password}" />
+        <property name="systemId" value="${smpp.systemId}" />
+        <property name="bindType" value="BIND_TRX" />
+    </bean>
+
+    <!-- example of using chain advice to retry and send the error to exception channel -->
+    <bean id="smppSendingRetryAdvice"
+          class="org.springframework.integration.handler.advice.RequestHandlerRetryAdvice">
+        <property name="recoveryCallback">
+            <bean class="org.springframework.integration.handler.advice.ErrorMessageSendingRecoverer">
+                <constructor-arg ref="exceptionChannel" />
+            </bean>
+        </property>
+        <property name="retryTemplate">
+            <bean class="org.springframework.retry.support.RetryTemplate">
+                <property name="retryPolicy">
+                    <bean class="org.springframework.retry.policy.NeverRetryPolicy" />
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <int:channel id="exceptionChannel">
+        <int:queue capacity="10" />
+        <int:interceptors>
+            <int:wire-tap channel="exceptionLogger"/>
+        </int:interceptors>
+    </int:channel>
+    <int:logging-channel-adapter id="exceptionLogger" log-full-message="true" level="ERROR"/>
+
+    <!-- messaging template -->
+    <bean class="org.springframework.integration.core.MessagingTemplate">
+        <property name="receiveTimeout" value="1000"/>
+    </bean>
+</beans>

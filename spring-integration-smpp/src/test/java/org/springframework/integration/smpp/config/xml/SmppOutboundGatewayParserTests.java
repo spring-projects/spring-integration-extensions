@@ -18,10 +18,16 @@ import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.integration.Message;
 import org.springframework.integration.channel.AbstractMessageChannel;
+import org.springframework.integration.core.MessageHandler;
+import org.springframework.integration.endpoint.AbstractEndpoint;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
+import org.springframework.integration.handler.advice.AbstractRequestHandlerAdvice;
+import org.springframework.integration.smpp.core.SmppConstants;
 import org.springframework.integration.smpp.outbound.SmppOutboundGateway;
 import org.springframework.integration.smpp.session.ExtendedSmppSession;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.test.util.TestUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -72,6 +78,20 @@ public class SmppOutboundGatewayParserTests {
 		assertNotNull(timeFormatter);
 	}
 
+    @Test
+    public void testWithAdvice() throws Exception {
+        context = new ClassPathXmlApplicationContext("SmppOutboundGatewayParserTests.xml", getClass());
+        AbstractEndpoint endpoint = this.context.getBean("smppOutboundGatewayWithAdvice", AbstractEndpoint.class);
+        System.out.println("endpoint "+endpoint);
+        MessageHandler handler = TestUtils.getPropertyValue(endpoint, "handler", MessageHandler.class);
+        Message<?> message = MessageBuilder.withPayload("foo")
+                .setHeader(SmppConstants.SRC_ADDR, "X")
+                .setHeader(SmppConstants.DST_ADDR, "Y")
+                .build();
+        handler.handleMessage(message);
+        assertEquals(1, adviceCalled);
+    }
+
 	@After
 	public void tearDown() {
 		if (context != null) {
@@ -83,5 +103,14 @@ public class SmppOutboundGatewayParserTests {
 		context    = new ClassPathXmlApplicationContext(name, cls);
 		consumer   = this.context.getBean(gatewayId, EventDrivenConsumer.class);
 	}
+
+    private static int adviceCalled = 0;
+    public static class FooAdvice extends AbstractRequestHandlerAdvice {
+        @Override
+        protected Object doInvoke(ExecutionCallback callback, Object target, Message<?> message) throws Exception {
+            adviceCalled++;
+            return null;
+        }
+    }
 
 }
