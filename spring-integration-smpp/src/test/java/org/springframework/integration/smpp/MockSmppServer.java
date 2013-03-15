@@ -110,8 +110,23 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 		return null;
 	}
 
+    /* Perform special handling just to simulate something on the SMSC */
+    private void onSpecialHandling(SubmitSm submitSm,
+                                   SMPPServerSession source) throws ProcessRequestException {
+        if (submitSm.getDestAddress().equals("NoRouteDestination")) {
+            throw new ProcessRequestException ("No route to destination", 1);
+        }
+        if (new String(submitSm.getShortMessage()).equals("DelayMe")) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ignored) {}
+        }
+    }
+
 	public MessageId onAcceptSubmitSm(SubmitSm submitSm,
 									  SMPPServerSession source) throws ProcessRequestException {
+        onSpecialHandling(submitSm, source);
+
 		MessageId messageId = messageIDGenerator.newMessageId();
 		logger.debug("Receiving submit_sm '{}', and will return message id {}",
 				new String(submitSm.getShortMessage()), messageId);
