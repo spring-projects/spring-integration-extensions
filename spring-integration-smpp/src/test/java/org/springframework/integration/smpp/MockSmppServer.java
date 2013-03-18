@@ -48,6 +48,18 @@ import java.util.concurrent.TimeoutException;
  * @since 1.0
  */
 public class MockSmppServer extends ServerResponseDeliveryAdapter implements Runnable, ServerMessageReceiverListener {
+
+    /** Agreement to make it easy to test some functionality */
+    public static final class Agreement {
+        /** Agreement to throw error when destination set to this value */
+        public static final String THROW_NO_DESTINATION_EXCEPTION = "NoRouteDestination";
+        /** Agreement to delay processing of sms message. Useful to simulate slow connection */
+        public static final String DELAY_PROCESSING = "DelayMe";
+        /** Agreement to delay sending back delivery receipt. Useful for testing Delivery Receipt */
+        public static final String DELAY_DELIVERY_RECEIPT = "DelayDeliveryReceipt";
+    }
+    private static int messageDelay = 3000;
+
 	private static final Logger logger = LoggerFactory.getLogger(MockSmppServer.class);
 	private String systemId;
 	private String password;
@@ -56,6 +68,7 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
     private boolean run = true;
     private int acceptConnectionTimeout = 5000;
     private SMPPServerSessionListener sessionListener;
+    private boolean initServerAtStart = true;
 
 	private final ExecutorService execService = Executors.newFixedThreadPool(5);
 	private final ExecutorService execServiceDelReceipt = Executors.newFixedThreadPool(100);
@@ -113,11 +126,12 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
     /* Perform special handling just to simulate something on the SMSC */
     private void onSpecialHandling(SubmitSm submitSm,
                                    SMPPServerSession source) throws ProcessRequestException {
-        if (submitSm.getDestAddress().equals("NoRouteDestination")) {
+        if (submitSm.getDestAddress().equals(Agreement.THROW_NO_DESTINATION_EXCEPTION)) {
             throw new ProcessRequestException ("No route to destination", 1);
         }
-        if (new String(submitSm.getShortMessage()).equals("DelayMe")) {
+        if (new String(submitSm.getShortMessage()).equals(Agreement.DELAY_PROCESSING)) {
             try {
+                logger.debug("Delaying handling for {} ms", messageDelay);
                 Thread.sleep(3000);
             } catch (InterruptedException ignored) {}
         }
@@ -286,7 +300,11 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 
 		public void run() {
 			try {
-				Thread.sleep(1000);
+                if (new String(shortMessage).equals(Agreement.DELAY_DELIVERY_RECEIPT)) {
+                    logger.debug("Receive request to delay sending of delivery receipt");
+                    Thread.sleep(messageDelay);
+                } else
+                    Thread.sleep(300); // just give a little bit of delay
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
@@ -301,6 +319,7 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 
 				DeliveryReceipt delRec = new DeliveryReceipt(stringValue, totalSubmitted, totalDelivered, new Date(),
 						new Date(), DeliveryReceiptState.DELIVRD,  null, new String(shortMessage));
+                logger.debug("Sending delivery receipt for message id " + messageId + ":" + stringValue);
 				session.deliverShortMessage(
 						"mc",
 						sourceAddrTon,
@@ -315,7 +334,7 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 						new RegisteredDelivery(0),
 						DataCodings.ZERO,
 						delRec.toString().getBytes());
-				logger.debug("Sending delivery receipt for message id " + messageId + ":" + stringValue);
+                logger.debug("Delivery receipt sent");
 			} catch (Exception e) {
 				logger.error("Failed sending delivery_receipt for message id " + messageId + ":" + stringValue, e);
 			}
@@ -395,13 +414,27 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
 
 	@PostConstruct
 	public void onPostConstruct() {
-		logger.debug("Starting mock SMPP server");
-		execService.submit(this);
-	}
+        if (initServerAtStart) {
+            startServer();
+        }
+    }
+
+    public void startServer() {
+        logger.debug("Starting mock SMPP server");
+        execService.submit(this);
+    }
+
+    public void restartServer() throws InterruptedException, IOException {
+        logger.debug("Stopping server");
+        stop();
+        connectionSessionMap.clear();
+        startServer();
+    }
 
 	@PreDestroy
-	public void onDestroy() {
+    public void onDestroy() throws InterruptedException, IOException {
 		logger.debug("Destroying mock SMPP server");
+        stop();
 		connectionSessionMap.clear();
 	}
 }

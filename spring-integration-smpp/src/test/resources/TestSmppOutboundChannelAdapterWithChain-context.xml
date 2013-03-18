@@ -16,21 +16,14 @@
             <int:wire-tap channel="outChannelLogger"/>
         </int:interceptors>
     </int:channel>
-    <int:logging-channel-adapter id="outChannelLogger" expression="'Outbound Gateway: ' + payload"/>
+    <int:logging-channel-adapter id="outChannelLogger" expression="'Outbound Channel Adapter: '+payload"/>
 
     <!-- this is the gateway for testing -->
-	<int-smpp:outbound-gateway request-channel="outChannel"
-                               reply-channel="replyChannel"
-                               smpp-session-ref="session">
+	<int-smpp:outbound-channel-adapter channel="outChannel" smpp-session-ref="session">
         <int-smpp:request-handler-advice-chain>
             <ref bean="smppSendingRetryAdvice"/>
         </int-smpp:request-handler-advice-chain>
-	</int-smpp:outbound-gateway>
-
-    <!-- this is channel to receive reply -->
-    <int:channel id="replyChannel">
-        <int:queue capacity="10"/>
-    </int:channel>
+	</int-smpp:outbound-channel-adapter>
 
     <!-- this is smpp session -->
     <bean id="session"
@@ -64,7 +57,7 @@
             <int:wire-tap channel="exceptionLogger"/>
         </int:interceptors>
     </int:channel>
-    <int:logging-channel-adapter id="exceptionLogger" log-full-message="true" level="ERROR"/>
+    <int:logging-channel-adapter id="exceptionLogger" log-full-message="true" level="ERROR" />
 
     <!-- messaging template -->
     <bean class="org.springframework.integration.core.MessagingTemplate">
