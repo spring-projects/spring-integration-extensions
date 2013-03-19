@@ -142,6 +142,7 @@ public class SmesMessageSpecification {
                 .setDestinationAddress(dstAddy)
                 .setDataCoding(dataCodingFromHeader);
         spec.setMaxLengthSmsMessages(maximumCharactersFromHeader(msg));
+        spec.setEsmClass(SmesMessageSpecification.esmClassFromHeader(msg));
         if (msg.getHeaders().containsKey(SmppConstants.USE_MSG_PAYLOAD_PARAM)) {
             spec.setShortMessageUsingPayload(smsTxt);
         } else {
@@ -152,7 +153,6 @@ public class SmesMessageSpecification {
 		spec.setDestinationAddressTypeOfNumber(SmesMessageSpecification.<TypeOfNumber>valueIfHeaderExists(DST_TON, msg));
 		spec.setSourceAddressTypeOfNumber(SmesMessageSpecification.<TypeOfNumber>valueIfHeaderExists(SRC_TON, msg));
 		spec.setServiceType(SmesMessageSpecification.<String>valueIfHeaderExists(SERVICE_TYPE, msg));
-		spec.setEsmClass(SmesMessageSpecification.esmClassFromHeader(msg));
 		spec.setScheduleDeliveryTime(SmesMessageSpecification.<Date>valueIfHeaderExists(SCHEDULED_DELIVERY_TIME, msg));
 		spec.setValidityPeriod(SmesMessageSpecification.<String>valueIfHeaderExists(VALIDITY_PERIOD, msg));
 
@@ -554,8 +554,14 @@ public class SmesMessageSpecification {
 	 */
 	public SmesMessageSpecification setShortTextMessage(String s) {
 		Assert.notNull(s, "the SMS message payload must not be null");
-		Assert.isTrue(s.length() <= this.maxLengthSmsMessages, "the SMS message payload must be 140 characters or less.");
-		this.shortMessage = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+        if (esmClass != null && GSMSpecificFeature.UDHI.containedIn(esmClass)) {
+            log.debug("Setting short message with UDH");
+            this.shortMessage = UdhUtil.getMessageWithUdhInBytes(s, dataCoding.toByte());
+        } else {
+            Assert.isTrue(s.length() <= this.maxLengthSmsMessages,
+                    "the SMS message payload must be " + maxLengthSmsMessages + " characters or less.");
+		    this.shortMessage = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+        }
 		return this;
 	}
 
