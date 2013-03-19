@@ -87,7 +87,7 @@ public class KafkaExecutor {
                 final List<Object> messages = new ArrayList<Object>();
                 try {
                     while(latch.getCount() > 0) {
-                        messages.add(new String(it.next().message()));
+                        messages.add(it.next().message());
                         latch.countDown();
                     }
                 }
