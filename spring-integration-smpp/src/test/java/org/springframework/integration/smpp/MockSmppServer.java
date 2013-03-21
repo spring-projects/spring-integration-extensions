@@ -127,7 +127,7 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
     private void onSpecialHandling(SubmitSm submitSm,
                                    SMPPServerSession source) throws ProcessRequestException {
         if (submitSm.getDestAddress().equals(Agreement.THROW_NO_DESTINATION_EXCEPTION)) {
-            throw new ProcessRequestException ("No route to destination", 1);
+            throw new ProcessRequestException ("Invalid Dest Addr", 0x0B);
         }
         if (new String(submitSm.getShortMessage()).equals(Agreement.DELAY_PROCESSING)) {
             try {
