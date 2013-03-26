@@ -14,7 +14,7 @@
     <context:component-scan base-package="org.springframework.integration.kafka.support"></context:component-scan>
     	<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean"/>
 
-    <int-kafka:server id="kafkaServer" zk-connect="localhost:2181" zk-connection-timeout="10000"
-                zk-session-timeout="10000" group-id="test_group"
-                zk-sync-time="200" auto-commit-interval="1000"/>
+    <int-kafka:broker id="kafkaBroker" zk-connect="localhost:2181" zk-connection-timeout="6000"
+                zk-session-timeout="6000"
+                zk-sync-time="2000" />
 </beans>

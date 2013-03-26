@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
 	xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
 	xmlns:stream="http://www.springframework.org/schema/integration/stream"
 	xmlns:context="http://www.springframework.org/schema/context"
@@ -11,19 +10,9 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<import resource="kafkaInboundAdapterCommon-context.xml"/>
+    <int-kafka:broker id="kafkaBroker" zk-connect="localhost:2181" zk-connection-timeout="10000"
+            zk-session-timeout="10000"
+            zk-sync-time="200" />
 
-	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
-                                       kafka-broker-ref="kafkaBroker"
-                                       kafka-decoder="kafkaDecoder"
-                                       topic="test" streams="1"
-                                       auto-startup="false"
-                                       channel="inputFromKafka">
-        <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="5000" max-messages-per-poll="100"/>
-    </int-kafka:inbound-channel-adapter>
-
-    <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">
-        <constructor-arg type="java.lang.Class" value="java.lang.String" />
-    </bean>
-
+    <int-kafka:broker id="defaultKafkaBroker" />
 </beans>

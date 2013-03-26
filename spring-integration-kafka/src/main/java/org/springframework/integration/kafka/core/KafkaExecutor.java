@@ -20,10 +20,12 @@ import kafka.consumer.ConsumerIterator;
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.serializer.Decoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.MessagingException;
-import org.springframework.integration.kafka.support.KafkaServer;
+import org.springframework.integration.kafka.support.KafkaBroker;
+import org.springframework.integration.kafka.support.KafkaConsumerContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,39 +49,34 @@ public class KafkaExecutor {
 
 	private static final Log logger = LogFactory.getLog(KafkaExecutor.class);
 
-    private final KafkaServer kafkaServer;
-    private String receiveTimeout = "5000";
-    private int maxMessagesPerPoll = 1;
+    private final KafkaBroker kafkaBroker;
     private ConsumerConnector consumerConnector;
+    private Decoder kafkaDecoder;
 
-    public KafkaExecutor(final KafkaServer kafkaServer){
-        this.kafkaServer = kafkaServer;
+    public KafkaExecutor(final KafkaBroker kafkaBroker){
+        this.kafkaBroker = kafkaBroker;
     }
 
-    public KafkaServer getKafkaServer() {
-        return kafkaServer;
+    public KafkaBroker getKafkaBroker() {
+        return kafkaBroker;
     }
 
-    public String getReceiveTimeout() {
-        return receiveTimeout;
+    public Decoder getKafkaDecoder() {
+        return kafkaDecoder;
     }
 
-    public int getMaxMessagesPerPoll() {
-        return maxMessagesPerPoll;
+    public void setKafkaDecoder(Decoder kafkaDecoder) {
+        this.kafkaDecoder = kafkaDecoder;
     }
 
-    public void setReceiveTimeout(String receiveTimeout) {
-        this.receiveTimeout = receiveTimeout;
-    }
-
-    public void setMaxMessagesPerPoll(int maxMessagesPerPoll) {
-        this.maxMessagesPerPoll = maxMessagesPerPoll;
-    }
-
-    public List<Object> poll(final String topic, final int partitions) {
-        final ConsumerIterator<byte[], byte[]> it = getKafkaConsumerIterator(topic, partitions);
+    /**
+     *
+     * @return list containing one or more Kafka messages
+     */
+    public List<Object> poll(final KafkaConsumerContext kafkaConsumerContext) {
+        final ConsumerIterator<byte[], byte[]> it = getKafkaConsumerIterator(kafkaConsumerContext);
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
-        final CountDownLatch latch = new CountDownLatch(maxMessagesPerPoll);
+        final CountDownLatch latch = new CountDownLatch(kafkaConsumerContext.getMaxMessagesPerPoll());
 
         final Future<List<Object>> future = executorService.submit(new Callable<List<Object>>() {
             @Override
@@ -114,10 +111,10 @@ public class KafkaExecutor {
         }
 	}
 
-    private ConsumerIterator<byte[], byte[]> getKafkaConsumerIterator(String topic, int partitions) {
+    private ConsumerIterator<byte[], byte[]> getKafkaConsumerIterator(final KafkaConsumerContext kafkaConsumerContext) {
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = getConsumerMapWithMessageStreams(
-                getTopicPartitionsMap(topic, partitions));
-        KafkaStream<byte[], byte[]> stream =  consumerMap.get(topic).get(0);
+                getTopicPartitionsMap(kafkaConsumerContext), kafkaConsumerContext);
+        KafkaStream<byte[], byte[]> stream =  consumerMap.get(kafkaConsumerContext.getTopic()).get(0);
         return stream.iterator();
     }
 
@@ -127,28 +124,32 @@ public class KafkaExecutor {
         }
     }
 
-    private Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams(Map<String, Integer> topicCountMap) {
-        return getConsumerConnector().createMessageStreams(topicCountMap);
+    private Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams(Map<String, Integer> topicCountMap,
+                                                                                            final KafkaConsumerContext kafkaConsumerContext) {
+        if (kafkaDecoder != null) {
+            return getConsumerConnector(kafkaConsumerContext).createMessageStreams(topicCountMap, kafkaDecoder, kafkaDecoder);
+        }
+        return  getConsumerConnector(kafkaConsumerContext).createMessageStreams(topicCountMap);
     }
 
-    private Map<String, Integer> getTopicPartitionsMap(String topic, int partitions) {
+    private Map<String, Integer> getTopicPartitionsMap(final KafkaConsumerContext kafkaConsumerContext) {
         final Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
-        topicCountMap.put(topic, partitions);
+        topicCountMap.put(kafkaConsumerContext.getTopic(), kafkaConsumerContext.getStreams());
         return topicCountMap;
     }
 
-    public synchronized ConsumerConnector getConsumerConnector() {
+    public synchronized ConsumerConnector getConsumerConnector(final KafkaConsumerContext kafkaConsumerContext) {
         if (consumerConnector != null) {
             return consumerConnector;
         }
         final Properties properties = new Properties();
-        properties.put("zk.connect", kafkaServer.getZkConnect());
-        properties.put("zk.connectiontimeout.ms", kafkaServer.getZkConnectionTimeout());
-        properties.put("group.id", kafkaServer.getGroupId());
-        properties.put("zk.session.timeout.ms", kafkaServer.getZkSessionTimeout());
-        properties.put("zk.sync.time.ms", kafkaServer.getZkSyncTime());
-        properties.put("auto.commit.interval.ms", kafkaServer.getAutoCommitInterval());
-        properties.put("consumer.timeout.ms", receiveTimeout);
+        properties.put("zk.connect", kafkaBroker.getZkConnect());
+        //properties.put("zk.connectiontimeout.ms", kafkaBroker.getZkConnectionTimeout());
+        properties.put("zk.session.timeout.ms", kafkaBroker.getZkSessionTimeout());
+        properties.put("zk.sync.time.ms", kafkaBroker.getZkSyncTime());
+        properties.put("auto.commit.interval.ms", kafkaConsumerContext.getAutoCommitInterval());
+        properties.put("consumer.timeout.ms", kafkaConsumerContext.getReceiveTimeout());
+        properties.put("group.id", kafkaConsumerContext.getGroupId());
 
         final ConsumerConfig consumerConfig = new ConsumerConfig(properties);
         consumerConnector = kafka.consumer.Consumer.createJavaConsumerConnector(consumerConfig);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
 	xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
 	xmlns:stream="http://www.springframework.org/schema/integration/stream"
 	xmlns:context="http://www.springframework.org/schema/context"
@@ -10,8 +11,17 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <int-kafka:server id="kafkaServer" zk-connect="localhost:2181" zk-connection-timeout="10000"
-            zk-session-timeout="10000" group-id="test_group"
-            zk-sync-time="200" auto-commit-interval="1000"/>
+    <context:component-scan base-package="org.springframework.integration.kafka.outound"></context:component-scan>
+    <context:component-scan base-package="org.springframework.integration.kafka.support"></context:component-scan>
+
+    <int-kafka:outbound-channel-adapter kafka-producer-context-ref="producerContext"
+                                        auto-startup="false"
+                                        id="inputToKafka" kafka-encoder="kafkaEncoder" topic="test"/>
+
+    <int-kafka:producer-context id="producerContext" broker-list="localhost:9092" zk-connect="127.0.0.1:2181"/>
+
+    <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
+        <constructor-arg type="java.lang.Class" value="java.lang.String" />
+    </bean>
 
 </beans>

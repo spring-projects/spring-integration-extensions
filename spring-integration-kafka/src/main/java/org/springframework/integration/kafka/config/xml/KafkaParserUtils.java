@@ -18,6 +18,7 @@ package org.springframework.integration.kafka.config.xml;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.integration.kafka.support.KafkaConsumerContext;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
 
@@ -58,5 +59,12 @@ public final class KafkaParserUtils {
 		return kafkaExecutorBuilder;
 
 	}
+
+    public static BeanDefinitionBuilder getKafkaConsumerContextBuilder(final Element element,
+                                                                       final ParserContext parserContext) {
+        final BeanDefinitionBuilder kafkaConsumerContextBuilder =
+                BeanDefinitionBuilder.genericBeanDefinition(KafkaConsumerContext.class);
+        return kafkaConsumerContextBuilder;
+    }
 
 }

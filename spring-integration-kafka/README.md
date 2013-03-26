@@ -1,7 +1,9 @@
 Spring Integration Kafka Adapter
 =================================================
 
-Welcome to the *Spring Integration Adapter Template*. This template is meant as a starting point for new Spring Integration Adapters.This template provides the following components:
+
+
+Welcome to the *Spring Integration Kafka adapter*. This template is meant as a starting point for new Spring Integration Adapters.This template provides the following components:
 
 * Outbound Channel Adapter
 * Outbound Gateway

@@ -19,6 +19,7 @@ import org.springframework.integration.Message;
 import org.springframework.integration.context.IntegrationObjectSupport;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.kafka.core.KafkaExecutor;
+import org.springframework.integration.kafka.support.KafkaConsumerContext;
 import org.springframework.integration.support.MessageBuilder;
 
 import java.util.List;
@@ -31,17 +32,16 @@ import java.util.List;
 public class HighLevelConsumerMessageSource extends IntegrationObjectSupport implements MessageSource<List<Object>> {
 
     private final KafkaExecutor kafkaExecutor;
+    private final KafkaConsumerContext kafkaConsumerContext;
 
-    private String topic;
-    private int partitionCount;
-
-    public HighLevelConsumerMessageSource(final KafkaExecutor kafkaExecutor) {
+    public HighLevelConsumerMessageSource(final KafkaExecutor kafkaExecutor, final KafkaConsumerContext kafkaConsumerContext) {
         this.kafkaExecutor = kafkaExecutor;
+        this.kafkaConsumerContext = kafkaConsumerContext;
     }
 
     @Override
     public Message<List<Object>> receive() {
-        List<Object> payload = kafkaExecutor.poll(topic, partitionCount);
+        List<Object> payload = kafkaExecutor.poll(kafkaConsumerContext);
         if (payload == null) {
             return null;
         }
@@ -51,13 +51,5 @@ public class HighLevelConsumerMessageSource extends IntegrationObjectSupport imp
     @Override
     public String getComponentType() {
         return "kafka:inbound-channel-adapter";
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public void setPartitionCount(int partitionCount) {
-        this.partitionCount = partitionCount;
     }
 }

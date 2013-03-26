@@ -30,7 +30,9 @@ public class KafkaNamespaceHandler extends AbstractIntegrationNamespaceHandler {
 	 * @see org.springframework.beans.factory.xml.NamespaceHandler#init()
 	 */
 	public void init() {
-        registerBeanDefinitionParser("server", new KafkaServerParser());
-		this.registerBeanDefinitionParser("inbound-channel-adapter",  new KafkaInboundChannelAdapterParser());
+        registerBeanDefinitionParser("broker", new KafkaBrokerParser());
+		registerBeanDefinitionParser("inbound-channel-adapter",  new KafkaInboundChannelAdapterParser());
+        registerBeanDefinitionParser("outbound-channel-adapter",  new KafkaOutboundChannelAdapterParser());
+        registerBeanDefinitionParser("producer-context",  new KafkaProducerContextParser());
 	}
 }

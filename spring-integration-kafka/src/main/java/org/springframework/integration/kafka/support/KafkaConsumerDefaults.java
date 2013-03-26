@@ -22,17 +22,24 @@ package org.springframework.integration.kafka.support;
  * @author Soby Chacko
  * @since 1.0
  */
-public class KafkaZooKeeperServerDefaults {
+public class KafkaConsumerDefaults {
 
-    public static String ZK_CONNECT = "localhost:2181";
-    public static String ZK_CONNECTION_TIMEOUT = "10000";
-    public static String ZK_SESSION_TIMEOUT = "10000";
-    public static String ZK_SYNC_TIME = "200";
-    public static String AUTO_COMMIT_INTERVAL = "1000";
+    //High level consumer
+    public static String GROUP_ID = "groupid";
+    public static String SOCKET_TIMEOUT = "30000";
+    public static String SOCKET_BUFFER_SIZE = "64*1024";
+    public static String FETCH_SIZE = "300 * 1024";
+    public static String BACKOFF_INCREMENT = "1000";
+    public static String QUEUED_CHUNKS_MAX = "100";
+    public static String AUTO_COMMIT_ENABLE = "true";
+    public static String AUTO_COMMIT_INTERVAL = "10000";
+    public static String AUTO_OFFSET_RESET = "smallest";
+    //Overriding the default value of -1, which will make the consumer to wait indefinitely
+    public static String CONSUMER_TIMEOUT = "5000";
+    public static String REBALANCE_RETRIES_MAX = "4";
 
 	/** Noninstantiable utility class */
-	private KafkaZooKeeperServerDefaults() {
+	private KafkaConsumerDefaults() {
 		throw new AssertionError();
 	}
-
 }

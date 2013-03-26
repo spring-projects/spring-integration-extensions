@@ -64,6 +64,8 @@ dependencies {
     compile("org.apache:kafka_2.9.2:0.8-SNAPSHOT") {
     exclude module: 'log4j'
     }
+    compile "org.apache.avro:avro:1.7.3"
+    compile "org.apache.avro:avro-compiler:1.7.3"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "junit:junit-dep:$junitVersion"

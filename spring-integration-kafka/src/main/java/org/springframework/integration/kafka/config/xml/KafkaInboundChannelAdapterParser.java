@@ -43,13 +43,12 @@ public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChan
 
         BeanDefinitionBuilder kafkaExecutorBuilder = KafkaParserUtils.getKafkaExecutorBuilder(element, parserContext);
 
-        String kafkaServerBeanName = element.getAttribute("kafka-server-ref");
+        String kafkaServerBeanName = element.getAttribute("kafka-broker-ref");
         if (StringUtils.hasText(kafkaServerBeanName)) {
             kafkaExecutorBuilder.addConstructorArgReference(kafkaServerBeanName);
         }
-        Element pollerElement = DomUtils.getChildElementByTagName(element, "poller");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaExecutorBuilder, pollerElement, "receive-timeout");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaExecutorBuilder, pollerElement, "max-messages-per-poll");
+
+        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(kafkaExecutorBuilder, element, "kafka-decoder");
 
         String channelAdapterId = this.resolveId(element, highLevelConsumerMessageSourceBuilder.getRawBeanDefinition(),
         				parserContext);
@@ -61,8 +60,21 @@ public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChan
 
         highLevelConsumerMessageSourceBuilder.addConstructorArgReference(kafkaExecutorBeanName);
 
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(highLevelConsumerMessageSourceBuilder, element, "topic");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(highLevelConsumerMessageSourceBuilder, element, "partitionCount");
+        BeanDefinitionBuilder kafkaConsumerContextBuilder = KafkaParserUtils.getKafkaConsumerContextBuilder(element, parserContext);
+
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, element, "topic");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, element, "streams");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, element, "groupId");
+
+        Element pollerElement = DomUtils.getChildElementByTagName(element, "poller");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, pollerElement, "receive-timeout");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, pollerElement, "max-messages-per-poll");
+
+        BeanDefinition kafkaConsumerContextBeanDefinition = kafkaConsumerContextBuilder.getBeanDefinition();
+        String kafkaConsumerContextBeanName = channelAdapterId + ".kafkaConsumerContext";
+        parserContext.registerBeanComponent(new BeanComponentDefinition(kafkaConsumerContextBeanDefinition,
+                kafkaConsumerContextBeanName));
+        highLevelConsumerMessageSourceBuilder.addConstructorArgReference(kafkaConsumerContextBeanName);
 
         return highLevelConsumerMessageSourceBuilder.getBeanDefinition();
 	}
