@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="whats-new"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Changes in 1.0.0</title>
+    <para>
+        This chapter provides an overview of new features and improvements
+        that have been added to the Voldemort Adapter.
+    </para>
+    <orderedlist>
+        <listitem>
+            Inbound Channel Adapter allows to poll data from Voldemort key-value store.
+            Supported features:
+            <itemizedlist>
+                <listitem>Periodically poll value persisted under given key.</listitem>
+                <listitem>Specify search key directly or as a Spring Expression Language statement.</listitem>
+                <listitem>Automatically remove data from Voldemort store after putting message into
+                    Spring Integration channel.</listitem>
+                <listitem>Control adapter startup time.</listitem>
+            </itemizedlist>
+        </listitem>
+        <listitem>
+            Outbound Channel Adapter allows to insert, update and delete data from
+            Voldemort key-value store. Supported features:
+            <itemizedlist>
+                <listitem>Define operation type (e.g. put or delete) on adapter and message level.</listitem>
+                <listitem>Order execution when chaining with other adapters.</listitem>
+                <listitem>Control adapter startup time.</listitem>
+            </itemizedlist>
+        </listitem>
+        <listitem>
+            Message store allows to persist Spring Integration messages in Voldemort database.
+        </listitem>
+    </orderedlist>
+</chapter>
