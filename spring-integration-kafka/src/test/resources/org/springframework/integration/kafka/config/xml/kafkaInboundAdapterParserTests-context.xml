@@ -16,10 +16,10 @@
 	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
                                        kafka-broker-ref="kafkaBroker"
                                        kafka-decoder="kafkaDecoder"
-                                       topic="test" streams="1"
+                                       topic="mytest" streams="4"
                                        auto-startup="false"
                                        channel="inputFromKafka">
-        <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="5000" max-messages-per-poll="100"/>
+        <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="5000" max-messages-per-poll="20000"/>
     </int-kafka:inbound-channel-adapter>
 
     <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">

@@ -27,6 +27,7 @@ import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.kafka.support.KafkaProducerContext;
 import scala.collection.mutable.HashMap;
 
+import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -65,19 +66,27 @@ public class KafkaProducerMessageHandler extends AbstractMessageHandler {
     @Override
     protected void handleMessageInternal(Message<?> message) throws Exception {
         final Properties props = new Properties();
-        //props.put("zk.connect", kafkaProducerContext.getZkConnect());
         props.put("broker.list", kafkaProducerContext.getBrokerList());
         final ProducerConfig config = new ProducerConfig(props);
 
-        final EventHandler eventHandler  = new DefaultEventHandler(config, null, kafkaEncoder,
+        final EventHandler eventHandler  = new DefaultEventHandler(config, new NaivePartitioner(), kafkaEncoder,
                         kafkaEncoder, new ProducerPool(config), new HashMap<String, TopicMetadata>());
 
         final kafka.producer.Producer prod = new kafka.producer.Producer(config, eventHandler);
 
         final kafka.javaapi.producer.Producer producer =
                        new kafka.javaapi.producer.Producer<String, String>(prod);
+        if (Collection.class.isInstance(message.getPayload())){
+            final Collection<Object> payloads = (Collection<Object>) message.getPayload();
 
-        producer.send(new KeyedMessage<Integer, Object>(getTopic(), message.getPayload()));
+            for (final Object payload : payloads) {
+                producer.send(new KeyedMessage<String, Object>(getTopic(), String.valueOf(payload.hashCode()), payload));
+            }
+        }
+        else {
+            producer.send(new KeyedMessage<String, Object>(getTopic(), String.valueOf(message.hashCode()), message.getPayload()));
+        }
+        producer.close();
 
     }
 }

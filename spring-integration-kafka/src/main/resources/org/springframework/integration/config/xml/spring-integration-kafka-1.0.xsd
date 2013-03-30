@@ -245,6 +245,9 @@
         </xsd:annotation>
 
         <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
+            </xsd:sequence>
             <xsd:attribute name="id" type="xsd:string" use="optional">
                 <xsd:annotation>
                     <xsd:documentation>

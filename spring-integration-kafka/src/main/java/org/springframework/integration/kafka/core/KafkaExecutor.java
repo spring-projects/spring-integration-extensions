@@ -26,9 +26,11 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.kafka.support.KafkaBroker;
 import org.springframework.integration.kafka.support.KafkaConsumerContext;
+import org.springframework.validation.BindingResultUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -69,55 +71,6 @@ public class KafkaExecutor {
         this.kafkaDecoder = kafkaDecoder;
     }
 
-    /**
-     *
-     * @return list containing one or more Kafka messages
-     */
-    public List<Object> poll(final KafkaConsumerContext kafkaConsumerContext) {
-        final ConsumerIterator<byte[], byte[]> it = getKafkaConsumerIterator(kafkaConsumerContext);
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
-        final CountDownLatch latch = new CountDownLatch(kafkaConsumerContext.getMaxMessagesPerPoll());
-
-        final Future<List<Object>> future = executorService.submit(new Callable<List<Object>>() {
-            @Override
-            public List<Object> call() throws Exception {
-                final List<Object> messages = new ArrayList<Object>();
-                try {
-                    while(latch.getCount() > 0) {
-                        messages.add(it.next().message());
-                        latch.countDown();
-                    }
-                }
-                catch (ConsumerTimeoutException cte) {
-                    logger.info("Consumer timed out");
-                }
-                finally {
-                    clearAllLatches(latch);
-                }
-                return messages;
-            }
-        });
-
-        try{
-            latch.await();
-            return future.get();
-        }
-        catch(Exception e) {
-            String errorMsg = "Consuming from Kafka failed";
-            logger.warn(errorMsg, e);
-            throw new MessagingException(errorMsg, e);
-        } finally {
-            executorService.shutdown();
-        }
-	}
-
-    private ConsumerIterator<byte[], byte[]> getKafkaConsumerIterator(final KafkaConsumerContext kafkaConsumerContext) {
-        Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = getConsumerMapWithMessageStreams(
-                getTopicPartitionsMap(kafkaConsumerContext), kafkaConsumerContext);
-        KafkaStream<byte[], byte[]> stream =  consumerMap.get(kafkaConsumerContext.getTopic()).get(0);
-        return stream.iterator();
-    }
-
     private void clearAllLatches(CountDownLatch latch) {
         while (latch.getCount() > 0){
             latch.countDown();
@@ -156,4 +109,60 @@ public class KafkaExecutor {
 
         return consumerConnector;
     }
+
+    public List<Object> poll(final KafkaConsumerContext kafkaConsumerContext) {
+        final List<KafkaStream<byte[], byte[]>> streams = getKafkaConsumerStreams(kafkaConsumerContext);
+        final ExecutorService executorService = Executors.newFixedThreadPool(4);
+        final CountDownLatch latch = new CountDownLatch(kafkaConsumerContext.getMaxMessagesPerPoll());
+
+        final List<Callable<List<Object>>> tasks = new LinkedList<Callable<List<Object>>>();
+
+        final List<Object> messageAggregate = new ArrayList<Object>();
+
+        for (final KafkaStream<byte[], byte[]> stream : streams)   {
+
+             tasks.add(new Callable<List<Object>>() {
+                 @Override
+                 public List<Object> call() throws Exception {
+                     final List<Object> messages = new ArrayList<Object>();
+                     try {
+                         while(latch.getCount() > 0) {
+                             messages.add(stream.iterator().next().message());
+                             latch.countDown();
+                         }
+                     }
+                     catch (ConsumerTimeoutException cte) {
+                         logger.info("Consumer timed out");
+                     }
+                     finally {
+                         clearAllLatches(latch);
+                     }
+                     return messages;
+                 }
+             });
+        }
+
+        try{
+
+            for(Future<List<Object>> result : executorService.invokeAll(tasks)) {
+                messageAggregate.add(result.get());
+            }
+                //latch.await();
+                return messageAggregate;
+        }
+        catch(Exception e) {
+            String errorMsg = "Consuming from Kafka failed";
+            logger.warn(errorMsg, e);
+            throw new MessagingException(errorMsg, e);
+        } finally {
+            executorService.shutdown();
+        }
+    }
+
+        private List<KafkaStream<byte[], byte[]>> getKafkaConsumerStreams(final KafkaConsumerContext kafkaConsumerContext) {
+            Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = getConsumerMapWithMessageStreams(
+                    getTopicPartitionsMap(kafkaConsumerContext), kafkaConsumerContext);
+            List<KafkaStream<byte[], byte[]>> streams =  consumerMap.get(kafkaConsumerContext.getTopic());
+            return streams;
+        }
 }

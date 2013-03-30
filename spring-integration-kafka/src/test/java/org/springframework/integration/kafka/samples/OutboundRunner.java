@@ -19,6 +19,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.MessageChannel;
 import org.springframework.integration.message.GenericMessage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class OutboundRunner {
 
     public static void main(String args[]) {
@@ -32,10 +35,14 @@ public class OutboundRunner {
         final MessageChannel channel = ctx.getBean("inputToKafka", MessageChannel.class);
                 System.out.println(channel.getClass());
 
+                final List<String> payloads = new ArrayList<String>();
+               for(int i= 0; i < 50000; i++)  {
 
-               for(int i= 0; i < 1000; i++)  {
-                channel.send(new GenericMessage<String>("hello Fom ob adapter -  " + i));
+                   payloads.add("hello Fom ob adapter -  " + i);
+                //channel.send(new GenericMessage<String>("hello Fom ob adapter -  " + i));
+                   System.out.println("Added " + i);
                }
+        channel.send(new GenericMessage<List<String>>(payloads));
         System.out.println("message sent");
     }
 
