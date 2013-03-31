@@ -370,9 +370,21 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * Deletes the object with the given name from the provided bucket and folder.
 	 *
 	 */
-	public boolean removeObject(String bucketName, String folder,
+	public void removeObject(String bucketName, String folder,
 			String objectName) {
-		throw new UnsupportedOperationException("Operation not et supported");
+		Assert.hasText(bucketName,"null or empty bucketName provided");
+		Assert.hasText(objectName,"null or empty object name provided");
+		String key = getKeyFromFolder(folder, objectName);
+		try {
+			doRemove(bucketName, key);
+		} catch (Exception e) {
+			throw new AmazonS3OperationException(
+					credentials.getAccessKey(), bucketName,
+					key,
+					"Encountered exception while removing an object, see root cause for more details",
+					e);
+
+		}
 	}
 
 	/**
@@ -469,6 +481,17 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 */
 	protected abstract void doPut(String bucket,String key,File file,
 			AmazonS3ObjectACL objectACL, Map<String, String> userMetadata,String stringContentMD5);
+
+
+	/**
+	 * The abstract method that is to be implemented by the subclass that would be doing the job of
+	 * deleting the
+	 *
+	 * @param bucket The bucket on S3 where this object is to be put
+	 * @param key The key against which this Object is to be stored in S3
+	 *
+	 */
+	protected abstract void doRemove(String bucket, String key);
 
 }
 

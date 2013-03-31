@@ -28,11 +28,9 @@ import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * The common utility methods for the
+ * The common utility methods
  *
  * @author Amol Nayak
  *
@@ -40,8 +38,6 @@ import org.apache.commons.logging.LogFactory;
  *
  */
 public class AWSCommonUtils {
-
-	private static final Log logger = LogFactory.getLog(AWSCommonUtils.class);
 
 	/**
 	 * Generates the MD5 hash of the file provided

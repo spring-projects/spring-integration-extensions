@@ -285,6 +285,22 @@ public class DefaultAmazonS3Operations extends AbstractAmazonS3Operations {
 		}
 	}
 
+
+
+	/**
+	 * The implementation removes the given key from the bucket provided the given key.
+	 *
+	 * @param bucket the bucket from which the object is to be deleted
+	 * @param key The key representing the object to be deleted
+	 *
+	 * @return true if delete is successful else false
+	 *
+	 */
+	@Override
+	protected void doRemove(String bucket, String key) {
+		client.deleteObject(bucket, key);
+	}
+
 	/**
 	 * Gets the {@link AccessControlList} from the given {@link AmazonS3ObjectACL}
 	 */

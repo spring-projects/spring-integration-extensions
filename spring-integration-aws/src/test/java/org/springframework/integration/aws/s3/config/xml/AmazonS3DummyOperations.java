@@ -47,9 +47,7 @@ public class AmazonS3DummyOperations implements AmazonS3Operations {
 	}
 
 	@Override
-	public boolean removeObject(String bucketName, String folder,
+	public void removeObject(String bucketName, String folder,
 			String objectName) {
-		return false;
 	}
-
 }

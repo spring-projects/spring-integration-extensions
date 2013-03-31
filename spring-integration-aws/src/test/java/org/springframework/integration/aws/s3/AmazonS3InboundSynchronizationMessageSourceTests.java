@@ -204,6 +204,11 @@ public class AmazonS3InboundSynchronizationMessageSourceTests {
 			protected AmazonS3Object doGetObject(String bucketName, String key) {
 				return null;
 			}
+
+			@Override
+			protected void doRemove(String bucket, String key) {
+
+			}
 		};
 
 		AmazonS3InboundSynchronizationMessageSource src = new AmazonS3InboundSynchronizationMessageSource();
