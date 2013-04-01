@@ -15,6 +15,9 @@
  */
 package org.springframework.integration.kafka.support;
 
+import kafka.serializer.Decoder;
+import org.springframework.integration.kafka.core.KafkaConsumerDefaults;
+
 /**
  * Created with IntelliJ IDEA.
  * User: chackos
@@ -40,6 +43,25 @@ public class KafkaConsumerContext {
     private String topic;
     private int streams;
     private int maxMessagesPerPoll = 1;
+    private Decoder kafkaDecoder;
+
+    private final KafkaBroker kafkaBroker;
+
+    public KafkaConsumerContext(final KafkaBroker kafkaBroker) {
+        this.kafkaBroker = kafkaBroker;
+    }
+
+    public KafkaBroker getKafkaBroker() {
+        return kafkaBroker;
+    }
+
+    public Decoder getKafkaDecoder() {
+        return kafkaDecoder;
+    }
+
+    public void setKafkaDecoder(Decoder kafkaDecoder) {
+        this.kafkaDecoder = kafkaDecoder;
+    }
 
     public String getReceiveTimeout() {
         return receiveTimeout;

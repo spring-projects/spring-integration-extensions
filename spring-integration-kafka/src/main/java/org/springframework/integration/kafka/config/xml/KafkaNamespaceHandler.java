@@ -34,5 +34,7 @@ public class KafkaNamespaceHandler extends AbstractIntegrationNamespaceHandler {
 		registerBeanDefinitionParser("inbound-channel-adapter",  new KafkaInboundChannelAdapterParser());
         registerBeanDefinitionParser("outbound-channel-adapter",  new KafkaOutboundChannelAdapterParser());
         registerBeanDefinitionParser("producer-context",  new KafkaProducerContextParser());
+        registerBeanDefinitionParser("consumer-context",  new KafkaConsumerContextParser());
+
 	}
 }

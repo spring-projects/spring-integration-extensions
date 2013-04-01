@@ -16,8 +16,6 @@
 package org.springframework.integration.kafka.config.xml;
 
 import org.springframework.beans.BeanMetadataElement;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractPollingInboundChannelAdapterParser;
@@ -41,40 +39,16 @@ public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChan
         final BeanDefinitionBuilder highLevelConsumerMessageSourceBuilder =
                         BeanDefinitionBuilder.genericBeanDefinition(HighLevelConsumerMessageSource.class);
 
-        BeanDefinitionBuilder kafkaExecutorBuilder = KafkaParserUtils.getKafkaExecutorBuilder(element, parserContext);
-
-        String kafkaServerBeanName = element.getAttribute("kafka-broker-ref");
-        if (StringUtils.hasText(kafkaServerBeanName)) {
-            kafkaExecutorBuilder.addConstructorArgReference(kafkaServerBeanName);
-        }
-
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(kafkaExecutorBuilder, element, "kafka-decoder");
-
-        String channelAdapterId = this.resolveId(element, highLevelConsumerMessageSourceBuilder.getRawBeanDefinition(),
-        				parserContext);
-        String kafkaExecutorBeanName = channelAdapterId + ".kafkaExecutor";
-
-        BeanDefinition kafkaExecutorBuilderBeanDefinition = kafkaExecutorBuilder.getBeanDefinition();
-        parserContext.registerBeanComponent(new BeanComponentDefinition(kafkaExecutorBuilderBeanDefinition,
-                kafkaExecutorBeanName));
-
-        highLevelConsumerMessageSourceBuilder.addConstructorArgReference(kafkaExecutorBeanName);
-
-        BeanDefinitionBuilder kafkaConsumerContextBuilder = KafkaParserUtils.getKafkaConsumerContextBuilder(element, parserContext);
-
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, element, "topic");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, element, "streams");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, element, "groupId");
-
         Element pollerElement = DomUtils.getChildElementByTagName(element, "poller");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, pollerElement, "receive-timeout");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaConsumerContextBuilder, pollerElement, "max-messages-per-poll");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(highLevelConsumerMessageSourceBuilder, pollerElement, "receive-timeout");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(highLevelConsumerMessageSourceBuilder, pollerElement, "max-messages-per-poll");
 
-        BeanDefinition kafkaConsumerContextBeanDefinition = kafkaConsumerContextBuilder.getBeanDefinition();
-        String kafkaConsumerContextBeanName = channelAdapterId + ".kafkaConsumerContext";
-        parserContext.registerBeanComponent(new BeanComponentDefinition(kafkaConsumerContextBeanDefinition,
-                kafkaConsumerContextBeanName));
-        highLevelConsumerMessageSourceBuilder.addConstructorArgReference(kafkaConsumerContextBeanName);
+        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(highLevelConsumerMessageSourceBuilder, element, "kafka-decoder");
+
+        String kafkaConsumerContext = element.getAttribute("kafka-consumer-context-ref");
+        if (StringUtils.hasText(kafkaConsumerContext)) {
+            highLevelConsumerMessageSourceBuilder.addConstructorArgReference(kafkaConsumerContext);
+        }
 
         return highLevelConsumerMessageSourceBuilder.getBeanDefinition();
 	}

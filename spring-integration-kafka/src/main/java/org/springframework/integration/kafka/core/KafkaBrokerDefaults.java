@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.kafka.support;
+package org.springframework.integration.kafka.core;
 
 /**
  * Created with IntelliJ IDEA.

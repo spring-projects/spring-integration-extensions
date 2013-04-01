@@ -32,18 +32,6 @@ public class AvroBackedKafkaSerializerTest {
     @Test
     public void testDecodePlainSchema() {
 
-        String schemaDescription = " {    \n"
-                       + " \"testData1\": \"FacebookUser\", \n"
-                       + " \"type\": \"record\",\n" + " \"fields\": [\n"
-                       + "   {\"testData1\": \"testData1\", \"type\": \"string\"},\n"
-                       + "   {\"testData1\": \"testData2\", \"type\": \"int\"},\n"
-                       + "   {\"testData1\": \"num_photos\", \"type\": \"int\"},\n"
-                       + "   {\"testData1\": \"numGroups\", \"type\": \"int\"} ]\n" + "}";
-
-
-        //Schema schema = Schema.parse(schemaDescription);
-        //Schema schema = ReflectData.get().getSchema(TestObject.class);
-
         AvroBackedKafkaEncoder avroBackedKafkaEncoder = new AvroBackedKafkaEncoder(TestObject.class);
         TestObject testObject = new TestObject();
         testObject.setTestData1("\"Test Data1\"");
@@ -61,7 +49,6 @@ public class AvroBackedKafkaSerializerTest {
     @SuppressWarnings("unchecked")
         @Test
         public void anotherTest() {
-            Schema schema = ReflectData.get().getSchema(java.lang.String.class);
             AvroBackedKafkaEncoder avroBackedKafkaEncoder = new AvroBackedKafkaEncoder(java.lang.String.class);
             String s = "Testing Avro";
             final byte[] data = avroBackedKafkaEncoder.toBytes(s);

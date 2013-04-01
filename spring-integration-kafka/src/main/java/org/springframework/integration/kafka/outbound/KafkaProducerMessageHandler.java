@@ -87,6 +87,5 @@ public class KafkaProducerMessageHandler extends AbstractMessageHandler {
             producer.send(new KeyedMessage<String, Object>(getTopic(), String.valueOf(message.hashCode()), message.getPayload()));
         }
         producer.close();
-
     }
 }

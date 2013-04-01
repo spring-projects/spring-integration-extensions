@@ -40,7 +40,6 @@ public class KafkaOutboundChannelAdapterParser extends AbstractOutboundChannelAd
         final BeanDefinitionBuilder kafkaProducerMessageHandlerBuilder =
                                 BeanDefinitionBuilder.genericBeanDefinition(KafkaProducerMessageHandler.class);
 
-
         String kafkaServerBeanName = element.getAttribute("kafka-producer-context-ref");
         if (StringUtils.hasText(kafkaServerBeanName)) {
             kafkaProducerMessageHandlerBuilder.addConstructorArgReference(kafkaServerBeanName);

@@ -15,6 +15,8 @@
  */
 package org.springframework.integration.kafka.support;
 
+import org.springframework.integration.kafka.core.KafkaBrokerDefaults;
+
 /**
  * @author Soby Chacko
  */
