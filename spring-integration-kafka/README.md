@@ -2,169 +2,54 @@ Spring Integration Kafka Adapter
 =================================================
 
 
+Welcome to the *Spring Integration Kafka adapter*. Apache Kafka is a distributed publish-subscribe messaging system that is designed for handling terra bytes of high throughput
+data at constant time. For more information on Kafka and its design goals, please see [Kafka main page](http://kafka.apache.org/)
 
-Welcome to the *Spring Integration Kafka adapter*. This template is meant as a starting point for new Spring Integration Adapters.This template provides the following components:
+Spring Integration Kafka adapters are built for Kafka 0.8 and since Kafka 0.8 is not backward compatible with any previous versions of Kafka, Spring Integration will not
+support any Kafka versions prior to 0.8. As of this writing, Kafka 0.8 is still WIP.
 
-* Outbound Channel Adapter
-* Outbound Gateway
+Spring Integration Kafka project currently supports the two following components.
+
 * Inbound Channel Adapter
-
-However, this template may also be useful in order to create other Spring Integration extensions containing for example *Transformers*, Marshallers etc.
-
-# STS issues to be aware of
-
-* [STS-2866](https://issuetracker.springsource.com/browse/STS-2866)
-
-As of the current stable version of STS 3.0.0, it is currently impossible to replace version numbers in file names. Therefore, the versions of the XML schemas are hard-coded to a value of *1.0*. If you have defined a different version through the STS template wizard, please change the schema versions accordingly. You will need to rename:
-
-	src/main/resources/your_package/config/xml/spring-integration-1.0.xsd
-
-You will also need to change the version numbers in file:
-
-	src/main/resources/META-INF/spring.schemas
-
-This issue will be addressed for STS 3.1.0.
-
-# FAQ
-
-This section provides some additional information, that may help you to create better *Spring Integration* components. 
-
-## How are the packages structured?
-
-### Base package
-
-In many instances, the base package may not contain any classes at all. However, if you define custom Spring Integration message headers or provide module specific exceptions types, this package will be a good choice to store those types of classes.
-
-### config.xml
-
-Parser classes for the XML Namespace support go into this package.
-
-### config.annotation
-
-If your *Spring Integration* module provides custom annotations, the relevant configuration classes go into this package.
-
-### config.xml
-
-Used for common configuration classes.
-
-### core
-
-Contains the core component logic that is typically shared across the various components you define. 
-
-### inbound
-
-Contains classes for inbound adapters.
-
-### outbound
-
-Contains classes for outbound adapters.
-
-### support
-
-Contains for example utility classes.
-
-## I need to add AOP Advices to my adapters
-
-Use *FactoryBeans* that wrap your adapter. See the *Spring Integration JPA Adapter* for an example.
-
-## How do I provide documentation for my custom modules?
-
-We typically recommend 2 approaches:
-
-* DocBook 
-* Markdown formatted README.md files
-
-### DocBook
-
-Traditionally, *Spring* projects have relied on DocBook to provide documentation. By conforming to the DocBook XML syntax, you are easily able to generate PDF and HTML documentation. The adapter template provide DocBook support out of the box. You can find preliminary stubbed out documentation under *src/reference/docbook*. In order to build the reference documentation (results will be in `build/reference`), execute:
-
-    ./gradlew reference
-
-### Markdown formatted README.md files
-
-If you use *GitHub* for the hosting of your projects, you may also consider using its sophisticated Markdown support. GitHub will provide a nice rendering of your readme files right in the source code repository. 
-
-## Can I install the artifacts of my adapter to the local Maven cache?
-
-Yes. To build and install jars into your local Maven cache, please execute:
-
-    ./gradlew install
-
-Please also review the settings in **publish-maven.gradle**. Within that file you can specify various POM.xml-specific meta-data such as licensing, developer and scm information.
-
-# Building
-
-If you encounter out of memory errors during the build, increase available heap and permgen for Gradle:
-
-    GRADLE_OPTS='-XX:MaxPermSize=1024m -Xmx1024m'
-
-To build and install jars into your local Maven cache:
-
-    ./gradlew install
-
-To build api Javadoc (results will be in `build/api`):
-
-    ./gradlew api
-
-To build reference documentation (results will be in `build/reference`):
-
-    ./gradlew reference
-
-To build complete distribution including `-dist`, `-docs`, and `-schema` zip files (results will be in `build/distributions`)
-
-    ./gradlew dist
-
-# IDE Support
-
-While your custom Spring Integration Adapter is initially created with SpringSource Tool Suite, you in fact end up with a Gradle-based project. As such, the created project can be imported into other IDEs as well.
-
-## Using SpringSource Tool Suite
-
-Gradle projects can be directly imported into STS. But please make sure that you have the Gradle support installed.
-
-## Using Plain Eclipse
-
-To generate Eclipse metadata (*.classpath* and *.project* files), do the following:
-
-    ./gradlew eclipse
-
-Once complete, you may then import the project into Eclipse as usual:
-
- *File -> Import -> Existing projects into workspace*
-
-Browse to the root directory of the project and it should import free of errors.
-
-## Using IntelliJ IDEA
-
-To generate IDEA metadata (.iml and .ipr files), do the following:
-
-    ./gradlew idea
-
-# Further Resources
-
-## Getting support
-
-Check out the [Spring Integration forums][] and the [spring-integration][spring-integration tag] tag
-on [Stack Overflow][]. [Commercial support][] is available, too.
-
-## Related GitHub projects
-
-* [Spring Integration][]
-* [Spring Integration Samples][]
-* [Spring Integration Templates][]
-* [Spring Integration Dsl Groovy][]
-* [Spring Integration Dsl Scala][]
-* [Spring Integration Pattern Catalog][]
-
-For more information, please also don't forget to visit the [Spring Integration][] website.
-
-[Spring Integration]: https://github.com/SpringSource/spring-integration
-[Commercial support]: http://springsource.com/support/springsupport
-[Spring Integration forums]: http://forum.springsource.org/forumdisplay.php?42-Integration
-[spring-integration tag]: http://stackoverflow.com/questions/tagged/spring-integration
-[Spring Integration Samples]: https://github.com/SpringSource/spring-integration-samples
-[Spring Integration Templates]: https://github.com/SpringSource/spring-integration-templates/tree/master/si-sts-templates
-[Spring Integration Dsl Groovy]: https://github.com/SpringSource/spring-integration-dsl-groovy
-[Spring Integration Dsl Scala]: https://github.com/SpringSource/spring-integration-dsl-scala
-[Spring Integration Pattern Catalog]: https://github.com/SpringSource/spring-integration-pattern-catalog
-[Stack Overflow]: http://stackoverflow.com/faq
+* Outbound Channel Adapter
+
+Inbound Channel Adapter :
+-------------------------------------------------
+
+The Inbound channel adapter is used to consume messages from Kafka. These messages will be placed into a Spring Integration channel as Spring Integration specific Messages.
+
+Here is how an Inbound channel adapter is configured:
+
+```xml
+	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
+           kafka-consumer-context-ref="consumerContext"
+           auto-startup="false"
+           channel="inputFromKafka">
+        <int:poller fixed-delay="100" time-unit="MILLISECONDS" receive-timeout="5000" max-messages-per-poll="1000"/>
+    </int-kafka:inbound-channel-adapter>
+```
+
+Inbound Kafka Adapter must specify a kafka-consumer-context-ref element and here is how it may be configured:
+
+```xml
+   <int-kafka:consumer-context id="consumerContext" kafka-broker-ref="kafkaBroker" kafka-decoder="kafkaDecoder"
+               topic="mytest" streams="4"/>
+```
+
+Here is how a kafka-broker is configured for the consumer context:
+
+```xml
+    <int-kafka:broker id="kafkaBroker" zk-connect="localhost:2181" zk-connection-timeout="6000"
+                    zk-session-timeout="6000"
+                    zk-sync-time="2000" />
+```
+
+Kafka decoder is optional in the consumer context. However, it is highly recommended to provide a decoder as otherwise Kafka would default to its built in
+deserizlier which is a no-op decoder and the consumer would receive raw byte arrays. Spring Integration Kafka adapter gives Apache Avro based data serialization components
+out of the box. You can use any serialization component for this purpose. Here is how you would configure a kafka decoder that is Avro backed.
+
+```xml
+   <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">
+           <constructor-arg type="java.lang.Class" value="java.lang.String" />
+   </bean>
+```
