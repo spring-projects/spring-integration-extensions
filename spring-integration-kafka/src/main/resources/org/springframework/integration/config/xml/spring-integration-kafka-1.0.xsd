@@ -134,52 +134,52 @@
             <xsd:complexType>
                 <xsd:attribute name="id" type="xsd:string" use="required" />
                 <xsd:attribute name="group-id" use="optional">
-                                           <xsd:annotation>
-                                               <xsd:documentation><![CDATA[
-                                                       Indicates the Kafka consumer group id
-                                               ]]></xsd:documentation>
-                                               <xsd:appinfo>
-                                                   <tool:annotation kind="direct">
-                                                       <tool:expected-type type="java.lang.String" />
-                                                   </tool:annotation>
-                                               </xsd:appinfo>
-                                           </xsd:annotation>
-                                       </xsd:attribute>
-                            <xsd:attribute name="topic" type="xsd:string">
-                                <xsd:annotation>
-                                    <xsd:appinfo>
-                                        <tool:annotation kind="ref">
-                                            <tool:expected-type
-                                                type="org.springframework.integration.core.MessageChannel" />
-                                        </tool:annotation>
-                                    </xsd:appinfo>
-                                </xsd:annotation>
-                            </xsd:attribute>
-                            <xsd:attribute name="streams" type="xsd:string">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Number of streams that the inbound channel adapter (kafka consumer) is configured with.
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                            </xsd:attribute>
+                   <xsd:annotation>
+                       <xsd:documentation><![CDATA[
+                               Indicates the Kafka consumer group id
+                       ]]></xsd:documentation>
+                       <xsd:appinfo>
+                           <tool:annotation kind="direct">
+                               <tool:expected-type type="java.lang.String" />
+                           </tool:annotation>
+                       </xsd:appinfo>
+                   </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="topic" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:appinfo>
+                            <tool:annotation kind="ref">
+                                <tool:expected-type
+                                    type="org.springframework.integration.core.MessageChannel" />
+                            </tool:annotation>
+                        </xsd:appinfo>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="streams" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Number of streams that the inbound channel adapter (kafka consumer) is configured with.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="kafka-broker-ref" use="required"
                                                 type="xsd:string">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Kafka Server Bean Name
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="kafka-decoder" use="optional"
-                                                        type="xsd:string">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            Kafka Server Bean Name
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Kafka Server Bean Name
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="kafka-decoder" use="optional"
+                                                type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Kafka Server Bean Name
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:complexType>
-        </xsd:element>
+    </xsd:element>
 
 	<xsd:element name="inbound-channel-adapter">
 		<xsd:annotation>
@@ -233,29 +233,12 @@
                        </xsd:attribute>
             <xsd:attribute name="kafka-consumer-context-ref" use="required"
                                                                 type="xsd:string">
-                                            <xsd:annotation>
-                                                <xsd:documentation>
-                                                    Kafka Server Bean Name
-                                                </xsd:documentation>
-                                            </xsd:annotation>
-                                        </xsd:attribute>
-            <!--<xsd:attribute name="topic" type="xsd:string">-->
-                <!--<xsd:annotation>-->
-                    <!--<xsd:appinfo>-->
-                        <!--<tool:annotation kind="ref">-->
-                            <!--<tool:expected-type-->
-                                <!--type="org.springframework.integration.core.MessageChannel" />-->
-                        <!--</tool:annotation>-->
-                    <!--</xsd:appinfo>-->
-                <!--</xsd:annotation>-->
-            <!--</xsd:attribute>-->
-            <!--<xsd:attribute name="streams" type="xsd:string">-->
-                <!--<xsd:annotation>-->
-                    <!--<xsd:documentation>-->
-                        <!--Number of streams that the inbound channel adapter (kafka consumer) is configured with.-->
-                    <!--</xsd:documentation>-->
-                <!--</xsd:annotation>-->
-            <!--</xsd:attribute>-->
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Kafka Server Bean Name
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 
@@ -281,22 +264,6 @@
 				<xsd:union memberTypes="xsd:boolean xsd:string" />
 			</xsd:simpleType>
 		</xsd:attribute>
-      <!--  <xsd:attribute name="kafka-broker-ref" use="required"
-                                type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Kafka Server Bean Name
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="kafka-decoder" use="optional"
-                                        type="xsd:string">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            Kafka Server Bean Name
-                        </xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>   -->
 	</xsd:attributeGroup>
 
     <xsd:element name="outbound-channel-adapter">
@@ -359,17 +326,15 @@
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="topic" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:appinfo>
-                                            <tool:annotation kind="ref">
-                                                <tool:expected-type
-                                                    type="org.springframework.integration.core.MessageChannel" />
-                                            </tool:annotation>
-                                        </xsd:appinfo>
-                                    </xsd:annotation>
-                     </xsd:attribute>
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <tool:annotation kind="ref">
+                            <tool:expected-type
+                                type="org.springframework.integration.core.MessageChannel" />
+                        </tool:annotation>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:attribute>
         </xsd:complexType>
-
     </xsd:element>
-
 </xsd:schema>

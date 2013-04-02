@@ -31,11 +31,8 @@ import java.util.Collection;
 import java.util.Properties;
 
 /**
- * Created with IntelliJ IDEA.
- * User: chackos
- * Date: 3/26/13
- * Time: 12:54 AM
- * To change this template use File | Settings | File Templates.
+ * @author Soby Chacko
+ *
  */
 public class KafkaProducerMessageHandler extends AbstractMessageHandler {
 

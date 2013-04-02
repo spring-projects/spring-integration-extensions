@@ -28,11 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * Created with IntelliJ IDEA.
- * User: chackos
- * Date: 3/24/13
- * Time: 7:53 PM
- * To change this template use File | Settings | File Templates.
+ * @author Soby Chacko
  */
 public class AvroSpecificDatumSerializer<T> {
 

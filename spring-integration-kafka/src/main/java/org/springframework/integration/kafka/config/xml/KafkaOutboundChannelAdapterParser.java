@@ -25,11 +25,9 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Created with IntelliJ IDEA.
- * User: chackos
- * Date: 3/26/13
- * Time: 12:51 AM
- * To change this template use File | Settings | File Templates.
+ *
+ * @author Soby Chacko
+ *
  */
 public class KafkaOutboundChannelAdapterParser extends AbstractOutboundChannelAdapterParser {
 

@@ -16,11 +16,8 @@
 package org.springframework.integration.kafka.support;
 
 /**
- * Created with IntelliJ IDEA.
- * User: chackos
- * Date: 3/26/13
- * Time: 12:30 AM
- * To change this template use File | Settings | File Templates.
+ * @author Soby Chacko
+ *
  */
 public class KafkaProducerContext {
 

@@ -42,7 +42,6 @@ import java.util.concurrent.Future;
 
 /**
  * @author Soby Chacko
- * @since 1.0
  *
  */
 public class HighLevelConsumerMessageSource extends IntegrationObjectSupport implements MessageSource<List<Object>> {

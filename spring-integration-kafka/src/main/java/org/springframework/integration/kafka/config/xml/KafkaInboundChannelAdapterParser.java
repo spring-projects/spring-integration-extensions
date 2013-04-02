@@ -29,7 +29,6 @@ import org.w3c.dom.Element;
  * The Kafka Inbound Channel adapter parser
  *
  * @author Soby Chacko
- * @since 1.0
  *
  */
 public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChannelAdapterParser{

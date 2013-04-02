@@ -21,7 +21,6 @@ import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHa
  * The namespace handler for the Kafka namespace
  *
  * @author Soby Chacko
- * @since 1.0
  *
  */
 public class KafkaNamespaceHandler extends AbstractIntegrationNamespaceHandler {

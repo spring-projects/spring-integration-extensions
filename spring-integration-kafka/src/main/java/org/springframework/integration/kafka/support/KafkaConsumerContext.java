@@ -19,11 +19,7 @@ import kafka.serializer.Decoder;
 import org.springframework.integration.kafka.core.KafkaConsumerDefaults;
 
 /**
- * Created with IntelliJ IDEA.
- * User: chackos
- * Date: 3/25/13
- * Time: 5:16 PM
- * To change this template use File | Settings | File Templates.
+ * @author Soby Chacko
  */
 public class KafkaConsumerContext {
 

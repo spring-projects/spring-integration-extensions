@@ -19,7 +19,6 @@ package org.springframework.integration.kafka.core;
  * Kafka adapter specific message headers.
  *
  * @author Soby Chacko
- * @since 1.0
  */
 public class KafkaConsumerDefaults {
 
