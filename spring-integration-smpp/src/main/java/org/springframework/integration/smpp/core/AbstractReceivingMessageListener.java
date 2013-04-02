@@ -40,12 +40,12 @@ abstract public class AbstractReceivingMessageListener implements MessageReceive
                     long id = Long.parseLong(delReceipt.getId());
                     messageId = Long.toString(id, 16).toUpperCase();
                 } catch (NumberFormatException nfe) {
-                    logger.warn("Fail parsing message id into hex format from " + delReceipt.getId()
+                    logger.debug("Fail parsing message id into hex format from " + delReceipt.getId()
                             + ". Now using id as it is");
                     messageId = delReceipt.getId();
                 }
-				onDeliveryReceipt(deliverSm, messageId, delReceipt);
 				logger.debug("Receiving delivery receipt for message '" + messageId + "' : " + delReceipt);
+                onDeliveryReceipt(deliverSm, messageId, delReceipt);
 			} catch (Exception e) {
 				logger.error("Failed getting delivery receipt", e);
 				throw new RuntimeException(e);
