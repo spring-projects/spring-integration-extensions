@@ -13,12 +13,12 @@ Spring Integration Kafka project currently supports the two following components
 * Inbound Channel Adapter
 * Outbound Channel Adapter
 
-Inbound Channel Adapter :
--------------------------------------------------
+Inbound Channel Adapter:
+--------------------------------------------
 
 The Inbound channel adapter is used to consume messages from Kafka. These messages will be placed into a Spring Integration channel as Spring Integration specific Messages.
 
-Here is how an Inbound channel adapter is configured:
+Here is how an inbound channel adapter is configured:
 
 ```xml
 	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
@@ -28,6 +28,12 @@ Here is how an Inbound channel adapter is configured:
         <int:poller fixed-delay="100" time-unit="MILLISECONDS" receive-timeout="5000" max-messages-per-poll="1000"/>
     </int-kafka:inbound-channel-adapter>
 ```
+
+Since this inbound channel adapter uses a Polling Channel under the hood, it must be configured with a Poller. By configuring
+a correct combination of receive-timeout and max-messages-per-poll, this adapter can effectively function like a message driven endpoint, i.e, you constantly
+receive data from Kafka without blocking the inbound adapter thread indefinitely. For example, in the above configuration,
+the poller is configured to receive 1000 messages in a single polling. If it does not receive any data for 5 seconds,
+it times out and restart again after 100 milliseconds.
 
 Inbound Kafka Adapter must specify a kafka-consumer-context-ref element and here is how it may be configured:
 
@@ -53,3 +59,36 @@ out of the box. You can use any serialization component for this purpose. Here i
            <constructor-arg type="java.lang.Class" value="java.lang.String" />
    </bean>
 ```
+
+Outbound Channel Adapter:
+--------------------------------------------
+
+The Outbound channel adapter is used to send messages to Kafka. Messages are read from a Spring Integration channel and the payload from these messages are sent to Kafka.
+
+Here is how an outbound channel adapter is configured:
+
+```xml
+	<int-kafka:outbound-channel-adapter kafka-producer-context-ref="producerContext"
+                                            auto-startup="false"
+                                            channel="inputToKafka" kafka-encoder="kafkaEncoder" topic="mytest">
+            <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="5000"/>
+    </int-kafka:outbound-channel-adapter>
+```
+
+The usecases for which Kafka is used, you normally have a large amount of messages to send. For such use cases, it is recommended to use
+a Queue channel as the source from which the outbound adapter reads the messages. In that way, you are not blocking the sending thread
+until the send operation is completed. If you are using QueueChannel, then a poller must be configured along with it.
+In the above configuration, the outbound adapter will poll the channel and receive all messages in the queue. If there are no messages,
+it will wait there for 5 seconds and timeout. Then it is restarted again after 10 milliseconds.
+
+In the same way a decoder is used in the inbound adapter, it is recommended to use an appropriate encoder for outbound adapter.
+you can plug any kind of serialization mechanisms for doing this. Spring Ingegration Kafka adapter provides an Apache Avro backed
+encoding mechanism. Here is how you would configure a kafka encoder:
+
+```xml
+    <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
+            <constructor-arg type="java.lang.Class" value="java.lang.String" />
+    </bean>
+```
+
+
