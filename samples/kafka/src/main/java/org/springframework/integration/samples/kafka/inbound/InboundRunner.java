@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.kafka.samples;
+package org.springframework.integration.samples.kafka.inbound;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -21,7 +21,7 @@ public class InboundRunner {
 
     public static void main(String args[]) {
        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-                       "../config/xml/kafkaInboundAdapterParserTests-context.xml",
+                       "kafkaInboundAdapterParserTests-context.xml",
                InboundRunner.class);
        ctx.start();
     }
