@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  * @author Lukasz Antoniak
  * @since 1.0
  */
-abstract class VoldemortParserUtils {
+public final class VoldemortParserUtils {
 	static final String STORE_CLIENT = "store-client";
 	static final String PERSIST_MODE = "persist-mode";
 	static final String SEARCH_KEY = "search-key";
@@ -36,6 +36,11 @@ abstract class VoldemortParserUtils {
 
 	static final String KEY_PROPERTY = "key";
 	static final String KEY_EXPRESSION_PROPERTY = "keyExpression";
+
+	/** Prevent instantiation. */
+	private VoldemortParserUtils() {
+		throw new AssertionError();
+	}
 
 	/**
 	 * Handles "store-client" and "message-converter" attributes.

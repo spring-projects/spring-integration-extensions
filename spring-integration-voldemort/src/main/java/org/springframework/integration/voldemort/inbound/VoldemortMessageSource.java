@@ -32,7 +32,9 @@ import voldemort.versioning.Versioned;
  * @author Lukasz Antoniak
  * @since 1.0
  */
-public class VoldemortMessageSource extends IntegrationObjectSupport implements MessageSource {
+public class VoldemortMessageSource extends IntegrationObjectSupport
+		implements MessageSource<Object> {
+
 	private final StoreClient client;
 
 	/**
@@ -65,15 +67,15 @@ public class VoldemortMessageSource extends IntegrationObjectSupport implements 
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Message receive() {
+	public Message<Object> receive() {
 		final Object key = keyExpression.getValue( evaluationContext, Object.class );
-		final Versioned value = client.get( key );
+		final Versioned<?> value = client.get( key );
 		if ( value != null ) {
 			if ( deleteAfterPoll ) {
 				client.delete( key );
 			}
 			return MessageBuilder.withPayload( extractValue ? value.getValue() : value )
-					.setHeader( VoldemortHeaders.KEY, key ).build();
+					.setHeader(VoldemortHeaders.KEY, key ).build();
 		}
 		return null;
 	}

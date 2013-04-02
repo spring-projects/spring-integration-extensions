@@ -45,14 +45,14 @@ public class VoldemortMessageStore extends AbstractKeyValueMessageStore implemen
 	/**
 	 * Key under which message store tracks all currently saved message identifiers.
 	 */
-	protected final static String MESSAGE_KEY_LIST = "MESSAGE_KEY_LIST";
+	protected static final String MESSAGE_KEY_LIST = "MESSAGE_KEY_LIST";
 
 	/**
 	 * Key under which message store tracks all currently saved message group identifiers.
 	 */
-	protected final static String MESSAGE_GROUP_KEY_LIST = "MESSAGE_GROUP_KEY_LIST";
+	protected static final String MESSAGE_GROUP_KEY_LIST = "MESSAGE_GROUP_KEY_LIST";
 
-	private final static LockRegistry LOCK_REGISTRY = new DefaultLockRegistry();
+	private static final LockRegistry LOCK_REGISTRY = new DefaultLockRegistry();
 
 	private final StoreClient client;
 
@@ -99,7 +99,7 @@ public class VoldemortMessageStore extends AbstractKeyValueMessageStore implemen
 			}
 		}
 		catch ( SerializationException e ) {
-			throw new IllegalArgumentException( "Voldemort failed to serialize message with id: " + id + "." );
+			throw new IllegalArgumentException( "Voldemort failed to serialize message with id: " + id + ".", e );
 		}
 		finally {
 			messageLock.unlock();
@@ -181,7 +181,7 @@ public class VoldemortMessageStore extends AbstractKeyValueMessageStore implemen
 	/**
 	 * Voldemort update action that adds given key to the list of currently saved identifiers.
 	 */
-	private static class AddKeyUpdateAction extends UpdateAction {
+	private static final class AddKeyUpdateAction extends UpdateAction {
 		private final Object id;
 		private final String keyListKey;
 
@@ -208,7 +208,7 @@ public class VoldemortMessageStore extends AbstractKeyValueMessageStore implemen
 	/**
 	 * Voldemort update action that removes given key from the list of currently saved identifiers.
 	 */
-	private static class RemoveKeyUpdateAction extends UpdateAction {
+	private static final class RemoveKeyUpdateAction extends UpdateAction {
 		private final Object id;
 		private final String keyListKey;
 

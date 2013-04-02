@@ -18,7 +18,7 @@ package org.springframework.integration.voldemort.test.domain;
 import java.io.Serializable;
 
 /**
- * Sample object with composite key persisted in Voldemort database.
+ * Sample object with composite key persisted to Voldemort database.
  *
  * @author Lukasz Antoniak
  * @since 1.0

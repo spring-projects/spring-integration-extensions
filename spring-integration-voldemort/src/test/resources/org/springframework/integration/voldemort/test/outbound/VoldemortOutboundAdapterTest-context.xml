@@ -1,42 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:int="http://www.springframework.org/schema/integration"
-       xmlns:int-voldemort="http://www.springframework.org/schema/integration/voldemort"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-			http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
-			http://www.springframework.org/schema/integration/voldemort http://www.springframework.org/schema/integration/voldemort/spring-integration-voldemort.xsd">
-    <import resource="../common-test-context.xml" />
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-voldemort="http://www.springframework.org/schema/integration/voldemort"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/voldemort http://www.springframework.org/schema/integration/voldemort/spring-integration-voldemort.xsd">
 
-    <int:channel id="voldemortOutboundPutChannel" />
+	<import resource="../common-test-context.xml" />
 
-    <int:channel id="voldemortOutboundPutConstantKeyChannel" />
+	<int:channel id="voldemortOutboundPutChannel" />
 
-    <int:channel id="voldemortOutboundDeleteChannel" />
+	<int:channel id="voldemortOutboundPutConstantKeyChannel" />
 
-    <int:channel id="voldemortStoppedChannel" />
+	<int:channel id="voldemortOutboundDeleteChannel" />
 
-    <int:channel id="voldemortOrderChannel" />
+	<int:channel id="voldemortStoppedChannel" />
 
-    <int-voldemort:outbound-channel-adapter id="voldemortPut" channel="voldemortOutboundPutChannel"
-                                            store-client="storeClient" />
+	<int:channel id="voldemortOrderChannel" />
 
-    <int-voldemort:outbound-channel-adapter id="voldemortPutSingleKey" channel="voldemortOutboundPutConstantKeyChannel"
-                                            store-key="constant-key" store-client="storeClient" />
+	<int-voldemort:outbound-channel-adapter id="voldemortPut" channel="voldemortOutboundPutChannel"
+		store-client="storeClient" />
 
-    <int-voldemort:outbound-channel-adapter id="voldemortDelete" channel="voldemortOutboundDeleteChannel"
-                                            store-client="storeClient" store-key-expression="payload.id"
-                                            persist-mode="DELETE" />
+	<int-voldemort:outbound-channel-adapter id="voldemortPutSingleKey" channel="voldemortOutboundPutConstantKeyChannel"
+		store-key="constant-key" store-client="storeClient" />
 
-    <int-voldemort:outbound-channel-adapter id="voldemortStopped" channel="voldemortOutboundPutChannel"
-                                            store-client="storeClient"
-                                            auto-startup="false" />
+	<int-voldemort:outbound-channel-adapter id="voldemortDelete" channel="voldemortOutboundDeleteChannel"
+		store-client="storeClient" store-key-expression="payload.id"
+		persist-mode="DELETE" />
 
-    <bean id="messageUpdater" class="org.springframework.integration.voldemort.test.outbound.MessageUpdatingServiceActivator" />
+	<int-voldemort:outbound-channel-adapter id="voldemortStopped" channel="voldemortOutboundPutChannel"
+		store-client="storeClient"
+		auto-startup="false" />
 
-    <int-voldemort:outbound-channel-adapter id="voldemortOrder" channel="voldemortOrderChannel" order="2"
-                                            store-client="storeClient" store-key-expression="payload.id" />
+	<bean id="messageUpdater" class="org.springframework.integration.voldemort.test.outbound.MessageUpdatingServiceActivator" />
 
-    <int:service-activator id="testingServiceActivator" input-channel="voldemortOrderChannel" order="1"
-                           ref="messageUpdater" method="updateMessage" />
+	<int-voldemort:outbound-channel-adapter id="voldemortOrder" channel="voldemortOrderChannel" order="2"
+		store-client="storeClient" store-key-expression="payload.id" />
+
+	<int:service-activator id="testingServiceActivator" input-channel="voldemortOrderChannel" order="1"
+		ref="messageUpdater" method="updateMessage" />
 </beans>

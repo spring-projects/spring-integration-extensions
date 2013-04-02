@@ -32,7 +32,6 @@ import org.springframework.integration.voldemort.test.BaseFunctionalTestCase;
  * @author Lukasz Antoniak
  * @since 1.0
  */
-@SuppressWarnings("unchecked")
 public class VoldemortMessageStoreAggregationTest extends BaseFunctionalTestCase {
 	@Override
 	protected File getStoreConfiguration() {

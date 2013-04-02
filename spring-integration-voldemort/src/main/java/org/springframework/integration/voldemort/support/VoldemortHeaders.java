@@ -27,7 +27,7 @@ public abstract class VoldemortHeaders {
 	/**
 	 * Header representing key under which message payload should be stored.
 	 */
-	public static final String KEY = PREFIX + "_key";
+	public static final String KEY = PREFIX + "key";
 
 	/**
 	 * Overrides default output adapter's persist mode for a given message.
