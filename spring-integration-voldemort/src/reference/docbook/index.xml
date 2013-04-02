@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0"
+      xml:id="spring-integration-reference" xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+    <bookinfo>
+        <title>Spring Integration Voldemort Adapter</title>
+        <titleabbrev>Voldemort Adapter ${version}</titleabbrev>
+        <productname>Spring Integration</productname>
+        <releaseinfo>${version}</releaseinfo>
+
+        <!-- TODO: this isn't showing up. -->
+        <mediaobject>
+            <imageobject role="fo">
+                <imagedata fileref="images/logo.png" format="PNG" align="center"/>
+            </imageobject>
+            <imageobject role="html">
+                <imagedata fileref="images/logo.png" format="PNG" align="center"/>
+            </imageobject>
+        </mediaobject>
+        <!-- END TODO -->
+
+        <authorgroup>
+            <author>
+                <firstname>Lukasz Antoniak</firstname>
+            </author>
+        </authorgroup>
+        <legalnotice>
+            <para>© SpringSource Inc., 2013</para>
+        </legalnotice>
+    </bookinfo>
+
+    <toc />
+
+    <part id="whats-new-part">
+        <title>What's new?</title>
+        <partintro id="spring-integration-change-history">
+            <para>
+                If you are interested in the changes and features, that were introduced in
+                earlier versions, please take a look at chapter <xref linkend="history"/>.
+            </para>
+        </partintro>
+        <xi:include href="./whats-new.xml"/>
+    </part>
+
+    <part id="spring-integration-adapters">
+        <title>Integration Adapters</title>
+        <partintro id="spring-integration-adapters">
+            <para>
+                Spring Integration adapter for Voldemort enables users to persist data
+                transferred through message channel in the destination key-value store,
+                as well as to poll records from the Voldemort database and process them
+                inside Spring Integration flow. Hereby extension provides also the
+                implementation of a message store.
+            </para>
+        </partintro>
+        <xi:include href="./voldemort.xml"/>
+    </part>
+    <part id="spring-integration-appendices">
+        <title>Appendices</title>
+        <xi:include href="./resources.xml"/>
+        <xi:include href="./history.xml"/>
+    </part>
+</book>

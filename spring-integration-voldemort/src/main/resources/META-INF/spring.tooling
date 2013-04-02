@@ -1,0 +1,4 @@
+# Tooling related information for the integration Voldemort namespace
+http\://www.springframework.org/schema/integration/voldemort@name=integration Voldemort Namespace
+http\://www.springframework.org/schema/integration/voldemort@prefix=int-voldemort
+http\://www.springframework.org/schema/integration/voldemort@icon=org/springframework/integration/config/xml/spring-integration-voldemort.gif
