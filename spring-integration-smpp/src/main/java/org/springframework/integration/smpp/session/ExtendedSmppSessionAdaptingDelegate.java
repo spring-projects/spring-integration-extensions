@@ -101,6 +101,14 @@ public class ExtendedSmppSessionAdaptingDelegate implements /*Lifecycle,*/ Exten
 		this.session.setMessageReceiverListener(this.delegatingMessageReceiverListener);
 	}
 
+    /**
+     * Get message receiver listeners.
+     * @return message listener that contains multiple listeners
+     */
+    public DelegatingMessageReceiverListener getDelegateMessageListener() {
+        return delegatingMessageReceiverListener;
+    }
+
 	public void addMessageReceiverListener(MessageReceiverListener messageReceiverListener) {
 		this.delegatingMessageReceiverListener.addMessageReceiverListener(messageReceiverListener);
 	}
