@@ -60,7 +60,7 @@ public class HighLevelConsumerMessageSource extends IntegrationObjectSupport imp
     @Override
     public Message<List<Object>> receive() {
         final List<KafkaStream<byte[], byte[]>> streams = getKafkaConsumerStreams(kafkaConsumerContext);
-        final ExecutorService executorService = Executors.newFixedThreadPool(4);
+        final ExecutorService executorService = Executors.newFixedThreadPool(kafkaConsumerContext.getStreams());
         final CountDownLatch latch = new CountDownLatch(maxMessagesPerPoll);
 
         final List<Callable<List<Object>>> tasks = new LinkedList<Callable<List<Object>>>();
