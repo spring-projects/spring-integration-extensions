@@ -3,13 +3,13 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:int="http://www.springframework.org/schema/integration"
 	xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
-	xmlns:stream="http://www.springframework.org/schema/integration/stream"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
-		http://www.springframework.org/schema/integration/kafka http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/kafka http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
     <context:component-scan base-package="org.springframework.integration.kafka.outound"></context:component-scan>
     <context:component-scan base-package="org.springframework.integration.kafka.support"></context:component-scan>
@@ -18,13 +18,19 @@
         <int:queue/>
     </int:channel>
 
-    <int-kafka:outbound-channel-adapter kafka-producer-context-ref="producerContext"
-                                        auto-startup="false"
-                                        channel="inputToKafka" kafka-encoder="kafkaEncoder" topic="mytest">
-        <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="5000"/>
-    </int-kafka:outbound-channel-adapter>
+    <!-- kafka-key-encoder="kafkaEncoder" -->
 
-    <int-kafka:producer-context id="producerContext" broker-list="localhost:9092" zk-connect="127.0.0.1:2181"/>
+    <int-kafka:outbound-channel-adapter kafka-producer-context-ref="producerContext" kafka-encoder="kafkaEncoder"
+                                        key-class="java.lang.String"
+    										value-class="java.lang.String"
+                                        auto-startup="false"
+                                        channel="inputToKafka" topic="sobychacko1">
+        <int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
+    </int-kafka:outbound-channel-adapter>
+    
+    <task:executor id="taskExecutor" pool-size="5" keep-alive="120" queue-capacity="500"/>
+
+    <int-kafka:producer-context compression-codec="default" id="producerContext" broker-list="localhost:9092" zk-connect="127.0.0.1:2181"/>
 
     <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
         <constructor-arg type="java.lang.Class" value="java.lang.String" />

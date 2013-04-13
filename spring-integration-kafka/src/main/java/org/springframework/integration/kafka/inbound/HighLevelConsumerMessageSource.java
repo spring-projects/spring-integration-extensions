@@ -46,7 +46,7 @@ import java.util.concurrent.Future;
  */
 public class HighLevelConsumerMessageSource extends IntegrationObjectSupport implements MessageSource<List<Object>> {
 
-    private Decoder kafkaDecoder;
+    private Decoder<Object> kafkaDecoder;
     private ConsumerConnector consumerConnector;
     private final KafkaConsumerContext kafkaConsumerContext;
 
@@ -117,11 +117,11 @@ public class HighLevelConsumerMessageSource extends IntegrationObjectSupport imp
         return "kafka:inbound-channel-adapter";
     }
 
-    public Decoder getKafkaDecoder() {
+    public Decoder<Object> getKafkaDecoder() {
         return kafkaDecoder;
     }
 
-    public void setKafkaDecoder(Decoder kafkaDecoder) {
+    public void setKafkaDecoder(Decoder<Object> kafkaDecoder) {
         this.kafkaDecoder = kafkaDecoder;
     }
 
@@ -142,7 +142,7 @@ public class HighLevelConsumerMessageSource extends IntegrationObjectSupport imp
                                                                                                 final KafkaConsumerContext kafkaConsumerContext) {
             if (kafkaConsumerContext.getKafkaDecoder() != null) {
                 return getConsumerConnector(kafkaConsumerContext).createMessageStreams(topicCountMap,
-                        kafkaConsumerContext.getKafkaDecoder(),
+                        kafkaConsumerContext.getKafkaKeyDecoder(),
                         kafkaConsumerContext.getKafkaDecoder());
             }
             return  getConsumerConnector(kafkaConsumerContext).createMessageStreams(topicCountMap);

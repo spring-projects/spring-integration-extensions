@@ -40,6 +40,8 @@ public class KafkaConsumerContext {
     private int streams;
     private int maxMessagesPerPoll = 1;
     private Decoder kafkaDecoder;
+    private Decoder kafkaKeyDecoder;
+
 
     private final KafkaBroker kafkaBroker;
 
@@ -169,5 +171,13 @@ public class KafkaConsumerContext {
 
     public void setRebalanceRetriesMax(String rebalanceRetriesMax) {
         this.rebalanceRetriesMax = rebalanceRetriesMax;
+    }
+
+    public Decoder getKafkaKeyDecoder() {
+        return kafkaKeyDecoder;
+    }
+
+    public void setKafkaKeyDecoder(Decoder kafkaKeyDecoder) {
+        this.kafkaKeyDecoder = kafkaKeyDecoder;
     }
 }

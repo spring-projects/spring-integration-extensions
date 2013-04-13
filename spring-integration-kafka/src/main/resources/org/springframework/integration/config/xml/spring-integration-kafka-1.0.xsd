@@ -122,6 +122,18 @@
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:attribute>
+            <xsd:attribute name="compression-codec" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
+                        Indicates the Kafka consumer zkConnectionTimeout value
+                    ]]></xsd:documentation>
+                    <xsd:appinfo>
+                        <tool:annotation kind="direct">
+                            <tool:expected-type type="java.lang.String" />
+                        </tool:annotation>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:attribute>
         </xsd:complexType>
     </xsd:element>
 
@@ -178,6 +190,14 @@
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="kafka-key-decoder" use="optional"
+                                                            type="xsd:string">
+                                <xsd:annotation>
+                                    <xsd:documentation>
+                                        Kafka Server Bean Name
+                                    </xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
             </xsd:complexType>
     </xsd:element>
 
@@ -309,6 +329,30 @@
                 </xsd:annotation>
             </xsd:attribute>
             <xsd:attribute name="kafka-encoder" use="optional"
+                                            type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Kafka Server Bean Name
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="kafka-key-encoder" use="optional"
+                                            type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Kafka Server Bean Name
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="key-class" use="optional"
+                                            type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Kafka Server Bean Name
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="value-class" use="optional"
                                             type="xsd:string">
                 <xsd:annotation>
                     <xsd:documentation>

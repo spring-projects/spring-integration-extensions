@@ -23,6 +23,7 @@ public class KafkaProducerContext {
 
     private String zkConnect = "127.0.0.1:2181";
     private String brokerList = "localhost:9092";
+    private String compressionCodec;
 
     public String getZkConnect() {
         return zkConnect;
@@ -38,5 +39,13 @@ public class KafkaProducerContext {
 
     public void setBrokerList(String brokerList) {
         this.brokerList = brokerList;
+    }
+
+    public String getCompressionCodec() {
+        return compressionCodec;
+    }
+
+    public void setCompressionCodec(final String compressionCodec) {
+        this.compressionCodec = compressionCodec;
     }
 }

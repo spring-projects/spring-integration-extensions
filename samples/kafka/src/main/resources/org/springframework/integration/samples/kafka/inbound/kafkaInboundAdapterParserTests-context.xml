@@ -13,14 +13,15 @@
 
 	<import resource="kafkaInboundAdapterCommon-context.xml"/>
 
-    <int-kafka:consumer-context id="consumerContext" kafka-broker-ref="kafkaBroker" kafka-decoder="kafkaDecoder"
-            topic="mytest" streams="4"/>
+    <int-kafka:consumer-context id="consumerContext" kafka-broker-ref="kafkaBroker" 
+            topic="sobychacko1" streams="4"
+            kafka-decoder="kafkaDecoder" kafka-key-decoder="kafkaDecoder"/>
 
 	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
                                        kafka-consumer-context-ref="consumerContext"
                                        auto-startup="false"
                                        channel="inputFromKafka">
-        <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="4000" max-messages-per-poll="5000"/>
+        <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="4000" max-messages-per-poll="1000"/>
     </int-kafka:inbound-channel-adapter>
 
     <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">

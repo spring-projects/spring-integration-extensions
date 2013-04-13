@@ -48,6 +48,7 @@ public class KafkaConsumerContextParser extends AbstractBeanDefinitionParser {
         IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "streams");
         IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "groupId");
         IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "kafka-decoder");
+        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "kafka-key-decoder");
 
         return builder.getBeanDefinition();
     }

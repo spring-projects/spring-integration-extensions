@@ -40,5 +40,7 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
                 BeanDefinitionParserDelegate.SCOPE_ATTRIBUTE);
         IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "zk-connect");
         IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "broker-list");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "compression-codec");
+
     }
 }

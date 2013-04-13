@@ -44,7 +44,13 @@ public class KafkaOutboundChannelAdapterParser extends AbstractOutboundChannelAd
         }
 
         IntegrationNamespaceUtils.setReferenceIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "kafka-encoder");
+        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "kafka-key-encoder");
+
         IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "topic");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "topic");
+
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "key-class");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "value-class");
 
         return kafkaProducerMessageHandlerBuilder.getBeanDefinition();
     }
