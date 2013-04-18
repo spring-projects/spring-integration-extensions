@@ -14,8 +14,8 @@
 	<import resource="kafkaInboundAdapterCommon-context.xml"/>
 
     <int-kafka:consumer-context id="consumerContext" kafka-broker-ref="kafkaBroker"
-                                kafka-decoder="kafkaDecoder" kafka-key-decoder="kafkaDecoder"
-            topic="test1" streams="4"
+
+            topic="test2" streams="4"
             />
 
 	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"

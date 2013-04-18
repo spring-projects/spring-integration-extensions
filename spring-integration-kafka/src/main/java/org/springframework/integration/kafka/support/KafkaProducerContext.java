@@ -43,7 +43,7 @@ public class KafkaProducerContext implements BeanFactoryAware {
     private TopicConfiguration getTopicConfiguration(final String topic){
         final Collection<TopicConfiguration> topics = topicsConfiguration.values();
         for (final TopicConfiguration topicConfiguration : topics){
-            if(topicConfiguration.getTopic().equals(topic)){
+            if(topicConfiguration.getTopicMetadata().getTopic().equals(topic)){
                 return topicConfiguration;
             }
         }

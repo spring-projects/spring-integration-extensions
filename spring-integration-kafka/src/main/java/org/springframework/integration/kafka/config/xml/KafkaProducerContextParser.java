@@ -24,6 +24,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.kafka.support.KafkaProducerContext;
 import org.springframework.integration.kafka.support.ProducerFactoryBean;
+import org.springframework.integration.kafka.support.TopicMetadata;
 import org.springframework.integration.kafka.support.TopicConfiguration;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -50,25 +51,30 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 
         for (Element topic : DomUtils.getChildElementsByTagName(topics, "topic-configuration")){
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(TopicConfiguration.class);
-            builder.addPropertyValue("topic", topic.getAttribute("topic"));
 
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, topic, "kafka-encoder");
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, topic, "kafka-key-encoder");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, topic, "key-class");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, topic, "value-class");
+            BeanDefinitionBuilder topicBuilder = BeanDefinitionBuilder.genericBeanDefinition(TopicMetadata.class);
+            topicBuilder.addConstructorArgValue(topic.getAttribute("topic"));
+            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(topicBuilder, topic, "kafka-encoder");
+            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(topicBuilder, topic, "kafka-key-encoder");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "key-class");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "value-class");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "partitioner");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "compression-codec");
+
+            BeanDefinition topicBeanDef = topicBuilder.getBeanDefinition();
+            registerBeanDefinition(new BeanDefinitionHolder(topicBeanDef, "topic_" + topic.getAttribute("topic")),
+                                        parserContext.getRegistry());
 
             BeanDefinitionBuilder producerFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerFactoryBean.class);
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(producerFactoryBuilder, topic, "kafka-encoder");
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(producerFactoryBuilder, topic, "kafka-key-encoder");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(producerFactoryBuilder, topic, "partitioner");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(producerFactoryBuilder, topic, "compression-codec");
             IntegrationNamespaceUtils.setValueIfAttributeDefined(producerFactoryBuilder, topic, "broker-list");
+            producerFactoryBuilder.addConstructorArgReference("topic_" + topic.getAttribute("topic"));
 
             BeanDefinition bd = producerFactoryBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(bd, "prodFactory_"+topic.getAttribute("topic")), parserContext.getRegistry());
 
-            builder.addPropertyReference("producer", "prodFactory_"+topic.getAttribute("topic"));
+            builder.addConstructorArgReference("topic_" + topic.getAttribute("topic"));
 
+            builder.addPropertyReference("producer", "prodFactory_" + topic.getAttribute("topic"));
 
             AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(beanDefinition, parserContext.getReaderContext()
