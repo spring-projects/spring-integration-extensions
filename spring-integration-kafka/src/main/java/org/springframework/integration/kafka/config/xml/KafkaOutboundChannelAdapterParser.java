@@ -19,7 +19,6 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
-import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.kafka.outbound.KafkaProducerMessageHandler;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -31,7 +30,6 @@ import org.w3c.dom.Element;
  */
 public class KafkaOutboundChannelAdapterParser extends AbstractOutboundChannelAdapterParser {
 
-
     @Override
     protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
 
@@ -42,15 +40,6 @@ public class KafkaOutboundChannelAdapterParser extends AbstractOutboundChannelAd
         if (StringUtils.hasText(kafkaServerBeanName)) {
             kafkaProducerMessageHandlerBuilder.addConstructorArgReference(kafkaServerBeanName);
         }
-
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "kafka-encoder");
-        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "kafka-key-encoder");
-
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "topic");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "topic");
-
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "key-class");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(kafkaProducerMessageHandlerBuilder, element, "value-class");
 
         return kafkaProducerMessageHandlerBuilder.getBeanDefinition();
     }

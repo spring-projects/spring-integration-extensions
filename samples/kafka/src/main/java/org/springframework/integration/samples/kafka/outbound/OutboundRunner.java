@@ -39,7 +39,9 @@ public class OutboundRunner {
                 final List<String> payloads = new ArrayList<String>();
                for(int i= 0; i < 5000; i++)  {
                    channel.send(
-                		   MessageBuilder.withPayload("hello Fom ob adapter -  " + i).setHeader("messageKey", String.valueOf(i)).build());
+                		   MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i).
+                                   setHeader("messageKey", String.valueOf(i))
+                                   .setHeader("topic", "test1").build());
                    System.out.println("message sent " + i);
 
 //                   payloads.add("hello Fom ob adapter -  " + i);
@@ -49,6 +51,14 @@ public class OutboundRunner {
 //        channel.send(new GenericMessage<List<String>>(payloads));
 //        new MessageBuilder().withPayload(payloads).setHeader("messageKey", headerValu)
 //        System.out.println("message sent");
+
+        for(int i= 0; i < 5000; i++)  {
+                           channel.send(
+                        		   MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i).
+                                           setHeader("messageKey", String.valueOf(i))
+                                           .setHeader("topic", "test2").build());
+                           System.out.println("message sent " + i);
+        }
     }
 
 }

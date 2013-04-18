@@ -15,37 +15,43 @@
  */
 package org.springframework.integration.kafka.support;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.integration.Message;
+
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * @author Soby Chacko
- *
  */
-public class KafkaProducerContext {
+public class KafkaProducerContext implements BeanFactoryAware {
 
-    private String zkConnect = "127.0.0.1:2181";
-    private String brokerList = "localhost:9092";
-    private String compressionCodec;
+    private Map<String, TopicConfiguration> topicsConfiguration;
 
-    public String getZkConnect() {
-        return zkConnect;
+    @SuppressWarnings("unchecked")
+    public void send(final Message<?> message) throws Exception {
+        final TopicConfiguration topicConfiguration =
+                        getTopicConfiguration(message.getHeaders().get("topic", String.class));
+        if (topicConfiguration != null) {
+            topicConfiguration.send(message);
+        }
     }
 
-    public void setZkConnect(String zkConnect) {
-        this.zkConnect = zkConnect;
+    private TopicConfiguration getTopicConfiguration(final String topic){
+        final Collection<TopicConfiguration> topics = topicsConfiguration.values();
+        for (final TopicConfiguration topicConfiguration : topics){
+            if(topicConfiguration.getTopic().equals(topic)){
+                return topicConfiguration;
+            }
+        }
+        return null;
     }
 
-    public String getBrokerList() {
-        return brokerList;
-    }
-
-    public void setBrokerList(String brokerList) {
-        this.brokerList = brokerList;
-    }
-
-    public String getCompressionCodec() {
-        return compressionCodec;
-    }
-
-    public void setCompressionCodec(final String compressionCodec) {
-        this.compressionCodec = compressionCodec;
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        topicsConfiguration = ((ListableBeanFactory)beanFactory).getBeansOfType(TopicConfiguration.class);
     }
 }
