@@ -15,7 +15,7 @@ public class TopicMetadata<K,V> implements InitializingBean {
     private Class<K> keyClass;
     private Class<V> valueClass;
     private final String topic;
-    private String compressionCodec;
+    private String compressionCodec = "default";
     private Partitioner<K> partitioner;
 
     public TopicMetadata(final String topic) {

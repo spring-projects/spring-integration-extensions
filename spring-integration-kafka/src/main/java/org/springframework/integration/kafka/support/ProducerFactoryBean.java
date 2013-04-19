@@ -15,14 +15,11 @@ import java.util.Properties;
  */
 public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
 
-    private String brokerList = "localhost:9092";
+    private final String brokerList;
     private final TopicMetadata<K,V> topicMetadata;
 
-    public ProducerFactoryBean(final TopicMetadata<K,V> topicMetadata){
+    public ProducerFactoryBean(final TopicMetadata<K,V> topicMetadata, final String brokerList){
         this.topicMetadata = topicMetadata;
-    }
-
-    public void setBrokerList(String brokerList) {
         this.brokerList = brokerList;
     }
 

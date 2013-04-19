@@ -26,6 +26,7 @@ import org.springframework.integration.kafka.support.KafkaProducerContext;
 import org.springframework.integration.kafka.support.ProducerFactoryBean;
 import org.springframework.integration.kafka.support.TopicMetadata;
 import org.springframework.integration.kafka.support.TopicConfiguration;
+import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
@@ -66,8 +67,11 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
                                         parserContext.getRegistry());
 
             BeanDefinitionBuilder producerFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerFactoryBean.class);
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(producerFactoryBuilder, topic, "broker-list");
             producerFactoryBuilder.addConstructorArgReference("topic_" + topic.getAttribute("topic"));
+            final String brokerList = topic.getAttribute("broker-list");
+            if (StringUtils.hasText(brokerList)) {
+                producerFactoryBuilder.addConstructorArgValue(topic.getAttribute("broker-list"));
+            }
 
             BeanDefinition bd = producerFactoryBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(bd, "prodFactory_"+topic.getAttribute("topic")), parserContext.getRegistry());
