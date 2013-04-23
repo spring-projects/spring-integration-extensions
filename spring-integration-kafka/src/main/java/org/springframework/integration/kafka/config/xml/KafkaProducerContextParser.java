@@ -61,6 +61,8 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
             IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "value-class-type");
             IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "partitioner");
             IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "compression-codec");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "async");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "batch-num-messages");
 
             BeanDefinition topicBeanDef = topicBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(topicBeanDef, "topic_" + topic.getAttribute("topic")),

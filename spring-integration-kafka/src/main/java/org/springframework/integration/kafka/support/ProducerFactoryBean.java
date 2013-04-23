@@ -29,6 +29,13 @@ public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
         props.put("broker.list", brokerList);
         props.put("compression.codec", topicMetadata.getCompressionCodec());
 
+        if (topicMetadata.isAsync()){
+            props.put("producer.type", "async");
+            if (topicMetadata.getBatchNumMessages() != null){
+                props.put("batch.num.messages", topicMetadata.getBatchNumMessages());
+            }
+        }
+
         final ProducerConfig config = new ProducerConfig(props);
         final EventHandler<K, V> eventHandler = new DefaultEventHandler<K, V>(config,
                 topicMetadata.getPartitioner() == null ? new DefaultPartitioner<K>() : topicMetadata.getPartitioner(),

@@ -34,7 +34,8 @@
                                            topic="test1"
                                            value-encoder="kafkaEncoder"
                                            key-encoder="kafkaEncoder"
-                                           compression-codec="default"/>
+                                           compression-codec="default"
+                                           />
             <int-kafka:topic-configuration broker-list="localhost:9092"
                                            topic="test2"
                                            compression-codec="default"/>

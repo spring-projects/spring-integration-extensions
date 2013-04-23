@@ -17,48 +17,35 @@ package org.springframework.integration.samples.kafka.outbound;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.MessageChannel;
-import org.springframework.integration.message.GenericMessage;
 import org.springframework.integration.support.MessageBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class OutboundRunner {
 
     public static void main(String args[]) {
-       ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-                       "kafkaOutboundAdapterParserTests-context.xml",
-               OutboundRunner.class);
-
-
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+                "kafkaOutboundAdapterParserTests-context.xml",
+                OutboundRunner.class);
         ctx.start();
 
         final MessageChannel channel = ctx.getBean("inputToKafka", MessageChannel.class);
-                System.out.println(channel.getClass());
+        System.out.println(channel.getClass());
 
-                final List<String> payloads = new ArrayList<String>();
-               for(int i= 0; i < 5000; i++)  {
-                   channel.send(
-                		   MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i).
-                                   setHeader("messageKey", String.valueOf(i))
-                                   .setHeader("topic", "test1").build());
-                   System.out.println("message sent " + i);
+        //sending 100,000 messages to Kafka server for topic test1
+        for (int i = 0; i < 100000; i++) {
+            channel.send(
+                    MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i).
+                            setHeader("messageKey", String.valueOf(i))
+                            .setHeader("topic", "test1").build());
+            System.out.println("message sent " + i);
 
-//                   payloads.add("hello Fom ob adapter -  " + i);
-//                //channel.send(new GenericMessage<String>("hello Fom ob adapter -  " + i));
-//                   System.out.println("Added " + i);
-               }
-//        channel.send(new GenericMessage<List<String>>(payloads));
-//        new MessageBuilder().withPayload(payloads).setHeader("messageKey", headerValu)
-//        System.out.println("message sent");
-
-        for(int i= 0; i < 5000; i++)  {
-                           channel.send(
-                        		   MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i).
-                                           setHeader("messageKey", String.valueOf(i))
-                                           .setHeader("topic", "test2").build());
-                           System.out.println("message sent " + i);
+        }
+        //sending 5,000 messages to kafka server for topic test2
+        for (int i = 0; i < 5000; i++) {
+            channel.send(
+                MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i).
+                    setHeader("messageKey", String.valueOf(i))
+                    .setHeader("topic", "test2").build());
+            System.out.println("message sent " + i);
         }
     }
-
 }

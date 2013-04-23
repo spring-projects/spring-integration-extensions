@@ -183,6 +183,22 @@
                                             </xsd:documentation>
                                         </xsd:annotation>
                                     </xsd:attribute>
+                                    <xsd:attribute name="async" use="optional"
+                                        type="xsd:boolean">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                Indicates if this producer is async or not.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="batch-num-messages" use="optional"
+                                        type="xsd:string">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                number of messages to batch at this producer.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
                                 </xsd:complexType>
 
                             </xsd:element>

@@ -19,6 +19,8 @@ public class TopicMetadata<K,V> implements InitializingBean {
     private final String topic;
     private String compressionCodec = "default";
     private Partitioner<K> partitioner;
+    private boolean async = false;
+    private String batchNumMessages;
 
     public TopicMetadata(final String topic) {
         this.topic = topic;
@@ -90,6 +92,22 @@ public class TopicMetadata<K,V> implements InitializingBean {
         if (keyEncoder == null) {
             setKeyEncoder((Encoder<K>) getValueEncoder());
         }
+    }
+
+    public boolean isAsync() {
+        return async;
+    }
+
+    public void setAsync(boolean async) {
+        this.async = async;
+    }
+
+    public String getBatchNumMessages() {
+        return batchNumMessages;
+    }
+
+    public void setBatchNumMessages(String batchNumMessages) {
+        this.batchNumMessages = batchNumMessages;
     }
 
     @Override
