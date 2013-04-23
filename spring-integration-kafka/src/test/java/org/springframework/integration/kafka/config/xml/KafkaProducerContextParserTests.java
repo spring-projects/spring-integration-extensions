@@ -8,8 +8,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.kafka.support.KafkaProducerContext;
-import org.springframework.integration.kafka.support.TopicConfiguration;
-import org.springframework.integration.kafka.support.TopicMetadata;
+import org.springframework.integration.kafka.support.ProducerConfiguration;
+import org.springframework.integration.kafka.support.ProducerMetadata;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -28,31 +28,31 @@ public class KafkaProducerContextParserTests {
         final KafkaProducerContext producerContext = appContext.getBean("producerContext", KafkaProducerContext.class);
         Assert.assertNotNull(producerContext);
 
-        final Map<String, TopicConfiguration> topicConfigurations = producerContext.getTopicsConfiguration();
+        final Map<String, ProducerConfiguration> topicConfigurations = producerContext.getTopicsConfiguration();
         Assert.assertEquals(topicConfigurations.size(), 2);
 
-        final TopicConfiguration topicConfigurationTest1 = topicConfigurations.get("topicConfiguration_test1");
-        Assert.assertNotNull(topicConfigurationTest1);
-        final TopicMetadata topicMetadataTest1 = topicConfigurationTest1.getTopicMetadata();
-        Assert.assertEquals(topicMetadataTest1.getTopic(), "test1");
-        Assert.assertEquals(topicMetadataTest1.getCompressionCodec(), "0");
-        Assert.assertEquals(topicMetadataTest1.getKeyClassType(), java.lang.String.class);
-        Assert.assertEquals(topicMetadataTest1.getValueClassType(), java.lang.String.class);
+        final ProducerConfiguration producerConfigurationTest1 = topicConfigurations.get("producerConfiguration_test1");
+        Assert.assertNotNull(producerConfigurationTest1);
+        final ProducerMetadata producerMetadataTest1 = producerConfigurationTest1.getProducerMetadata();
+        Assert.assertEquals(producerMetadataTest1.getTopic(), "test1");
+        Assert.assertEquals(producerMetadataTest1.getCompressionCodec(), "0");
+        Assert.assertEquals(producerMetadataTest1.getKeyClassType(), java.lang.String.class);
+        Assert.assertEquals(producerMetadataTest1.getValueClassType(), java.lang.String.class);
 
         final Encoder valueEncoder = appContext.getBean("valueEncoder", Encoder.class);
-        Assert.assertEquals(topicMetadataTest1.getValueEncoder(), valueEncoder);
-        Assert.assertEquals(topicMetadataTest1.getKeyEncoder(), valueEncoder);
+        Assert.assertEquals(producerMetadataTest1.getValueEncoder(), valueEncoder);
+        Assert.assertEquals(producerMetadataTest1.getKeyEncoder(), valueEncoder);
 
         final Producer producerTest1 = appContext.getBean("prodFactory_test1", Producer.class);
-        Assert.assertEquals(topicConfigurationTest1, new TopicConfiguration(topicMetadataTest1, producerTest1));
+        Assert.assertEquals(producerConfigurationTest1, new ProducerConfiguration(producerMetadataTest1, producerTest1));
 
-        final TopicConfiguration topicConfigurationTest2 = topicConfigurations.get("topicConfiguration_" + "test2");
-        Assert.assertNotNull(topicConfigurationTest2);
-        final TopicMetadata topicMetadataTest2 = topicConfigurationTest2.getTopicMetadata();
-        Assert.assertEquals(topicMetadataTest2.getTopic(), "test2");
-        Assert.assertEquals(topicMetadataTest2.getCompressionCodec(), "0");
+        final ProducerConfiguration producerConfigurationTest2 = topicConfigurations.get("producerConfiguration_" + "test2");
+        Assert.assertNotNull(producerConfigurationTest2);
+        final ProducerMetadata producerMetadataTest2 = producerConfigurationTest2.getProducerMetadata();
+        Assert.assertEquals(producerMetadataTest2.getTopic(), "test2");
+        Assert.assertEquals(producerMetadataTest2.getCompressionCodec(), "0");
 
         final Producer producerTest2 = appContext.getBean("prodFactory_test2", Producer.class);
-        Assert.assertEquals(topicConfigurationTest2, new TopicConfiguration(topicMetadataTest2, producerTest2));
+        Assert.assertEquals(producerConfigurationTest2, new ProducerConfiguration(producerMetadataTest2, producerTest2));
     }
 }

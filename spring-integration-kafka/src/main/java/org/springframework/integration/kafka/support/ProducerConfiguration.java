@@ -14,18 +14,18 @@ import java.io.ObjectOutputStream;
 /**
  * @author Soby Chacko
  */
-public class TopicConfiguration<K,V> {
+public class ProducerConfiguration<K,V> {
 
     private Producer<K,V> producer;
-    private TopicMetadata<K,V> topicMetadata;
+    private ProducerMetadata<K,V> producerMetadata;
 
-    public TopicConfiguration(final TopicMetadata<K,V> topicMetadata, final Producer<K,V> producer){
-        this.topicMetadata = topicMetadata;
+    public ProducerConfiguration(final ProducerMetadata<K, V> producerMetadata, final Producer<K, V> producer){
+        this.producerMetadata = producerMetadata;
         this.producer = producer;
     }
 
-    public TopicMetadata<K, V> getTopicMetadata() {
-        return topicMetadata;
+    public ProducerMetadata<K, V> getProducerMetadata() {
+        return producerMetadata;
     }
 
     public void send(final Message<?> message) throws Exception {
@@ -33,18 +33,18 @@ public class TopicConfiguration<K,V> {
 
         if (message.getHeaders().containsKey("messageKey")) {
             final K k = getKey(message);
-            producer.send(new KeyedMessage<K, V>(topicMetadata.getTopic(), k, v));
+            producer.send(new KeyedMessage<K, V>(producerMetadata.getTopic(), k, v));
         } else {
-            producer.send(new KeyedMessage<K, V>(topicMetadata.getTopic(), v));
+            producer.send(new KeyedMessage<K, V>(producerMetadata.getTopic(), v));
         }
     }
 
     @SuppressWarnings("unchecked")
     private V getPayload(final Message<?> message) throws Exception {
-        if (topicMetadata.getValueEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
+        if (producerMetadata.getValueEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
             return (V) getByteStream(message.getPayload());
-        } else if (message.getPayload().getClass().isAssignableFrom(topicMetadata.getValueClassType())) {
-            return topicMetadata.getValueClassType().cast(message.getPayload());
+        } else if (message.getPayload().getClass().isAssignableFrom(producerMetadata.getValueClassType())) {
+            return producerMetadata.getValueClassType().cast(message.getPayload());
         }
         throw new Exception("Message payload type is not matching with what is configured");
     }
@@ -52,10 +52,10 @@ public class TopicConfiguration<K,V> {
     @SuppressWarnings("unchecked")
     private K getKey(final Message<?> message) throws Exception {
         final Object key = message.getHeaders().get("messageKey");
-        if (topicMetadata.getKeyEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
+        if (producerMetadata.getKeyEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
             return (K) getByteStream(key);
         } else {
-            return message.getHeaders().get("messageKey", topicMetadata.getKeyClassType());
+            return message.getHeaders().get("messageKey", producerMetadata.getKeyClassType());
         }
     }
 

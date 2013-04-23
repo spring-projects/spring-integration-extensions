@@ -7,18 +7,18 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <int-kafka:producer-context id="producerContext">
-        <int-kafka:topic-configurations>
-            <int-kafka:topic-configuration broker-list="localhost:9092"
+        <int-kafka:producer-configurations>
+            <int-kafka:producer-configuration broker-list="localhost:9092"
                                            key-class-type="java.lang.String"
                                            value-class-type="java.lang.String"
                                            key-encoder="valueEncoder"
                                            value-encoder="valueEncoder"
                                            topic="test1"
                                            compression-codec="default"/>
-            <int-kafka:topic-configuration broker-list="localhost:9092"
+            <int-kafka:producer-configuration broker-list="localhost:9092"
                                            topic="test2"
                                            compression-codec="default"/>
-        </int-kafka:topic-configurations>
+        </int-kafka:producer-configurations>
     </int-kafka:producer-context>
 
     <bean id="valueEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">

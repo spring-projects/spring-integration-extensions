@@ -12,8 +12,8 @@ public class ProducerFactoryBeanTests {
 
     @Test
     public void createProducerWithDefaultMetadata() throws Exception {
-        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
-        final TopicMetadata<byte[], byte[]> tm = Mockito.spy(topicMetadata);
+        final ProducerMetadata<byte[], byte[]> producerMetadata = new ProducerMetadata<byte[], byte[]>("test");
+        final ProducerMetadata<byte[], byte[]> tm = Mockito.spy(producerMetadata);
         final ProducerFactoryBean<byte[], byte[]> producerFactoryBean = new ProducerFactoryBean<byte[], byte[]>(tm, "localhost:9092");
         final Producer producer = producerFactoryBean.getObject();
 
@@ -29,10 +29,10 @@ public class ProducerFactoryBeanTests {
 
     @Test
     public void createProducerWithAsyncFeatures() throws Exception {
-        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
-        topicMetadata.setAsync(true);
-        topicMetadata.setBatchNumMessages("300");
-        final TopicMetadata<byte[], byte[]> tm = Mockito.spy(topicMetadata);
+        final ProducerMetadata<byte[], byte[]> producerMetadata = new ProducerMetadata<byte[], byte[]>("test");
+        producerMetadata.setAsync(true);
+        producerMetadata.setBatchNumMessages("300");
+        final ProducerMetadata<byte[], byte[]> tm = Mockito.spy(producerMetadata);
         final ProducerFactoryBean<byte[], byte[]> producerFactoryBean = new ProducerFactoryBean<byte[], byte[]>(tm, "localhost:9092");
         final Producer producer = producerFactoryBean.getObject();
 

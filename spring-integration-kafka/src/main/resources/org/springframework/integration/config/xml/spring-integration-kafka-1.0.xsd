@@ -98,7 +98,7 @@
         </xsd:annotation>
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="topic-configurations" minOccurs="0" maxOccurs="1">
+                <xsd:element name="producer-configurations" minOccurs="0" maxOccurs="1">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[
                             Groups kafka topic configurations.
@@ -106,7 +106,7 @@
                     </xsd:annotation>
                     <xsd:complexType>
                         <xsd:choice>
-                            <xsd:element name="topic-configuration" maxOccurs="unbounded">
+                            <xsd:element name="producer-configuration" maxOccurs="unbounded">
                                 <xsd:annotation>
                                     <xsd:documentation><![CDATA[
                                     Declares a kafka topic configuration which drives how and where a topic is sent to broker/s.
@@ -200,7 +200,6 @@
                                         </xsd:annotation>
                                     </xsd:attribute>
                                 </xsd:complexType>
-
                             </xsd:element>
                         </xsd:choice>
                     </xsd:complexType>

@@ -16,10 +16,10 @@ import java.util.Properties;
 public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
 
     private final String brokerList;
-    private final TopicMetadata<K,V> topicMetadata;
+    private final ProducerMetadata<K,V> producerMetadata;
 
-    public ProducerFactoryBean(final TopicMetadata<K,V> topicMetadata, final String brokerList){
-        this.topicMetadata = topicMetadata;
+    public ProducerFactoryBean(final ProducerMetadata<K,V> producerMetadata, final String brokerList){
+        this.producerMetadata = producerMetadata;
         this.brokerList = brokerList;
     }
 
@@ -27,19 +27,19 @@ public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
     public Producer<K, V> getObject() throws Exception {
         final Properties props = new Properties();
         props.put("broker.list", brokerList);
-        props.put("compression.codec", topicMetadata.getCompressionCodec());
+        props.put("compression.codec", producerMetadata.getCompressionCodec());
 
-        if (topicMetadata.isAsync()){
+        if (producerMetadata.isAsync()){
             props.put("producer.type", "async");
-            if (topicMetadata.getBatchNumMessages() != null){
-                props.put("batch.num.messages", topicMetadata.getBatchNumMessages());
+            if (producerMetadata.getBatchNumMessages() != null){
+                props.put("batch.num.messages", producerMetadata.getBatchNumMessages());
             }
         }
 
         final ProducerConfig config = new ProducerConfig(props);
         final EventHandler<K, V> eventHandler = new DefaultEventHandler<K, V>(config,
-                topicMetadata.getPartitioner() == null ? new DefaultPartitioner<K>() : topicMetadata.getPartitioner(),
-                topicMetadata.getValueEncoder(), topicMetadata.getKeyEncoder(),
+                producerMetadata.getPartitioner() == null ? new DefaultPartitioner<K>() : producerMetadata.getPartitioner(),
+                producerMetadata.getValueEncoder(), producerMetadata.getKeyEncoder(),
                 new ProducerPool(config), new HashMap<String, kafka.api.TopicMetadata>());
 
         final kafka.producer.Producer<K, V> prod = new kafka.producer.Producer<K, V>(config,

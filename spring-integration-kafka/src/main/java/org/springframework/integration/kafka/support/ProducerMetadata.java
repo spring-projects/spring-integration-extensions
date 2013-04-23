@@ -10,7 +10,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * @author Soby Chacko
  */
-public class TopicMetadata<K,V> implements InitializingBean {
+public class ProducerMetadata<K,V> implements InitializingBean {
 
     private Encoder<K> keyEncoder;
     private Encoder<V> valueEncoder;
@@ -22,7 +22,7 @@ public class TopicMetadata<K,V> implements InitializingBean {
     private boolean async = false;
     private String batchNumMessages;
 
-    public TopicMetadata(final String topic) {
+    public ProducerMetadata(final String topic) {
         this.topic = topic;
     }
 

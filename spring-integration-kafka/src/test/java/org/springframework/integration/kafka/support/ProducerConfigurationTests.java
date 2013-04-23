@@ -23,19 +23,19 @@ import java.io.ObjectInputStream;
 /**
  * @author Soby Chacko
  */
-public class TopicConfigurationTests {
+public class ProducerConfigurationTests {
 
     @Test
     @SuppressWarnings("unchecked")
     public void testSendMessageWithNonDefaultKeyAndValueEncoders() throws Exception {
-        final TopicMetadata<String, String> topicMetadata = new TopicMetadata<String, String>("test");
-        topicMetadata.setValueEncoder(new StringEncoder(null));
-        topicMetadata.setKeyEncoder(new StringEncoder(null));
-        topicMetadata.setKeyClassType(String.class);
-        topicMetadata.setValueClassType(String.class);
+        final ProducerMetadata<String, String> producerMetadata = new ProducerMetadata<String, String>("test");
+        producerMetadata.setValueEncoder(new StringEncoder(null));
+        producerMetadata.setKeyEncoder(new StringEncoder(null));
+        producerMetadata.setKeyClassType(String.class);
+        producerMetadata.setValueClassType(String.class);
         final Producer<String, String> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<String, String> configuration = new TopicConfiguration<String, String>(topicMetadata, producer);
+        final ProducerConfiguration<String, String> configuration = new ProducerConfiguration<String, String>(producerMetadata, producer);
 
         final Message<String> message = MessageBuilder.withPayload("test message").
                                            setHeader("messageKey", "key")
@@ -61,12 +61,12 @@ public class TopicConfigurationTests {
     @Test
     @SuppressWarnings("unchecked")
     public void testSendMessageWithDefaultKeyAndValueEncodersAndCustomSerializableKeyAndPayloadObject() throws Exception {
-        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
-        topicMetadata.setValueEncoder(new DefaultEncoder(null));
-        topicMetadata.setKeyEncoder(new DefaultEncoder(null));
+        final ProducerMetadata<byte[], byte[]> producerMetadata = new ProducerMetadata<byte[], byte[]>("test");
+        producerMetadata.setValueEncoder(new DefaultEncoder(null));
+        producerMetadata.setKeyEncoder(new DefaultEncoder(null));
         final Producer<byte[], byte[]> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<byte[], byte[]> configuration = new TopicConfiguration<byte[], byte[]>(topicMetadata, producer);
+        final ProducerConfiguration<byte[], byte[]> configuration = new ProducerConfiguration<byte[], byte[]>(producerMetadata, producer);
 
         final Message<TestPayload> message = MessageBuilder.withPayload(new TestPayload("part1", "part2")).
                                            setHeader("messageKey", new TestKey("compositePart1", "compositePart2"))
@@ -112,14 +112,14 @@ public class TopicConfigurationTests {
     @Test
     @SuppressWarnings("unchecked")
     public void testSendMessageWithDefaultKeyEncoderAndNonDefaultValueEncoderAndCorrespondingData() throws Exception {
-        final TopicMetadata<byte[], TestPayload> topicMetadata = new TopicMetadata<byte[], TestPayload>("test");
+        final ProducerMetadata<byte[], TestPayload> producerMetadata = new ProducerMetadata<byte[], TestPayload>("test");
         final AvroBackedKafkaEncoder<TestPayload> encoder = new AvroBackedKafkaEncoder<TestPayload>(TestPayload.class);
-        topicMetadata.setValueEncoder(encoder);
-        topicMetadata.setKeyEncoder(new DefaultEncoder(null));
-        topicMetadata.setValueClassType(TestPayload.class);
+        producerMetadata.setValueEncoder(encoder);
+        producerMetadata.setKeyEncoder(new DefaultEncoder(null));
+        producerMetadata.setValueClassType(TestPayload.class);
         final Producer<byte[], TestPayload> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<byte[], TestPayload> configuration = new TopicConfiguration<byte[], TestPayload>(topicMetadata, producer);
+        final ProducerConfiguration<byte[], TestPayload> configuration = new ProducerConfiguration<byte[], TestPayload>(producerMetadata, producer);
         final TestPayload tp = new TestPayload("part1", "part2");
         final Message<TestPayload> message = MessageBuilder.withPayload(tp).
                                            setHeader("messageKey", "key")
@@ -152,14 +152,14 @@ public class TopicConfigurationTests {
     @Test
     @SuppressWarnings("unchecked")
     public void testSendMessageWithNonDefaultKeyEncoderAndDefaultValueEncoderAndCorrespondingData() throws Exception {
-        final TopicMetadata<TestKey, byte[]> topicMetadata = new TopicMetadata<TestKey, byte[]>("test");
+        final ProducerMetadata<TestKey, byte[]> producerMetadata = new ProducerMetadata<TestKey, byte[]>("test");
         final AvroBackedKafkaEncoder<TestKey> encoder = new AvroBackedKafkaEncoder<TestKey>(TestKey.class);
-        topicMetadata.setKeyEncoder(encoder);
-        topicMetadata.setValueEncoder(new DefaultEncoder(null));
-        topicMetadata.setKeyClassType(TestKey.class);
+        producerMetadata.setKeyEncoder(encoder);
+        producerMetadata.setValueEncoder(new DefaultEncoder(null));
+        producerMetadata.setKeyClassType(TestKey.class);
         final Producer<TestKey, byte[]> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<TestKey, byte[]> configuration = new TopicConfiguration<TestKey, byte[]>(topicMetadata, producer);
+        final ProducerConfiguration<TestKey, byte[]> configuration = new ProducerConfiguration<TestKey, byte[]>(producerMetadata, producer);
         final TestKey tk = new TestKey("part1", "part2");
         final Message<String> message = MessageBuilder.withPayload("test message").
                                            setHeader("messageKey", tk)
@@ -193,12 +193,12 @@ public class TopicConfigurationTests {
     @Test
     @SuppressWarnings("unchecked")
     public void testSendMessageWithDefaultKeyAndValueEncodersAndStringKeyAndValue() throws Exception {
-        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
-        topicMetadata.setValueEncoder(new DefaultEncoder(null));
-        topicMetadata.setKeyEncoder(new DefaultEncoder(null));
+        final ProducerMetadata<byte[], byte[]> producerMetadata = new ProducerMetadata<byte[], byte[]>("test");
+        producerMetadata.setValueEncoder(new DefaultEncoder(null));
+        producerMetadata.setKeyEncoder(new DefaultEncoder(null));
         final Producer<byte[], byte[]> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<byte[], byte[]> configuration = new TopicConfiguration<byte[], byte[]>(topicMetadata, producer);
+        final ProducerConfiguration<byte[], byte[]> configuration = new ProducerConfiguration<byte[], byte[]>(producerMetadata, producer);
 
         final Message<String> message = MessageBuilder.withPayload("test message").
                                            setHeader("messageKey", "key")
@@ -236,12 +236,12 @@ public class TopicConfigurationTests {
     @Test(expected = NotSerializableException.class)
     @SuppressWarnings("unchecked")
     public void testSendMessageWithDefaultKeyAndValueEncodersButNonSerializableKeyAndValue() throws Exception {
-        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
-        topicMetadata.setValueEncoder(new DefaultEncoder(null));
-        topicMetadata.setKeyEncoder(new DefaultEncoder(null));
+        final ProducerMetadata<byte[], byte[]> producerMetadata = new ProducerMetadata<byte[], byte[]>("test");
+        producerMetadata.setValueEncoder(new DefaultEncoder(null));
+        producerMetadata.setKeyEncoder(new DefaultEncoder(null));
         final Producer<byte[], byte[]> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<byte[], byte[]> configuration = new TopicConfiguration<byte[], byte[]>(topicMetadata, producer);
+        final ProducerConfiguration<byte[], byte[]> configuration = new ProducerConfiguration<byte[], byte[]>(producerMetadata, producer);
 
         final Message<NonSerializableTestPayload> message = MessageBuilder.withPayload(new NonSerializableTestPayload("part1", "part2")).
                                                setHeader("messageKey", new NonSerializableTestKey("compositePart1", "compositePart2"))
@@ -255,12 +255,12 @@ public class TopicConfigurationTests {
     @Test(expected = NotSerializableException.class)
     @SuppressWarnings("unchecked")
     public void testSendMessageWithDefaultKeyAndValueEncodersButNonSerializableKeyAndSerializableValue() throws Exception {
-        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
-        topicMetadata.setValueEncoder(new DefaultEncoder(null));
-        topicMetadata.setKeyEncoder(new DefaultEncoder(null));
+        final ProducerMetadata<byte[], byte[]> producerMetadata = new ProducerMetadata<byte[], byte[]>("test");
+        producerMetadata.setValueEncoder(new DefaultEncoder(null));
+        producerMetadata.setKeyEncoder(new DefaultEncoder(null));
         final Producer<byte[], byte[]> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<byte[], byte[]> configuration = new TopicConfiguration<byte[], byte[]>(topicMetadata, producer);
+        final ProducerConfiguration<byte[], byte[]> configuration = new ProducerConfiguration<byte[], byte[]>(producerMetadata, producer);
 
         final Message<TestPayload> message = MessageBuilder.withPayload(new TestPayload("part1", "part2")).
                                                setHeader("messageKey", new NonSerializableTestKey("compositePart1", "compositePart2"))
@@ -274,12 +274,12 @@ public class TopicConfigurationTests {
     @Test(expected = NotSerializableException.class)
     @SuppressWarnings("unchecked")
     public void testSendMessageWithDefaultKeyAndValueEncodersButSerializableKeyAndNonSerializableValue() throws Exception {
-        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
-        topicMetadata.setValueEncoder(new DefaultEncoder(null));
-        topicMetadata.setKeyEncoder(new DefaultEncoder(null));
+        final ProducerMetadata<byte[], byte[]> producerMetadata = new ProducerMetadata<byte[], byte[]>("test");
+        producerMetadata.setValueEncoder(new DefaultEncoder(null));
+        producerMetadata.setKeyEncoder(new DefaultEncoder(null));
         final Producer<byte[], byte[]> producer = Mockito.mock(Producer.class);
 
-        final TopicConfiguration<byte[], byte[]> configuration = new TopicConfiguration<byte[], byte[]>(topicMetadata, producer);
+        final ProducerConfiguration<byte[], byte[]> configuration = new ProducerConfiguration<byte[], byte[]>(producerMetadata, producer);
 
         final Message<NonSerializableTestPayload> message = MessageBuilder.withPayload(new NonSerializableTestPayload("part1", "part2")).
                                                setHeader("messageKey", new TestKey("compositePart1", "compositePart2"))
