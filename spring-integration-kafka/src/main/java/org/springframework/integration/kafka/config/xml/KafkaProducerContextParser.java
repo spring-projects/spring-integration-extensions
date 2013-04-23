@@ -55,10 +55,10 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 
             BeanDefinitionBuilder topicBuilder = BeanDefinitionBuilder.genericBeanDefinition(TopicMetadata.class);
             topicBuilder.addConstructorArgValue(topic.getAttribute("topic"));
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(topicBuilder, topic, "kafka-encoder");
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(topicBuilder, topic, "kafka-key-encoder");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "key-class");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "value-class");
+            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(topicBuilder, topic, "value-encoder");
+            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(topicBuilder, topic, "key-encoder");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "key-class-type");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "value-class-type");
             IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "partitioner");
             IntegrationNamespaceUtils.setValueIfAttributeDefined(topicBuilder, topic, "compression-codec");
 
@@ -77,12 +77,11 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
             registerBeanDefinition(new BeanDefinitionHolder(bd, "prodFactory_"+topic.getAttribute("topic")), parserContext.getRegistry());
 
             builder.addConstructorArgReference("topic_" + topic.getAttribute("topic"));
-
-            builder.addPropertyReference("producer", "prodFactory_" + topic.getAttribute("topic"));
-
+            builder.addConstructorArgReference("prodFactory_" + topic.getAttribute("topic"));
             AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
-            registerBeanDefinition(new BeanDefinitionHolder(beanDefinition, parserContext.getReaderContext()
-                    .generateBeanName(beanDefinition)), parserContext.getRegistry());
+            final String topicConfigBeanName = "topicConfiguration_" + topic.getAttribute("topic");
+            registerBeanDefinition(new BeanDefinitionHolder(beanDefinition, topicConfigBeanName),
+                    parserContext.getRegistry());
         }
     }
 }

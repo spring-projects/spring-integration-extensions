@@ -70,7 +70,7 @@ Here is how an outbound channel adapter is configured:
 ```xml
 	<int-kafka:outbound-channel-adapter kafka-producer-context-ref="producerContext"
                                             auto-startup="false"
-                                            channel="inputToKafka" kafka-encoder="kafkaEncoder" topic="mytest">
+                                            channel="inputToKafka" kafka-encoder="valueEncoder" topic="mytest">
             <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="5000"/>
     </int-kafka:outbound-channel-adapter>
 ```
@@ -86,7 +86,7 @@ you can plug any kind of serialization mechanisms for doing this. Spring Ingegra
 encoding mechanism. Here is how you would configure a kafka encoder:
 
 ```xml
-    <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
+    <bean id="valueEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
             <constructor-arg type="java.lang.Class" value="java.lang.String" />
     </bean>
 ```

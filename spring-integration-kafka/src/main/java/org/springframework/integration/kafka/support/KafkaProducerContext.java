@@ -50,6 +50,10 @@ public class KafkaProducerContext implements BeanFactoryAware {
         return null;
     }
 
+    public Map<String, TopicConfiguration> getTopicsConfiguration() {
+        return topicsConfiguration;
+    }
+
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         topicsConfiguration = ((ListableBeanFactory)beanFactory).getBeansOfType(TopicConfiguration.class);

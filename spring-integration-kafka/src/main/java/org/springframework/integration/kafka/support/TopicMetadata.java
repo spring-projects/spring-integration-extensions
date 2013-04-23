@@ -3,6 +3,8 @@ package org.springframework.integration.kafka.support;
 import kafka.producer.Partitioner;
 import kafka.serializer.DefaultEncoder;
 import kafka.serializer.Encoder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -10,10 +12,10 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class TopicMetadata<K,V> implements InitializingBean {
 
-    private Encoder<K> kafkaKeyEncoder;
-    private Encoder<V> kafkaEncoder;
-    private Class<K> keyClass;
-    private Class<V> valueClass;
+    private Encoder<K> keyEncoder;
+    private Encoder<V> valueEncoder;
+    private Class<K> keyClassType;
+    private Class<V> valueClassType;
     private final String topic;
     private String compressionCodec = "default";
     private Partitioner<K> partitioner;
@@ -26,36 +28,36 @@ public class TopicMetadata<K,V> implements InitializingBean {
         return topic;
     }
 
-    public Encoder<K> getKafkaKeyEncoder() {
-        return kafkaKeyEncoder;
+    public Encoder<K> getKeyEncoder() {
+        return keyEncoder;
     }
 
-    public void setKafkaKeyEncoder(Encoder<K> kafkaKeyEncoder) {
-        this.kafkaKeyEncoder = kafkaKeyEncoder;
+    public void setKeyEncoder(Encoder<K> keyEncoder) {
+        this.keyEncoder = keyEncoder;
     }
 
-    public Encoder<V> getKafkaEncoder() {
-        return kafkaEncoder;
+    public Encoder<V> getValueEncoder() {
+        return valueEncoder;
     }
 
-    public void setKafkaEncoder(Encoder<V> kafkaEncoder) {
-        this.kafkaEncoder = kafkaEncoder;
+    public void setValueEncoder(Encoder<V> valueEncoder) {
+        this.valueEncoder = valueEncoder;
     }
 
-    public Class<K> getKeyClass() {
-        return keyClass;
+    public Class<K> getKeyClassType() {
+        return keyClassType;
     }
 
-    public void setKeyClass(Class<K> keyClass) {
-        this.keyClass = keyClass;
+    public void setKeyClassType(Class<K> keyClassType) {
+        this.keyClassType = keyClassType;
     }
 
-    public Class<V> getValueClass() {
-        return valueClass;
+    public Class<V> getValueClassType() {
+        return valueClassType;
     }
 
-    public void setValueClass(Class<V> valueClass) {
-        this.valueClass = valueClass;
+    public void setValueClassType(Class<V> valueClassType) {
+        this.valueClassType = valueClassType;
     }
 
     //TODO: Use an enum
@@ -82,11 +84,21 @@ public class TopicMetadata<K,V> implements InitializingBean {
 
     @SuppressWarnings("unchecked")
     public void afterPropertiesSet() throws Exception {
-        if (kafkaEncoder == null) {
-            setKafkaEncoder((Encoder<V>) new DefaultEncoder(null));
+        if (valueEncoder == null) {
+            setValueEncoder((Encoder<V>) new DefaultEncoder(null));
         }
-        if (kafkaKeyEncoder == null) {
-            setKafkaKeyEncoder((Encoder<K>) getKafkaEncoder());
+        if (keyEncoder == null) {
+            setKeyEncoder((Encoder<K>) getValueEncoder());
         }
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

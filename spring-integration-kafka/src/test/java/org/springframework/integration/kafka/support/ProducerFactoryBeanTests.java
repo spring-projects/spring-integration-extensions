@@ -12,16 +12,16 @@ public class ProducerFactoryBeanTests {
 
     @Test
     public void createProducerWithDefaultMetadata() throws Exception {
-        final TopicMetadata topicMetadata = new TopicMetadata("test");
-        final TopicMetadata tm = Mockito.spy(topicMetadata);
-        final ProducerFactoryBean producerFactoryBean = new ProducerFactoryBean(tm, "localhost:9092");
+        final TopicMetadata<byte[], byte[]> topicMetadata = new TopicMetadata<byte[], byte[]>("test");
+        final TopicMetadata<byte[], byte[]> tm = Mockito.spy(topicMetadata);
+        final ProducerFactoryBean<byte[], byte[]> producerFactoryBean = new ProducerFactoryBean<byte[], byte[]>(tm, "localhost:9092");
         final Producer producer = producerFactoryBean.getObject();
 
         Assert.assertTrue(producer != null);
 
         Mockito.verify(tm, Mockito.times(1)).getPartitioner();
         Mockito.verify(tm, Mockito.times(1)).getCompressionCodec();
-        Mockito.verify(tm, Mockito.times(1)).getKafkaEncoder();
-        Mockito.verify(tm, Mockito.times(1)).getKafkaKeyEncoder();
+        Mockito.verify(tm, Mockito.times(1)).getValueEncoder();
+        Mockito.verify(tm, Mockito.times(1)).getKeyEncoder();
     }
 }

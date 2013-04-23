@@ -40,7 +40,6 @@ public class KafkaOutboundChannelAdapterParser extends AbstractOutboundChannelAd
         if (StringUtils.hasText(kafkaServerBeanName)) {
             kafkaProducerMessageHandlerBuilder.addConstructorArgReference(kafkaServerBeanName);
         }
-
         return kafkaProducerMessageHandlerBuilder.getBeanDefinition();
     }
 }

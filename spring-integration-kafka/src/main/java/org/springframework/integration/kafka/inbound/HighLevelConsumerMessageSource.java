@@ -75,7 +75,9 @@ public class HighLevelConsumerMessageSource extends IntegrationObjectSupport imp
                      final List<Object> messages = new ArrayList<Object>();
                      try {
                          while(latch.getCount() > 0) {
-                             messages.add(stream.iterator().next().message());
+                             final Object obj = stream.iterator().next().message();
+                             //System.out.println("message: " + new String((byte[])obj));
+                             messages.add(obj);
                              latch.countDown();
                          }
                      }

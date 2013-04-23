@@ -32,7 +32,7 @@ public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
         final ProducerConfig config = new ProducerConfig(props);
         final EventHandler<K, V> eventHandler = new DefaultEventHandler<K, V>(config,
                 topicMetadata.getPartitioner() == null ? new DefaultPartitioner<K>() : topicMetadata.getPartitioner(),
-                topicMetadata.getKafkaEncoder(), topicMetadata.getKafkaKeyEncoder(),
+                topicMetadata.getValueEncoder(), topicMetadata.getKeyEncoder(),
                 new ProducerPool(config), new HashMap<String, kafka.api.TopicMetadata>());
 
         final kafka.producer.Producer<K, V> prod = new kafka.producer.Producer<K, V>(config,
@@ -47,6 +47,6 @@ public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
 
     @Override
     public boolean isSingleton() {
-        return false;
+        return true;
     }
 }
