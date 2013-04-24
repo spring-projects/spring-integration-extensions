@@ -15,6 +15,8 @@
  */
 package org.springframework.integration.aws.s3;
 
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.FILE_NAME;
+
 import java.io.File;
 
 import org.apache.commons.logging.Log;
@@ -47,7 +49,7 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 
 	private volatile String temporarySuffix = ".writing";
 
-	private volatile String fileNameExpression = "headers['" + AmazonS3MessageHeaders.FILE_NAME + "']" ;
+	private volatile String fileNameExpression = "headers['" + FILE_NAME + "']" ;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.integration.aws.s3.FileNameGenerationStrategy#generateFileName(org.springframework.integration.Message)

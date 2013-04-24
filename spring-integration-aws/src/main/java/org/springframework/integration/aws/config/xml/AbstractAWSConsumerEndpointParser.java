@@ -17,35 +17,30 @@ package org.springframework.integration.aws.config.xml;
 
 import static org.springframework.integration.aws.config.xml.AmazonWSParserUtils.getAmazonWSCredentials;
 
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
+import org.springframework.integration.config.xml.AbstractConsumerEndpointParser;
 import org.springframework.integration.core.MessageHandler;
 import org.w3c.dom.Element;
 
 /**
- * The common adapter parser for all AWS Outbound channel adapters
+ * The abstract parser for all the gateway parsers in the AWS project
  *
  * @author Amol Nayak
- *
  * @since 0.5
  *
  */
-public abstract class AbstractAWSOutboundChannelAdapterParser extends
-		AbstractOutboundChannelAdapterParser {
+public abstract class AbstractAWSConsumerEndpointParser extends AbstractConsumerEndpointParser {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser#parseConsumer(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)
-	 */
+
 	@Override
-	protected final AbstractBeanDefinition parseConsumer(Element element,
+	protected BeanDefinitionBuilder parseHandler(Element element,
 			ParserContext parserContext) {
 		String awsCredentialsGeneratedName = getAmazonWSCredentials(element,parserContext);
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(getMessageHandlerImplementation());
 		builder.addConstructorArgReference(awsCredentialsGeneratedName);
 		processBeanDefinition(builder,awsCredentialsGeneratedName,element,parserContext);
-		return builder.getBeanDefinition();
+		return builder;
 	}
 
 	protected abstract Class<? extends MessageHandler> getMessageHandlerImplementation();
@@ -63,5 +58,4 @@ public abstract class AbstractAWSOutboundChannelAdapterParser extends
 				Element element,ParserContext context) {
 		//Default implementation does nothing
 	}
-
 }

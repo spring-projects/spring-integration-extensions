@@ -43,7 +43,7 @@ import org.springframework.integration.aws.core.PropertiesAWSCredentials;
  * @since 0.5
  *
  */
-//@Ignore
+@Ignore
 public class DefaultAmazonS3OperationsAWSTests extends AbstractAmazonS3OperationsImplAWSTests {
 
 

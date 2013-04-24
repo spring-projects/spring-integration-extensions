@@ -10,20 +10,13 @@
 
 	<integration:channel id="input"/>
 
-
 	<int-aws:s3-outbound-gateway
-			id="withCustomNameGenerator"
+			id="withDefaultServices"
 			input-channel="input"
-			s3-operations="customOps"
 			bucket="TestBucket"
+			remote-command="list"
 			accessKey="dummy"
 			secretKey="dummy"
-			multipart-upload-threshold="5120"
-			remote-directory="/"
-			remote-command="put"
-			file-name-generation-expression="headers['name']"
-			auto-startup="false"/>
-
-	<bean id="customOps"
-		class="org.springframework.integration.aws.s3.config.xml.AmazonS3OutboundChannelAdapterParserTests.DummyS3Operations"/>
+			remote-directory-expression="headers['remoteDirectory']"
+			multipart-upload-threshold="1024"/>
 </beans>

@@ -15,13 +15,12 @@
  */
 package org.springframework.integration.aws.s3;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.springframework.integration.aws.s3.AmazonS3MessageHeaders.FILE_NAME;
-import static org.springframework.integration.aws.s3.AmazonS3MessageHeaders.METADATA;
-import static org.springframework.integration.aws.s3.AmazonS3MessageHeaders.OBJECT_ACLS;
-import static org.springframework.integration.aws.s3.AmazonS3MessageHeaders.USER_METADATA;
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.FILE_NAME;
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.METADATA;
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.OBJECT_ACLS;
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.USER_METADATA;
+import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.getLastPutOperation;
+import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.mockS3Operations;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -33,18 +32,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
 import org.springframework.integration.aws.core.BasicAWSCredentials;
+import org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.LastPutOperationCall;
 import org.springframework.integration.aws.s3.core.AmazonS3Object;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
 import org.springframework.integration.support.MessageBuilder;
@@ -60,31 +56,11 @@ import org.springframework.integration.support.MessageBuilder;
  */
 public class AmazonS3MessageHandlerTests {
 
-	private static AmazonS3Operations operations;
-	private static PutObjectParameterHolder holder = new PutObjectParameterHolder();
+	private static final AmazonS3Operations operations = mockS3Operations();
 
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
-	@BeforeClass
-	public static void setup() {
-		operations = Mockito.mock(AmazonS3Operations.class);
-
-		doAnswer(new Answer<Object>() {
-			public Object answer(InvocationOnMock inv) {
-				Object[] args = inv.getArguments();
-				holder.setBucket((String)args[0]);
-				holder.setFolder((String)args[1]);
-				holder.setObjectName((String)args[2]);
-				holder.setS3Object((AmazonS3Object)args[3]);
-				return null;
-			}
-		}).
-		when(operations)
-		.putObject(anyString(), anyString(), anyString(), any(AmazonS3Object.class));
-
-
-	}
 	private AmazonS3MessageHandler getHandler() {
 		AmazonS3MessageHandler handler = new AmazonS3MessageHandler(new BasicAWSCredentials(), operations);
 		//set the remote directory to root by default
@@ -92,38 +68,6 @@ public class AmazonS3MessageHandlerTests {
 		handler.setBucket("TestBucket");
 		handler.afterPropertiesSet();
 		return handler;
-	}
-
-	private static class PutObjectParameterHolder {
-		private String bucket;
-		private String folder;
-		private String objectName;
-		private AmazonS3Object s3Object;
-
-		public String getBucket() {
-			return bucket;
-		}
-		public void setBucket(String bucket) {
-			this.bucket = bucket;
-		}
-		public String getFolder() {
-			return folder;
-		}
-		public void setFolder(String folder) {
-			this.folder = folder;
-		}
-		public String getObjectName() {
-			return objectName;
-		}
-		public void setObjectName(String objectName) {
-			this.objectName = objectName;
-		}
-		public AmazonS3Object getS3Object() {
-			return s3Object;
-		}
-		public void setS3Object(AmazonS3Object s3Object) {
-			this.s3Object = s3Object;
-		}
 	}
 
 	/**
@@ -134,7 +78,8 @@ public class AmazonS3MessageHandlerTests {
 		Message<String> message = MessageBuilder.withPayload("Test String").build();
 		AmazonS3MessageHandler handler = getHandler();
 		handler.handleMessage(message);
-		AmazonS3Object object = holder.getS3Object();
+		LastPutOperationCall lastOperation = getLastPutOperation();
+		AmazonS3Object object = lastOperation.getS3Object();
 		Assert.assertNotNull(object.getInputStream());
 		Assert.assertNull(object.getFileSource());
 		assertCommonValues(message,object);
@@ -149,7 +94,8 @@ public class AmazonS3MessageHandlerTests {
 		Message<InputStream> message = MessageBuilder.withPayload(bin).build();
 		AmazonS3MessageHandler handler = getHandler();
 		handler.handleMessage(message);
-		AmazonS3Object object = holder.getS3Object();
+		LastPutOperationCall lastOperation = getLastPutOperation();
+		AmazonS3Object object = lastOperation.getS3Object();
 		Assert.assertNotNull(object.getInputStream());
 		Assert.assertNull(object.getFileSource());
 		assertCommonValues(message,object);
@@ -163,7 +109,8 @@ public class AmazonS3MessageHandlerTests {
 		Message<byte[]> message = MessageBuilder.withPayload("String".getBytes()).build();
 		AmazonS3MessageHandler handler = getHandler();
 		handler.handleMessage(message);
-		AmazonS3Object object = holder.getS3Object();
+		LastPutOperationCall lastOperation = getLastPutOperation();
+		AmazonS3Object object = lastOperation.getS3Object();
 		Assert.assertNotNull(object.getInputStream());
 		Assert.assertNull(object.getFileSource());
 		assertCommonValues(message,object);
@@ -216,10 +163,11 @@ public class AmazonS3MessageHandlerTests {
 		SpelExpressionParser parser = new SpelExpressionParser();
 		handler.setRemoteDirectoryExpression(parser.parseExpression("headers['remoteDirectory']"));
 		handler.handleMessage(message);
-		Assert.assertEquals("TestBucket", holder.getBucket());
-		Assert.assertEquals("TestFileName.txt", holder.getObjectName());
-		Assert.assertEquals("/remote", holder.getFolder());
-		AmazonS3Object object = holder.getS3Object();
+		LastPutOperationCall lastOperation = getLastPutOperation();
+		Assert.assertEquals("TestBucket", lastOperation.getBucket());
+		Assert.assertEquals("TestFileName.txt", lastOperation.getObjectName());
+		Assert.assertEquals("/remote", lastOperation.getFolder());
+		AmazonS3Object object = lastOperation.getS3Object();
 		Assert.assertNotNull(object);
 		Assert.assertNotNull(object.getInputStream());
 		Assert.assertNotNull(object.getMetaData());
@@ -237,8 +185,9 @@ public class AmazonS3MessageHandlerTests {
 		Message<File> message = MessageBuilder.withPayload(file).build();
 		AmazonS3MessageHandler handler = getHandler();
 		handler.handleMessage(message);
-		AmazonS3Object object = holder.getS3Object();
-		Assert.assertEquals("TempFile.txt", holder.getObjectName());
+		LastPutOperationCall lastOperation = getLastPutOperation();
+		AmazonS3Object object = lastOperation.getS3Object();
+		Assert.assertEquals("TempFile.txt", lastOperation.getObjectName());
 		Assert.assertNotNull(object.getFileSource());
 		Assert.assertNull(object.getInputStream());
 		Assert.assertNull(object.getMetaData());
@@ -253,9 +202,10 @@ public class AmazonS3MessageHandlerTests {
 	 * @param message
 	 */
 	private void assertCommonValues(Message<?> message,AmazonS3Object object) {
-		Assert.assertEquals(message.getHeaders().getId().toString() + ".ext", holder.getObjectName());
-		Assert.assertEquals("/", holder.getFolder());
-		Assert.assertEquals("TestBucket", holder.getBucket());
+		LastPutOperationCall lastOperation = getLastPutOperation();
+		Assert.assertEquals(message.getHeaders().getId().toString() + ".ext", lastOperation.getObjectName());
+		Assert.assertEquals("/", lastOperation.getFolder());
+		Assert.assertEquals("TestBucket", lastOperation.getBucket());
 		Assert.assertNotNull(object);
 		Assert.assertNull(object.getMetaData());
 		Assert.assertNull(object.getObjectACL());

@@ -15,8 +15,10 @@
  */
 package org.springframework.integration.aws.s3;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.integration.aws.s3.InboundFileSynchronizationImpl.CONTENT_MD5;
@@ -51,6 +53,9 @@ public final class AmazonS3OperationsMockingUtil {
 	public static final String BUCKET = "com.si.aws.test.bucket";
 	private static final List<S3ObjectSummary> summary = new ArrayList<S3ObjectSummary>();
 	private static final Map<String, String[]> objectDetails = new HashMap<String, String[]>();
+	private static LastRemoveOperationCall lastRemoveOperation = new LastRemoveOperationCall();
+	private static LastPutOperationCall lastPutOperation = new LastPutOperationCall();
+	private static LastListOperationCall lastListOperation = new LastListOperationCall();
 
 	private AmazonS3OperationsMockingUtil() {
 		throw new AssertionError("Cannot instantiate utility class");
@@ -60,7 +65,7 @@ public final class AmazonS3OperationsMockingUtil {
 
 		AmazonS3Operations operations;
 
-		PaginatedObjectsView view = new PaginatedObjectsView() {
+		final PaginatedObjectsView view = new PaginatedObjectsView() {
 
 			@Override
 			public boolean hasMoreResults() {
@@ -79,7 +84,44 @@ public final class AmazonS3OperationsMockingUtil {
 		};
 		operations = mock(AmazonS3Operations.class);
 		when(operations.listObjects(anyString(), anyString(), anyString(), anyInt()))
-		.thenReturn(view);
+		.then(new Answer<PaginatedObjectsView>() {
+
+			@Override
+			public PaginatedObjectsView answer(InvocationOnMock invocation)
+					throws Throwable {
+				Object[] args = invocation.getArguments();
+				lastListOperation.setBucket((String)args[0]);
+				lastListOperation.setRemoteDirectory((String)args[1]);
+				lastListOperation.setNextMarker((String)args[2]);
+				lastListOperation.setPageSize(((Number)args[3]).intValue());
+				return view;
+			}
+		});
+
+		doAnswer(new Answer<Void>() {
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				Object[] args = invocation.getArguments();
+				lastRemoveOperation.setBucket((String)args[0]);
+				lastRemoveOperation.setRemoteDirectory((String)args[1]);
+				lastRemoveOperation.setObjectName((String)args[2]);
+				return null;
+			}
+
+		}).when(operations).removeObject(anyString(), anyString(), anyString());
+
+		doAnswer(new Answer<Object>() {
+			public Object answer(InvocationOnMock inv) {
+				Object[] args = inv.getArguments();
+				lastPutOperation.setBucket((String)args[0]);
+				lastPutOperation.setFolder((String)args[1]);
+				lastPutOperation.setObjectName((String)args[2]);
+				lastPutOperation.setS3Object((AmazonS3Object)args[3]);
+				return null;
+			}
+		}).
+		when(operations)
+		.putObject(anyString(), anyString(), anyString(), any(AmazonS3Object.class));
 
 		when(operations.getObject(anyString(), anyString(), anyString()))
 		.then(new Answer<AmazonS3Object>() {
@@ -92,7 +134,7 @@ public final class AmazonS3OperationsMockingUtil {
 					if(folderName.startsWith("/")) {
 						folderName = folderName.substring(1);
 					}
-					if(folderName.endsWith("/")) {
+					if(!folderName.endsWith("/")) {
 						folderName = folderName  + "/";
 					}
 				}
@@ -186,4 +228,236 @@ public final class AmazonS3OperationsMockingUtil {
 		);
 	}
 
+	/**
+	 * The utility class that would be used to hold the value of the invocation of the
+	 * last remove call, doesn't bother about thread safety
+	 *
+	 *
+	 */
+	public static class LastRemoveOperationCall {
+		private String bucket;
+		private String remoteDirectory;
+		private String objectName;
+
+		/**
+		 *
+		 */
+		public String getBucket() {
+			return bucket;
+		}
+
+		/**
+		 *
+		 * @param bucket
+		 */
+		public void setBucket(String bucket) {
+			this.bucket = bucket;
+		}
+
+		/**
+		 *
+		 * @return
+		 */
+		public String getRemoteDirectory() {
+			return remoteDirectory;
+		}
+
+		/**
+		 *
+		 * @param remoteDirectory
+		 */
+		public void setRemoteDirectory(String remoteDirectory) {
+			this.remoteDirectory = remoteDirectory;
+		}
+		/**
+		 *
+		 * @return
+		 */
+		public String getObjectName() {
+			return objectName;
+		}
+		/**
+		 *
+		 * @param objectName
+		 */
+		public void setObjectName(String objectName) {
+			this.objectName = objectName;
+		}
+	}
+
+	/**
+	 * The utility class that would be used to hold the value of the invocation of the
+	 * last list operation call
+	 *
+	 *
+	 */
+	public static class LastListOperationCall {
+		private String bucket;
+		private String remoteDirectory;
+		private String nextMarker;
+		private int pageSize;
+
+		/**
+		 *
+		 */
+		public String getBucket() {
+			return bucket;
+		}
+
+		/**
+		 *
+		 * @param bucket
+		 */
+		public void setBucket(String bucket) {
+			this.bucket = bucket;
+		}
+
+		/**
+		 *
+		 * @return
+		 */
+		public String getRemoteDirectory() {
+			return remoteDirectory;
+		}
+
+		/**
+		 *
+		 * @param remoteDirectory
+		 */
+		public void setRemoteDirectory(String remoteDirectory) {
+			this.remoteDirectory = remoteDirectory;
+		}
+		/**
+		 *
+		 * @return
+		 */
+		public String getNextMarker() {
+			return nextMarker;
+		}
+		/**
+		 *
+		 * @param objectName
+		 */
+		public void setNextMarker(String nextMarker) {
+			this.nextMarker = nextMarker;
+		}
+
+		/**
+		 *
+		 * @return
+		 */
+		public int getPageSize() {
+			return pageSize;
+		}
+
+		/**
+		 *
+		 * @param pageSize
+		 */
+		public void setPageSize(int pageSize) {
+			this.pageSize = pageSize;
+		}
+	}
+
+	/**
+	 *
+	 *
+	 *
+	 */
+	public static class LastPutOperationCall {
+
+		private String bucket;
+		private String folder;
+		private String objectName;
+		private AmazonS3Object s3Object;
+
+		/**
+		 *
+		 * @return
+		 */
+		public String getBucket() {
+			return bucket;
+		}
+
+		/**
+		 *
+		 * @param bucket
+		 */
+		public void setBucket(String bucket) {
+			this.bucket = bucket;
+		}
+
+		/**
+		 *
+		 * @return
+		 */
+		public String getFolder() {
+			return folder;
+		}
+
+		/**
+		 *
+		 * @param folder
+		 */
+		public void setFolder(String folder) {
+			this.folder = folder;
+		}
+
+		/**
+		 *
+		 * @return
+		 */
+		public String getObjectName() {
+			return objectName;
+		}
+
+		/**
+		 *
+		 * @param objectName
+		 */
+		public void setObjectName(String objectName) {
+			this.objectName = objectName;
+		}
+
+		/**
+		 *
+		 * @return
+		 */
+		public AmazonS3Object getS3Object() {
+			return s3Object;
+		}
+
+		/**
+		 *
+		 * @param s3Object
+		 */
+		public void setS3Object(AmazonS3Object s3Object) {
+			this.s3Object = s3Object;
+		}
+	}
+
+
+	/**
+	 *
+	 * @return
+	 */
+	public static LastRemoveOperationCall getLastRemoveOperation() {
+		return lastRemoveOperation;
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public static LastPutOperationCall getLastPutOperation() {
+		return lastPutOperation;
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public static LastListOperationCall getLastListOperation() {
+		return lastListOperation;
+	}
 }

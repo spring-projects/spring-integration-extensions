@@ -216,6 +216,9 @@ public class InboundFileSynchronizationImpl implements InboundFileSynchronizer,I
 			String md5Hex = null;
 			if(isEtagMD5Hash(eTag)) {
 				//Single thread upload
+				//TODO: Allow the user to select a mode whereby they will choose to
+				//replace the file only if it doesnt exist and not otherwise. This
+				//will prevent the MD5 sum of the file which might not be necesary always
 				try {
 					md5Hex = encodeHex(getContentsMD5AsBytes(file));
 				} catch (UnsupportedEncodingException e) {

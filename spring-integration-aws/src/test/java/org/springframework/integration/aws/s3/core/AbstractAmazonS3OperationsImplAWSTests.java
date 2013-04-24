@@ -557,8 +557,7 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 	}
 
 	/**
-	 *Removes an existing file, the return value should be true as the delete operation
-	 *was a success
+	 *Removes an existing file, there is no return value
 	 */
 	@Test
 	public void removeExistingFile() throws Exception {
@@ -566,7 +565,9 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 		String removeFileName = "RemoveFileTest.txt";
 		impl.putObject(BUCKET_NAME, "/", removeFileName,
 				new AmazonS3Object(null, null, null, generateUploadFile()));
+		Thread.sleep(2000);
 		impl.removeObject(BUCKET_NAME, "/", removeFileName);
+		Thread.sleep(2000);
 		AmazonS3Object obj = impl.getObject(BUCKET_NAME, "/", removeFileName);
 		Assert.assertNull(obj);
 	}
