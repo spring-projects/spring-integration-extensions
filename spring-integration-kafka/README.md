@@ -23,6 +23,7 @@ this in your application where you need to send messages to kafka. Following is 
     <int:channel id="inputToKafka">
             <int:queue/>
     </int:channel>
+```
 
 Then you can send messages to the channel to send to Kafka. In the current version of the outbound adapter,
 you have to specify a message key and the topic as header values and the message to send as the payload.
@@ -35,6 +36,7 @@ Here is an example.
             MessageBuilder.withPayload(payload).
                     setHeader("messageKey", "key")
                     .setHeader("topic", "test").build());
+```
 
 This would create a message with a payload. In addition to this, it also creates two header entries as key/value pairs - one for
 the message key and another for the topic under this message is being sent to Kafka.Then this message will be
@@ -53,6 +55,7 @@ Here is how you would configure an outbound channel adapter:
             >
         <int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
     </int-kafka:outbound-channel-adapter>
+```
 
 The key aspect in this configuration is the producer-context-ref which points to a Kafka Producer context
 that contains all the producer configuration for all the topics that this adapter is expected to handle.
@@ -81,6 +84,7 @@ Producer context is at the heart of the kafka outbound adapter. Here is an examp
                        async="true"/>
         </int-kafka:producer-configurations>
     </int-kafka:producer-context>
+```
 
 There are a few things going on here. So, lets go one by one. First of all, producer context is simply holder of, as the name
 indicates, a context for the Kafa producer. It contains one ore more producer configurations. Each producer configuration
@@ -111,6 +115,7 @@ Here is an example of configuring an encoder.
     <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
         <constructor-arg value="java.lang.String" />
     </bean>
+```
 
 Spring Integration Kafaka adapter provides Apache Avro backed encoders out of the box, as this is a popular choice
 for serialization in the big data spectrum. If no encoders are specified as beans, the default encoders provided
