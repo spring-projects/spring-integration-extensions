@@ -13,7 +13,7 @@
 
 	<import resource="kafkaInboundAdapterCommon-context.xml"/>
 
-    <int-kafka:consumer-context id="consumerContext" kafka-broker-ref="kafkaBroker" kafka-decoder="kafkaDecoder"
+    <int-kafka:consumer-context1 id="consumerContext" kafka-broker-ref="kafkaBroker" kafka-decoder="kafkaDecoder"
             topic="mytest" streams="4"/>
 
 	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
@@ -26,5 +26,16 @@
     <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">
         <constructor-arg type="java.lang.Class" value="java.lang.String" />
     </bean>
+
+    <int-kafka:consumer-context id="hi">
+        <int-kafka:consumer-configurations>
+            <int-kafka:consumer-configuration broker-ref="kafkaBrokder"
+                    value-decoder="kafkaDecoer"
+                    key-decoder="kafkaDecoder">
+                <int-kafka:topic id="test1" streams="4"/>
+                <int-kafka:topic id="test2" streams="4"/>
+            </int-kafka:consumer-configuration>
+        </int-kafka:consumer-configurations>
+    </int-kafka:consumer-context>
 
 </beans>

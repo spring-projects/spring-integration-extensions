@@ -210,6 +210,114 @@
     </xsd:element>
 
     <xsd:element name="consumer-context">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                    Defines a producer context.
+                ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="consumer-configurations" minOccurs="0" maxOccurs="1">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                            Groups kafka topic configurations.
+                        ]]></xsd:documentation>
+                    </xsd:annotation>
+                    <xsd:complexType>
+                        <xsd:choice>
+                            <xsd:element name="consumer-configuration" maxOccurs="unbounded">
+                                <xsd:annotation>
+                                    <xsd:documentation><![CDATA[
+                                    Declares a kafka topic configuration which drives how and where a topic is sent to broker/s.
+                                ]]></xsd:documentation>
+                                </xsd:annotation>
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <!--<xsd:element name="topics" maxOccurs="1">-->
+                                            <!--<xsd:complexType>-->
+                                                <!--<xsd:choice>-->
+                                                    <xsd:element name="topic" maxOccurs="unbounded">
+                                                        <xsd:complexType>
+                                                            <xsd:attribute name="id" type="xsd:string" use="required"/>
+                                                            <xsd:attribute name="streams" type="xsd:string" use="required"/>
+                                                        </xsd:complexType>
+                                                    </xsd:element>
+                                                <!--</xsd:choice>-->
+                                            <!--</xsd:complexType>-->
+                                        <!--</xsd:element>-->
+                                    </xsd:sequence>
+                                    <xsd:attribute name="group-id" use="optional">
+                                       <xsd:annotation>
+                                           <xsd:documentation><![CDATA[
+                                                   Indicates the Kafka consumer group id
+                                           ]]></xsd:documentation>
+                                           <xsd:appinfo>
+                                               <tool:annotation kind="direct">
+                                                   <tool:expected-type type="java.lang.String" />
+                                               </tool:annotation>
+                                           </xsd:appinfo>
+                                       </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="topic" type="xsd:string">
+                                        <xsd:annotation>
+                                            <xsd:appinfo>
+                                                <tool:annotation kind="ref">
+                                                    <tool:expected-type
+                                                        type="org.springframework.integration.core.MessageChannel" />
+                                                </tool:annotation>
+                                            </xsd:appinfo>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="streams" type="xsd:string">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                Number of streams that the inbound channel adapter (kafka consumer) is configured with.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="broker-ref" use="required"
+                                                                    type="xsd:string">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                Kafka Server Bean Name
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="value-decoder" use="optional"
+                                                                    type="xsd:string">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                Kafka Server Bean Name
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                    <xsd:attribute name="key-decoder" use="optional"
+                                                                                type="xsd:string">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                Kafka Server Bean Name
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                    </xsd:attribute>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
+                    </xsd:complexType>
+
+                </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="required" />
+
+        </xsd:complexType>
+
+
+    </xsd:element>
+
+
+
+
+
+    <xsd:element name="consumer-context1">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[
                         Defines a Kafka server information.
@@ -264,12 +372,13 @@
                 </xsd:attribute>
                 <xsd:attribute name="kafka-key-decoder" use="optional"
                                                             type="xsd:string">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Kafka Server Bean Name
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                            </xsd:attribute>
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Kafka Server Bean Name
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+
             </xsd:complexType>
     </xsd:element>
 

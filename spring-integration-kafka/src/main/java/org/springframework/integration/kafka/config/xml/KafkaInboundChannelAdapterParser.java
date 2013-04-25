@@ -20,7 +20,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractPollingInboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.kafka.inbound.HighLevelConsumerMessageSource;
+import org.springframework.integration.kafka.inbound.KafkaHighLevelConsumerMessageSource;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -36,7 +36,7 @@ public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChan
     protected BeanMetadataElement parseSource(Element element, ParserContext parserContext) {
 
         final BeanDefinitionBuilder highLevelConsumerMessageSourceBuilder =
-                        BeanDefinitionBuilder.genericBeanDefinition(HighLevelConsumerMessageSource.class);
+                        BeanDefinitionBuilder.genericBeanDefinition(KafkaHighLevelConsumerMessageSource.class);
 
         Element pollerElement = DomUtils.getChildElementByTagName(element, "poller");
         IntegrationNamespaceUtils.setValueIfAttributeDefined(highLevelConsumerMessageSourceBuilder, pollerElement, "receive-timeout");
