@@ -33,7 +33,7 @@ public class KafkaConsumerContextParserTests {
         Assert.assertEquals(consumerConfigurations.size(), 1);
 
         final ConsumerConfiguration consumerConfiguration = consumerConfigurations.iterator().next();
-        final Map<String, Integer> topicStreamMap = consumerConfiguration.getTopicStreamMap();
+        final Map<String, Integer> topicStreamMap = consumerConfiguration.getConsumerMetadata().getTopicStreamMap();
         Assert.assertEquals(topicStreamMap.size(), 2);
         Assert.assertEquals(topicStreamMap.get("test1"), (Integer)4);
         Assert.assertEquals(topicStreamMap.get("test2"), (Integer)4);

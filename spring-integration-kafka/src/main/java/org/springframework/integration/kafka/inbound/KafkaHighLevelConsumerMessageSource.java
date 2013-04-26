@@ -22,12 +22,13 @@ import org.springframework.integration.kafka.core.KafkaConsumerDefaults;
 import org.springframework.integration.kafka.support.KafkaConsumerContext;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Soby Chacko
  *
  */
-public class KafkaHighLevelConsumerMessageSource extends IntegrationObjectSupport implements MessageSource<List<Object>> {
+public class KafkaHighLevelConsumerMessageSource extends IntegrationObjectSupport implements MessageSource<Map<String, List<Object>>> {
 
     private final KafkaConsumerContext kafkaConsumerContext;
 
@@ -39,7 +40,7 @@ public class KafkaHighLevelConsumerMessageSource extends IntegrationObjectSuppor
     }
 
     @Override
-    public Message<List<Object>> receive() {
+    public Message<Map<String, List<Object>>> receive() {
         return kafkaConsumerContext.receive(maxMessagesPerPoll);
     }
 

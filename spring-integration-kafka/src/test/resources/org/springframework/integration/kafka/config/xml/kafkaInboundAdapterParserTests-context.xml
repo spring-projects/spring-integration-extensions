@@ -20,7 +20,7 @@
                                        kafka-consumer-context-ref="consumerContext"
                                        auto-startup="false"
                                        channel="inputFromKafka">
-        <int:poller fixed-delay="10" time-unit="MILLISECONDS" receive-timeout="4000" max-messages-per-poll="5000"/>
+        <int:poller fixed-delay="10" time-unit="MILLISECONDS" max-messages-per-poll="5000"/>
     </int-kafka:inbound-channel-adapter>
 
     <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">
@@ -31,7 +31,8 @@
         <int-kafka:consumer-configurations>
             <int-kafka:consumer-configuration broker-ref="kafkaBrokder"
                     value-decoder="kafkaDecoer"
-                    key-decoder="kafkaDecoder">
+                    key-decoder="kafkaDecoder"
+                    receive-timeout="4000">
                 <int-kafka:topic id="test1" streams="4"/>
                 <int-kafka:topic id="test2" streams="4"/>
             </int-kafka:consumer-configuration>
