@@ -27,7 +27,7 @@ public class ConsumerConnectorFactoryBean implements FactoryBean<ConsumerConnect
         properties.put("zk.session.timeout.ms", kafkaBroker.getZkSessionTimeout());
         properties.put("zk.sync.time.ms", kafkaBroker.getZkSyncTime());
         properties.put("auto.commit.interval.ms", consumerMetadata.getAutoCommitInterval());
-        properties.put("consumer.timeout.ms", consumerMetadata.getReceiveTimeout());
+        properties.put("consumer.timeout.ms", consumerMetadata.getConsumerTimeout());
         properties.put("group.id", consumerMetadata.getGroupId());
 
         final ConsumerConfig consumerConfig = new ConsumerConfig(properties);

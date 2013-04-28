@@ -18,7 +18,6 @@ package org.springframework.integration.kafka.inbound;
 import org.springframework.integration.Message;
 import org.springframework.integration.context.IntegrationObjectSupport;
 import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.kafka.core.KafkaConsumerDefaults;
 import org.springframework.integration.kafka.support.KafkaConsumerContext;
 
 import java.util.List;
@@ -32,36 +31,17 @@ public class KafkaHighLevelConsumerMessageSource extends IntegrationObjectSuppor
 
     private final KafkaConsumerContext kafkaConsumerContext;
 
-    private int maxMessagesPerPoll = 1;
-    private String receiveTimeout = KafkaConsumerDefaults.CONSUMER_TIMEOUT;
-
     public KafkaHighLevelConsumerMessageSource(final KafkaConsumerContext kafkaConsumerContext) {
         this.kafkaConsumerContext = kafkaConsumerContext;
     }
 
     @Override
     public Message<Map<String, List<Object>>> receive() {
-        return kafkaConsumerContext.receive(maxMessagesPerPoll);
+        return kafkaConsumerContext.receive();
     }
 
     @Override
     public String getComponentType() {
         return "kafka:inbound-channel-adapter";
-    }
-
-    public int getMaxMessagesPerPoll() {
-        return maxMessagesPerPoll;
-    }
-
-    public void setMaxMessagesPerPoll(int maxMessagesPerPoll) {
-        this.maxMessagesPerPoll = maxMessagesPerPoll;
-    }
-
-    public String getReceiveTimeout() {
-        return receiveTimeout;
-    }
-
-    public void setReceiveTimeout(String receiveTimeout) {
-        this.receiveTimeout = receiveTimeout;
     }
 }

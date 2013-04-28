@@ -240,11 +240,11 @@
                                             </xsd:complexType>
                                         </xsd:element>
                                     </xsd:sequence>
-                                    <xsd:attribute name="group-id" use="optional">
+                                    <xsd:attribute name="max-messages" use="optional">
                                         <xsd:annotation>
                                             <xsd:documentation><![CDATA[
-                                                   Indicates the Kafka consumer group id
-                                           ]]></xsd:documentation>
+                                                       Indicates max messages to aggregate in a single call to receive
+                                               ]]></xsd:documentation>
                                             <xsd:appinfo>
                                                 <tool:annotation kind="direct">
                                                     <tool:expected-type type="java.lang.String"/>
@@ -252,10 +252,10 @@
                                             </xsd:appinfo>
                                         </xsd:annotation>
                                     </xsd:attribute>
-                                    <xsd:attribute name="receive-timeout" use="optional">
+                                    <xsd:attribute name="group-id" use="optional">
                                         <xsd:annotation>
                                             <xsd:documentation><![CDATA[
-                                                   Indicates the Kafka consumer timeout ms
+                                                   Indicates the Kafka consumer group id
                                            ]]></xsd:documentation>
                                             <xsd:appinfo>
                                                 <tool:annotation kind="direct">
@@ -296,6 +296,18 @@
                 </xsd:element>
             </xsd:sequence>
             <xsd:attribute name="id" type="xsd:string" use="required"/>
+            <xsd:attribute name="consumer-timeout" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
+                           Indicates the Kafka consumer timeout ms
+                   ]]></xsd:documentation>
+                    <xsd:appinfo>
+                        <tool:annotation kind="direct">
+                            <tool:expected-type type="java.lang.String"/>
+                        </tool:annotation>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:attribute>
         </xsd:complexType>
     </xsd:element>
 

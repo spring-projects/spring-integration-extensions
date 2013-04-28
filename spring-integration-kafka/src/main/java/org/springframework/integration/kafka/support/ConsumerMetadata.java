@@ -21,11 +21,10 @@ public class ConsumerMetadata {
     private String autoCommitInterval = KafkaConsumerDefaults.AUTO_COMMIT_INTERVAL;
     private String autoOffsetReset = KafkaConsumerDefaults.AUTO_OFFSET_RESET;
     private String rebalanceRetriesMax = KafkaConsumerDefaults.REBALANCE_RETRIES_MAX;
-    private String receiveTimeout = KafkaConsumerDefaults.CONSUMER_TIMEOUT;
+    private String consumerTimeout = KafkaConsumerDefaults.CONSUMER_TIMEOUT;
 
     private String topic;
     private int streams;
-    private int maxMessagesPerPoll = 1;
     private Decoder kafkaDecoder;
     private Decoder kafkaKeyDecoder;
     private Map<String, Integer> topicStreamMap;
@@ -120,12 +119,12 @@ public class ConsumerMetadata {
         this.rebalanceRetriesMax = rebalanceRetriesMax;
     }
 
-    public String getReceiveTimeout() {
-        return receiveTimeout;
+    public String getConsumerTimeout() {
+        return consumerTimeout;
     }
 
-    public void setReceiveTimeout(String receiveTimeout) {
-        this.receiveTimeout = receiveTimeout;
+    public void setConsumerTimeout(String consumerTimeout) {
+        this.consumerTimeout = consumerTimeout;
     }
 
     public String getTopic() {
@@ -142,14 +141,6 @@ public class ConsumerMetadata {
 
     public void setStreams(int streams) {
         this.streams = streams;
-    }
-
-    public int getMaxMessagesPerPoll() {
-        return maxMessagesPerPoll;
-    }
-
-    public void setMaxMessagesPerPoll(int maxMessagesPerPoll) {
-        this.maxMessagesPerPoll = maxMessagesPerPoll;
     }
 
     public Decoder getKafkaDecoder() {

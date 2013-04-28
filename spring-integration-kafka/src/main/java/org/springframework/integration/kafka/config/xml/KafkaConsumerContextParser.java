@@ -1,5 +1,6 @@
 package org.springframework.integration.kafka.config.xml;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.kafka.support.ConsumerConfiguration;
+import org.springframework.integration.kafka.support.ConsumerConnectorFactoryBean;
+import org.springframework.integration.kafka.support.ConsumerMetadata;
 import org.springframework.integration.kafka.support.KafkaConsumerContext;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -37,15 +40,15 @@ public class KafkaConsumerContextParser extends AbstractSimpleBeanDefinitionPars
 
         for (Element consumerConfiguration : DomUtils.getChildElementsByTagName(topics, "consumer-configuration")) {
             BeanDefinitionBuilder consumerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfiguration.class);
+            BeanDefinitionBuilder consumerMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerMetadata.class);
 
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "group-id");
+            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerMetadataBuilder, consumerConfiguration, "group-id");
 
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "topic");
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "streams");
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "value-encoder");
-            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "key-encoder");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "key-class-type");
-            IntegrationNamespaceUtils.setValueIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "value-class-type");
+            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerMetadataBuilder, consumerConfiguration, "value-encoder");
+            IntegrationNamespaceUtils.setReferenceIfAttributeDefined(consumerMetadataBuilder, consumerConfiguration, "key-encoder");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(consumerMetadataBuilder, consumerConfiguration, "key-class-type");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(consumerMetadataBuilder, consumerConfiguration, "value-class-type");
+            IntegrationNamespaceUtils.setValueIfAttributeDefined(consumerConfigurationBuilder, consumerConfiguration, "max-messages");
 
             final Map<String, Integer> topicStreamsMap = new HashMap<String, Integer>();
             for (Element topicConfiguration : DomUtils.getChildElementsByTagName(consumerConfiguration, "topic")) {
@@ -55,15 +58,30 @@ public class KafkaConsumerContextParser extends AbstractSimpleBeanDefinitionPars
                 topicStreamsMap.put(topic, streamsInt);
             }
 
-            consumerConfigurationBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
+            consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
 
             String kafkaServerBeanName = consumerConfiguration.getAttribute("broker-ref");
             if (StringUtils.hasText(kafkaServerBeanName)) {
-                consumerConfigurationBuilder.addConstructorArgReference(kafkaServerBeanName);
+                consumerMetadataBuilder.addConstructorArgReference(kafkaServerBeanName);
             }
 
+            BeanDefinition consumerMetadataBeanDef = consumerMetadataBuilder.getBeanDefinition();
+            registerBeanDefinition(new BeanDefinitionHolder(consumerMetadataBeanDef, "consumerMetadata_" + consumerConfiguration.getAttribute("group_id")),
+                    parserContext.getRegistry());
+
+            BeanDefinitionBuilder consumerConnectorFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConnectorFactoryBean.class);
+            consumerConnectorFactoryBuilder.addConstructorArgReference("consumerMetadata_" + consumerConfiguration.getAttribute("group_id"));
+            if (StringUtils.hasText(kafkaServerBeanName)) {
+                consumerConnectorFactoryBuilder.addConstructorArgReference(kafkaServerBeanName);
+            }
+
+            BeanDefinition consumerConnectorfactoryBeanDefinition = consumerConnectorFactoryBuilder.getBeanDefinition();
+            registerBeanDefinition(new BeanDefinitionHolder(consumerConnectorfactoryBeanDefinition, "consumerConnectorFactory_" + consumerConfiguration.getAttribute("group_id")), parserContext.getRegistry());
+
+            consumerConfigurationBuilder.addConstructorArgReference("consumerMetadata_" + consumerConfiguration.getAttribute("group-id"));
+            consumerConfigurationBuilder.addConstructorArgReference("consumerConnectorFactory_" + consumerConfiguration.getAttribute("group-id"));
             AbstractBeanDefinition consumerConfigurationBeanDefinition = consumerConfigurationBuilder.getBeanDefinition();
-            final String consumerConfigurationBeanName = "consumerConfiguration_" + consumerConfiguration.getAttribute("topic");
+            final String consumerConfigurationBeanName = "consumerConfiguration_" + consumerConfiguration.getAttribute("group-id");
             registerBeanDefinition(new BeanDefinitionHolder(consumerConfigurationBeanDefinition, consumerConfigurationBeanName),
                     parserContext.getRegistry());
         }
