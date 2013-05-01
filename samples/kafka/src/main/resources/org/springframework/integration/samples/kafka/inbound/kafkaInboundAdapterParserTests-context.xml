@@ -15,7 +15,7 @@
     <int:channel id="inputFromTransformer">
      </int:channel>
 
-    <stream:stdout-channel-adapter id="stdout" channel="inputFromTransformer" append-newline="true"/>
+    <stream:stdout-channel-adapter id="stdout" channel="inputFromKafka" append-newline="true"/>
 
     <int-kafka:zookeeper-connect id="zookeeperConnect" zk-connect="localhost:2181"
                                  zk-connection-timeout="6000"

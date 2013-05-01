@@ -22,9 +22,9 @@ public class ConsumerConfigFactoryBean implements FactoryBean<ConsumerConfig> {
     @Override
     public ConsumerConfig getObject() throws Exception {
         final Properties properties = new Properties();
-        properties.put("zk.connect", zookeeperConnect.getZkConnect());
-        properties.put("zk.session.timeout.ms", zookeeperConnect.getZkSessionTimeout());
-        properties.put("zk.sync.time.ms", zookeeperConnect.getZkSyncTime());
+        properties.put("zookeeper.connect", zookeeperConnect.getZkConnect());
+        properties.put("zookeeper.session.timeout.ms", zookeeperConnect.getZkSessionTimeout());
+        properties.put("zookeeper.sync.time.ms", zookeeperConnect.getZkSyncTime());
         properties.put("auto.commit.interval.ms", consumerMetadata.getAutoCommitInterval());
         properties.put("consumer.timeout.ms", consumerMetadata.getConsumerTimeout());
         properties.put("group.id", consumerMetadata.getGroupId());

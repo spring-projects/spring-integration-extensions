@@ -62,22 +62,22 @@ dependencies {
 	compile "org.springframework:spring-context:$springVersion"
 	compile "org.springframework:spring-expression:$springVersion"
 	compile     "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-    compile("org.apache:kafka_2.9.2:0.8-SNAPSHOT") {
-    exclude module: 'log4j'
-    }
-    compile("org.apache.zookeeper:zookeeper:3.3.4") {
-	exclude module: 'log4j'
-	exclude module: 'jline'
-    }
+        compile("org.apache:kafka_2.9.2:0.8.0-SNAPSHOT") {
+  	  exclude module: 'log4j'
+        }
+//    compile("org.apache.zookeeper:zookeeper:3.3.4") {
+//	exclude module: 'log4j'
+//	exclude module: 'jline'
+ //   }
     compile "org.scala-lang:scala-library:2.9.2"
     compile "org.scala-lang:scala-compiler:2.9.2"
     //compile "log4j:log4j:1.2.15"
     compile "org.slf4j:slf4j-simple:1.6.4"
     compile "net.sf.jopt-simple:jopt-simple:3.2"
     compile "org.xerial.snappy:snappy-java:1.0.4.1"
-    runtime "zkclient:zkclient:20120522"
-    runtime "com.yammer.metrics:metrics-core:3.0.0-c0c8be71"
-    runtime "com.yammer.metrics:metrics-annotation:3.0.0-c0c8be71"
+  //  runtime "zkclient:zkclient:20120522"
+   // runtime "com.yammer.metrics:metrics-core:3.0.0-c0c8be71"
+    //runtime "com.yammer.metrics:metrics-annotation:3.0.0-c0c8be71"
 
     compile "org.apache.avro:avro:1.7.3"
     compile "org.apache.avro:avro-compiler:1.7.3"

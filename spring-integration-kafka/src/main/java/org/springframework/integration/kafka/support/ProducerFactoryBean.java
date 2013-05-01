@@ -26,7 +26,7 @@ public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
     @Override
     public Producer<K, V> getObject() throws Exception {
         final Properties props = new Properties();
-        props.put("broker.list", brokerList);
+        props.put("metadata.broker.list", brokerList);
         props.put("compression.codec", producerMetadata.getCompressionCodec());
 
         if (producerMetadata.isAsync()){
