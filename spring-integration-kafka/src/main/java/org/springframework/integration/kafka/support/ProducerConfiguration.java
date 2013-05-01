@@ -60,10 +60,7 @@ public class ProducerConfiguration<K,V> {
     }
 
     private static boolean isRawByteArray(final Object obj){
-        if (obj instanceof byte[]){
-            return true;
-        }
-        return false;
+        return obj instanceof byte[];
     }
 
     private static byte[] getByteStream(final Object obj) throws IOException {

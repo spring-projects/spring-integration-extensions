@@ -10,9 +10,9 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <int-kafka:broker id="kafkaBroker" zk-connect="localhost:2181" zk-connection-timeout="10000"
+    <int-kafka:zookeeper-connect id="zookeeperConnect" zk-connect="localhost:2181" zk-connection-timeout="10000"
             zk-session-timeout="10000"
             zk-sync-time="200" />
 
-    <int-kafka:broker id="defaultKafkaBroker" />
+    <int-kafka:zookeeper-connect id="defaultZookeeperConnect" />
 </beans>

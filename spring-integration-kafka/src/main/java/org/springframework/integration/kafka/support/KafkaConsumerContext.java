@@ -1,7 +1,5 @@
 package org.springframework.integration.kafka.support;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -14,20 +12,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author Soby Chacko
  */
 public class KafkaConsumerContext implements BeanFactoryAware {
 
-    protected final Log logger = LogFactory.getLog(getClass());
     private Map<String, ConsumerConfiguration> consumerConfigurations;
 
-    private ExecutorService executorService = Executors.newCachedThreadPool();
-
-    private String receiveTimeout = KafkaConsumerDefaults.CONSUMER_TIMEOUT;
+    private String consumerTimeout = KafkaConsumerDefaults.CONSUMER_TIMEOUT;
+    private ZookeeperConnect zookeeperConnect;
 
     public Collection<ConsumerConfiguration> getConsumerConfigurations() {
         return consumerConfigurations.values();
@@ -38,19 +32,30 @@ public class KafkaConsumerContext implements BeanFactoryAware {
         consumerConfigurations = ((ListableBeanFactory) beanFactory).getBeansOfType(ConsumerConfiguration.class);
     }
 
-    public Message<Map<String, List<Object>>> receive() {
-        Map<String, List<Object>> consumedData = new HashMap<String, List<Object>>();
+    public Message<Map<String, Map<Integer, List<Object>>>> receive() {
+        Map<String, Map<Integer, List<Object>>> consumedData = new HashMap<String, Map<Integer, List<Object>>>();
         for (final ConsumerConfiguration consumerConfiguration : getConsumerConfigurations()) {
-            consumedData.putAll(consumerConfiguration.receive());
+            Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
+            if (messages != null){
+                consumedData.putAll(messages);
+            }
         }
         return MessageBuilder.withPayload(consumedData).build();
     }
 
-    public String getReceiveTimeout() {
-        return receiveTimeout;
+    public String getConsumerTimeout() {
+        return consumerTimeout;
     }
 
-    public void setReceiveTimeout(String receiveTimeout) {
-        this.receiveTimeout = receiveTimeout;
+    public void setConsumerTimeout(String consumerTimeout) {
+        this.consumerTimeout = consumerTimeout;
+    }
+
+    public ZookeeperConnect getZookeeperConnect() {
+        return zookeeperConnect;
+    }
+
+    public void setZookeeperConnect(ZookeeperConnect zookeeperConnect) {
+        this.zookeeperConnect = zookeeperConnect;
     }
 }

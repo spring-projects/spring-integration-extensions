@@ -26,6 +26,8 @@
         <constructor-arg value="java.lang.String" />
     </bean>
 
+    <bean id="customPartitioner" class="org.springframework.integration.samples.kafka.outbound.CustomPartitioner"/>
+
     <int-kafka:producer-context id="kafkaProducerContext">
         <int-kafka:producer-configurations>
             <int-kafka:producer-configuration broker-list="localhost:9092"
@@ -34,7 +36,8 @@
                                            topic="test1"
                                            value-encoder="kafkaEncoder"
                                            key-encoder="kafkaEncoder"
-                                           compression-codec="default"/>
+                                           compression-codec="default"
+                                           partitioner="customPartitioner"/>
             <int-kafka:producer-configuration broker-list="localhost:9092"
                                            topic="test2"
                                            compression-codec="default"/>

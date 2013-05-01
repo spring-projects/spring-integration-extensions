@@ -20,7 +20,7 @@ package org.springframework.integration.kafka.core;
  * @author Soby Chacko
  *
  */
-public class KafkaBrokerDefaults {
+public class ZookeeperConnectDefaults {
 
     public static String ZK_CONNECT = "localhost:2181";
     public static String ZK_CONNECTION_TIMEOUT = "6000";
@@ -28,7 +28,7 @@ public class KafkaBrokerDefaults {
     public static String ZK_SYNC_TIME = "2000";
 
     /** Noninstantiable utility class */
-    private KafkaBrokerDefaults() {
+    private ZookeeperConnectDefaults() {
         throw new AssertionError();
     }
 }

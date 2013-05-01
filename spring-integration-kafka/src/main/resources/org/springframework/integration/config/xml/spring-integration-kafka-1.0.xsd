@@ -18,7 +18,7 @@
 		]]></xsd:documentation>
     </xsd:annotation>
 
-    <xsd:element name="broker">
+    <xsd:element name="zookeeper-connect">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
                     Defines a Kafka server information.
@@ -252,7 +252,7 @@
                                             </xsd:appinfo>
                                         </xsd:annotation>
                                     </xsd:attribute>
-                                    <xsd:attribute name="group-id" use="optional">
+                                    <xsd:attribute name="group-id" use="required">
                                         <xsd:annotation>
                                             <xsd:documentation><![CDATA[
                                                    Indicates the Kafka consumer group id
@@ -262,14 +262,6 @@
                                                     <tool:expected-type type="java.lang.String"/>
                                                 </tool:annotation>
                                             </xsd:appinfo>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="broker-ref" use="required"
-                                                   type="xsd:string">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Kafka Server Bean Name
-                                            </xsd:documentation>
                                         </xsd:annotation>
                                     </xsd:attribute>
                                     <xsd:attribute name="value-decoder" use="optional"
@@ -306,6 +298,14 @@
                             <tool:expected-type type="java.lang.String"/>
                         </tool:annotation>
                     </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="zookeeper-connect" use="required"
+                           type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Kafka Server Bean Name
+                    </xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
         </xsd:complexType>

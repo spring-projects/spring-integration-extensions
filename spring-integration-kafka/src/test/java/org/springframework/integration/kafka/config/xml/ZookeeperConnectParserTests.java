@@ -20,8 +20,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.integration.kafka.support.KafkaBroker;
-import org.springframework.integration.kafka.core.KafkaBrokerDefaults;
+import org.springframework.integration.kafka.core.ZookeeperConnectDefaults;
+import org.springframework.integration.kafka.support.ZookeeperConnect;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -32,14 +32,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class KafkaBrokerParserTests {
+public class ZookeeperConnectParserTests {
 
 	@Autowired
 	private ApplicationContext appContext;
 
 	@Test
 	public void testCustomKafkaBrokerConfiguration() {
-		KafkaBroker broker = appContext.getBean("kafkaBroker", KafkaBroker.class);
+		ZookeeperConnect broker = appContext.getBean("zookeeperConnect", ZookeeperConnect.class);
 
 		Assert.assertEquals("localhost:2181", broker.getZkConnect());
         Assert.assertEquals("10000", broker.getZkConnectionTimeout());
@@ -49,12 +49,12 @@ public class KafkaBrokerParserTests {
 
     @Test
     public void testDefaultKafkaBrokerConfiguration() {
-        KafkaBroker broker = appContext.getBean("defaultKafkaBroker", KafkaBroker.class);
+        ZookeeperConnect broker = appContext.getBean("defaultZookeeperConnect", ZookeeperConnect.class);
 
-        Assert.assertEquals(KafkaBrokerDefaults.ZK_CONNECT, broker.getZkConnect());
-        Assert.assertEquals(KafkaBrokerDefaults.ZK_CONNECTION_TIMEOUT, broker.getZkConnectionTimeout());
-        Assert.assertEquals(KafkaBrokerDefaults.ZK_SESSION_TIMEOUT, broker.getZkSessionTimeout());
-        Assert.assertEquals(KafkaBrokerDefaults.ZK_SYNC_TIME, broker.getZkSyncTime());
+        Assert.assertEquals(ZookeeperConnectDefaults.ZK_CONNECT, broker.getZkConnect());
+        Assert.assertEquals(ZookeeperConnectDefaults.ZK_CONNECTION_TIMEOUT, broker.getZkConnectionTimeout());
+        Assert.assertEquals(ZookeeperConnectDefaults.ZK_SESSION_TIMEOUT, broker.getZkSessionTimeout());
+        Assert.assertEquals(ZookeeperConnectDefaults.ZK_SYNC_TIME, broker.getZkSyncTime());
     }
 
 }

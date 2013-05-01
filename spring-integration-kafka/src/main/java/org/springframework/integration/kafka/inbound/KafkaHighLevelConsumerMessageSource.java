@@ -27,7 +27,7 @@ import java.util.Map;
  * @author Soby Chacko
  *
  */
-public class KafkaHighLevelConsumerMessageSource extends IntegrationObjectSupport implements MessageSource<Map<String, List<Object>>> {
+public class KafkaHighLevelConsumerMessageSource extends IntegrationObjectSupport implements MessageSource<Map<String, Map<Integer, List<Object>>>> {
 
     private final KafkaConsumerContext kafkaConsumerContext;
 
@@ -36,7 +36,7 @@ public class KafkaHighLevelConsumerMessageSource extends IntegrationObjectSuppor
     }
 
     @Override
-    public Message<Map<String, List<Object>>> receive() {
+    public Message<Map<String, Map<Integer, List<Object>>>> receive() {
         return kafkaConsumerContext.receive();
     }
 

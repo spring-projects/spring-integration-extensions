@@ -15,17 +15,17 @@
  */
 package org.springframework.integration.kafka.support;
 
-import org.springframework.integration.kafka.core.KafkaBrokerDefaults;
+import org.springframework.integration.kafka.core.ZookeeperConnectDefaults;
 
 /**
  * @author Soby Chacko
  */
-public class KafkaBroker {
+public class ZookeeperConnect {
 
-    private String zkConnect = KafkaBrokerDefaults.ZK_CONNECT;
-    private String zkConnectionTimeout = KafkaBrokerDefaults.ZK_CONNECTION_TIMEOUT;
-    private String zkSessionTimeout = KafkaBrokerDefaults.ZK_SESSION_TIMEOUT;
-    private String zkSyncTime = KafkaBrokerDefaults.ZK_SYNC_TIME;
+    private String zkConnect = ZookeeperConnectDefaults.ZK_CONNECT;
+    private String zkConnectionTimeout = ZookeeperConnectDefaults.ZK_CONNECTION_TIMEOUT;
+    private String zkSessionTimeout = ZookeeperConnectDefaults.ZK_SESSION_TIMEOUT;
+    private String zkSyncTime = ZookeeperConnectDefaults.ZK_SYNC_TIME;
 
     public String getZkConnect() {
         return zkConnect;

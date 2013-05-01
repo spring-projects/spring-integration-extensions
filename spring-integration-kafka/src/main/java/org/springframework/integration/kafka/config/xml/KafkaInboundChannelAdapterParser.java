@@ -38,10 +38,6 @@ public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChan
         final BeanDefinitionBuilder highLevelConsumerMessageSourceBuilder =
                         BeanDefinitionBuilder.genericBeanDefinition(KafkaHighLevelConsumerMessageSource.class);
 
-        Element pollerElement = DomUtils.getChildElementByTagName(element, "poller");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(highLevelConsumerMessageSourceBuilder, pollerElement, "receive-timeout");
-        IntegrationNamespaceUtils.setValueIfAttributeDefined(highLevelConsumerMessageSourceBuilder, pollerElement, "max-messages-per-poll");
-
         IntegrationNamespaceUtils.setReferenceIfAttributeDefined(highLevelConsumerMessageSourceBuilder, element, "kafka-decoder");
 
         String kafkaConsumerContext = element.getAttribute("kafka-consumer-context-ref");

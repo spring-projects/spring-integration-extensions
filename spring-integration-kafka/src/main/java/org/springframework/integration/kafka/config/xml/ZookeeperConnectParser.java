@@ -20,17 +20,17 @@ import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.kafka.support.KafkaBroker;
+import org.springframework.integration.kafka.support.ZookeeperConnect;
 import org.w3c.dom.Element;
 
 /**
  * @author Soby Chacko
  */
-public class KafkaBrokerParser extends AbstractSimpleBeanDefinitionParser {
+public class ZookeeperConnectParser extends AbstractSimpleBeanDefinitionParser {
 
     @Override
     protected Class<?> getBeanClass(Element element) {
-        return KafkaBroker.class;
+        return ZookeeperConnect.class;
     }
 
     @Override

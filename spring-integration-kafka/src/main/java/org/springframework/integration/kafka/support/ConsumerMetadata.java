@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * @author Soby Chacko
  */
-public class ConsumerMetadata {
+public class ConsumerMetadata<K,V> {
 
     //High level consumer defaults
     private String groupId = KafkaConsumerDefaults.GROUP_ID;
@@ -25,19 +25,9 @@ public class ConsumerMetadata {
 
     private String topic;
     private int streams;
-    private Decoder kafkaDecoder;
-    private Decoder kafkaKeyDecoder;
+    private Decoder<V> valueDecoder;
+    private Decoder<K> keyDecoder;
     private Map<String, Integer> topicStreamMap;
-
-    private final KafkaBroker kafkaBroker;
-
-    public ConsumerMetadata(final KafkaBroker kafkaBroker){
-        this.kafkaBroker = kafkaBroker;
-    }
-
-    public KafkaBroker getKafkaBroker() {
-        return kafkaBroker;
-    }
 
     public String getGroupId() {
         return groupId;
@@ -143,20 +133,20 @@ public class ConsumerMetadata {
         this.streams = streams;
     }
 
-    public Decoder getKafkaDecoder() {
-        return kafkaDecoder;
+    public Decoder<V> getValueDecoder() {
+        return valueDecoder;
     }
 
-    public void setKafkaDecoder(Decoder kafkaDecoder) {
-        this.kafkaDecoder = kafkaDecoder;
+    public void setValueDecoder(Decoder<V> valueDecoder) {
+        this.valueDecoder = valueDecoder;
     }
 
-    public Decoder getKafkaKeyDecoder() {
-        return kafkaKeyDecoder;
+    public Decoder<K> getKeyDecoder() {
+        return keyDecoder;
     }
 
-    public void setKafkaKeyDecoder(Decoder kafkaKeyDecoder) {
-        this.kafkaKeyDecoder = kafkaKeyDecoder;
+    public void setKeyDecoder(Decoder<K> keyDecoder) {
+        this.keyDecoder = keyDecoder;
     }
 
     public Map<String, Integer> getTopicStreamMap() {

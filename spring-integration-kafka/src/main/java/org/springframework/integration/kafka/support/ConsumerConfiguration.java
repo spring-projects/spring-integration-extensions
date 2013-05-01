@@ -12,13 +12,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * @author Soby Chacko
@@ -27,30 +25,29 @@ public class ConsumerConfiguration {
     protected final Log logger = LogFactory.getLog(getClass());
 
     private final ConsumerMetadata consumerMetadata;
-    private final ConsumerConnector consumerConnector;
+    private final ConsumerConnectionProvider consumerConnectionProvider;
+    private final MessageLeftOverTracker messageLeftOverTracker;
+    private ConsumerConnector consumerConnector;
     private volatile int count = 0;
     private int maxMessages = 1;
 
     private ExecutorService executorService = Executors.newCachedThreadPool();
-    private BlockingQueue<MessageAndMetadata> messageLeftOverFromPreviousPoll = new LinkedBlockingDeque<MessageAndMetadata>();
 
     public ConsumerConfiguration(final ConsumerMetadata consumerMetadata,
-                                 final ConsumerConnector consumerConnector) {
+                                 final ConsumerConnectionProvider consumerConnectionProvider,
+                                 final MessageLeftOverTracker messageLeftOverTracker) {
         this.consumerMetadata = consumerMetadata;
-        this.consumerConnector = consumerConnector;
+        this.consumerConnectionProvider = consumerConnectionProvider;
+        this.messageLeftOverTracker = messageLeftOverTracker;
     }
 
     public ConsumerMetadata getConsumerMetadata() {
         return consumerMetadata;
     }
 
-    public ConsumerConnector getConsumerConnector() {
-        return consumerConnector;
-    }
-
-    public Map<String, List<Object>> receive() {
-        count = messageLeftOverFromPreviousPoll.size();
-        final Map<String, List<Object>> messages = new ConcurrentHashMap<String, List<Object>>();
+    public Map<String, Map<Integer, List<Object>>> receive() {
+        count = messageLeftOverTracker.getCurrentCount();
+        Map<String, Map<Integer, List<Object>>> messages = new ConcurrentHashMap<String, Map<Integer, List<Object>>>();
 
         populateAnyLeftOverMessages(messages);
 
@@ -70,10 +67,10 @@ public class ConsumerConfiguration {
                                 synchronized (lock) {
                                     if (count < maxMessages) {
                                         rawMessages.add(messageAndMetadata);
+                                        count++;
                                     } else {
-                                        messageLeftOverFromPreviousPoll.put(messageAndMetadata);
+                                        messageLeftOverTracker.addMessageAndMetadata(messageAndMetadata);
                                     }
-                                    count++;
                                 }
                             }
                         } catch (ConsumerTimeoutException cte) {
@@ -87,7 +84,8 @@ public class ConsumerConfiguration {
         return executeTasks(tasks, messages);
     }
 
-    private Map<String, List<Object>> executeTasks(List<Callable<List<MessageAndMetadata>>> tasks, Map<String, List<Object>> messages) {
+    private Map<String, Map<Integer, List<Object>>> executeTasks(List<Callable<List<MessageAndMetadata>>> tasks,
+                                                                 final Map<String, Map<Integer, List<Object>>> messages) {
         try {
             for (Future<List<MessageAndMetadata>> result : executorService.invokeAll(tasks)) {
                 if (!result.get().isEmpty()) {
@@ -95,8 +93,9 @@ public class ConsumerConfiguration {
                     if (!messages.containsKey(topic)) {
                         messages.put(topic, getPayload(result.get()));
                     } else {
-                        final List<Object> exsitingPayloadList = messages.get(topic);
-                        exsitingPayloadList.addAll(getPayload(result.get()));
+
+                        final Map<Integer, List<Object>> existingPayloadMap = messages.get(topic);
+                        getPayload(result.get(), existingPayloadMap);
                     }
                 }
             }
@@ -111,33 +110,65 @@ public class ConsumerConfiguration {
         return messages;
     }
 
-    private void populateAnyLeftOverMessages(Map<String, List<Object>> messages) {
-        while (messageLeftOverFromPreviousPoll.iterator().hasNext()) {
-            MessageAndMetadata mamd = messageLeftOverFromPreviousPoll.iterator().next();
-            final List<Object> l = new ArrayList<Object>();
-            l.add(mamd.message());
-            messages.put(mamd.topic(), l);
+    private void populateAnyLeftOverMessages(Map<String, Map<Integer, List<Object>>> messages) {
+        for (MessageAndMetadata mamd : messageLeftOverTracker.getMessageLeftOverFromPreviousPoll()) {
+            final String topic = mamd.topic();
+            if (!messages.containsKey(topic)) {
+                final List<MessageAndMetadata> l = new ArrayList<MessageAndMetadata>();
+                l.add(mamd);
+                messages.put(topic, getPayload(l));
+            } else {
+
+                final Map<Integer, List<Object>> existingPayloadMap = messages.get(topic);
+                final List<MessageAndMetadata> l = new ArrayList<MessageAndMetadata>();
+                l.add(mamd);
+                getPayload(l, existingPayloadMap);
+            }
         }
-        messageLeftOverFromPreviousPoll.clear();
+        messageLeftOverTracker.clearMessagesLeftOver();
     }
 
-    private List<Object> getPayload(List<MessageAndMetadata> messageAndMetadatas) {
-        final List<Object> payloadList = new ArrayList<Object>();
+    private Map<Integer, List<Object>> getPayload(List<MessageAndMetadata> messageAndMetadatas) {
+        Map<Integer, List<Object>> payloadMap = new ConcurrentHashMap<Integer, List<Object>>();
 
         for (MessageAndMetadata messageAndMetadata : messageAndMetadatas) {
-            payloadList.add(messageAndMetadata.message());
+            if (!payloadMap.containsKey(messageAndMetadata.partition())) {
+                List<Object> payload = new ArrayList<Object>();
+                payload.add(messageAndMetadata.message());
+                payloadMap.put(messageAndMetadata.partition(), payload);
+            } else {
+                List<Object> payload = payloadMap.get(messageAndMetadata.partition());
+                payload.add(messageAndMetadata.message());
+            }
+
         }
-        return payloadList;
+        return payloadMap;
     }
 
-    public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
-        if (consumerMetadata.getKafkaDecoder() != null) {
-            return consumerConnector.createMessageStreams(
-                    consumerMetadata.getTopicStreamMap(),
-                    consumerMetadata.getKafkaDecoder(),
-                    consumerMetadata.getKafkaDecoder());
+    private void getPayload(List<MessageAndMetadata> messageAndMetadatas, Map<Integer, List<Object>> existingPayloadMap) {
+
+        for (MessageAndMetadata messageAndMetadata : messageAndMetadatas) {
+            if (!existingPayloadMap.containsKey(messageAndMetadata.partition())) {
+                List<Object> payload = new ArrayList<Object>();
+                payload.add(messageAndMetadata.message());
+                existingPayloadMap.put(messageAndMetadata.partition(), payload);
+            } else {
+                List<Object> payload = existingPayloadMap.get(messageAndMetadata.partition());
+                payload.add(messageAndMetadata.message());
+            }
+
         }
-        return consumerConnector.createMessageStreams(consumerMetadata.getTopicStreamMap());
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
+        if (consumerMetadata.getValueDecoder() != null) {
+            return getConsumerConnector().createMessageStreams(
+                    consumerMetadata.getTopicStreamMap(),
+                    consumerMetadata.getValueDecoder(),
+                    consumerMetadata.getValueDecoder());
+        }
+        return getConsumerConnector().createMessageStreams(consumerMetadata.getTopicStreamMap());
     }
 
     public int getMaxMessages() {
@@ -146,5 +177,14 @@ public class ConsumerConfiguration {
 
     public void setMaxMessages(int maxMessages) {
         this.maxMessages = maxMessages;
+    }
+
+    public ConsumerConnector getConsumerConnector() {
+        if (consumerConnector == null) {
+            consumerConnector = consumerConnectionProvider.getConsumerConnector();
+            return consumerConnector;
+        } else {
+            return consumerConnector;
+        }
     }
 }

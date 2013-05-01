@@ -31,7 +31,7 @@ public class OutboundRunner {
         System.out.println(channel.getClass());
 
         //sending 100,000 messages to Kafka server for topic test1
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 50; i++) {
             channel.send(
                     MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i).
                             setHeader("messageKey", String.valueOf(i))
@@ -40,7 +40,7 @@ public class OutboundRunner {
 
         }
         //sending 5,000 messages to kafka server for topic test2
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < 50; i++) {
             channel.send(
                 MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i).
                     setHeader("messageKey", String.valueOf(i))
