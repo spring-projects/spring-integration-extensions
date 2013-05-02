@@ -70,7 +70,6 @@ public class ConsumerConfiguration {
                                         count++;
                                     } else {
                                         messageLeftOverTracker.addMessageAndMetadata(messageAndMetadata);
-                                        //getConsumerConnector().shutdown();
                                     }
                                 }
                             }
