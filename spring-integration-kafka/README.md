@@ -143,7 +143,7 @@ Inbound Channel Adapter:
 
 The Inbound channel adapter is used to consume messages from Kafka. These messages will be placed into a Spring Integration channel as Spring Integration specific Messages.
 Kafka provides two types of consumer API's primarily. One is a high level consumer and the other is called Simple Consumer. Highlevel consumer is pretty complex inside and handles
-a lot of logic. Nonetheless, for the client using the high level API is straightforward. Although easy to use, High level consumer
+a lot of logic. Nonetheless, for the client, using the high level API is straightforward. Although easy to use, High level consumer
 does not provide any offset management. So, if you want to rewind and re-fetch messages, it is not possible to do so using the
 high level conusmer API. Offsets are managed by the Zookeeper internally. If your use case does not require you to manage offsets
 or re-read messages from the same consumer, then high level consumer is a perfect fit. Spring Integration Kafka inbound channel adapter
@@ -161,7 +161,7 @@ currently support only the high level consumer. Here are the details of configur
 Since this inbound channel adapter uses a Polling Channel under the hood, it must be configured with a Poller. A notable difference
 between the poller configured with this inbound adapter and other pollers is that the receive-timeout specified on this poller
 does not have any effect. The reason for this is because of the way Kafka implements iterators on the consumer stream.
-It is using a BlockingQueue under the hood and thus it would wait indefinitely. Instead of interrupting the underlying thread,
+It is using a BlockingQueue internally and thus it would wait indefinitely. Instead of interrupting the underlying thread,
 we are leveraging on direct Kafka support for consumer time out. It is configured on the consumer context. Everyting else
  is pretty much the same as in a regular inbound adapter. Any messages that it receives will be sent to the channel configured with it.
 
@@ -186,22 +186,20 @@ Inbound Kafka Adapter must specify a kafka-consumer-context-ref element and here
 Consumer context requires a referecence to a zookeeper-connect which dictates all the zookeeper specific configuration details.
 Here is how a zookeeper-connect is configured.
 
-Here is how a kafka-broker is configured for the consumer context:
-
 ```xml
     <int-kafka:zookeeper-connect id="zookeeperConnect" zk-connect="localhost:2181" zk-connection-timeout="6000"
                         zk-session-timeout="6000"
                         zk-sync-time="2000" />
 ```
 
-zk-connect attribute is where you would specify your zookeeper connection. All the other attributes would get translated into their
-zookeeper attributes by the consumer.
+zk-connect attribute is where you would specify the zookeeper connection. All the other attributes would get translated into their
+zookeeper counter-part attributes by the consumer.
 
 In the above consumer context, you can also specify a consumer-timeout value which would be used to timeout the consumer in case of no messages to consume.
 This timeout would be applicable to all the streams (threads) in the consumer. The default value for this in Kafka is -1 which would make it wait
 indefinitely. However, Sping Integration overrides it to be 5 seconds in order to make sure that no threads are blocking indefinitely in the lifecycle of the application and thereby
 giving them a chance to free up any resources or locks that they hold. It is recommended to override this value so as to meet any special use cases.
-By providing a reasonable consumer-timeout, this inbound adapter could essentially simulate a message driven behaviour.
+By providing a reasonable consumer-timeout and a fixed-delay value on the poller, this inbound adapter could essentially simulate a message driven behaviour.
 
 consumer context takes consumer-confgurations which are at the center piece of the inbound adapter. It is a group of one or more
 consumer-configuration elements which consists of a consumer group dicatated by the group-id. Each consumer-configuration
@@ -228,7 +226,7 @@ out of the box. You can use any serialization component for this purpose. Here i
 
 Another important attribute for the consumer-configuraton is the max-messages. Please note that this is different from the max-messages-per-poll configured on the inbound adapter element.
 There it means the number of times the receive method on the adapter called. The max-messages on consumer configuration is different.
-Kafka is used mainly where there big data present and usually that means the influx of large amount of data constantly. Because of this, each time a receive is invoked
+Kafka is used mainly for big data purposes and usually that means the influx of large amount of data constantly. Because of this, each time a receive is invoked
 on the adapter, you would basically get a collection of messages. The maximum number of messages to retrieve for a topic in each execution of the
 receive is what configured through the max-messages attribute on the consumer-configuration. Basically, if the use case is to receive a constant stream of
 large number of data, simply specifying a receive-timeout alone would not be enough. You would also need to specify the max number of messages to receive.
@@ -240,7 +238,7 @@ Map<String, Map<Integer, List<Object>>>
 ```
 
 It is a java.util.Map that contains the topic string consumed as the key and another Map as the value.
-The inner map's key will be the stream (partition) number and a list of message payloads. The reason for this complex return type is
+The inner map's key will be the stream (partition) number and value will be a list of message payloads. The reason for this complex return type is
 due to the way Kafka orders the messages. In the high level consumer, all the messages received in a single stream for a single partition
 is guaranteed to be in order. For example, if I have a topic named test configured with 4 partitions and I have 4 corresponding streams
 in the consumer, then I would receive data in all the consumer streams in the same order as they were put
@@ -251,11 +249,11 @@ still be kept contiguously. Then, probably there is no way to find out which mes
 By keeping the partition information in the response from the adapter, we make sure that the order sent by the producer
 is preserved.
 
-An downstream component which receives the data from the inbound adapter can cast the SI payload to the above
+A downstream component which receives the data from the inbound adapter can cast the SI payload to the above
 Map.
 
 If your use case does not require ordering of messages during consumption, then you can easily pass this
-payload to a standard SI transformer and just get a full dump of the actual payloads sent by Kafka.
+payload to a standard SI transformer and just get a full dump of the actual payload sent by Kafka.
 
 
 
