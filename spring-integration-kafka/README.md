@@ -121,7 +121,7 @@ If the encoders are default and the objets sent are not serializalbe, then that 
 it is totally up to the developer to configure how the objects are serialized. In that case, the objects may or may not implement
 the Serializable interface.
 
-Encoding Strings for key and values are a very common use case and Kafka provides a StringEncoder out of the box. It takes a Kafka specific VerifiableProperties object
+Encoding String for key and value is a very common use case and Kafka provides a StringEncoder out of the box. It takes a Kafka specific VerifiableProperties object
  along with its
 constructor that wraps a regular Java.util.Properties object. The StringEncoder is great when writing a
  direct Java client that talks to Kafka.
