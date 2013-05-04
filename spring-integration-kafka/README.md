@@ -81,7 +81,7 @@ There are a few things going on here. So, lets go one by one. First of all, prod
 indicates, a context for the Kafa producer. It contains one ore more producer configurations. Each producer configuration
 is ultimately gets translated into a Kafka native producer. Each producer configuration is per topic based right now.
 If you go by the above example, there are two producers generated from this configuration - one for topic named
-test1 and other for test2. Each producer can take the following:
+test1 and another for test2. Each producer can take the following:
 
     broker-list            list of comma separated brokers that this producer connects to
     topic                  topic name
@@ -112,7 +112,7 @@ Spring Integration Kafaka adapter provides Apache Avro backed encoders out of th
 for serialization in the big data spectrum. If no encoders are specified as beans, the default encoders provided
 by Kafka will be used. On that not, if the encoder is configured only for the message and not for the key, the same encoder
 will be used for both. These are standard Kafka behaviors. Spring Integration Kafka adapter does simply enforce those behaviours.
-Kafka default encoder expects the data to come as byte arrays and it is a no-op encoder, i.e. it just pass through the byte array as it is.
+Kafka default encoder expects the data to come as byte arrays and it is a no-op encoder, i.e. it just takes the byte array as it is.
 When default encoders are used, there are two ways a message can be sent.
 Either, the sender of the message to the channel
 can simply put byte arrays as message key and payload. Or, the key and value can be sent as Java Serializable object.
