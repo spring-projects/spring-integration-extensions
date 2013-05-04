@@ -21,7 +21,7 @@ The Outbound channel adapter is used to send messages to Kafka. Messages are rea
 this in the application where messages are sent to kafka.
 
 Once a channel is configured, then messages can be sent to Kafka through this channel. Obviously, Spring Integration specific messages are sent to the adapter and then it will
-internally convert it to Kafka messages before sending. In the current version of the outbound adapter,
+internally get converted into Kafka messages before sending. In the current version of the outbound adapter,
 you have to specify a message key and the topic as header values and the message to send as the payload.
 Here is an example.
 
