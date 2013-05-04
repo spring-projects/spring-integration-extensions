@@ -8,25 +8,20 @@ data at constant time. For more information on Kafka and its design goals, pleas
 Spring Integration Kafka adapters are built for Kafka 0.8 and since Kafka 0.8 is not backward compatible with any previous versions of Kafka, Spring Integration will not
 support any Kafka versions prior to 0.8. As of this writing, Kafka 0.8 is still WIP.
 
-Spring Integration Kafka project currently supports the two following components. Please keep in mind that
-this is very early stage in development and may not fully make use of all the features that Kafka provides yet.
+Spring Integration Kafka project currently supports the following two components. Please keep in mind that
+this is very early stage in development and do not yet fully make use of all the features that Kafka provides.
 
 * Outbound Channel Adapter
-* Inbound Channel Adapter based on the High level consumer
+* Inbound Channel Adapter based on the High level consumer API
 
 Outbound Channel Adapter:
 --------------------------------------------
 
-The Outbound channel adapter is used to send messages to Kafka. Messages are read from a Spring Integration channel. You can specify this channel in your application context and then wire
-this in your application where you need to send messages to kafka. Following is a regular queue channel available with stock Spring Integration.
+The Outbound channel adapter is used to send messages to Kafka. Messages are read from a Spring Integration channel. One can specify this channel in the application context and then wire
+this in the application where messages are sent to kafka.
 
-```xml
-    <int:channel id="inputToKafka">
-            <int:queue/>
-    </int:channel>
-```
-
-Then you can send messages to the channel to send to Kafka. In the current version of the outbound adapter,
+Once a channel is configured, then messages can be sent to Kafka through this channel. Obviously, Spring Integration specific messages are sent to the adapter and then it will
+internally convert it to Kafka messages before sending. In the current version of the outbound adapter,
 you have to specify a message key and the topic as header values and the message to send as the payload.
 Here is an example.
 
@@ -43,10 +38,7 @@ This would create a message with a payload. In addition to this, it also creates
 the message key and another for the topic under this message is being sent to Kafka.Then this message will be
 sent to the channel.
 
-That is all the Java application code that you have to write to send messages to Kafka. The adapter takes care of everything
-from that point onwards.
-
-Here is how you would configure an outbound channel adapter:
+Here is how kafka outbound channel adapter is configured:
 
 ```xml
     <int-kafka:outbound-channel-adapter id="kafkaOutboundChannelAdapter"
@@ -58,16 +50,14 @@ Here is how you would configure an outbound channel adapter:
     </int-kafka:outbound-channel-adapter>
 ```
 
-The key aspect in this configuration is the producer-context-ref which points to a Kafka Producer context
-that contains all the producer configuration for all the topics that this adapter is expected to handle.
-More on this is given below. The channel that we defined earlier is configured with the adapter and therefore
+The key aspect in this configuration is the producer-context-ref. Producer context contains all the producer configuration for all the topics that this adapter is expected to handle.
+A channel in which messages are arriving is configured with the adapter and therefore
 any message sent to that channel will be handled by this adapter. You can also configure a poller depending on the
-type of channel that you use. In this case, since we use a queue based channel we specify a poller in the configuration.
-This poller will poll the queue using a given task executor. If no task executor is given, the default task executor will be used.
-If no messages are available in the queue it will timeout immediately because of the receive-timeout configuration
-and poll again with a delay of 1 second.
+type of channel that you use. For example, in the above configuration, we use a queue based channel
+and thus a poller is configured with a task executor. If no messages are available in the queue it will timeout immediately because of
+the receive-timeout configuration. Then it will poll again with a delay of 1 second.
 
-Producer context is at the heart of the kafka outbound adapter. Here is an example of how you may configure one.
+Producer context is at the heart of the kafka outbound adapter. Here is an example of how it is configured.
 
 ```xml
     <int-kafka:producer-context id="kafkaProducerContext">
@@ -87,7 +77,7 @@ Producer context is at the heart of the kafka outbound adapter. Here is an examp
     </int-kafka:producer-context>
 ```
 
-There are a few things going on here. So, lets go one by one. First of all, producer context is simply holder of, as the name
+There are a few things going on here. So, lets go one by one. First of all, producer context is simply a holder of, as the name
 indicates, a context for the Kafa producer. It contains one ore more producer configurations. Each producer configuration
 ultimately generates a Kafka native producer from the configuration. Each producer configuration is per topic based right now.
 If you go by the above example, there are two producers generated from this configuration - one for topic named
@@ -95,7 +85,7 @@ test1 and other for test2. Each producer can take the following:
 
     broker-list            list of comma separated brokers that this producer connects to
     topic                  topic name
-    compression-codec      any compression to be used Supported compression codec are gzip and snappy. Anything else would
+    compression-codec      any compression to be used. Default is no compression. Supported compression codec are gzip and snappy. Anything else would
                            result in no compression
     value-encoder          serializer to be used for encoding messages.
     key-encoder            serializer to be used for encoding the partition key
@@ -121,8 +111,10 @@ Here is an example of configuring an encoder.
 Spring Integration Kafaka adapter provides Apache Avro backed encoders out of the box, as this is a popular choice
 for serialization in the big data spectrum. If no encoders are specified as beans, the default encoders provided
 by Kafka will be used. On that not, if the encoder is configured only for the message and not for the key, the same encoder
-will be used for both. These are standard Kafka behaviors. Spring Integration Kafka adapter does simply enforce those.
-When default encoders are used, there are two ways a message can be sent. Either, the sender of the message to the channel
+will be used for both. These are standard Kafka behaviors. Spring Integration Kafka adapter does simply enforce those behaviours.
+Kafka default encoder expects the data to come as byte arrays and it is a no-op encoder, i.e. it just pass through the byte array as it is.
+When default encoders are used, there are two ways a message can be sent.
+Either, the sender of the message to the channel
 can simply put byte arrays as message key and payload. Or, the key and value can be sent as Java Serializable object.
 In the latter case, the Kafka adapter will automatically convert them to byte arrays before sending it to Kafka broker.
 If the encoders are default and the objets sent are not serializalbe, then that would cause an error. By providing explicit encoders
@@ -133,8 +125,8 @@ Kafka provides a StringEncoder out of the box. It takes a Kafka specific Verifia
 constructor that wraps a regular Java.util.Properties object. The StringEncoder is great when writing a direct Java client.
 However, when using Spring Integration Kafka adapter, a wrapper class for this same StringEncoder is available which makes
 using it from Spring a bit easier as you don't have to create any Kafka specific objects to create a StringEncoder. Rather, you can inject
-any properties to it in the Spring way. Kafka StringEncoder looks at a property for encoding from the properties provided.
-This same value can be injected as a property on the bean. Spring Integration provided StringEncoder is available
+any properties to it in the Spring way. Kafka StringEncoder looks at a specific property for the type of encoding scheme used from the properties provided.
+This same value can be injected as a property on the spring bean provided by the kafka support. Spring Integration provided StringEncoder is available
 in the package org.springframework.integration.kafka.serializer.common.StringEncoder. The avro support for serialization is
 also available in a package called avro under serializer.
 
