@@ -43,8 +43,7 @@ Here is how kafka outbound channel adapter is configured:
     <int-kafka:outbound-channel-adapter id="kafkaOutboundChannelAdapter"
                                         kafka-producer-context-ref="kafkaProducerContext"
                                         auto-startup="false"
-                                        channel="inputToKafka"
-            >
+                                        channel="inputToKafka">
         <int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
     </int-kafka:outbound-channel-adapter>
 ```
