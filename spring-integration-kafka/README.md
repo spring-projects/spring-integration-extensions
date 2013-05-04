@@ -116,17 +116,20 @@ Kafka default encoder expects the data to come as byte arrays and it is a no-op 
 When default encoders are used, there are two ways a message can be sent.
 Either, the sender of the message to the channel
 can simply put byte arrays as message key and payload. Or, the key and value can be sent as Java Serializable object.
-In the latter case, the Kafka adapter will automatically convert them to byte arrays before sending it to Kafka broker.
+In the latter case, the Kafka adapter will automatically convert them to byte arrays before sending to Kafka broker.
 If the encoders are default and the objets sent are not serializalbe, then that would cause an error. By providing explicit encoders
 it is totally up to the developer to configure how the objects are serialized. In that case, the objects may or may not implement
 the Serializable interface.
 
-Kafka provides a StringEncoder out of the box. It takes a Kafka specific VerifiableProperties object along with its
-constructor that wraps a regular Java.util.Properties object. The StringEncoder is great when writing a direct Java client.
-However, when using Spring Integration Kafka adapter, a wrapper class for this same StringEncoder is available which makes
-using it from Spring a bit easier as you don't have to create any Kafka specific objects to create a StringEncoder. Rather, you can inject
-any properties to it in the Spring way. Kafka StringEncoder looks at a specific property for the type of encoding scheme used from the properties provided.
-This same value can be injected as a property on the spring bean provided by the kafka support. Spring Integration provided StringEncoder is available
+Kafka provides a StringEncoder out of the box. It takes a Kafka specific VerifiableProperties object
+ along with its
+constructor that wraps a regular Java.util.Properties object. The StringEncoder is great when writing a
+ direct Java client that talks to Kafka.
+However, when using Spring Integration Kafka adapter, it introduces unnecessary steps to create these
+properties objects. Therefore, we provide a wrapper class for this same StringEncoder as part of the SI kafka support, which makes
+using it from Spring a bit easier. You can inject
+any properties to it in the Spring way. Kafka StringEncoder looks at a specific property for the type of encoding scheme used.
+In the wrapper bean provided, this property can simply be injected as a value without constructing any other objects. Spring Integration provided StringEncoder is available
 in the package org.springframework.integration.kafka.serializer.common.StringEncoder. The avro support for serialization is
 also available in a package called avro under serializer.
 
