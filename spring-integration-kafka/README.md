@@ -261,12 +261,12 @@ in the consumer, then I would receive data in all the consumer streams in the sa
 as they were put in the corresponding partitions. This is another reason to set the number of
 consumer streams for a topic same
 as the number of broker partitions configured for that topic. Lets say that the number of streams
-are less than the number of partitions. Then there is no
+are less than the number of partitions. Then, normally, there is no
 guarantee for any order other than just the fact that a single stream will contain messages
-from multiple partitions and the messages from a single partition received will
-still be kept contiguously. By that time probably there is no way to find out which message came from which partition.
-By keeping the partition information in the response from the adapter, we make sure that the order sent by the producer
-is preserved.
+from multiple partitions and the messages from a given single partition received will
+still be kept contiguously. By that time probably there is no way to find out which set of messages came from which partition.
+By providing this complex map that contains the partition information for the topic, we make sure that the order sent by the producer
+is preserved even if the number of streams used was less than the number of broker partitions.
 
 A downstream component which receives the data from the inbound adapter can cast the SI payload to the above
 Map.
