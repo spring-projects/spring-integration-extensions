@@ -79,7 +79,7 @@ Producer context is at the heart of the kafka outbound adapter. Here is an examp
 
 There are a few things going on here. So, lets go one by one. First of all, producer context is simply a holder of, as the name
 indicates, a context for the Kafa producer. It contains one ore more producer configurations. Each producer configuration
-ultimately generates a Kafka native producer from the configuration. Each producer configuration is per topic based right now.
+is ultimately gets translated into a Kafka native producer. Each producer configuration is per topic based right now.
 If you go by the above example, there are two producers generated from this configuration - one for topic named
 test1 and other for test2. Each producer can take the following:
 
