@@ -35,8 +35,7 @@ Here is an example.
 ```
 
 This would create a message with a payload. In addition to this, it also creates two header entries as key/value pairs - one for
-the message key and another for the topic under this message is being sent to Kafka.Then this message will be
-sent to the channel.
+the message key and another for the topic that this message belongs to.
 
 Here is how kafka outbound channel adapter is configured:
 
@@ -52,8 +51,9 @@ Here is how kafka outbound channel adapter is configured:
 
 The key aspect in this configuration is the producer-context-ref. Producer context contains all the producer configuration for all the topics that this adapter is expected to handle.
 A channel in which messages are arriving is configured with the adapter and therefore
-any message sent to that channel will be handled by this adapter. You can also configure a poller depending on the
-type of channel that you use. For example, in the above configuration, we use a queue based channel
+any message sent to that channel will be handled by this adapter. You can also configure a poller
+depending on the
+type of the channel used. For example, in the above configuration, we use a queue based channel
 and thus a poller is configured with a task executor. If no messages are available in the queue it will timeout immediately because of
 the receive-timeout configuration. Then it will poll again with a delay of 1 second.
 
