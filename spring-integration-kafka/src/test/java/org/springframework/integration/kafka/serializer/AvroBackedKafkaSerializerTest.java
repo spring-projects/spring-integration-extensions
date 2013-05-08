@@ -16,11 +16,10 @@
 package org.springframework.integration.kafka.serializer;
 
 import junit.framework.Assert;
-import org.apache.avro.Schema;
-import org.apache.avro.reflect.ReflectData;
 import org.junit.Test;
 import org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder;
 import org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder;
+import org.springframework.integration.kafka.test.utils.TestObject;
 
 /**
  * @author Soby Chacko

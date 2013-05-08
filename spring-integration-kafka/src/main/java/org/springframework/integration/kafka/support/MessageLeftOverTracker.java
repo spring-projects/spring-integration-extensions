@@ -42,5 +42,4 @@ public class MessageLeftOverTracker {
     public int getCurrentCount() {
         return messageLeftOverFromPreviousPoll.size();
     }
-
 }

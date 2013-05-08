@@ -8,6 +8,22 @@ data at constant time. For more information on Kafka and its design goals, pleas
 Spring Integration Kafka adapters are built for Kafka 0.8 and since Kafka 0.8 is not backward compatible with any previous versions of Kafka, Spring Integration will not
 support any Kafka versions prior to 0.8. As of this writing, Kafka 0.8 is still WIP.
 
+Checking out and building
+-----------------------------
+
+Currently Spring Integration Kafka adapter is built against 0.8 version of Kafka that is backed by
+Scala 2.9.2. As Kafka 0.8 is not released yet, you would need to build a Kafka 0.8 instance locally that is
+using Scala 2.9.2. It then needed to be available through a local repository such as a maven cache.
+This process will be changed as we get more formal release builds from Kafka 0.8.
+
+After that, clone this repository and build:
+
+    ./gradlew build
+
+In order to install this into your local maven cache:
+
+    ./gradlew install
+
 Spring Integration Kafka project currently supports the following two components. Please keep in mind that
 this is very early stage in development and do not yet fully make use of all the features that Kafka provides.
 

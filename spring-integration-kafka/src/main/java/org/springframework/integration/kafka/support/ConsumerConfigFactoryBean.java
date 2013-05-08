@@ -45,7 +45,6 @@ public class ConsumerConfigFactoryBean implements FactoryBean<ConsumerConfig> {
         properties.put("group.id", consumerMetadata.getGroupId());
 
         return new ConsumerConfig(properties);
-        //return kafka.consumer.Consumer.createJavaConsumerConnector(consumerConfig);
     }
 
     @Override
