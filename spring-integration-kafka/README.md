@@ -5,14 +5,14 @@ Spring Integration Kafka Adapter
 Welcome to the *Spring Integration Kafka adapter*. Apache Kafka is a distributed publish-subscribe messaging system that is designed for handling terra bytes of high throughput
 data at constant time. For more information on Kafka and its design goals, please see [Kafka main page](http://kafka.apache.org/)
 
-Spring Integration Kafka adapters are built for Kafka 0.8 and since Kafka 0.8 is not backward compatible with any previous versions of Kafka, Spring Integration will not
+Spring Integration Kafka adapters are built for Kafka 0.8 and since 0.8 is not backward compatible with any previous versions, Spring Integration will not
 support any Kafka versions prior to 0.8. As of this writing, Kafka 0.8 is still WIP.
 
 Checking out and building
 -----------------------------
 
 Currently Spring Integration Kafka adapter is built against 0.8 version of Kafka that is backed by
-Scala 2.9.2. As Kafka 0.8 is not released yet, you would need to build a Kafka 0.8 instance locally that is
+Scala 2.9.2. As this is not released yet, you would need to build a Kafka 0.8 instance locally that is
 using Scala 2.9.2. It then needed to be available through a local repository such as a maven cache.
 This process will be changed as we get more formal release builds from Kafka 0.8.
 
