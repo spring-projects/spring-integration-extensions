@@ -11,12 +11,10 @@ support any Kafka versions prior to 0.8. As of this writing, Kafka 0.8 is still 
 Checking out and building
 -----------------------------
 
-Currently Spring Integration Kafka adapter is built against 0.8 version of Kafka that is backed by
-Scala 2.9.2. As this is not released yet, you would need to build a Kafka 0.8 instance locally that is
-using Scala 2.9.2. It then needed to be available through a local repository such as a maven cache.
-This process will be changed as we get more formal release builds from Kafka 0.8.
+Currently Spring Integration Kafka adapter is built against kafka 0.8 that is backed by
+Scala 2.9.2.
 
-After that, clone this repository and build:
+In order to build the project:
 
     ./gradlew build
 
