@@ -39,7 +39,6 @@ import java.io.ObjectInputStream;
  * @author Soby Chacko
  */
 public class ProducerConfigurationTests {
-
     @Test
     @SuppressWarnings("unchecked")
     public void testSendMessageWithNonDefaultKeyAndValueEncoders() throws Exception {
@@ -60,10 +59,10 @@ public class ProducerConfigurationTests {
 
         Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-        ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+        final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
         Mockito.verify(producer).send(argument.capture());
 
-        KeyedMessage capturedKeyMessage = argument.getValue();
+        final KeyedMessage capturedKeyMessage = argument.getValue();
 
         Assert.assertEquals(capturedKeyMessage.key(), "key");
         Assert.assertEquals(capturedKeyMessage.message(), "test message");
@@ -91,16 +90,16 @@ public class ProducerConfigurationTests {
 
         Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-        ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+        final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
         Mockito.verify(producer).send(argument.capture());
 
-        KeyedMessage capturedKeyMessage = argument.getValue();
+        final KeyedMessage capturedKeyMessage = argument.getValue();
 
         final byte[] keyBytes = (byte[])capturedKeyMessage.key();
 
-        ByteArrayInputStream keyInputStream = new ByteArrayInputStream (keyBytes);
-        ObjectInputStream keyObjectInputStream = new ObjectInputStream (keyInputStream);
-        Object keyObj = keyObjectInputStream.readObject();
+        final ByteArrayInputStream keyInputStream = new ByteArrayInputStream (keyBytes);
+        final ObjectInputStream keyObjectInputStream = new ObjectInputStream (keyInputStream);
+        final Object keyObj = keyObjectInputStream.readObject();
 
         final TestKey tk = (TestKey)keyObj;
 
@@ -109,9 +108,9 @@ public class ProducerConfigurationTests {
 
         final byte[] messageBytes = (byte[])capturedKeyMessage.message();
 
-        ByteArrayInputStream messageInputStream = new ByteArrayInputStream (messageBytes);
-        ObjectInputStream messageObjectInputStream = new ObjectInputStream (messageInputStream);
-        Object messageObj = messageObjectInputStream.readObject();
+        final ByteArrayInputStream messageInputStream = new ByteArrayInputStream (messageBytes);
+        final ObjectInputStream messageObjectInputStream = new ObjectInputStream (messageInputStream);
+        final Object messageObj = messageObjectInputStream.readObject();
 
         final TestPayload tp = (TestPayload)messageObj;
 
@@ -144,16 +143,16 @@ public class ProducerConfigurationTests {
 
         Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-        ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+        final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
         Mockito.verify(producer).send(argument.capture());
 
-        KeyedMessage capturedKeyMessage = argument.getValue();
+        final KeyedMessage capturedKeyMessage = argument.getValue();
 
         final byte[] keyBytes = (byte[])capturedKeyMessage.key();
 
-        ByteArrayInputStream keyInputStream = new ByteArrayInputStream (keyBytes);
-        ObjectInputStream keyObjectInputStream = new ObjectInputStream (keyInputStream);
-        Object keyObj = keyObjectInputStream.readObject();
+        final ByteArrayInputStream keyInputStream = new ByteArrayInputStream (keyBytes);
+        final ObjectInputStream keyObjectInputStream = new ObjectInputStream (keyInputStream);
+        final Object keyObj = keyObjectInputStream.readObject();
 
         Assert.assertEquals("key", keyObj);
         Assert.assertEquals(capturedKeyMessage.message(), tp);
@@ -184,18 +183,18 @@ public class ProducerConfigurationTests {
 
         Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-        ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+        final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
         Mockito.verify(producer).send(argument.capture());
 
-        KeyedMessage capturedKeyMessage = argument.getValue();
+        final KeyedMessage capturedKeyMessage = argument.getValue();
 
         Assert.assertEquals(capturedKeyMessage.key(), tk);
 
         final byte[] payloadBytes = (byte[])capturedKeyMessage.message();
 
-        ByteArrayInputStream payloadBis = new ByteArrayInputStream (payloadBytes);
-        ObjectInputStream payloadOis = new ObjectInputStream (payloadBis);
-        Object payloadObj = payloadOis.readObject();
+        final ByteArrayInputStream payloadBis = new ByteArrayInputStream (payloadBytes);
+        final ObjectInputStream payloadOis = new ObjectInputStream (payloadBis);
+        final Object payloadObj = payloadOis.readObject();
 
         Assert.assertEquals("test message", payloadObj);
 
@@ -223,23 +222,23 @@ public class ProducerConfigurationTests {
 
         Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-        ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+        final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
         Mockito.verify(producer).send(argument.capture());
 
-        KeyedMessage capturedKeyMessage = argument.getValue();
+        final KeyedMessage capturedKeyMessage = argument.getValue();
         final byte[] keyBytes = (byte[])capturedKeyMessage.key();
 
-        ByteArrayInputStream keyBis = new ByteArrayInputStream (keyBytes);
-        ObjectInputStream keyOis = new ObjectInputStream (keyBis);
-        Object keyObj = keyOis.readObject();
+        final ByteArrayInputStream keyBis = new ByteArrayInputStream (keyBytes);
+        final ObjectInputStream keyOis = new ObjectInputStream (keyBis);
+        final Object keyObj = keyOis.readObject();
 
         Assert.assertEquals("key", keyObj);
 
         final byte[] payloadBytes = (byte[])capturedKeyMessage.message();
 
-        ByteArrayInputStream payloadBis = new ByteArrayInputStream (payloadBytes);
-        ObjectInputStream payloadOis = new ObjectInputStream (payloadBis);
-        Object payloadObj = payloadOis.readObject();
+        final ByteArrayInputStream payloadBis = new ByteArrayInputStream (payloadBytes);
+        final ObjectInputStream payloadOis = new ObjectInputStream (payloadBis);
+        final Object payloadObj = payloadOis.readObject();
 
         Assert.assertEquals("test message", payloadObj);
         Assert.assertEquals(capturedKeyMessage.topic(), "test");
