@@ -34,26 +34,24 @@ import org.w3c.dom.Element;
  * @author Soby Chacko
  */
 public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionParser {
-
     @Override
-    protected Class<?> getBeanClass(Element element) {
+    protected Class<?> getBeanClass(final Element element) {
         return KafkaProducerContext.class;
     }
 
     @Override
-    protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+    protected void doParse(final Element element, final ParserContext parserContext, final BeanDefinitionBuilder builder) {
         super.doParse(element, parserContext, builder);
 
-        Element topics = DomUtils.getChildElementByTagName(element, "producer-configurations");
+        final Element topics = DomUtils.getChildElementByTagName(element, "producer-configurations");
         parseProducerConfigurations(topics, parserContext);
     }
 
-    private void parseProducerConfigurations(Element topics, ParserContext parserContext) {
+    private void parseProducerConfigurations(final Element topics, final ParserContext parserContext) {
+        for (final Element producerConfiguration : DomUtils.getChildElementsByTagName(topics, "producer-configuration")){
+            final BeanDefinitionBuilder producerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerConfiguration.class);
 
-        for (Element producerConfiguration : DomUtils.getChildElementsByTagName(topics, "producer-configuration")){
-            BeanDefinitionBuilder producerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerConfiguration.class);
-
-            BeanDefinitionBuilder producerMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerMetadata.class);
+            final BeanDefinitionBuilder producerMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerMetadata.class);
             producerMetadataBuilder.addConstructorArgValue(producerConfiguration.getAttribute("topic"));
             IntegrationNamespaceUtils.setReferenceIfAttributeDefined(producerMetadataBuilder, producerConfiguration, "value-encoder");
             IntegrationNamespaceUtils.setReferenceIfAttributeDefined(producerMetadataBuilder, producerConfiguration, "key-encoder");
@@ -64,23 +62,25 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
             IntegrationNamespaceUtils.setValueIfAttributeDefined(producerMetadataBuilder, producerConfiguration, "async");
             IntegrationNamespaceUtils.setValueIfAttributeDefined(producerMetadataBuilder, producerConfiguration, "batch-num-messages");
 
-            BeanDefinition producerMetadataBeanDef = producerMetadataBuilder.getBeanDefinition();
+            final BeanDefinition producerMetadataBeanDef = producerMetadataBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(producerMetadataBeanDef, "producerMetadata_" + producerConfiguration.getAttribute("topic")),
                                         parserContext.getRegistry());
 
-            BeanDefinitionBuilder producerFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerFactoryBean.class);
+            final BeanDefinitionBuilder producerFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerFactoryBean.class);
             producerFactoryBuilder.addConstructorArgReference("producerMetadata_" + producerConfiguration.getAttribute("topic"));
+
             final String brokerList = producerConfiguration.getAttribute("broker-list");
             if (StringUtils.hasText(brokerList)) {
                 producerFactoryBuilder.addConstructorArgValue(producerConfiguration.getAttribute("broker-list"));
             }
 
-            BeanDefinition producerfactoryBeanDefinition = producerFactoryBuilder.getBeanDefinition();
+            final BeanDefinition producerfactoryBeanDefinition = producerFactoryBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(producerfactoryBeanDefinition, "prodFactory_" + producerConfiguration.getAttribute("topic")), parserContext.getRegistry());
 
             producerConfigurationBuilder.addConstructorArgReference("producerMetadata_" + producerConfiguration.getAttribute("topic"));
             producerConfigurationBuilder.addConstructorArgReference("prodFactory_" + producerConfiguration.getAttribute("topic"));
-            AbstractBeanDefinition producerConfigurationBeanDefinition = producerConfigurationBuilder.getBeanDefinition();
+
+            final AbstractBeanDefinition producerConfigurationBeanDefinition = producerConfigurationBuilder.getBeanDefinition();
             final String producerConfigurationBeanName = "producerConfiguration_" + producerConfiguration.getAttribute("topic");
             registerBeanDefinition(new BeanDefinitionHolder(producerConfigurationBeanDefinition, producerConfigurationBeanName),
                     parserContext.getRegistry());
