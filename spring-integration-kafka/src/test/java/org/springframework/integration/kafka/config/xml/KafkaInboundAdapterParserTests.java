@@ -36,11 +36,10 @@ public class KafkaInboundAdapterParserTests {
 	 */
 	@Test
 	public void testParseSourceElementParserContext() throws Exception {
-		SourcePollingChannelAdapter adapter = appContext.getBean("kafkaInboundChannelAdapter",
+		final SourcePollingChannelAdapter adapter = appContext.getBean("kafkaInboundChannelAdapter",
 				SourcePollingChannelAdapter.class);
 
         Assert.assertNotNull(adapter);
 		Assert.assertFalse(adapter.isAutoStartup());
 	}
-
 }
