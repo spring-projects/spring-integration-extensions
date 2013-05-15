@@ -48,7 +48,7 @@ public class ConsumerMetadata<K,V> {
         return groupId;
     }
 
-    public void setGroupId(String groupId) {
+    public void setGroupId(final String groupId) {
         this.groupId = groupId;
     }
 
@@ -56,7 +56,7 @@ public class ConsumerMetadata<K,V> {
         return socketTimeout;
     }
 
-    public void setSocketTimeout(String socketTimeout) {
+    public void setSocketTimeout(final String socketTimeout) {
         this.socketTimeout = socketTimeout;
     }
 
@@ -64,7 +64,7 @@ public class ConsumerMetadata<K,V> {
         return socketBufferSize;
     }
 
-    public void setSocketBufferSize(String socketBufferSize) {
+    public void setSocketBufferSize(final String socketBufferSize) {
         this.socketBufferSize = socketBufferSize;
     }
 
@@ -72,7 +72,7 @@ public class ConsumerMetadata<K,V> {
         return fetchSize;
     }
 
-    public void setFetchSize(String fetchSize) {
+    public void setFetchSize(final String fetchSize) {
         this.fetchSize = fetchSize;
     }
 
@@ -80,7 +80,7 @@ public class ConsumerMetadata<K,V> {
         return backoffIncrement;
     }
 
-    public void setBackoffIncrement(String backoffIncrement) {
+    public void setBackoffIncrement(final String backoffIncrement) {
         this.backoffIncrement = backoffIncrement;
     }
 
@@ -88,7 +88,7 @@ public class ConsumerMetadata<K,V> {
         return queuedChunksMax;
     }
 
-    public void setQueuedChunksMax(String queuedChunksMax) {
+    public void setQueuedChunksMax(final String queuedChunksMax) {
         this.queuedChunksMax = queuedChunksMax;
     }
 
@@ -96,7 +96,7 @@ public class ConsumerMetadata<K,V> {
         return autoCommitEnable;
     }
 
-    public void setAutoCommitEnable(String autoCommitEnable) {
+    public void setAutoCommitEnable(final String autoCommitEnable) {
         this.autoCommitEnable = autoCommitEnable;
     }
 
@@ -104,7 +104,7 @@ public class ConsumerMetadata<K,V> {
         return autoCommitInterval;
     }
 
-    public void setAutoCommitInterval(String autoCommitInterval) {
+    public void setAutoCommitInterval(final String autoCommitInterval) {
         this.autoCommitInterval = autoCommitInterval;
     }
 
@@ -112,7 +112,7 @@ public class ConsumerMetadata<K,V> {
         return autoOffsetReset;
     }
 
-    public void setAutoOffsetReset(String autoOffsetReset) {
+    public void setAutoOffsetReset(final String autoOffsetReset) {
         this.autoOffsetReset = autoOffsetReset;
     }
 
@@ -120,7 +120,7 @@ public class ConsumerMetadata<K,V> {
         return rebalanceRetriesMax;
     }
 
-    public void setRebalanceRetriesMax(String rebalanceRetriesMax) {
+    public void setRebalanceRetriesMax(final String rebalanceRetriesMax) {
         this.rebalanceRetriesMax = rebalanceRetriesMax;
     }
 
@@ -128,7 +128,7 @@ public class ConsumerMetadata<K,V> {
         return consumerTimeout;
     }
 
-    public void setConsumerTimeout(String consumerTimeout) {
+    public void setConsumerTimeout(final String consumerTimeout) {
         this.consumerTimeout = consumerTimeout;
     }
 
@@ -136,7 +136,7 @@ public class ConsumerMetadata<K,V> {
         return topic;
     }
 
-    public void setTopic(String topic) {
+    public void setTopic(final String topic) {
         this.topic = topic;
     }
 
@@ -144,7 +144,7 @@ public class ConsumerMetadata<K,V> {
         return streams;
     }
 
-    public void setStreams(int streams) {
+    public void setStreams(final int streams) {
         this.streams = streams;
     }
 
@@ -152,7 +152,7 @@ public class ConsumerMetadata<K,V> {
         return valueDecoder;
     }
 
-    public void setValueDecoder(Decoder<V> valueDecoder) {
+    public void setValueDecoder(final Decoder<V> valueDecoder) {
         this.valueDecoder = valueDecoder;
     }
 
@@ -160,7 +160,7 @@ public class ConsumerMetadata<K,V> {
         return keyDecoder;
     }
 
-    public void setKeyDecoder(Decoder<K> keyDecoder) {
+    public void setKeyDecoder(final Decoder<K> keyDecoder) {
         this.keyDecoder = keyDecoder;
     }
 
@@ -168,7 +168,7 @@ public class ConsumerMetadata<K,V> {
         return topicStreamMap;
     }
 
-    public void setTopicStreamMap(Map<String, Integer> topicStreamMap) {
+    public void setTopicStreamMap(final Map<String, Integer> topicStreamMap) {
         this.topicStreamMap = topicStreamMap;
     }
 }
