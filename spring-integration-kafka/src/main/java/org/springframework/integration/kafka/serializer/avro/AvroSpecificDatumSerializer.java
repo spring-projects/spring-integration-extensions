@@ -20,6 +20,7 @@ import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificDatumWriter;
@@ -31,20 +32,21 @@ import java.io.IOException;
  * @author Soby Chacko
  */
 public class AvroSpecificDatumSerializer<T> {
+    public T deserialize(final byte[] bytes, final Schema schema) throws IOException {
+        final Decoder decoder = DecoderFactory.get().binaryDecoder(bytes, null);
+        final DatumReader<T> reader = new SpecificDatumReader<T>(schema);
 
-    public T deserialize(byte[] bytes, Schema schema) throws IOException {
-            final Decoder decoder = DecoderFactory.get().binaryDecoder(bytes, null);
-            final DatumReader<T> reader = new SpecificDatumReader<T>(schema);
-            return reader.read(null, decoder);
-        }
+        return reader.read(null, decoder);
+    }
 
-        public byte[] serialize(T input, Schema schema) throws IOException {
+    public byte[] serialize(final T input, final Schema schema) throws IOException {
+        final DatumWriter<T> writer = new SpecificDatumWriter<T>(schema);
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-            final DatumWriter<T> writer = new SpecificDatumWriter<T>(schema);
-            final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            final org.apache.avro.io.Encoder encoder = EncoderFactory.get().binaryEncoder(stream, null);
-            writer.write(input, encoder);
-            encoder.flush();
-            return stream.toByteArray();
-        }
+        final Encoder encoder = EncoderFactory.get().binaryEncoder(stream, null);
+        writer.write(input, encoder);
+        encoder.flush();
+
+        return stream.toByteArray();
+    }
 }
