@@ -21,11 +21,14 @@ import org.apache.avro.Schema;
 import org.apache.avro.reflect.ReflectData;
 
 import java.io.IOException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Soby Chacko
  */
 public class AvroBackedKafkaDecoder<T> implements Decoder<T> {
+    private static final Log LOG = LogFactory.getLog(AvroBackedKafkaDecoder.class);
 
     private final Class clazz;
 
@@ -34,14 +37,14 @@ public class AvroBackedKafkaDecoder<T> implements Decoder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T fromBytes(byte[] bytes) {
+    public T fromBytes(final byte[] bytes) {
         final Schema schema = ReflectData.get().getSchema(clazz);
         final AvroSerializer avroSerializer = new AvroSerializer();
 
         try {
             return (T) avroSerializer.deserialize(bytes, schema);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.error("Failed to serialize byte array for schema: " + schema.getFullName(), e);
         }
 
         return null;
