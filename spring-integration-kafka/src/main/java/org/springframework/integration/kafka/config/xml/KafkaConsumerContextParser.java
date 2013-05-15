@@ -41,23 +41,23 @@ import java.util.Map;
 public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionParser {
 
     @Override
-    protected Class<?> getBeanClass(Element element) {
+    protected Class<?> getBeanClass(final Element element) {
         return KafkaConsumerContext.class;
     }
 
     @Override
-    protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+    protected void doParse(final Element element, final ParserContext parserContext, final BeanDefinitionBuilder builder) {
         super.doParse(element, parserContext, builder);
 
-        Element consumerConfigurations = DomUtils.getChildElementByTagName(element, "consumer-configurations");
+        final Element consumerConfigurations = DomUtils.getChildElementByTagName(element, "consumer-configurations");
         parseConsumerConfigurations(consumerConfigurations, parserContext, builder, element);
     }
 
-    private void parseConsumerConfigurations(Element consumerConfigurations, ParserContext parserContext, BeanDefinitionBuilder builder, Element parentElem) {
-
-        for (Element consumerConfiguration : DomUtils.getChildElementsByTagName(consumerConfigurations, "consumer-configuration")) {
-            BeanDefinitionBuilder consumerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfiguration.class);
-            BeanDefinitionBuilder consumerMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerMetadata.class);
+    private void parseConsumerConfigurations(final Element consumerConfigurations, final ParserContext parserContext,
+                                             final BeanDefinitionBuilder builder, final Element parentElem) {
+        for (final Element consumerConfiguration : DomUtils.getChildElementsByTagName(consumerConfigurations, "consumer-configuration")) {
+            final BeanDefinitionBuilder consumerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfiguration.class);
+            final BeanDefinitionBuilder consumerMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerMetadata.class);
 
             IntegrationNamespaceUtils.setValueIfAttributeDefined(consumerMetadataBuilder, consumerConfiguration, "group-id");
 
@@ -69,7 +69,8 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
             IntegrationNamespaceUtils.setValueIfAttributeDefined(consumerMetadataBuilder, parentElem, "consumer-timeout");
 
             final Map<String, Integer> topicStreamsMap = new HashMap<String, Integer>();
-            for (Element topicConfiguration : DomUtils.getChildElementsByTagName(consumerConfiguration, "topic")) {
+
+            for (final Element topicConfiguration : DomUtils.getChildElementsByTagName(consumerConfiguration, "topic")) {
                 final String topic = topicConfiguration.getAttribute("id");
                 final String streams = topicConfiguration.getAttribute("streams");
                 final Integer streamsInt = Integer.valueOf(streams);
@@ -77,38 +78,42 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
             }
 
             consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
-            BeanDefinition consumerMetadataBeanDef = consumerMetadataBuilder.getBeanDefinition();
+
+            final BeanDefinition consumerMetadataBeanDef = consumerMetadataBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(consumerMetadataBeanDef, "consumerMetadata_" + consumerConfiguration.getAttribute("group-id")),
                     parserContext.getRegistry());
 
-            String zookeeperConnectBean = parentElem.getAttribute("zookeeper-connect");
+            final String zookeeperConnectBean = parentElem.getAttribute("zookeeper-connect");
             IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, parentElem, zookeeperConnectBean);
 
-            BeanDefinitionBuilder consumerConfigFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfigFactoryBean.class);
+            final BeanDefinitionBuilder consumerConfigFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfigFactoryBean.class);
             consumerConfigFactoryBuilder.addConstructorArgReference("consumerMetadata_" + consumerConfiguration.getAttribute("group-id"));
+
             if (StringUtils.hasText(zookeeperConnectBean)) {
                 consumerConfigFactoryBuilder.addConstructorArgReference(zookeeperConnectBean);
             }
 
-            BeanDefinition consumerConfigFactoryBuilderBeanDefinition = consumerConfigFactoryBuilder.getBeanDefinition();
+            final BeanDefinition consumerConfigFactoryBuilderBeanDefinition = consumerConfigFactoryBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(consumerConfigFactoryBuilderBeanDefinition, "consumerConfigFactory_" + consumerConfiguration.getAttribute("group-id")), parserContext.getRegistry());
 
-            BeanDefinitionBuilder consumerConnectionProviderBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConnectionProvider.class);
+            final BeanDefinitionBuilder consumerConnectionProviderBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConnectionProvider.class);
             consumerConnectionProviderBuilder.addConstructorArgReference("consumerConfigFactory_" + consumerConfiguration.getAttribute("group-id"));
 
-            BeanDefinition consumerConnectionProviderBuilderBeanDefinition = consumerConnectionProviderBuilder.getBeanDefinition();
+            final BeanDefinition consumerConnectionProviderBuilderBeanDefinition = consumerConnectionProviderBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(consumerConnectionProviderBuilderBeanDefinition, "consumerConnectionProvider_" + consumerConfiguration.getAttribute("group-id")), parserContext.getRegistry());
 
 
-            BeanDefinitionBuilder messageLeftOverBeanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(MessageLeftOverTracker.class);
-            BeanDefinition messageLeftOverBeanDefinition = messageLeftOverBeanDefinitionBuilder.getBeanDefinition();
+            final BeanDefinitionBuilder messageLeftOverBeanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(MessageLeftOverTracker.class);
+            final BeanDefinition messageLeftOverBeanDefinition = messageLeftOverBeanDefinitionBuilder.getBeanDefinition();
             registerBeanDefinition(new BeanDefinitionHolder(messageLeftOverBeanDefinition, "messageLeftOver_" + consumerConfiguration.getAttribute("group-id")),
                     parserContext.getRegistry());
 
             consumerConfigurationBuilder.addConstructorArgReference("consumerMetadata_" + consumerConfiguration.getAttribute("group-id"));
             consumerConfigurationBuilder.addConstructorArgReference("consumerConnectionProvider_" + consumerConfiguration.getAttribute("group-id"));
             consumerConfigurationBuilder.addConstructorArgReference("messageLeftOver_" + consumerConfiguration.getAttribute("group-id"));
-            AbstractBeanDefinition consumerConfigurationBeanDefinition = consumerConfigurationBuilder.getBeanDefinition();
+
+            final AbstractBeanDefinition consumerConfigurationBeanDefinition = consumerConfigurationBuilder.getBeanDefinition();
+
             final String consumerConfigurationBeanName = "consumerConfiguration_" + consumerConfiguration.getAttribute("group-id");
             registerBeanDefinition(new BeanDefinitionHolder(consumerConfigurationBeanDefinition, consumerConfigurationBeanName),
                     parserContext.getRegistry());
