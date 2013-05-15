@@ -20,11 +20,14 @@ import org.apache.avro.Schema;
 import org.apache.avro.reflect.ReflectData;
 
 import java.io.IOException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Soby Chacko
  */
 public class AvroBackedKafkaEncoder<T> implements Encoder<T> {
+    private static final Log LOG = LogFactory.getLog(AvroBackedKafkaEncoder.class);
 
     private final Class clazz;
 
@@ -33,17 +36,16 @@ public class AvroBackedKafkaEncoder<T> implements Encoder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public byte[] toBytes(T source) {
+    public byte[] toBytes(final T source) {
         final Schema schema = ReflectData.get().getSchema(clazz);
         final AvroSerializer avroSerializer = new AvroSerializer();
 
         try {
             return avroSerializer.serialize(source, schema);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.error("Failed to encode source for schema: " + schema.getFullName());
         }
 
         return null;
     }
 }
-

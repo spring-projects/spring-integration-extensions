@@ -44,7 +44,7 @@ public class AvroBackedKafkaDecoder<T> implements Decoder<T> {
         try {
             return (T) avroSerializer.deserialize(bytes, schema);
         } catch (IOException e) {
-            LOG.error("Failed to serialize byte array for schema: " + schema.getFullName(), e);
+            LOG.error("Failed to decode byte array for schema: " + schema.getFullName(), e);
         }
 
         return null;
