@@ -40,7 +40,7 @@
             <int-kafka:consumer-configuration group-id="default"
                                               value-decoder="kafkaDecoder"
                                               key-decoder="kafkaDecoder"
-                                              max-messages="5">
+                                              max-messages="5000">
                 <int-kafka:topic id="test1" streams="4"/>
             </int-kafka:consumer-configuration>
             <int-kafka:consumer-configuration group-id="default1"

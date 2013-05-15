@@ -62,9 +62,6 @@ public class ConsumerConfiguration {
 
     public Map<String, Map<Integer, List<Object>>> receive() {
         count = messageLeftOverTracker.getCurrentCount();
-        final Map<String, Map<Integer, List<Object>>> messages = new ConcurrentHashMap<String, Map<Integer, List<Object>>>();
-
-        populateAnyLeftOverMessages(messages);
 
         final List<Callable<List<MessageAndMetadata>>> tasks = new LinkedList<Callable<List<MessageAndMetadata>>>();
         final Object lock = new Object();
@@ -97,11 +94,14 @@ public class ConsumerConfiguration {
             }
         }
 
-        return executeTasks(tasks, messages);
+        return executeTasks(tasks);
     }
 
-    private Map<String, Map<Integer, List<Object>>> executeTasks(final List<Callable<List<MessageAndMetadata>>> tasks,
-                                                                 final Map<String, Map<Integer, List<Object>>> messages) {
+    private Map<String, Map<Integer, List<Object>>> executeTasks(final List<Callable<List<MessageAndMetadata>>> tasks) {
+
+        final Map<String, Map<Integer, List<Object>>> messages = new ConcurrentHashMap<String, Map<Integer, List<Object>>>();
+        messages.putAll(getLeftOverMessageMap());
+
         try {
             for (final Future<List<MessageAndMetadata>> result : executorService.invokeAll(tasks)) {
                 if (!result.get().isEmpty()) {
@@ -126,7 +126,10 @@ public class ConsumerConfiguration {
         return messages;
     }
 
-    private void populateAnyLeftOverMessages(final Map<String, Map<Integer, List<Object>>> messages) {
+    private Map<String, Map<Integer, List<Object>>> getLeftOverMessageMap() {
+
+        final Map<String, Map<Integer, List<Object>>> messages = new ConcurrentHashMap<String, Map<Integer, List<Object>>>();
+
         for (final MessageAndMetadata mamd : messageLeftOverTracker.getMessageLeftOverFromPreviousPoll()) {
             final String topic = mamd.topic();
 
@@ -141,8 +144,8 @@ public class ConsumerConfiguration {
                 getPayload(l, existingPayloadMap);
             }
         }
-
         messageLeftOverTracker.clearMessagesLeftOver();
+        return messages;
     }
 
     private Map<Integer, List<Object>> getPayload(final List<MessageAndMetadata> messageAndMetadatas) {

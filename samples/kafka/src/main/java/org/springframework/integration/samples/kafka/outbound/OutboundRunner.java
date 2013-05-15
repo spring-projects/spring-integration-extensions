@@ -31,7 +31,7 @@ public class OutboundRunner {
         System.out.println(channel.getClass());
 
         //sending 100,000 messages to Kafka server for topic test1
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 50000; i++) {
             channel.send(
                     MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i).
                             setHeader("messageKey", String.valueOf(i))
