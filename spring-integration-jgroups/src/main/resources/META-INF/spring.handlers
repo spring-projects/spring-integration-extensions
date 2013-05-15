@@ -1,0 +1,1 @@
+http\://www.springframework.org/schema/integration/jgroups=org.springframework.integration.jgroups.config.JGroupsNamespaceHandler
