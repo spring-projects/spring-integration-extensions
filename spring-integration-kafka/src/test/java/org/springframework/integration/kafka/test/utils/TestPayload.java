@@ -18,8 +18,8 @@ package org.springframework.integration.kafka.test.utils;
 import java.io.Serializable;
 
 public class TestPayload implements Serializable {
-
     private static final long serialVersionUID = -8560378224929007403L;
+
     private final String part1;
     private final String part2;
 

@@ -16,7 +16,6 @@
 package org.springframework.integration.kafka.test.utils;
 
 public class TestObject {
-
     public String testData1;
     public int testData2;
 
@@ -24,7 +23,7 @@ public class TestObject {
         return testData1;
     }
 
-    public void setTestData1(String testData1) {
+    public void setTestData1(final String testData1) {
         this.testData1 = testData1;
     }
 
@@ -32,7 +31,7 @@ public class TestObject {
         return testData2;
     }
 
-    public void setTestData2(int testData2) {
+    public void setTestData2(final int testData2) {
         this.testData2 = testData2;
     }
 
