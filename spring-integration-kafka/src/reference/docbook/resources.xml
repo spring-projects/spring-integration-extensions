@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="resources"
-    xmlns:xlink="http://www.w3.org/1999/xlink">
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="resources">
   <title>Additional Resources</title>
 
   <section id="resources-home">
@@ -13,5 +12,4 @@
       articles, blogs, and new sample applications.
     </para>
   </section>
-
 </appendix>
