@@ -41,5 +41,4 @@
                                            compression-codec="default"/>
         </int-kafka:producer-configurations>
     </int-kafka:producer-context>
-
 </beans>
