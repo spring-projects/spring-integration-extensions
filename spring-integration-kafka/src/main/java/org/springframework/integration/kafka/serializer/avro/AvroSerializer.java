@@ -32,20 +32,21 @@ import java.io.IOException;
  * @author Soby Chacko
  */
 public class AvroSerializer<T> {
-
-    public T deserialize(byte[] bytes, Schema schema) throws IOException {
+    public T deserialize(final byte[] bytes, final Schema schema) throws IOException {
         final Decoder decoder = DecoderFactory.get().binaryDecoder(bytes, null);
         final DatumReader<T> reader = new ReflectDatumReader<T>(schema);
+
         return reader.read(null, decoder);
     }
 
-    public byte[] serialize(T input, Schema schema) throws IOException {
-
+    public byte[] serialize(final T input, final Schema schema) throws IOException {
         final DatumWriter<T> writer = new ReflectDatumWriter<T>(schema);
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
         final Encoder encoder = EncoderFactory.get().binaryEncoder(stream, null);
         writer.write(input, encoder);
         encoder.flush();
+
         return stream.toByteArray();
     }
 }
