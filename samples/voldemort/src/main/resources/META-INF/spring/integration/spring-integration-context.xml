@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-voldemort="http://www.springframework.org/schema/integration/voldemort"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration/voldemort http://www.springframework.org/schema/integration/voldemort/spring-integration-voldemort.xsd">
+
+	<int:channel id="requestChannel"/>
+
+	<!-- See also:
+		http://static.springsource.org/spring-integration/reference/htmlsingle/#gateway-proxy
+		http://www.eaipatterns.com/MessagingGateway.html -->
+	<int:gateway id="gateway"
+		default-request-timeout="5000"
+		default-reply-timeout="5000"
+		default-request-channel="requestChannel"
+		service-interface="org.springframework.integration.samples.voldemort.service.BusinessService">
+		<int:method name="saveData"/>
+	</int:gateway>
+
+	<bean id="config" class="voldemort.client.ClientConfig">
+		<property name="bootstrapUrls" value="tcp://localhost:6666" />
+	</bean>
+
+	<bean id="clientFactory" class="voldemort.client.SocketStoreClientFactory" destroy-method="close">
+		<constructor-arg name="config" ref="config" />
+	</bean>
+
+	<bean id="storeClient" factory-bean="clientFactory" factory-method="getStoreClient">
+		<constructor-arg value="test" />
+	</bean>
+
+	<int-voldemort:outbound-channel-adapter store-client="storeClient"
+		channel="requestChannel" />
+
+	<int-voldemort:inbound-channel-adapter store-client="storeClient" search-key="hello"
+		channel="loggit" >
+		<int:poller fixed-rate="5000"/>
+	</int-voldemort:inbound-channel-adapter>
+
+	<int:logging-channel-adapter id="loggit" log-full-message="true" logger-name="org.springframework.integration.samples.voldemort"/>
+</beans>

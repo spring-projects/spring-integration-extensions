@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="SIAdapterLowerPrefix"
+         xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Voldemort Adapter</title>
+    <para>
+        The Voldemort extension for Spring Integration provides:
+    </para>
+    <itemizedlist>
+        <listitem>
+            <para>
+                <emphasis>
+                    <link linkend='voldemort-outbound-channel-adapter'>Outbound Channel Adapter</link>
+                </emphasis>
+            </para>
+        </listitem>
+        <listitem>
+            <para>
+                <emphasis>
+                    <link linkend='voldemort-inbound-channel-adapter'>Inbound Channel Adapter</link>
+                </emphasis>
+            </para>
+        </listitem>
+        <listitem>
+            <para>
+                <emphasis>
+                    <link linkend='voldemort-message-store'>Message Store</link>
+                </emphasis>
+            </para>
+        </listitem>
+    </itemizedlist>
+
+    <para>
+        Each one of the components listed above requires to pass an implementation of
+        <interfacename>voldemort.client.StoreClient</interfacename> as constructor parameter. This way
+        Voldemort Adapter does not need to introduce all configuration options required to build native store client
+        and enables developers to choose the concrete implementation of hereby interface.
+    </para>
+
+    <programlisting language="xml"><![CDATA[<bean id="config" class="voldemort.client.ClientConfig">
+    <property name="bootstrapUrls" value="tcp://localhost:6666" />
+<bean>
+
+<bean id="clientFactory" class="voldemort.client.SocketStoreClientFactory" destroy-method="close">
+    <constructor-arg name="config" ref="config" />
+</bean>
+
+<bean id="storeClient" factory-bean="clientFactory" factory-method="getStoreClient">
+    <constructor-arg value="test-store" />
+</bean>]]></programlisting>
+
+    <section id="voldemort-common-configuration-attributes">
+        <title>Common Configuration Attributes</title>
+        <para>
+            Certain configuration parameters that are shared amongst inbound and
+            outbound adapters have been described below.
+        </para>
+
+        <table frame="all">
+            <title>Common Adapter Attributes</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colwidth="1*" />
+                <colspec colname="c2" colwidth="1*" />
+                <thead>
+                    <row>
+                        <entry>Attribute Name</entry>
+                        <entry>Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry><literal>id</literal></entry>
+                        <entry>
+                            Identifies the underlying Spring bean definition, which is an instance of either
+                            <classname>EventDrivenConsumer</classname> or <classname>PollingConsumer</classname>
+                            depending on whether the component's input channel is a
+                            <classname>SubscribableChannel</classname> or <classname>PollableChannel</classname>.
+                            <emphasis>Optional</emphasis>.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><literal>channel</literal></entry>
+                        <entry>
+                            Reference to a message channel that will be utilized to "receive from" or "send to"
+                            messages depending on the adapter type (e.g. inbound or outbound).
+                            <emphasis>Required</emphasis>.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><literal>store-client</literal></entry>
+                        <entry>
+                            Native Voldemort store client (implementation of
+                            <interfacename>voldemort.client.StoreClient</interfacename> interface).
+                            <emphasis>Required</emphasis>.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry><literal>auto-startup</literal></entry>
+                        <entry>
+                            Lifecycle attribute signaling if this component should be started during application
+                            context startup. Defaults to <code>true</code>. <emphasis>Optional</emphasis>.
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+    <section id="voldemort-outbound-channel-adapter">
+        <title>Outbound Channel Adapter</title>
+        <para>
+            The Voldemort Outbound channel adapter allows to persist data transferred through message channel in
+            the underlying key-value store.
+        </para>
+        <programlisting language="xml">&lt;int-voldemort:outbound-channel-adapter id="voldemortOutbound"
+                                        channel="voldemortOutboundChannel"
+                                        store-client="storeClient"
+                                        store-key="constant-key" <co id="voldemort#outbound#store-key" />
+                                        store-key-expression="payload.id" <co id="voldemort#outbound#store-key-expression" />
+                                        persist-mode="DELETE" <co id="voldemort#outbound#persist-mode" />
+                                        order="1" <co id="voldemort#outbound#order" />
+                                        auto-startup="true" /&gt;</programlisting>
+        <calloutlist>
+            <callout arearefs="voldemort#outbound#store-key">
+                <para>
+                    Specifies the key for Voldemort store. If an expression is needed, use
+                    <literal>store-key-expression</literal> attribute. Both options are mutually exclusive.
+                    <emphasis>Required</emphasis>.
+                </para>
+            </callout>
+            <callout arearefs="voldemort#outbound#store-key-expression">
+                <para>
+                    Spring Expression Language statement used to determine desired entry key in Voldemort store.
+                    Default expression equals <literal>headers.voldemort_key</literal>
+                    (see <classname>VoldemortHeaders.KEY</classname>). This option is mutually exclusive with
+                    <literal>store-key</literal> attribute. <emphasis>Required</emphasis>.
+                </para>
+            </callout>
+            <callout arearefs="voldemort#outbound#persist-mode">
+                <para>
+                    Defines default persist mode for outbound channel adapter. Normally values are added
+                    or updated in the Voldemort database. Hereby behavior can be overridden on a message level using
+                    <literal>VoldemortHeaders.PERSIST_MODE</literal> header (see <classname>PersistMode</classname>
+                    enumeration). Supported options: <literal>PUT</literal> or <literal>DELETE</literal>.
+                    <emphasis>Optional</emphasis>.
+                </para>
+            </callout>
+            <callout arearefs="voldemort#outbound#order">
+                <para>
+                    Specifies the order for invocation when this endpoint is connected as a subscriber to
+                    <interfacename>SubscribableChannel</interfacename>. <emphasis>Optional</emphasis>.
+                </para>
+            </callout>
+        </calloutlist>
+    </section>
+    <section id="voldemort-inbound-channel-adapter">
+        <title>Inbound Channel Adapter</title>
+        <para>
+            An inbound channel adapter allows to poll records from the Voldemort database and process them inside
+            Spring Integration flow.
+        </para>
+        <programlisting language="xml">&lt;int-voldemort:inbound-channel-adapter id="voldemortInbound"
+           channel="voldemortInboundChannel"
+           store-client="storeClient"
+           message-converter="messageConverter"
+           search-key="lukasz" <co id="voldemort#inbound#search-key" />
+           search-key-expression="@keyProducer.value" <co id="voldemort#inbound#search-key-expression" />
+           delete-after-poll="true" <co id="voldemort#inbound#delete-after-poll" />
+           extract-value="true" <co id="voldemort#inbound#extract-value" />
+           auto-startup="true" /&gt;</programlisting>
+        <calloutlist>
+            <callout arearefs="voldemort#inbound#search-key">
+                <para>
+                    String key that is being searched. This option is mutually exclusive with
+                    <literal>search-key-expression</literal> attribute. <emphasis>Required</emphasis>.
+                </para>
+            </callout>
+            <callout arearefs="voldemort#inbound#search-key-expression">
+                <para>
+                    Spring Expression Language statement that returns desired entry key. Useful for keys of non string
+                    type. This option is mutually exclusive with <literal>search-key</literal> attribute.
+                    <emphasis>Required</emphasis>.
+                </para>
+            </callout>
+            <callout arearefs="voldemort#inbound#delete-after-poll">
+                <para>
+                    Indicates whether returned object should be removed from Voldemort database after polling into
+                    Spring Integration channel. Defaults to <code>false</code>. <emphasis>Optional</emphasis>.
+                </para>
+            </callout>
+            <callout arearefs="voldemort#inbound#extract-value">
+                <para>
+                    Flag controlling value extraction from Voldemort's
+                    <classname>voldemort.versioning.Versioned</classname> object.
+                    Defaults to <code>true</code>. <emphasis>Optional</emphasis>.
+                </para>
+            </callout>
+        </calloutlist>
+    </section>
+    <section id="voldemort-message-store">
+        <title>Message Store</title>
+        <para>
+            Message Store allows to persist Spring Integration messages in Voldemort database. Hereby module provides
+            <classname>VoldemortMessageStore</classname> which is an implementation of both the
+            <classname>MessageStore</classname> strategy (mainly used by <emphasis>QueueChannel</emphasis> and
+            <emphasis>ClaimCheck</emphasis> patterns) and the <classname>MessageGroupStore</classname> strategy
+            (mainly used by <emphasis>Aggregator</emphasis> and <emphasis>Resequencer</emphasis> patterns).
+        </para>
+        <programlisting language="xml"><![CDATA[<bean id="voldemortMessageStore" class="org.springframework.integration.voldemort.store.VoldemortMessageStore">
+    <constructor-arg name="client" ref="storeClient" />
+</bean>
+
+<int:aggregator input-channel="inputChannel" output-channel="outputChannel" message-store="voldemortMessageStore" />]]></programlisting>
+    </section>
+</chapter>

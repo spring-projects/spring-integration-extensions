@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="resources"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Additional Resources</title>
+
+    <section id="spring-integration-home">
+        <title>Spring Integration Home</title>
+        <para>
+            The definitive source of information about Spring Integration is the
+            <ulink url="http://www.springsource.org/spring-integration">Spring Integration Home</ulink>
+            at <ulink url="http://www.springsource.org">http://www.springsource.org</ulink>. That site serves as a hub
+            of information and is the best place to find up-to-date announcements about the project as well as links to
+            articles, blogs, and new sample applications.
+        </para>
+    </section>
+
+    <section id="voldemort-home">
+        <title>Project Voldemort Home</title>
+        <para>
+            If you are not familiar with Voldemort distributed key-value store, please visit
+            <ulink url="http://www.project-voldemort.com">Project Voldemort</ulink> homepage. Hereby site contains
+            complete design overview, list of available configuration options and documentation of client API. Links
+            to source code, bug tracker and wiki can be found as well.
+        </para>
+    </section>
+
+    <section id="voldemort-integration-tests">
+        <title>Voldemort Adapter Integration Tests</title>
+        <para>
+            Integration tests of Voldemort adapter are available together with the entire source code on GitHub
+            (review content of <literal>src/test/java</literal> and <literal>src/test/resources</literal> packages).
+        </para>
+    </section>
+
+</appendix>
