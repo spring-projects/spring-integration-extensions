@@ -36,6 +36,7 @@ public class AvroBackedKafkaDecoder<T> implements Decoder<T> {
         this.clazz = clazz;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public T fromBytes(final byte[] bytes) {
         final Schema schema = ReflectData.get().getSchema(clazz);

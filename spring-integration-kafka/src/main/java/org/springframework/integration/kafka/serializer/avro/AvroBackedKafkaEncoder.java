@@ -35,6 +35,7 @@ public class AvroBackedKafkaEncoder<T> implements Encoder<T> {
         this.clazz = clazz;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public byte[] toBytes(final T source) {
         final Schema schema = ReflectData.get().getSchema(clazz);

@@ -21,7 +21,6 @@ import org.springframework.integration.kafka.core.ZookeeperConnectDefaults;
  * @author Soby Chacko
  */
 public class ZookeeperConnect {
-
     private String zkConnect = ZookeeperConnectDefaults.ZK_CONNECT;
     private String zkConnectionTimeout = ZookeeperConnectDefaults.ZK_CONNECTION_TIMEOUT;
     private String zkSessionTimeout = ZookeeperConnectDefaults.ZK_SESSION_TIMEOUT;
@@ -31,7 +30,7 @@ public class ZookeeperConnect {
         return zkConnect;
     }
 
-    public void setZkConnect(String zkConnect) {
+    public void setZkConnect(final String zkConnect) {
         this.zkConnect = zkConnect;
     }
 
@@ -39,7 +38,7 @@ public class ZookeeperConnect {
         return zkConnectionTimeout;
     }
 
-    public void setZkConnectionTimeout(String zkConnectionTimeout) {
+    public void setZkConnectionTimeout(final String zkConnectionTimeout) {
         this.zkConnectionTimeout = zkConnectionTimeout;
     }
 
@@ -47,7 +46,7 @@ public class ZookeeperConnect {
         return zkSessionTimeout;
     }
 
-    public void setZkSessionTimeout(String zkSessionTimeout) {
+    public void setZkSessionTimeout(final String zkSessionTimeout) {
         this.zkSessionTimeout = zkSessionTimeout;
     }
 
@@ -55,7 +54,7 @@ public class ZookeeperConnect {
         return zkSyncTime;
     }
 
-    public void setZkSyncTime(String zkSyncTime) {
+    public void setZkSyncTime(final String zkSyncTime) {
         this.zkSyncTime = zkSyncTime;
     }
 }
