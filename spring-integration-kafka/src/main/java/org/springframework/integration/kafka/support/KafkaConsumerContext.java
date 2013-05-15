@@ -32,9 +32,7 @@ import java.util.Map;
  * @author Soby Chacko
  */
 public class KafkaConsumerContext implements BeanFactoryAware {
-
     private Map<String, ConsumerConfiguration> consumerConfigurations;
-
     private String consumerTimeout = KafkaConsumerDefaults.CONSUMER_TIMEOUT;
     private ZookeeperConnect zookeeperConnect;
 
@@ -43,14 +41,16 @@ public class KafkaConsumerContext implements BeanFactoryAware {
     }
 
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
         consumerConfigurations = ((ListableBeanFactory) beanFactory).getBeansOfType(ConsumerConfiguration.class);
     }
 
     public Message<Map<String, Map<Integer, List<Object>>>> receive() {
-        Map<String, Map<Integer, List<Object>>> consumedData = new HashMap<String, Map<Integer, List<Object>>>();
+        final Map<String, Map<Integer, List<Object>>> consumedData = new HashMap<String, Map<Integer, List<Object>>>();
+
         for (final ConsumerConfiguration consumerConfiguration : getConsumerConfigurations()) {
-            Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
+            final Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
+
             if (messages != null){
                 consumedData.putAll(messages);
             }
@@ -62,7 +62,7 @@ public class KafkaConsumerContext implements BeanFactoryAware {
         return consumerTimeout;
     }
 
-    public void setConsumerTimeout(String consumerTimeout) {
+    public void setConsumerTimeout(final String consumerTimeout) {
         this.consumerTimeout = consumerTimeout;
     }
 
@@ -70,7 +70,7 @@ public class KafkaConsumerContext implements BeanFactoryAware {
         return zookeeperConnect;
     }
 
-    public void setZookeeperConnect(ZookeeperConnect zookeeperConnect) {
+    public void setZookeeperConnect(final ZookeeperConnect zookeeperConnect) {
         this.zookeeperConnect = zookeeperConnect;
     }
 }
