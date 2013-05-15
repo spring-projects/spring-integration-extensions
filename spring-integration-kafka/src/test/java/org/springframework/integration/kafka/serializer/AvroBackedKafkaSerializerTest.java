@@ -26,35 +26,34 @@ import org.springframework.integration.kafka.test.utils.TestObject;
  * @since 1.0
  */
 public class AvroBackedKafkaSerializerTest {
-
-    @SuppressWarnings("unchecked")
     @Test
+    @SuppressWarnings("unchecked")
     public void testDecodePlainSchema() {
+        final AvroBackedKafkaEncoder avroBackedKafkaEncoder = new AvroBackedKafkaEncoder(TestObject.class);
 
-        AvroBackedKafkaEncoder avroBackedKafkaEncoder = new AvroBackedKafkaEncoder(TestObject.class);
-        TestObject testObject = new TestObject();
+        final TestObject testObject = new TestObject();
         testObject.setTestData1("\"Test Data1\"");
         testObject.setTestData2(1);
+
         final byte[] data = avroBackedKafkaEncoder.toBytes(testObject);
 
-        AvroBackedKafkaDecoder avroBackedKafkaDecoder = new AvroBackedKafkaDecoder(TestObject.class);
+        final AvroBackedKafkaDecoder avroBackedKafkaDecoder = new AvroBackedKafkaDecoder(TestObject.class);
         final TestObject decodedFbu = (TestObject) avroBackedKafkaDecoder.fromBytes(data);
 
         Assert.assertEquals(testObject.getTestData1(), decodedFbu.getTestData1());
         Assert.assertEquals(testObject.getTestData2(), decodedFbu.getTestData2());
-
     }
 
+    @Test
     @SuppressWarnings("unchecked")
-        @Test
-        public void anotherTest() {
-            AvroBackedKafkaEncoder avroBackedKafkaEncoder = new AvroBackedKafkaEncoder(java.lang.String.class);
-            String s = "Testing Avro";
-            final byte[] data = avroBackedKafkaEncoder.toBytes(s);
+    public void anotherTest() {
+        final AvroBackedKafkaEncoder avroBackedKafkaEncoder = new AvroBackedKafkaEncoder(java.lang.String.class);
+        final String testString = "Testing Avro";
+        final byte[] data = avroBackedKafkaEncoder.toBytes(testString);
 
-            AvroBackedKafkaDecoder avroBackedKafkaDecoder = new AvroBackedKafkaDecoder(java.lang.String.class);
-            final String decodedS = (String) avroBackedKafkaDecoder.fromBytes(data);
+        final AvroBackedKafkaDecoder avroBackedKafkaDecoder = new AvroBackedKafkaDecoder(java.lang.String.class);
+        final String decodedS = (String) avroBackedKafkaDecoder.fromBytes(data);
 
-            Assert.assertEquals(s, decodedS);
-        }
+        Assert.assertEquals(testString, decodedS);
+    }
 }
