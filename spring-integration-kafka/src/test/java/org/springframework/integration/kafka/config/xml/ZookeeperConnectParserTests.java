@@ -39,7 +39,7 @@ public class ZookeeperConnectParserTests {
 
 	@Test
 	public void testCustomKafkaBrokerConfiguration() {
-		ZookeeperConnect broker = appContext.getBean("zookeeperConnect", ZookeeperConnect.class);
+		final ZookeeperConnect broker = appContext.getBean("zookeeperConnect", ZookeeperConnect.class);
 
 		Assert.assertEquals("localhost:2181", broker.getZkConnect());
         Assert.assertEquals("10000", broker.getZkConnectionTimeout());
@@ -49,12 +49,11 @@ public class ZookeeperConnectParserTests {
 
     @Test
     public void testDefaultKafkaBrokerConfiguration() {
-        ZookeeperConnect broker = appContext.getBean("defaultZookeeperConnect", ZookeeperConnect.class);
+        final ZookeeperConnect broker = appContext.getBean("defaultZookeeperConnect", ZookeeperConnect.class);
 
         Assert.assertEquals(ZookeeperConnectDefaults.ZK_CONNECT, broker.getZkConnect());
         Assert.assertEquals(ZookeeperConnectDefaults.ZK_CONNECTION_TIMEOUT, broker.getZkConnectionTimeout());
         Assert.assertEquals(ZookeeperConnectDefaults.ZK_SESSION_TIMEOUT, broker.getZkSessionTimeout());
         Assert.assertEquals(ZookeeperConnectDefaults.ZK_SYNC_TIME, broker.getZkSyncTime());
     }
-
 }
