@@ -35,7 +35,6 @@ import java.util.Map;
  * @author Soby Chacko
  */
 public class ConsumerConfigurationTests {
-
     @Test
     @SuppressWarnings("unchecked")
     public void testReceiveMessageForSingleTopicFromSingleStream() {
@@ -134,11 +133,13 @@ public class ConsumerConfigurationTests {
         final Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
         Assert.assertEquals(messages.size(), 1);
         int sum = 0;
-        Map<Integer, List<Object>> values = messages.get("topic");
-        for (List<Object> l : values.values()) {
-            sum += l.size();
 
+        final Map<Integer, List<Object>> values = messages.get("topic");
+
+        for (final List<Object> l : values.values()) {
+            sum += l.size();
         }
+
         Assert.assertEquals(sum, 3);
     }
 
@@ -188,59 +189,45 @@ public class ConsumerConfigurationTests {
 
         Mockito.when(messageAndMetadata1.message()).thenReturn("got message1");
         Mockito.when(messageAndMetadata1.topic()).thenReturn("topic1");
-        Mockito.when(messageAndMetadata1.partition()).thenAnswer(new Answer<Object>() {
-            private int count = 0;
-
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                if (count++ == 1)
-                    return 1;
-                else if (count++ == 2)
-                    return 2;
-                else return 3;
-            }
-        });
+        Mockito.when(messageAndMetadata1.partition()).thenAnswer(getAnswer());
 
         Mockito.when(messageAndMetadata2.message()).thenReturn("got message2");
         Mockito.when(messageAndMetadata2.topic()).thenReturn("topic2");
-        Mockito.when(messageAndMetadata1.partition()).thenAnswer(new Answer<Object>() {
-            private int count = 0;
-
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                if (count++ == 1)
-                    return 1;
-                else if (count++ == 2)
-                    return 2;
-                else return 3;
-            }
-        });
+        Mockito.when(messageAndMetadata1.partition()).thenAnswer(getAnswer());
 
         Mockito.when(messageAndMetadata3.message()).thenReturn("got message3");
         Mockito.when(messageAndMetadata3.topic()).thenReturn("topic3");
-        Mockito.when(messageAndMetadata1.partition()).thenAnswer(new Answer<Object>() {
-            private int count = 0;
-
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                if (count++ == 1)
-                    return 1;
-                else if (count++ == 2)
-                    return 2;
-                else return 3;
-            }
-        });
+        Mockito.when(messageAndMetadata1.partition()).thenAnswer(getAnswer());
 
         final Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
         int sum = 0;
-        Collection<Map<Integer, List<Object>>> values = messages.values();
-        for (Map<Integer, List<Object>> m : values) {
-            for (List<Object> l : m.values()) {
+
+        final Collection<Map<Integer, List<Object>>> values = messages.values();
+
+        for (final Map<Integer, List<Object>> m : values) {
+            for (final List<Object> l : m.values()) {
                 sum += l.size();
             }
-
         }
+
         Assert.assertEquals(sum, 9);
+    }
+
+    private Answer<Object> getAnswer() {
+        return new Answer<Object>() {
+            private int count = 0;
+
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable {
+                if (count++ == 1) {
+                    return 1;
+                } else if (count++ == 2) {
+                    return 2;
+                }
+
+                return 3;
+            }
+        };
     }
 
     @Test
@@ -287,9 +274,11 @@ public class ConsumerConfigurationTests {
 
         final Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
         int sum = 0;
-        Collection<Map<Integer, List<Object>>> values = messages.values();
-        for (Map<Integer, List<Object>> m : values) {
-            for (List<Object> l : m.values()) {
+
+        final Collection<Map<Integer, List<Object>>> values = messages.values();
+
+        for (final Map<Integer, List<Object>> m : values) {
+            for (final List<Object> l : m.values()) {
                 sum += l.size();
             }
 
@@ -305,12 +294,13 @@ public class ConsumerConfigurationTests {
         Assert.assertTrue(valueFound(messages.get("topic3").get(1), "value3"));
     }
 
-    private boolean valueFound(List<Object> l, String value){
-        for (Object o : l){
+    private boolean valueFound(final List<Object> l, final String value){
+        for (final Object o : l){
             if (value.equals(o)){
                 return true;
             }
         }
+
         return false;
     }
 }
