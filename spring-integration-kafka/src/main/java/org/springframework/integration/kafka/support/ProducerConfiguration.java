@@ -30,9 +30,8 @@ import java.io.ObjectOutputStream;
  * @author Soby Chacko
  */
 public class ProducerConfiguration<K,V> {
-
-    private Producer<K,V> producer;
-    private ProducerMetadata<K,V> producerMetadata;
+    private final Producer<K,V> producer;
+    private final ProducerMetadata<K,V> producerMetadata;
 
     public ProducerConfiguration(final ProducerMetadata<K, V> producerMetadata, final Producer<K, V> producer){
         this.producerMetadata = producerMetadata;
@@ -47,8 +46,7 @@ public class ProducerConfiguration<K,V> {
         final V v = getPayload(message);
 
         if (message.getHeaders().containsKey("messageKey")) {
-            final K k = getKey(message);
-            producer.send(new KeyedMessage<K, V>(producerMetadata.getTopic(), k, v));
+            producer.send(new KeyedMessage<K, V>(producerMetadata.getTopic(), getKey(message), v));
         } else {
             producer.send(new KeyedMessage<K, V>(producerMetadata.getTopic(), v));
         }
@@ -61,17 +59,19 @@ public class ProducerConfiguration<K,V> {
         } else if (message.getPayload().getClass().isAssignableFrom(producerMetadata.getValueClassType())) {
             return producerMetadata.getValueClassType().cast(message.getPayload());
         }
+
         throw new Exception("Message payload type is not matching with what is configured");
     }
 
     @SuppressWarnings("unchecked")
     private K getKey(final Message<?> message) throws Exception {
         final Object key = message.getHeaders().get("messageKey");
+
         if (producerMetadata.getKeyEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
             return (K) getByteStream(key);
-        } else {
-            return message.getHeaders().get("messageKey", producerMetadata.getKeyClassType());
         }
+
+        return message.getHeaders().get("messageKey", producerMetadata.getKeyClassType());
     }
 
     private static boolean isRawByteArray(final Object obj){
@@ -82,14 +82,16 @@ public class ProducerConfiguration<K,V> {
         if (isRawByteArray(obj)){
             return (byte[])obj;
         }
+
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final ObjectOutputStream os = new ObjectOutputStream(out);
         os.writeObject(obj);
+
         return out.toByteArray();
     }
 
     @Override
-    public boolean equals(Object obj){
+    public boolean equals(final Object obj){
         return EqualsBuilder.reflectionEquals(this, obj);
     }
 
