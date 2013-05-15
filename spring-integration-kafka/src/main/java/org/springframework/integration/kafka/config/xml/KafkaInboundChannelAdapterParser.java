@@ -30,16 +30,16 @@ import org.w3c.dom.Element;
  * @author Soby Chacko
  *
  */
-public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChannelAdapterParser{
-
-    protected BeanMetadataElement parseSource(Element element, ParserContext parserContext) {
-
+public class KafkaInboundChannelAdapterParser extends AbstractPollingInboundChannelAdapterParser {
+    @Override
+    protected BeanMetadataElement parseSource(final Element element, final ParserContext parserContext) {
         final BeanDefinitionBuilder highLevelConsumerMessageSourceBuilder =
                         BeanDefinitionBuilder.genericBeanDefinition(KafkaHighLevelConsumerMessageSource.class);
 
         IntegrationNamespaceUtils.setReferenceIfAttributeDefined(highLevelConsumerMessageSourceBuilder, element, "kafka-decoder");
 
-        String kafkaConsumerContext = element.getAttribute("kafka-consumer-context-ref");
+        final String kafkaConsumerContext = element.getAttribute("kafka-consumer-context-ref");
+
         if (StringUtils.hasText(kafkaConsumerContext)) {
             highLevelConsumerMessageSourceBuilder.addConstructorArgReference(kafkaConsumerContext);
         }
