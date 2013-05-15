@@ -24,8 +24,7 @@ import java.util.List;
  * @author Soby Chacko
  */
 public class MessageLeftOverTracker {
-
-    private List<MessageAndMetadata> messageLeftOverFromPreviousPoll = new ArrayList<MessageAndMetadata>();
+    private final List<MessageAndMetadata> messageLeftOverFromPreviousPoll = new ArrayList<MessageAndMetadata>();
 
     public void addMessageAndMetadata(final MessageAndMetadata messageAndMetadata){
         messageLeftOverFromPreviousPoll.add(messageAndMetadata);

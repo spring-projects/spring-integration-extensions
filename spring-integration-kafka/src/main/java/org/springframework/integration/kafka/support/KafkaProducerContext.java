@@ -28,13 +28,13 @@ import java.util.Map;
  * @author Soby Chacko
  */
 public class KafkaProducerContext implements BeanFactoryAware {
-
     private Map<String, ProducerConfiguration> topicsConfiguration;
 
     @SuppressWarnings("unchecked")
     public void send(final Message<?> message) throws Exception {
         final ProducerConfiguration producerConfiguration =
                         getTopicConfiguration(message.getHeaders().get("topic", String.class));
+
         if (producerConfiguration != null) {
             producerConfiguration.send(message);
         }
@@ -42,11 +42,13 @@ public class KafkaProducerContext implements BeanFactoryAware {
 
     private ProducerConfiguration getTopicConfiguration(final String topic){
         final Collection<ProducerConfiguration> topics = topicsConfiguration.values();
+
         for (final ProducerConfiguration producerConfiguration : topics){
-            if(producerConfiguration.getProducerMetadata().getTopic().equals(topic)){
+            if (producerConfiguration.getProducerMetadata().getTopic().equals(topic)){
                 return producerConfiguration;
             }
         }
+
         return null;
     }
 
@@ -55,7 +57,7 @@ public class KafkaProducerContext implements BeanFactoryAware {
     }
 
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
         topicsConfiguration = ((ListableBeanFactory)beanFactory).getBeansOfType(ProducerConfiguration.class);
     }
 }
