@@ -26,7 +26,6 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Soby Chacko
  */
 public class ProducerMetadata<K,V> implements InitializingBean {
-
     private Encoder<K> keyEncoder;
     private Encoder<V> valueEncoder;
     private Class<K> keyClassType;
@@ -49,7 +48,7 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         return keyEncoder;
     }
 
-    public void setKeyEncoder(Encoder<K> keyEncoder) {
+    public void setKeyEncoder(final Encoder<K> keyEncoder) {
         this.keyEncoder = keyEncoder;
     }
 
@@ -57,7 +56,7 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         return valueEncoder;
     }
 
-    public void setValueEncoder(Encoder<V> valueEncoder) {
+    public void setValueEncoder(final Encoder<V> valueEncoder) {
         this.valueEncoder = valueEncoder;
     }
 
@@ -65,7 +64,7 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         return keyClassType;
     }
 
-    public void setKeyClassType(Class<K> keyClassType) {
+    public void setKeyClassType(final Class<K> keyClassType) {
         this.keyClassType = keyClassType;
     }
 
@@ -73,7 +72,7 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         return valueClassType;
     }
 
-    public void setValueClassType(Class<V> valueClassType) {
+    public void setValueClassType(final Class<V> valueClassType) {
         this.valueClassType = valueClassType;
     }
 
@@ -84,10 +83,11 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         } else if (compressionCodec.equalsIgnoreCase("snappy")) {
             return "2";
         }
+
         return "0";
     }
 
-    public void setCompressionCodec(String compressionCodec) {
+    public void setCompressionCodec(final String compressionCodec) {
         this.compressionCodec = compressionCodec;
     }
 
@@ -95,15 +95,17 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         return partitioner;
     }
 
-    public void setPartitioner(Partitioner<K> partitioner) {
+    public void setPartitioner(final Partitioner<K> partitioner) {
         this.partitioner = partitioner;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void afterPropertiesSet() throws Exception {
         if (valueEncoder == null) {
             setValueEncoder((Encoder<V>) new DefaultEncoder(null));
         }
+
         if (keyEncoder == null) {
             setKeyEncoder((Encoder<K>) getValueEncoder());
         }
@@ -113,7 +115,7 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         return async;
     }
 
-    public void setAsync(boolean async) {
+    public void setAsync(final boolean async) {
         this.async = async;
     }
 
@@ -121,12 +123,12 @@ public class ProducerMetadata<K,V> implements InitializingBean {
         return batchNumMessages;
     }
 
-    public void setBatchNumMessages(String batchNumMessages) {
+    public void setBatchNumMessages(final String batchNumMessages) {
         this.batchNumMessages = batchNumMessages;
     }
 
     @Override
-    public boolean equals(Object obj){
+    public boolean equals(final Object obj){
         return EqualsBuilder.reflectionEquals(this, obj);
     }
 
