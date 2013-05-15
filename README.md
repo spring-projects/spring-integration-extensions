@@ -11,6 +11,7 @@ The Spring Integration Extensions project provides extension modules for [Spring
 * [XQuery][] Support
 * [Splunk][] Support
 * [Amazon Web Services (AWS)][] Support
+* [MQ Telemetry Transport (MQTT)][] Support
 
 ## Samples
 
@@ -134,3 +135,4 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [XQuery]: http://en.wikipedia.org/wiki/XQuery
 [Splunk]:http://www.splunk.com/
 [Amazon Web Services (AWS)]: http://aws.amazon.com/
+[MQ Telemetry Transport (MQTT)]: http://mqtt.org/

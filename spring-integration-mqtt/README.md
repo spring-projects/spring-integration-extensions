@@ -1,7 +1,7 @@
 Spring Integration Mqtt Adapters
 =================================================
 
-`inbound` and `outbound` channel adapters are provided for Mqtt. The current implementation uses the [Eclipse Paho][] client.
+`inbound` and `outbound` channel adapters are provided for [MQ Telemetry Transport (MQTT)][]. The current implementation uses the [Eclipse Paho][] client.
 
 Example configurations...
 
@@ -74,3 +74,4 @@ For more information, please also don't forget to visit the [Spring Integration]
 [Stack Overflow]: http://stackoverflow.com/faq
 [Eclipse Paho]: http://www.eclipse.org/paho/
 [open paho bug]: https://bugs.eclipse.org/bugs/show_bug.cgi?id=382471
+[MQ Telemetry Transport (MQTT)]: http://mqtt.org/

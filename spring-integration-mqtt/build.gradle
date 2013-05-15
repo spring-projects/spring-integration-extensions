@@ -1,11 +1,8 @@
-description = 'Spring Integration Mqtt Adapter'
+description = 'Spring Integration MQTT Adapter'
 
 buildscript {
 	repositories {
 		maven { url 'https://repo.springsource.org/plugins-snapshot' }
-	}
-	dependencies {
-		classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.1.5'
 	}
 }
 
@@ -26,9 +23,9 @@ sourceCompatibility=1.6
 targetCompatibility=1.6
 
 ext {
-	junitVersion = '4.10'
-	log4jVersion = '1.2.12'
-	mockitoVersion = '1.9.0'
+	junitVersion = '4.11'
+	log4jVersion = '1.2.17'
+	mockitoVersion = '1.9.5'
 	springVersion = '3.1.3.RELEASE'
 	springIntegrationVersion = '3.0.0.BUILD-SNAPSHOT'
 
@@ -63,7 +60,7 @@ dependencies {
 	testCompile "log4j:log4j:$log4jVersion"
 	testCompile "org.mockito:mockito-all:$mockitoVersion"
 	testCompile "org.springframework:spring-test:$springVersion"
-	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
+	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.6.2.201302030002", classifier: "runtime"
 }
 
 
@@ -90,12 +87,6 @@ task javadocJar(type: Jar) {
 artifacts {
 	archives sourcesJar
 	archives javadocJar
-}
-
-apply plugin: 'docbook-reference'
-
-reference {
-	sourceDir = file('src/reference/docbook')
 }
 
 apply plugin: 'sonar'
@@ -174,7 +165,7 @@ task schemaZip(type: Zip) {
 task docsZip(type: Zip) {
 	group = 'Distribution'
 	classifier = 'docs'
-	description = "Builds -${classifier} archive containing api and reference " +
+	description = "Builds -${classifier} archive containing the api " +
 			"for deployment at static.springframework.org/spring-integration/docs."
 
 	from('src/dist') {
@@ -183,10 +174,6 @@ task docsZip(type: Zip) {
 
 	from (api) {
 		into 'api'
-	}
-
-	from (reference) {
-		into 'reference'
 	}
 }
 
@@ -262,5 +249,5 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.3'
+	gradleVersion = '1.6'
 }
