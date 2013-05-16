@@ -31,6 +31,8 @@ ext {
 	linkScmUrl           = 'https://github.com/SpringSource/spring-integration-extensions'
 	linkScmConnection    = 'https://github.com/SpringSource/spring-integration-extensions.git'
 	linkScmDevConnection = 'git@github.com:SpringSource/spring-integration-extensions.git'
+	
+	shortName = 'splunk'
 }
 
 // See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
@@ -141,19 +143,14 @@ task schemaZip(type: Zip) {
 	description = "Builds -${classifier} archive containing all " +
 		"XSDs for deployment at static.springframework.org/schema."
 
-	subprojects.each { subproject ->
 		def Properties schemas = new Properties();
-		def shortName = subproject.name.replaceFirst("${rootProject.name}-", '')
-		if (subproject.name.endsWith("-core")) {
-			shortName = ''
-		}
 
-		subproject.sourceSets.main.resources.find {
+		project.sourceSets.main.resources.find {
 			it.path.endsWith('META-INF/spring.schemas')
 		}?.withInputStream { schemas.load(it) }
 
 		for (def key : schemas.keySet()) {
-			File xsdFile = subproject.sourceSets.main.resources.find {
+			File xsdFile = project.sourceSets.main.resources.find {
 				it.path.endsWith(schemas.get(key))
 			}
 			assert xsdFile != null
@@ -161,7 +158,6 @@ task schemaZip(type: Zip) {
 				from xsdFile.path
 			}
 		}
-	}
 }
 
 task docsZip(type: Zip) {
