@@ -1,26 +1,27 @@
-Spring Integration Mqtt Adapters
-=================================================
+Spring Integration MQTT Support
+===============================
 
 `inbound` and `outbound` channel adapters are provided for [MQ Telemetry Transport (MQTT)][]. The current implementation uses the [Eclipse Paho][] client.
 
-Example configurations...
+## Example Configurations
 
-	<int-mqtt:message-driven-channel-adapter id="twoTopicsAdapter"
+```xml
+<int-mqtt:message-driven-channel-adapter id="twoTopicsAdapter"
+	client-id="foo"
+	url="tcp://localhost:1883"
+	topics="bar, baz"
+	channel="out" />
+
+<int-mqtt:outbound-channel-adapter id="withDefaultConverter"
 		client-id="foo"
 		url="tcp://localhost:1883"
-		topics="bar, baz"
-		channel="out" />
+		default-qos="1"
+		default-retained="true"
+		default-topic="bar"
+		channel="target" />
+```
 
-	<int-mqtt:outbound-channel-adapter id="withDefaultConverter"
-			client-id="foo"
-			url="tcp://localhost:1883"
-			default-qos="1"
-			default-retained="true"
-			default-topic="bar"
-			channel="target" />
-
-
-Spring integration messages sent to the outbound adapter can have headers `mqtt_topic, mqtt_qos, mqtt_retained` which will override the defaults configured on the adapter.
+*Spring Integration* messages sent to the outbound adapter can have headers `mqtt_topic, mqtt_qos, mqtt_retained` which will override the defaults configured on the adapter.
 
 Inbound messages will have headers 
 
@@ -28,24 +29,18 @@ Inbound messages will have headers
     mqtt_duplicate   - true if the message is a duplicate
     mqtt_qos         - the quality of service
 
-
-
 Both adapters use a `MqttPahoClientFactory` to get a client instance; the same factory also provides connection options from configured properties (such as user/password). The client factory bean (`DefaultMqttPahoClientFactory`) is provided to the adapter using the `client-factory` attribute. When not provided, a default factory instance is used.
-
 
 Currently tested with the RabbitMQ MQTT plugin.
 
-
-##Note:
-
-Currently, the Paho java client is not mavenized; there is an [open paho bug][] to resolve this. In the meantime, you can manually add the jar to your maven repo:
-
-    mvn install:install-file -DgroupId=org.eclipse.paho -DartifactId=MQTT-Java -Dversion=3.0 -Dpackaging=jar -Dfile=/path/to/org.eclipse.paho.client.mqttv3.jar 
-
-
+## Support
 
 Check out the [Spring Integration forums][] and the [spring-integration][spring-integration tag] tag
 on [Stack Overflow][]. [Commercial support][] is available, too.
+
+## Resources
+
+* [Eclipse Paho][]
 
 ## Related GitHub projects
 
@@ -57,10 +52,6 @@ on [Stack Overflow][]. [Commercial support][] is available, too.
 * [Spring Integration Pattern Catalog][]
 
 For more information, please also don't forget to visit the [Spring Integration][] website.
-
-## Eclipse Paho
-
-* [Eclipse Paho][]
 
 [Spring Integration]: https://github.com/SpringSource/spring-integration
 [Commercial support]: http://springsource.com/support/springsupport
