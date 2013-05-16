@@ -61,7 +61,7 @@ configurations {
 
 dependencies {
 	compile     "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile		"org.eclipse.paho:MQTT-Java:3.0"
+	compile		"org.eclipse.paho:mqtt-client:0.2.1"
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "junit:junit-dep:$junitVersion"
 	testCompile "log4j:log4j:$log4jVersion"

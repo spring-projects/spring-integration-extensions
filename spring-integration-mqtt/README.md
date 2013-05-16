@@ -40,8 +40,9 @@ Currently tested with the RabbitMQ MQTT plugin.
 
 Currently, the Paho java client is not mavenized; there is an [open paho bug][] to resolve this. In the meantime, you can manually add the jar to your maven repo:
 
-    mvn install:install-file -DgroupId=org.eclipse.paho -DartifactId=MQTT-Java -Dversion=3.0 -Dpackaging=jar -Dfile=/path/to/org.eclipse.paho.client.mqttv3.jar 
+    mvn install:install-file -DgroupId=org.eclipse.paho -DartifactId=mqtt-client -Dversion=0.2.1 -Dpackaging=jar -Dfile=/path/to/org.eclipse.paho.client.mqttv3.jar
 
+You can build the 0.2.1 jar from the v0.2.1 branch of the [Paho Client Repo][] (note that although the version is 0.2.1, it builds a jar that ends with 'v3').
 
 
 Check out the [Spring Integration forums][] and the [spring-integration][spring-integration tag] tag
@@ -75,3 +76,4 @@ For more information, please also don't forget to visit the [Spring Integration]
 [Eclipse Paho]: http://www.eclipse.org/paho/
 [open paho bug]: https://bugs.eclipse.org/bugs/show_bug.cgi?id=382471
 [MQ Telemetry Transport (MQTT)]: http://mqtt.org/
+[Paho Client Repo]: https://github.com/eclipse/paho.mqtt.java
