@@ -15,8 +15,7 @@
 
     <int-kafka:outbound-channel-adapter kafka-producer-context-ref="kafkaProducerContext"
                                         auto-startup="false"
-                                        channel="inputToKafka"
-            >
+                                        channel="inputToKafka">
         <int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
     </int-kafka:outbound-channel-adapter>
     
@@ -31,17 +30,16 @@
     <int-kafka:producer-context id="kafkaProducerContext">
         <int-kafka:producer-configurations>
             <int-kafka:producer-configuration broker-list="localhost:9092"
-                                           key-class-type="java.lang.String"
-                                           value-class-type="java.lang.String"
-                                           topic="test1"
-                                           value-encoder="kafkaEncoder"
-                                           key-encoder="kafkaEncoder"
-                                           compression-codec="default"
-                                           partitioner="customPartitioner"/>
+                                              key-class-type="java.lang.String"
+                                              value-class-type="java.lang.String"
+                                              topic="test1"
+                                              value-encoder="kafkaEncoder"
+                                              key-encoder="kafkaEncoder"
+                                              compression-codec="default"
+                                              partitioner="customPartitioner"/>
             <int-kafka:producer-configuration broker-list="localhost:9092"
-                                           topic="test2"
-                                           compression-codec="default"/>
+                                              topic="test2"
+                                              compression-codec="default"/>
         </int-kafka:producer-configurations>
     </int-kafka:producer-context>
-
 </beans>

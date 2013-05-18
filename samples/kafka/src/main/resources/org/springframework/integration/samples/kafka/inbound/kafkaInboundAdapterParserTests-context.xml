@@ -9,11 +9,9 @@
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <int:channel id="inputFromKafka">
-    </int:channel>
+    <int:channel id="inputFromKafka"/>
 
-    <int:channel id="inputFromTransformer">
-     </int:channel>
+    <int:channel id="inputFromTransformer"/>
 
     <stream:stdout-channel-adapter id="stdout" channel="inputFromKafka" append-newline="true"/>
 
@@ -55,5 +53,4 @@
     <int:transformer  ref="partitionlessTransformer" method="transform"
                       input-channel="inputFromKafka"
             output-channel="inputFromTransformer"/>
-
 </beans>

@@ -15,37 +15,41 @@
  */
 package org.springframework.integration.samples.kafka.outbound;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.MessageChannel;
 import org.springframework.integration.support.MessageBuilder;
 
 public class OutboundRunner {
+    private static final String CONFIG = "kafkaOutboundAdapterParserTests-context.xml";
+    private static final Log LOG = LogFactory.getLog(OutboundRunner.class);
 
-    public static void main(String args[]) {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
-                "kafkaOutboundAdapterParserTests-context.xml",
-                OutboundRunner.class);
+    public static void main(final String args[]) {
+        final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(CONFIG, OutboundRunner.class);
         ctx.start();
 
         final MessageChannel channel = ctx.getBean("inputToKafka", MessageChannel.class);
-        System.out.println(channel.getClass());
+        LOG.info(channel.getClass());
 
         //sending 100,000 messages to Kafka server for topic test1
         for (int i = 0; i < 50000; i++) {
             channel.send(
-                    MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i).
-                            setHeader("messageKey", String.valueOf(i))
+                    MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i)
+                            .setHeader("messageKey", String.valueOf(i))
                             .setHeader("topic", "test1").build());
-            System.out.println("message sent " + i);
 
+            LOG.info("message sent " + i);
         }
+
         //sending 5,000 messages to kafka server for topic test2
         for (int i = 0; i < 50; i++) {
             channel.send(
-                MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i).
-                    setHeader("messageKey", String.valueOf(i))
+                MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i)
+                    .setHeader("messageKey", String.valueOf(i))
                     .setHeader("topic", "test2").build());
-            System.out.println("message sent " + i);
+
+            LOG.info("message sent " + i);
         }
     }
 }
