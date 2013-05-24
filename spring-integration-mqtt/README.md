@@ -39,7 +39,7 @@ Currently tested with the RabbitMQ MQTT plugin.
 
     <repository>
         <id>repository.springframework.maven.milestone</id>
-        <name>Spring Framework Maven Mileston Repository</name>
+        <name>Spring Framework Maven Milestone Repository</name>
         <url>http://repo.springsource.org/milestone</url>
     </repository>
 
