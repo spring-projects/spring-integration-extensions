@@ -33,6 +33,24 @@ Both adapters use a `MqttPahoClientFactory` to get a client instance; the same f
 
 Currently tested with the RabbitMQ MQTT plugin.
 
+## Maven
+
+### Repository
+
+    <repository>
+        <id>repository.springframework.maven.milestone</id>
+        <name>Spring Framework Maven Mileston Repository</name>
+        <url>http://repo.springsource.org/milestone</url>
+    </repository>
+
+### Artifact
+
+    <dependency>
+        <groupId>org.springframework.integration</groupId>
+        <artifactId>spring-integration-mqtt</artifactId>
+        <version>1.0.0.M1</version>
+    </dependency>
+
 ## Support
 
 Check out the [Spring Integration forums][] and the [spring-integration][spring-integration tag] tag
