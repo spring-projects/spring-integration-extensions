@@ -1,4 +1,5 @@
 /*
+ /*
  * Copyright 2002-2013 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -25,10 +26,12 @@ import com.splunk.Service;
 
 /**
  * @author David Turanski
- *
+ * 
  */
 public class SplunkSubmitWriter extends AbstractSplunkDataWriter {
-	private String indexName;
+
+	private String index;
+
 	/**
 	 * @param connectionFactory
 	 */
@@ -36,12 +39,18 @@ public class SplunkSubmitWriter extends AbstractSplunkDataWriter {
 		super(serviceFactory, args);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.integration.splunk.support.SplunkDataWriter#doWrite(org.springframework.integration.splunk.event.SplunkEvent, java.net.Socket, com.splunk.Service, com.splunk.Args)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.springframework.integration.splunk.support.SplunkDataWriter#doWrite
+	 * (org.springframework.integration.splunk.event.SplunkEvent,
+	 * java.net.Socket, com.splunk.Service, com.splunk.Args)
 	 */
 	@Override
-	protected void doWrite(SplunkEvent event, Socket socket, Service service, Args args) throws IOException {
-		
+	protected void doWrite(SplunkEvent event, Socket socket, Service service,
+			Args args) throws IOException {
+
 		Index index = getIndex();
 		if (index != null) {
 			index.submit(args, event.toString());
@@ -51,18 +60,24 @@ public class SplunkSubmitWriter extends AbstractSplunkDataWriter {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.integration.splunk.support.SplunkDataWriter#createSocket(com.splunk.Service)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.springframework.integration.splunk.support.SplunkDataWriter#createSocket
+	 * (com.splunk.Service)
 	 */
 	@Override
 	protected Socket createSocket(Service service) throws IOException {
 		return null;
 	}
-	  private Index getIndex() {
-			return (indexName == null) ? null: service.getIndexes().get(indexName);
-	  }
-		
-	  public void setIndexName(String indexName) {
-			this.indexName = indexName;
-	  }
+
+	public void setIndex(String index) {
+		this.index = index;
+	}
+
+	private Index getIndex() {
+		return (index == null) ? null : service.getIndexes().get(index);
+	}
+
 }
