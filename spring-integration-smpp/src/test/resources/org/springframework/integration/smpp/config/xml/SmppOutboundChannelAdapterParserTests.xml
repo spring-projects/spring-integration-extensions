@@ -36,4 +36,11 @@
 		source-address="12345" source-ton="SUBSCRIBER_NUMBER" channel="target">
 	</int-smpp:outbound-channel-adapter>
 
+    <int-smpp:outbound-channel-adapter id="smppOutboundChannelAdapterWithChain"
+                                       channel="target" smpp-session-ref="session">
+        <int-smpp:request-handler-advice-chain>
+            <bean class="org.springframework.integration.smpp.config.xml.SmppOutboundChannelAdapterParserTests$FooAdvice"/>
+        </int-smpp:request-handler-advice-chain>
+    </int-smpp:outbound-channel-adapter>
+
 </beans>

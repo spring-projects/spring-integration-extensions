@@ -35,10 +35,17 @@ abstract public class AbstractReceivingMessageListener implements MessageReceive
 		if (MessageType.SMSC_DEL_RECEIPT.containedIn(deliverSm.getEsmClass())) {	// delivery receipt
 			try {
 				DeliveryReceipt delReceipt = deliverSm.getShortMessageAsDeliveryReceipt();
-				long id = Long.parseLong(delReceipt.getId());
-				String messageId = Long.toString(id, 16).toUpperCase();
-				onDeliveryReceipt(deliverSm, messageId, delReceipt);
+				String messageId;
+                try {
+                    long id = Long.parseLong(delReceipt.getId());
+                    messageId = Long.toString(id, 16).toUpperCase();
+                } catch (NumberFormatException nfe) {
+                    logger.debug("Fail parsing message id into hex format from " + delReceipt.getId()
+                            + ". Now using id as it is");
+                    messageId = delReceipt.getId();
+                }
 				logger.debug("Receiving delivery receipt for message '" + messageId + "' : " + delReceipt);
+                onDeliveryReceipt(deliverSm, messageId, delReceipt);
 			} catch (Exception e) {
 				logger.error("Failed getting delivery receipt", e);
 				throw new RuntimeException(e);
