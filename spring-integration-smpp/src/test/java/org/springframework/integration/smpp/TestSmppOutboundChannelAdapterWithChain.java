@@ -30,7 +30,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  * exercises the outbound adapter.
  *
- * @author Josh Long
+ * @author Johanes Soetanto
  * @since 1.0
  */
 @ContextConfiguration("classpath:TestSmppOutboundChannelAdapterWithChain-context.xml")

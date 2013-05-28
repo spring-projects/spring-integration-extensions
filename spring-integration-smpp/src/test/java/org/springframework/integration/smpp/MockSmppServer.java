@@ -94,8 +94,12 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
                     serverSession.setResponseDeliveryListener(this);
                     execService.execute(new WaitBindTask(serverSession, systemId, password, connectionSessionMap));
                 }
-                catch (SocketTimeoutException ste) {}
-                catch (SocketException se) {}
+                catch (SocketTimeoutException ste) {
+                    logger.info("SocketTimeoutException: {}", ste.getMessage());
+                }
+                catch (SocketException se) {
+                    logger.info("SocketException: {}", se.getMessage());
+                }
 			}
 		}
 		catch (IOException e) {
@@ -303,8 +307,9 @@ public class MockSmppServer extends ServerResponseDeliveryAdapter implements Run
                 if (new String(shortMessage).equals(Agreement.DELAY_DELIVERY_RECEIPT)) {
                     logger.debug("Receive request to delay sending of delivery receipt");
                     Thread.sleep(messageDelay);
-                } else
+                } else {
                     Thread.sleep(300); // just give a little bit of delay
+                }
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}

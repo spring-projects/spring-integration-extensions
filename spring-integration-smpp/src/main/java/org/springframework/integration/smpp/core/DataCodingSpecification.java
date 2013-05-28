@@ -106,7 +106,8 @@ public class DataCodingSpecification {
         if (!charsetName.equals(UTF_8)) {
             try {
                 return message.getBytes(charsetName);
-            } catch (UnsupportedEncodingException e) {
+            }
+            catch (UnsupportedEncodingException e) {
                 log.warn("Fail to encode message using charset '{}'", charsetName);
             }
         }

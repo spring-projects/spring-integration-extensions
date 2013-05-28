@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Factory bean to create a {@link SMPPSession}. Usually, you need little more than the {@link #host},
@@ -110,6 +112,9 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 
 	private ExtendedSmppSessionAdaptingDelegate product;
     private final ProxyFactoryBean sessionFactoryBean = new ProxyFactoryBean();
+
+    private ExecutorService reconnectingExecutor;
+    private boolean reconnectingExecutorSet;
 
 	public void setSsl(boolean ssl) {
 		this.ssl = ssl;
@@ -267,6 +272,10 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 	 */
 	public void start() {
 		log.debug("starting up in " + getClass().getName() + "#start().");
+        if (reconnectingExecutor == null) {
+            this.reconnectingExecutor = Executors.newFixedThreadPool(1);
+        }
+
 		( product).start();
 		this.running = true;
 	}
@@ -277,6 +286,12 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
 	public void stop() {
 		log.debug("shutting down in " + getClass().getName() + "#stop().");
 		(  product).stop();
+
+        // if we are running default executor, shut it down
+        if (!reconnectingExecutorSet && reconnectingExecutor != null) {
+            reconnectingExecutor.shutdown();
+            this.reconnectingExecutor = null;
+        }
 		this.running = false;
 	}
 
@@ -333,6 +348,15 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
      */
     public void setReconnectInterval(long reconnectInterval) {
         this.reconnectInterval = reconnectInterval;
+    }
+
+    /**
+     * Set executor service for performing SMPP reconnection.
+     * @param reconnectingExecutor executor service
+     */
+    public void setReconnectingExecutor(ExecutorService reconnectingExecutor) {
+        this.reconnectingExecutor = reconnectingExecutor;
+        this.reconnectingExecutorSet = true;
     }
 
     /**
@@ -520,7 +544,7 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
          */
         private void scheduleReconnect() {
 
-            new Thread() {
+            reconnectingExecutor.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -548,7 +572,7 @@ public class SmppSessionFactoryBean implements FactoryBean<ExtendedSmppSession>,
                         log.info("Interrupted when trying to connect to {}:{}", host, port);
                     }
                 }
-            }.start();
+            });
         }
     }
 
