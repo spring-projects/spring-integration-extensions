@@ -63,4 +63,20 @@ public abstract class SmppConstants {
 	public static final String REPLY_PATH = "REPLY_PATH";
 	public static final String DEST_ADDRESS = DST_ADDR;
 	public static final String OPTIONAL_PARAMETERS = "OPTIONAL_PARAMETERS";
+    /** Additional support header to allow user to customise the maximum characters can be sent. Unless this header
+     * is set, the default is 140 characters or if {@link #DATA_CODING} header is set, the maximum character will
+     * be based on {@link DataCodingSpecification#getMaxCharacters(byte)}. Setting this header manually may have
+     * unintended consequences.
+     */
+    public static final String MAXIMUM_CHARACTERS = "MAXIMUM_CHARACTERS";
+    /** Additional support header to send the sms using message_payload instead of setting using short_message.
+     * This can be used when we need to send long sms. (SPEC 3.2.3).
+     * <p/>
+     * Note:
+     * <ul>
+     *     <li>That not many SMSC may support payload</li>
+     *     <li>The actual short message length which can be transmitted may vary according to the underlying network</li>
+     * </ul>
+     */
+    public static final String USE_MSG_PAYLOAD_PARAM = "USE_MSG_PAYLOAD_PARAM";
 }

@@ -61,6 +61,7 @@ public class SmesMessageSpecification {
 	private byte smDefaultMsgId;
 	private byte[] shortMessage;
 	private ClientSession smppSession;
+    private OptionalParameter messagePayloadParameter;
 
 	/**
 	 * this method takes an inbound SMS message and converts it to a Spring Integration message
@@ -133,15 +134,26 @@ public class SmesMessageSpecification {
 				smsTxt = (String) payload;
 			}
 		}
-		SmesMessageSpecification spec = SmesMessageSpecification.newSmesMessageSpecification(smppSession, srcAddy, dstAddy, smsTxt);
+        final DataCoding dataCodingFromHeader = SmesMessageSpecification.dataCodingFromHeader(msg);
+        final SmesMessageSpecification spec = new SmesMessageSpecification()
+                .reset()
+                .setSmppSession(smppSession)
+                .setSourceAddress(srcAddy)
+                .setDestinationAddress(dstAddy)
+                .setDataCoding(dataCodingFromHeader);
+        spec.setMaxLengthSmsMessages(maximumCharactersFromHeader(msg));
+        spec.setEsmClass(SmesMessageSpecification.esmClassFromHeader(msg));
+        if (msg.getHeaders().containsKey(SmppConstants.USE_MSG_PAYLOAD_PARAM)) {
+            spec.setShortMessageUsingPayload(smsTxt);
+        } else {
+            spec.setShortTextMessage(smsTxt);
+        }
 		spec.setDestinationAddressNumberingPlanIndicator(SmesMessageSpecification.<NumberingPlanIndicator>valueIfHeaderExists(DST_NPI, msg));
 		spec.setSourceAddressNumberingPlanIndicator(SmesMessageSpecification.<NumberingPlanIndicator>valueIfHeaderExists(SRC_NPI, msg));
 		spec.setDestinationAddressTypeOfNumber(SmesMessageSpecification.<TypeOfNumber>valueIfHeaderExists(DST_TON, msg));
 		spec.setSourceAddressTypeOfNumber(SmesMessageSpecification.<TypeOfNumber>valueIfHeaderExists(SRC_TON, msg));
 		spec.setServiceType(SmesMessageSpecification.<String>valueIfHeaderExists(SERVICE_TYPE, msg));
-		spec.setEsmClass(SmesMessageSpecification.esmClassFromHeader(msg));
 		spec.setScheduleDeliveryTime(SmesMessageSpecification.<Date>valueIfHeaderExists(SCHEDULED_DELIVERY_TIME, msg));
-		spec.setDataCoding(SmesMessageSpecification. dataCodingFromHeader( msg));
 		spec.setValidityPeriod(SmesMessageSpecification.<String>valueIfHeaderExists(VALIDITY_PERIOD, msg));
 
 		// byte landmine. autoboxing causes havoc with <em>null</em> bytes.
@@ -177,6 +189,33 @@ public class SmesMessageSpecification {
 
 		return null ;
 	}
+
+    /**
+     * Getting maximum characters from header. This will allow checking maximum character based on
+     * {@link SmppConstants#MAXIMUM_CHARACTERS} header or determine the maximum character based on data coding
+     * header {@link SmppConstants#DATA_CODING}.
+     * <p/>
+     * The order of the selection is
+     * <ol>
+     *     <li>If {@link SmppConstants#MAXIMUM_CHARACTERS} is set, use it</li>
+     *     <li>If {@link SmppConstants#DATA_CODING} is set, find maximum character for the data coding</li>
+     *     <li>Using default maximum character which is 140</li>
+     * </ol>
+     * @param msg the Spring Integration message
+     * @return maximum character can be sent through the session
+     */
+    private static int maximumCharactersFromHeader(Message<?> msg) {
+        if (msg.getHeaders().containsKey(MAXIMUM_CHARACTERS))
+            return msg.getHeaders().get(MAXIMUM_CHARACTERS, Integer.class);
+        if (msg.getHeaders().containsKey(DATA_CODING)) {
+            final Object dc = msg.getHeaders().get(DATA_CODING);
+            if (dc instanceof Byte)
+                return DataCodingSpecification.getMaxCharacters((Byte)dc);
+            else
+                return DataCodingSpecification.getMaxCharacters(((DataCoding)dc).toByte());
+        }
+        return 140;
+    }
 
 	/**
 	 * need to be a little flexibile about what we take in as {@link SmppConstants#REGISTERED_DELIVERY_MODE}. The value can
@@ -306,7 +345,9 @@ public class SmesMessageSpecification {
 	 */
 	public String send() throws Exception {
 		validate();
-		String msgId = this.smppSession.submitShortMessage(
+        final String msgId;
+        if (messagePayloadParameter == null) {
+		    msgId = this.smppSession.submitShortMessage(
 				this.serviceType,
 				this.sourceAddressTypeOfNumber,
 				this.sourceAddressNumberingPlanIndicator,
@@ -326,6 +367,32 @@ public class SmesMessageSpecification {
 				this.dataCoding,
 				this.smDefaultMsgId,
 				this.shortMessage);
+        } else {
+            // SPEC 3.2.3
+            log.debug("Sending message using message_payload");
+            msgId = this.smppSession.submitShortMessage(
+                    this.serviceType,
+                    this.sourceAddressTypeOfNumber,
+                    this.sourceAddressNumberingPlanIndicator,
+                    this.sourceAddress,
+
+                    this.destinationAddressTypeOfNumber,
+                    this.destinationAddressNumberingPlanIndicator,
+                    this.destinationAddress,
+
+                    this.esmClass,
+                    this.protocolId,
+                    this.priorityFlag,
+                    this.scheduleDeliveryTime,
+                    this.validityPeriod,
+                    this.registeredDelivery,
+                    this.replaceIfPresentFlag,
+                    this.dataCoding,
+                    this.smDefaultMsgId,
+                    new byte[0],
+                    this.messagePayloadParameter
+            );
+        }
 
 		return msgId;
 	}
@@ -333,7 +400,11 @@ public class SmesMessageSpecification {
 	protected void validate() {
 		Assert.notNull(this.sourceAddress, "the source address must not be null");
 		Assert.notNull(this.destinationAddress, "the destination address must not be null");
-		Assert.isTrue(this.shortMessage != null && this.shortMessage.length > 0, "the message must not be null");
+        final boolean shortMessageSet = this.shortMessage != null && this.shortMessage.length > 0;
+        Assert.isTrue(messagePayloadParameter != null ^ shortMessageSet,
+                "message can only be set in payload or short message. cannot be both");
+        if (messagePayloadParameter == null)
+		    Assert.isTrue(shortMessageSet, "the message must not be null");
 	}
 
 	public SmesMessageSpecification setSourceAddress(String sourceAddr) {
@@ -475,18 +546,37 @@ public class SmesMessageSpecification {
 	}
 
 	/**
-	 * todo it'running not <em>quite</em> true that the payload needs to be 140c. A large message can be split up into smaller messages,
-	 * but for now it'running more useful to have this validation in place than not.
+     * Setting short message. This will take into account if {@link #dataCoding} or if {@link #maxLengthSmsMessages}
+     * is set through header to validate the maximum characters can be set.
 	 *
 	 * @param s the text message body
 	 * @return the SmesMessageSpecification
 	 */
 	public SmesMessageSpecification setShortTextMessage(String s) {
 		Assert.notNull(s, "the SMS message payload must not be null");
-		Assert.isTrue(s.length() <= this.maxLengthSmsMessages, "the SMS message payload must be 140 characters or less.");
-		this.shortMessage = s.getBytes();
+        if (esmClass != null && GSMSpecificFeature.UDHI.containedIn(esmClass)) {
+            log.debug("Setting short message with UDH");
+            this.shortMessage = UdhUtil.getMessageWithUdhInBytes(s, dataCoding.toByte());
+        } else {
+            Assert.isTrue(s.length() <= this.maxLengthSmsMessages,
+                    "the SMS message payload must be " + maxLengthSmsMessages + " characters or less.");
+		    this.shortMessage = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+        }
 		return this;
 	}
+
+    /**
+     * Setting short message using message_payload ({@link org.jsmpp.bean.OptionalParameter.Tag#MESSAGE_PAYLOAD})
+     * optional parameter
+     * @param s the text messages body
+     * @return the SmesMessageSpecification
+     */
+    public SmesMessageSpecification setShortMessageUsingPayload(String s) {
+        final byte[] content = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+        this.messagePayloadParameter =
+                new OptionalParameter.OctetString(OptionalParameter.Tag.MESSAGE_PAYLOAD.code(), content);
+        return this;
+    }
 
 	/**
 	 * this is a good value, but not strictly speaking universal. This is intended only for exceptional configuration cases
@@ -531,6 +621,7 @@ public class SmesMessageSpecification {
 		smDefaultMsgId = 0;
 		shortMessage = null; // the bytes to the 140 character text message
 		smppSession = null;
+        messagePayloadParameter = null;
 		return this;
 	}
 
