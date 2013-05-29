@@ -56,8 +56,9 @@ public class ExtendedSmppSessionAdaptingDelegate implements /*Lifecycle,*/ Exten
 
 	public void start() {
 
-		if( this.running)
+		if( this.running) {
 			return;
+		}
 
 		lifecycle.start();
 		this.running = true;

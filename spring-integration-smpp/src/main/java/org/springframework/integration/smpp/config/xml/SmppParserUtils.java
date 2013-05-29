@@ -55,17 +55,20 @@ public final class SmppParserUtils {
 						+sessionAttribute+"' has been specified", context.extractSource(sessionElement));
 			}
 			builder.addPropertyReference(propName, sessionRef);
-		} else if(sessionElement != null) {
+		}
+		else if(sessionElement != null) {
 			final String ref = sessionElement.getAttribute("ref");
 			//
 			BeanComponentDefinition innerBean = IntegrationNamespaceUtils
 					.parseInnerHandlerDefinition(sessionElement, context);
 			if (StringUtils.hasText(ref)) {
 				builder.addPropertyReference(propName, ref);
-			} else if (innerBean != null) {
+			}
+			else if (innerBean != null) {
 				builder.addPropertyValue(propName, innerBean);
 			}
-		} else {
+		}
+		else {
 			context.getReaderContext().error("Child element '"+sessionChild+"' or '"+sessionAttribute+"' attribute "
 					+ "need to be specified", context.extractSource(e));
 		}
@@ -102,31 +105,65 @@ public final class SmppParserUtils {
 	}
 
 	private static byte getByteTon(String t) {
-		if ("ABBREVIATED".equals(t)) return SMPPConstant.TON_ABBREVIATED;
-		if ("ALPHANUMERIC".equals(t)) return SMPPConstant.TON_ALPHANUMERIC;
-		if ("SUBSCRIBER_NUMBER".equals(t))return SMPPConstant.TON_SUBSCRIBER_NUMBER;
-		if ("NETWORK_SPECIFIC".equals(t))return SMPPConstant.TON_NETWORK_SPECIFIC;
-		if ("NATIONAL".equals(t)) return SMPPConstant.TON_NATIONAL;
-		if ("INTERNATIONAL".equals(t))return SMPPConstant.TON_INTERNATIONAL;
+		if ("ABBREVIATED".equals(t)) {
+			return SMPPConstant.TON_ABBREVIATED;
+		}
+		if ("ALPHANUMERIC".equals(t)) {
+			return SMPPConstant.TON_ALPHANUMERIC;
+		}
+		if ("SUBSCRIBER_NUMBER".equals(t)) {
+			return SMPPConstant.TON_SUBSCRIBER_NUMBER;
+		}
+		if ("NETWORK_SPECIFIC".equals(t)) {
+			return SMPPConstant.TON_NETWORK_SPECIFIC;
+		}
+		if ("NATIONAL".equals(t)) {
+			return SMPPConstant.TON_NATIONAL;
+		}
+		if ("INTERNATIONAL".equals(t)) {
+			return SMPPConstant.TON_INTERNATIONAL;
+		}
 		return SMPPConstant.TON_UNKNOWN;
 	}
 
 	private static byte getByteNpi(String n) {
-		if ("WAP".equals(n)) return SMPPConstant.NPI_WAP;
-		if ("INTERNET".equals(n)) return SMPPConstant.NPI_INTERNET;
-		if ("ERMES".equals(n)) return SMPPConstant.NPI_ERMES;
-		if ("PRIVATE".equals(n)) return SMPPConstant.NPI_PRIVATE;
-		if ("NATIONAL".equals(n)) return SMPPConstant.NPI_NATIONAL;
-		if ("LAND_MOBILE".equals(n)) return SMPPConstant.NPI_LAND_MOBILE;
-		if ("TELEX".equals(n)) return SMPPConstant.NPI_TELEX;
-		if ("DATA".equals(n)) return SMPPConstant.NPI_DATA;
-		if ("ISDN".equals(n)) return SMPPConstant.NPI_ISDN;
+		if ("WAP".equals(n)) {
+			return SMPPConstant.NPI_WAP;
+		}
+		if ("INTERNET".equals(n)) {
+			return SMPPConstant.NPI_INTERNET;
+		}
+		if ("ERMES".equals(n)) {
+			return SMPPConstant.NPI_ERMES;
+		}
+		if ("PRIVATE".equals(n)) {
+			return SMPPConstant.NPI_PRIVATE;
+		}
+		if ("NATIONAL".equals(n)) {
+			return SMPPConstant.NPI_NATIONAL;
+		}
+		if ("LAND_MOBILE".equals(n)) {
+			return SMPPConstant.NPI_LAND_MOBILE;
+		}
+		if ("TELEX".equals(n)) {
+			return SMPPConstant.NPI_TELEX;
+		}
+		if ("DATA".equals(n)) {
+			return SMPPConstant.NPI_DATA;
+		}
+		if ("ISDN".equals(n)) {
+			return SMPPConstant.NPI_ISDN;
+		}
 		return SMPPConstant.NPI_UNKNOWN;
 	}
 
 	private static byte getByteBind(String b) {
-		if ("BIND_RX".equals(b)) return SMPPConstant.CID_BIND_RECEIVER;
-		if ("BIND_TX".equals(b)) return SMPPConstant.CID_BIND_TRANSMITTER;
+		if ("BIND_RX".equals(b)) {
+			return SMPPConstant.CID_BIND_RECEIVER;
+		}
+		if ("BIND_TX".equals(b)) {
+			return SMPPConstant.CID_BIND_TRANSMITTER;
+		}
 		return SMPPConstant.CID_BIND_TRANSCEIVER;
 	}
 

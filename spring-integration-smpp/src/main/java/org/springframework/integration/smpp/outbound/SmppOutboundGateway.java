@@ -94,11 +94,12 @@ public class SmppOutboundGateway extends AbstractReplyProducingMessageHandler {
 
 	private SmesMessageSpecification applyDefaultsIfNecessary(SmesMessageSpecification smsSpec) {
 
-		if (defaultSourceAddressTypeOfNumber != null)
+		if (defaultSourceAddressTypeOfNumber != null) {
 			smsSpec.setSourceAddressTypeOfNumberIfRequired(this.defaultSourceAddressTypeOfNumber);
-
-		if (StringUtils.hasText(this.defaultSourceAddress))
+		}
+		if (StringUtils.hasText(this.defaultSourceAddress)) {
 			smsSpec.setSourceAddressIfRequired(this.defaultSourceAddress);
+		}
 
 		return smsSpec;
 	}

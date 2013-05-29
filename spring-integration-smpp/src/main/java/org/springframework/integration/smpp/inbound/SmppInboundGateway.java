@@ -112,19 +112,22 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 		String from = null, to = null;
 		if (request.getHeaders().containsKey(SmppConstants.SRC_ADDR)) {
 			to = (String) request.getHeaders().get(SmppConstants.SRC_ADDR);
-			if (StringUtils.hasText(to))
+			if (StringUtils.hasText(to)) {
 				smesMessageSpecification.setDestinationAddress(to);
+			}
 		}
 		if (request.getHeaders().containsKey(SmppConstants.DEST_ADDRESS)) {
 			from = (String) request.getHeaders().get(SmppConstants.DEST_ADDRESS);
-			if (StringUtils.hasText(from))
+			if (StringUtils.hasText(from)) {
 				smesMessageSpecification.setSourceAddress(from);
+			}
 		}
-		if (defaultSourceAddressTypeOfNumber != null)
+		if (defaultSourceAddressTypeOfNumber != null) {
 			smesMessageSpecification.setSourceAddressTypeOfNumberIfRequired(this.defaultSourceAddressTypeOfNumber);
-
-		if (StringUtils.hasText(this.defaultSourceAddress))
+		}
+		if (StringUtils.hasText(this.defaultSourceAddress)) {
 			smesMessageSpecification.setSourceAddressIfRequired(this.defaultSourceAddress);
+		}
 		return smesMessageSpecification;
 	}
 
