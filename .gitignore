@@ -7,7 +7,6 @@
 .DS_Store
 .gradle
 .idea
-.metadata
 .pmd
 .project
 .settings
