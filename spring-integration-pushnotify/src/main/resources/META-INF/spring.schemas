@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/pushnotify/spring-integration-pushnotify-1.0.xsd=org/springframework/integration/pushnotify/config/xml/spring-integration-pushnotify-1.0.xsd
+http\://www.springframework.org/schema/integration/pushnotify/spring-integration-pushnotify.xsd=org/springframework/integration/pushnotify/config/xml/spring-integration-pushnotify-1.0.xsd

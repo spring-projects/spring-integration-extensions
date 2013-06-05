@@ -20,3 +20,4 @@ nohup.out
 out
 target
 spring-integration-aws/src/test/resources/awscredentials.properties
+spring-integration-pushnotify/src/test/resources/services.properties
