@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/reactor/spring-integration-reactor-1.0.xsd=org/springframework/integration/reactor/config/xml/spring-integration-reactor-1.0.xsd
+http\://www.springframework.org/schema/integration/reactor/spring-integration-reactor.xsd=org/springframework/integration/reactor/config/xml/spring-integration-reactor-1.0.xsd
