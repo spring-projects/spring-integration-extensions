@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:stream="http://www.springframework.org/schema/integration/stream"
+       xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
+       xsi:schemaLocation="http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+	    http://www.springframework.org/schema/integration/kafka http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <int:channel id="inputFromKafka"/>
+
+    <int:channel id="inputFromTransformer"/>
+
+  	<stream:stdout-channel-adapter id="stdout" channel="inputFromKafka" append-newline="true"/> 
+
+    <int-kafka:zookeeper-connect id="zookeeperConnect" zk-connect="localhost:2181"
+                                 zk-connection-timeout="6000"
+                                 zk-session-timeout="6000"
+                                 zk-sync-time="2000"/>
+
+    <int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
+                                       kafka-consumer-context-ref="consumerContext"
+                                       auto-startup="false"
+                                       channel="inputFromKafka">
+        <int:poller fixed-delay="1" time-unit="MILLISECONDS"/>
+    </int-kafka:inbound-channel-adapter>
+
+    <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">
+        <constructor-arg type="java.lang.Class" value="java.lang.String"/>
+    </bean>
+
+    <int-kafka:consumer-context id="consumerContext"
+                                consumer-timeout="1000"
+                                zookeeper-connect="zookeeperConnect">
+        <int-kafka:consumer-configurations>
+            <int-kafka:consumer-configuration group-id="default"
+            								  value-decoder="kafkaDecoder"
+                                              key-decoder="kafkaDecoder"
+                                              max-messages="1">
+                <int-kafka:topic id="test1" streams="4"/>
+            </int-kafka:consumer-configuration>
+        </int-kafka:consumer-configurations>
+    </int-kafka:consumer-context>
+
+    <bean id="partitionlessTransformer" class="org.springframework.integration.samples.kafka.outbound.PartitionlessTransformer"/>
+
+</beans>
