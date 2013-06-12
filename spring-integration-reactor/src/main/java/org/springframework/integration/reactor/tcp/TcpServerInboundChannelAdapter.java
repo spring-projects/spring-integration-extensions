@@ -39,7 +39,7 @@ import static reactor.fn.Functions.T;
  */
 public class TcpServerInboundChannelAdapter<IN, OUT>
 		extends AbstractEndpoint
-		implements MessageProducer, SubscribableChannel, TrackableComponent {
+		implements MessageProducer, TrackableComponent {
 
 	private final Logger                   log      = LoggerFactory.getLogger(getClass());
 	private final Tuple2<Selector, Object> incoming = $();
@@ -147,33 +147,6 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 	@Override
 	protected void doStop() {
 		server.shutdown();
-	}
-
-	@Override
-	public boolean subscribe(MessageHandler handler) {
-		eventsReactor.on(incoming.getT1(), new MessageHandlerConsumer(handler));
-		return true;
-	}
-
-	@Override
-	public boolean unsubscribe(MessageHandler handler) {
-		for (Registration<? extends Consumer<? extends Event<?>>> reg : eventsReactor.getConsumerRegistry()) {
-			if (reg.getObject() instanceof MessageHandlerConsumer && ((MessageHandlerConsumer) reg.getObject()).handler == handler) {
-				reg.cancel();
-			}
-		}
-		return true;
-	}
-
-	@Override
-	public boolean send(Message<?> message) {
-		eventsReactor.notify(outgoing.getT2(), Event.wrap(message));
-		return true;
-	}
-
-	@Override
-	public boolean send(Message<?> message, long timeout) {
-		return send(message);
 	}
 
 	private static class MessageHandlerConsumer implements Consumer<Event<Message<?>>> {
