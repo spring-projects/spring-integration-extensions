@@ -7,6 +7,7 @@ import org.springframework.integration.config.xml.AbstractChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.reactor.tcp.TcpServerInboundChannelAdapter;
 import org.w3c.dom.Element;
+import reactor.R;
 import reactor.core.Environment;
 import reactor.util.StringUtils;
 
@@ -43,11 +44,12 @@ public class TcpServerInboundChannelAdapterParser extends AbstractChannelAdapter
 		}
 		builder.addConstructorArgValue(bindAddress);
 
-		String dispatcher = element.getAttribute("events-dispatcher");
-		if (!StringUtils.hasText(dispatcher)) {
-			dispatcher = Environment.RING_BUFFER;
+		String eventsReactor = element.getAttribute("events-reactor");
+		if (StringUtils.hasText(eventsReactor)) {
+			builder.addConstructorArgReference(eventsReactor);
+		} else {
+			builder.addConstructorArgValue(null);
 		}
-		builder.addConstructorArgValue(dispatcher);
 
 		String codecBean = element.getAttribute("codec");
 		if (StringUtils.hasText(codecBean)) {

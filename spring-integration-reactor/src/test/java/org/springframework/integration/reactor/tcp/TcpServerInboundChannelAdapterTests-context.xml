@@ -17,14 +17,21 @@
   <int:channel id="output"/>
   <int:service-activator input-channel="output" ref="latch" method="countDown"/>
 
+  <!-- Reactor -->
+  <bean id="reactorEnv" class="reactor.core.Environment"/>
+  <bean id="eventsReactor" class="reactor.spring.context.ReactorFactoryBean">
+    <constructor-arg ref="reactorEnv"/>
+  </bean>
+
   <!-- Codec -->
   <bean id="stringCodec" class="reactor.tcp.encoding.StringCodec"/>
 
   <!-- Reactor TcpServer Inbound Channel Adapter -->
   <reactor:tcp-inbound-channel-adapter id="server"
+                                       env="reactorEnv"
                                        channel="output"
                                        bind-port="3000"
-                                       events-dispatcher="ringBuffer"
+                                       events-reactor="eventsReactor"
                                        codec="stringCodec"/>
 
 </beans>

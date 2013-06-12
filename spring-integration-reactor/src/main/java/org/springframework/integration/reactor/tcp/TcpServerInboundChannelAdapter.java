@@ -9,6 +9,7 @@ import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.core.SubscribableChannel;
 import org.springframework.integration.endpoint.AbstractEndpoint;
+import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.history.MessageHistory;
 import org.springframework.integration.history.TrackableComponent;
 import org.springframework.integration.message.ErrorMessage;
@@ -37,33 +38,28 @@ import static reactor.fn.Functions.T;
  *
  * @author Jon Brisbin
  */
-public class TcpServerInboundChannelAdapter<IN, OUT>
-		extends AbstractEndpoint
-		implements MessageProducer, TrackableComponent {
+public class TcpServerInboundChannelAdapter<IN, OUT> extends MessageProducerSupport {
 
 	private final Logger                   log      = LoggerFactory.getLogger(getClass());
-	private final Tuple2<Selector, Object> incoming = $();
 	private final Tuple2<Selector, Object> outgoing = $();
 	private final    Environment                      env;
 	private final    InetSocketAddress                bindAddress;
 	private final    Codec<Buffer, IN, OUT>           codec;
 	private final    Reactor                          eventsReactor;
 	private final    Consumer<TcpConnection<IN, OUT>> connectionConsumer;
-	private volatile MessageChannel                   outputChannel;
 	private volatile MessageChannel                   errorChannel;
-	private volatile boolean shouldTrack = false;
-	private volatile TcpServer<IN, OUT> server;
+	private volatile TcpServer<IN, OUT>               server;
 
 	public TcpServerInboundChannelAdapter(Environment env,
 																				InetSocketAddress bindAddress,
-																				String eventsDispatcher,
+																				Reactor eventsReactor,
 																				Codec<Buffer, IN, OUT> codec) {
 		super();
 		this.env = env;
 		this.bindAddress = bindAddress;
 		this.codec = codec;
+		this.eventsReactor = (null != eventsReactor ? eventsReactor : R.reactor().using(env).get());
 
-		this.eventsReactor = R.reactor().using(env).dispatcher(eventsDispatcher).get();
 		this.eventsReactor.on(T(Throwable.class), new Consumer<Event<Throwable>>() {
 			@Override
 			public void accept(Event<Throwable> ev) {
@@ -87,13 +83,16 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 					}
 				};
 
-				eventsReactor.on(outgoing.getT1(), new Consumer<Event<Message<?>>>() {
-					@SuppressWarnings("unchecked")
-					@Override
-					public void accept(Event<Message<?>> ev) {
-						connection.send((OUT) ev.getData());
-					}
-				});
+				TcpServerInboundChannelAdapter.this.eventsReactor.on(
+						outgoing.getT1(),
+						new Consumer<Event<Message<?>>>() {
+							@Override
+							@SuppressWarnings("unchecked")
+							public void accept(Event<Message<?>> ev) {
+								connection.send((OUT) ev.getData());
+							}
+						}
+				);
 
 				connection.consume(new Consumer<IN>() {
 					@Override
@@ -102,33 +101,20 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 																						.setErrorChannel(errorChannel)
 																						.setReplyChannel(replies)
 																						.build();
-						if (shouldTrack) {
-							msg = MessageHistory.write(msg, TcpServerInboundChannelAdapter.this);
-						}
-
-						outputChannel.send(msg);
+						sendMessage(msg);
 					}
 				});
 			}
 		};
 	}
 
-	@Override
-	public void setOutputChannel(MessageChannel outputChannel) {
-		this.outputChannel = outputChannel;
-	}
-
 	public void setErrorChannel(MessageChannel errorChannel) {
+		super.setErrorChannel(errorChannel);
 		this.errorChannel = errorChannel;
 	}
 
 	@Override
-	public void setShouldTrack(boolean shouldTrack) {
-		this.shouldTrack = shouldTrack;
-	}
-
-	@Override
-	protected void onInit() throws Exception {
+	protected void onInit() {
 		this.server = new TcpServer.Spec<IN, OUT>(NettyTcpServer.class)
 				.using(env)
 				.using(eventsReactor)
@@ -147,19 +133,6 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 	@Override
 	protected void doStop() {
 		server.shutdown();
-	}
-
-	private static class MessageHandlerConsumer implements Consumer<Event<Message<?>>> {
-		private final MessageHandler handler;
-
-		private MessageHandlerConsumer(MessageHandler handler) {
-			this.handler = handler;
-		}
-
-		@Override
-		public void accept(Event<Message<?>> ev) {
-			handler.handleMessage(ev.getData());
-		}
 	}
 
 }

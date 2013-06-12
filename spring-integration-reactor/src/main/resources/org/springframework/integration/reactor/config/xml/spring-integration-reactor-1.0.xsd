@@ -47,12 +47,24 @@
         </xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+    <xsd:attribute name="events-reactor" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          The Reactor to use to publish events.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <tool:annotation kind="ref">
+            <tool:expected-type type="reactor.core.Reactor"/>
+          </tool:annotation>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
     <xsd:attribute name="channel" use="optional" type="xsd:string">
       <xsd:annotation>
+        <xsd:documentation>
+          Channel to which messages will be output.
+        </xsd:documentation>
         <xsd:appinfo>
-          <xsd:documentation>
-            Channel to which messages will be output.
-          </xsd:documentation>
           <tool:annotation kind="ref">
             <tool:expected-type type="org.springframework.integration.MessageChannel"/>
           </tool:annotation>
@@ -69,13 +81,6 @@
             <tool:expected-type type="org.springframework.integration.MessageChannel"/>
           </tool:annotation>
         </xsd:appinfo>
-      </xsd:annotation>
-    </xsd:attribute>
-    <xsd:attribute name="events-dispatcher" use="optional" type="xsd:string">
-      <xsd:annotation>
-        <xsd:documentation>
-          The type of Dispatcher to use for Reactor events.
-        </xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
     <xsd:attribute name="bind-host" use="optional" type="xsd:string">
