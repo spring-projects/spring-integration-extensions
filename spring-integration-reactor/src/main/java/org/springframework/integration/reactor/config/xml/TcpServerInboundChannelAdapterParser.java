@@ -54,6 +54,15 @@ public class TcpServerInboundChannelAdapterParser extends AbstractChannelAdapter
 			builder.addConstructorArgReference(codecBean);
 		}
 
+		String outputChannel = element.getAttribute("channel");
+		if (StringUtils.hasText(outputChannel)) {
+			builder.addPropertyReference("outputChannel", outputChannel);
+		}
+		String errorChannel = element.getAttribute("error-channel");
+		if (StringUtils.hasText(errorChannel)) {
+			builder.addPropertyReference("errorChannel", errorChannel);
+		}
+
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "auto-startup");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "phase");
 

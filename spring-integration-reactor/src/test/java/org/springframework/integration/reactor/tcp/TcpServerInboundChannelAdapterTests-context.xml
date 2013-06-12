@@ -7,9 +7,17 @@
        http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
        http://www.springframework.org/schema/integration/reactor http://www.springframework.org/schema/integration/reactor/spring-integration-reactor.xsd">
 
+  <bean id="latch" class="java.util.concurrent.CountDownLatch">
+    <constructor-arg value="1"/>
+  </bean>
+
   <bean id="stringCodec" class="reactor.tcp.encoding.StringCodec"/>
 
+  <int:channel id="output"/>
+  <int:service-activator input-channel="output" ref="latch" method="countDown"/>
+
   <reactor:tcp-inbound-channel-adapter id="server"
+                                       channel="output"
                                        bind-port="3000"
                                        events-dispatcher="ringBuffer"
                                        codec="stringCodec"/>

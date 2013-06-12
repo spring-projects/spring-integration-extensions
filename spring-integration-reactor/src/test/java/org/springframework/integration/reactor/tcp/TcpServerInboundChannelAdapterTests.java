@@ -32,7 +32,7 @@ public class TcpServerInboundChannelAdapterTests {
 
 	ExecutorService threadPool;
 	@Autowired
-	TcpServerInboundChannelAdapter<String, String> server;
+	CountDownLatch latch;
 
 	@Before
 	public void setup() {
@@ -46,23 +46,14 @@ public class TcpServerInboundChannelAdapterTests {
 
 	@Test
 	public void testTcpServerInboundChannelAdapter() throws Exception {
-		final CountDownLatch latch = new CountDownLatch(1);
-
-		server.subscribe(new MessageHandler() {
-			@Override
-			public void handleMessage(Message<?> message) throws MessagingException {
-				latch.countDown();
-				System.out.println("msg: " + message);
-				server.send(new GenericMessage<String>("Hello World!"));
-			}
-		});
-
+		// send data to the server
 		send(Buffer.wrap("Hello World!"));
+
+		// await the latch, which should be counted down in the service activator definition
 		latch.await(5, TimeUnit.SECONDS);
 
 		assertThat("latch was counted down", latch.getCount(), is(0L));
 	}
-
 
 	private void send(final Buffer data) {
 		threadPool.submit(new Runnable() {

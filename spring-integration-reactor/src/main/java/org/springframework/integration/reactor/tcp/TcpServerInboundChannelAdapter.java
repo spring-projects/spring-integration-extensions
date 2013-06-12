@@ -1,11 +1,22 @@
 package org.springframework.integration.reactor.tcp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.integration.Message;
+import org.springframework.integration.MessageChannel;
 import org.springframework.integration.MessageHeaders;
+import org.springframework.integration.MessagingException;
+import org.springframework.integration.channel.AbstractMessageChannel;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.core.MessageHandler;
+import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.core.SubscribableChannel;
 import org.springframework.integration.endpoint.AbstractEndpoint;
+import org.springframework.integration.endpoint.MessageProducerSupport;
+import org.springframework.integration.history.MessageHistory;
+import org.springframework.integration.history.TrackableComponent;
 import org.springframework.integration.message.GenericMessage;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.util.ReflectionUtils;
 import reactor.R;
 import reactor.core.Environment;
@@ -26,11 +37,14 @@ import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 
 import static reactor.fn.Functions.$;
+import static reactor.fn.Functions.T;
 
 /**
  * @author Jon Brisbin
  */
-public class TcpServerInboundChannelAdapter<IN, OUT> extends AbstractEndpoint implements SubscribableChannel {
+public class TcpServerInboundChannelAdapter<IN, OUT>
+		extends AbstractEndpoint
+		implements MessageProducer, SubscribableChannel, TrackableComponent {
 
 	private static Field ID_GEN;
 
@@ -46,6 +60,7 @@ public class TcpServerInboundChannelAdapter<IN, OUT> extends AbstractEndpoint im
 		}
 	}
 
+	private final Logger                   log      = LoggerFactory.getLogger(getClass());
 	private final Tuple2<Selector, Object> incoming = $();
 	private final Tuple2<Selector, Object> outgoing = $();
 	private final    Environment                      env;
@@ -53,7 +68,10 @@ public class TcpServerInboundChannelAdapter<IN, OUT> extends AbstractEndpoint im
 	private final    Codec<Buffer, IN, OUT>           codec;
 	private final    Reactor                          eventsReactor;
 	private final    Consumer<TcpConnection<IN, OUT>> connectionConsumer;
-	private volatile TcpServer<IN, OUT>               server;
+	private volatile MessageChannel                   outputChannel;
+	private volatile MessageChannel                   errorChannel;
+	private volatile boolean shouldTrack = false;
+	private volatile TcpServer<IN, OUT> server;
 
 	public TcpServerInboundChannelAdapter(Environment env,
 																				InetSocketAddress bindAddress,
@@ -65,15 +83,28 @@ public class TcpServerInboundChannelAdapter<IN, OUT> extends AbstractEndpoint im
 		this.codec = codec;
 
 		this.eventsReactor = R.reactor().using(env).dispatcher(eventsDispatcher).get();
+		this.eventsReactor.on(T(Throwable.class), new Consumer<Event<Throwable>>() {
+			@Override
+			public void accept(Event<Throwable> ev) {
+				if (null != errorChannel) {
+					errorChannel.send(MessageBuilder.withPayload(ev.getData()).build());
+				} else {
+					log.error(ev.getData().getMessage(), ev.getData());
+				}
+			}
+		});
+
 		this.connectionConsumer = new Consumer<TcpConnection<IN, OUT>>() {
 			@Override
 			public void accept(final TcpConnection<IN, OUT> connection) {
-				connection.consume(new Consumer<IN>() {
+				final MessageChannel replies = new AbstractMessageChannel() {
+					@SuppressWarnings("unchecked")
 					@Override
-					public void accept(IN in) {
-						eventsReactor.notify(incoming.getT2(), Event.wrap(new GenericMessage<IN>(in)));
+					protected boolean doSend(Message<?> message, long timeout) {
+						connection.send((OUT) message.getPayload());
+						return false;
 					}
-				});
+				};
 
 				eventsReactor.on(outgoing.getT1(), new Consumer<Event<Message<?>>>() {
 					@SuppressWarnings("unchecked")
@@ -82,12 +113,37 @@ public class TcpServerInboundChannelAdapter<IN, OUT> extends AbstractEndpoint im
 						connection.send((OUT) ev.getData());
 					}
 				});
+
+				connection.consume(new Consumer<IN>() {
+					@Override
+					public void accept(IN in) {
+						Message<IN> msg = MessageBuilder.withPayload(in)
+																						.setErrorChannel(errorChannel)
+																						.setReplyChannel(replies)
+																						.build();
+						if (shouldTrack) {
+							msg = MessageHistory.write(msg, TcpServerInboundChannelAdapter.this);
+						}
+
+						outputChannel.send(msg);
+					}
+				});
 			}
 		};
 	}
 
-	public Reactor getEventsReactor() {
-		return eventsReactor;
+	@Override
+	public void setOutputChannel(MessageChannel outputChannel) {
+		this.outputChannel = outputChannel;
+	}
+
+	public void setErrorChannel(MessageChannel errorChannel) {
+		this.errorChannel = errorChannel;
+	}
+
+	@Override
+	public void setShouldTrack(boolean shouldTrack) {
+		this.shouldTrack = shouldTrack;
 	}
 
 	@Override
