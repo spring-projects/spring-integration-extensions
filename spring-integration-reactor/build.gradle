@@ -62,9 +62,6 @@ configurations {
 }
 
 dependencies {
-	compile "org.springframework:spring-beans:$springVersion"
-	compile "org.springframework:spring-context:$springVersion"
-	compile "org.springframework:spring-expression:$springVersion"
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	
 	compile("reactor:reactor-spring:$reactorVersion") {
