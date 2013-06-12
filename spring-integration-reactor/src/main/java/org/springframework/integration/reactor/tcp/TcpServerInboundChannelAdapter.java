@@ -4,20 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageChannel;
-import org.springframework.integration.MessageHeaders;
-import org.springframework.integration.MessagingException;
 import org.springframework.integration.channel.AbstractMessageChannel;
-import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.core.SubscribableChannel;
 import org.springframework.integration.endpoint.AbstractEndpoint;
-import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.history.MessageHistory;
 import org.springframework.integration.history.TrackableComponent;
-import org.springframework.integration.message.GenericMessage;
+import org.springframework.integration.message.ErrorMessage;
 import org.springframework.integration.support.MessageBuilder;
-import org.springframework.util.ReflectionUtils;
 import reactor.R;
 import reactor.core.Environment;
 import reactor.core.Reactor;
@@ -27,38 +22,24 @@ import reactor.fn.registry.Registration;
 import reactor.fn.selector.Selector;
 import reactor.fn.tuples.Tuple2;
 import reactor.io.Buffer;
-import reactor.spring.integration.support.Type1UUIDMessageIdGenerator;
 import reactor.tcp.TcpConnection;
 import reactor.tcp.TcpServer;
 import reactor.tcp.encoding.Codec;
 import reactor.tcp.netty.NettyTcpServer;
 
-import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 
 import static reactor.fn.Functions.$;
 import static reactor.fn.Functions.T;
 
 /**
+ * Reactor TcpServer-based Inbound Channel Adapter implementation.
+ *
  * @author Jon Brisbin
  */
 public class TcpServerInboundChannelAdapter<IN, OUT>
 		extends AbstractEndpoint
 		implements MessageProducer, SubscribableChannel, TrackableComponent {
-
-	private static Field ID_GEN;
-
-	static {
-		try {
-			ID_GEN = MessageHeaders.class.getDeclaredField("idGenerator");
-			ReflectionUtils.makeAccessible(ID_GEN);
-			ID_GEN.set(null, new Type1UUIDMessageIdGenerator());
-		} catch (NoSuchFieldException e) {
-			throw new IllegalStateException(e);
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		}
-	}
 
 	private final Logger                   log      = LoggerFactory.getLogger(getClass());
 	private final Tuple2<Selector, Object> incoming = $();
@@ -87,7 +68,7 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 			@Override
 			public void accept(Event<Throwable> ev) {
 				if (null != errorChannel) {
-					errorChannel.send(MessageBuilder.withPayload(ev.getData()).build());
+					errorChannel.send(new ErrorMessage(ev.getData()));
 				} else {
 					log.error(ev.getData().getMessage(), ev.getData());
 				}
@@ -102,7 +83,7 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 					@Override
 					protected boolean doSend(Message<?> message, long timeout) {
 						connection.send((OUT) message.getPayload());
-						return false;
+						return true;
 					}
 				};
 
@@ -171,7 +152,7 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 	@Override
 	public boolean subscribe(MessageHandler handler) {
 		eventsReactor.on(incoming.getT1(), new MessageHandlerConsumer(handler));
-		return false;
+		return true;
 	}
 
 	@Override
@@ -181,13 +162,13 @@ public class TcpServerInboundChannelAdapter<IN, OUT>
 				reg.cancel();
 			}
 		}
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean send(Message<?> message) {
 		eventsReactor.notify(outgoing.getT2(), Event.wrap(message));
-		return false;
+		return true;
 	}
 
 	@Override
