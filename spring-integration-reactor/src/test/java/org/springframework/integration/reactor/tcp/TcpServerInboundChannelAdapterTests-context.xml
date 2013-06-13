@@ -29,9 +29,9 @@
   <!-- Reactor TcpServer Inbound Channel Adapter -->
   <reactor:tcp-inbound-channel-adapter id="server"
                                        env="reactorEnv"
+                                       ref="eventsReactor"
                                        channel="output"
                                        bind-port="3000"
-                                       events-reactor="eventsReactor"
                                        codec="stringCodec"/>
 
 </beans>

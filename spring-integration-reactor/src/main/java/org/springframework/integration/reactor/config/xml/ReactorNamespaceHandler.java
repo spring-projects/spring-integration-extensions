@@ -11,5 +11,6 @@ public class ReactorNamespaceHandler extends AbstractIntegrationNamespaceHandler
 	@Override
 	public void init() {
 		registerBeanDefinitionParser("tcp-inbound-channel-adapter", new TcpServerInboundChannelAdapterParser());
+		registerBeanDefinitionParser("channel",new ReactorChannelParser());
 	}
 }

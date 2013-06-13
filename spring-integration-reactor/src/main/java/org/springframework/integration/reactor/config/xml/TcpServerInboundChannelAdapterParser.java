@@ -44,7 +44,7 @@ public class TcpServerInboundChannelAdapterParser extends AbstractChannelAdapter
 		}
 		builder.addConstructorArgValue(bindAddress);
 
-		String eventsReactor = element.getAttribute("events-reactor");
+		String eventsReactor = element.getAttribute("ref");
 		if (StringUtils.hasText(eventsReactor)) {
 			builder.addConstructorArgReference(eventsReactor);
 		} else {
