@@ -232,14 +232,20 @@
                                 ]]></xsd:documentation>
                                 </xsd:annotation>
                                 <xsd:complexType>
-                                    <xsd:sequence>
+                                    <xsd:choice>
                                         <xsd:element name="topic" maxOccurs="unbounded">
                                             <xsd:complexType>
                                                 <xsd:attribute name="id" type="xsd:string" use="required"/>
                                                 <xsd:attribute name="streams" type="xsd:string" use="required"/>
                                             </xsd:complexType>
                                         </xsd:element>
-                                    </xsd:sequence>
+                                        <xsd:element name="topicFilter" maxOccurs="1">
+                                            <xsd:complexType>
+                                                <xsd:attribute name="whitelist" type="xsd:string" use="required"/>
+                                                <xsd:attribute name="streams" type="xsd:string" use="required"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:choice>
                                     <xsd:attribute name="max-messages" use="optional">
                                         <xsd:annotation>
                                             <xsd:documentation><![CDATA[

@@ -15,23 +15,16 @@
  */
 package org.springframework.integration.kafka.support;
 
-import kafka.consumer.ConsumerTimeoutException;
-import kafka.consumer.KafkaStream;
+import java.util.*;
+import java.util.concurrent.*;
+
+import kafka.consumer.*;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.MessagingException;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * @author Soby Chacko
@@ -46,6 +39,7 @@ public class ConsumerConfiguration {
 	private ConsumerConnector consumerConnector;
 	private volatile int count = 0;
 	private int maxMessages = 1;
+	private Collection<List<KafkaStream<byte[], byte[]>>> consumerMessageStreams;
 
 	private ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -67,8 +61,8 @@ public class ConsumerConfiguration {
 		final List<Callable<List<MessageAndMetadata>>> tasks = new LinkedList<Callable<List<MessageAndMetadata>>>();
 		final Object lock = new Object();
 
-		final Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = getConsumerMapWithMessageStreams();
-		for (final List<KafkaStream<byte[], byte[]>> streams : consumerMap.values()) {
+		//final Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = getConsumerMapWithMessageStreams();
+		for (final List<KafkaStream<byte[], byte[]>> streams : getConsumerMessageStreams()) {
 			for (final KafkaStream<byte[], byte[]> stream : streams) {
 				tasks.add(new Callable<List<MessageAndMetadata>>() {
 					@Override
@@ -180,6 +174,28 @@ public class ConsumerConfiguration {
 		}
 	}
 
+	public Collection<List<KafkaStream<byte[], byte[]>>> getConsumerMessageStreams(){
+
+	    if (consumerMessageStreams == null){
+	        LOGGER.info("RAJA called");
+	        //FIXME:
+	        //return getConsumerMapWithMessageStreams().values();
+	        consumerMessageStreams = new ArrayList<List<KafkaStream<byte[], byte[]>>>();
+	        List<KafkaStream<byte[], byte[]>> messageStream;  
+	                
+	        if (consumerMetadata.getValueDecoder() != null) {
+	            messageStream = getConsumerConnector().createMessageStreamsByFilter(new Blacklist("test.*"), 2, consumerMetadata.getKeyDecoder(), consumerMetadata.getValueDecoder());
+	        }else{
+	            messageStream = getConsumerConnector().createMessageStreamsByFilter(new Blacklist("test.*"),2); 
+	        }
+	        
+	        consumerMessageStreams.add(messageStream);
+	    }
+	    
+	    return consumerMessageStreams;
+	   
+	}
+	
 	@SuppressWarnings("unchecked")
 	public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
 		if (consumerMetadata.getValueDecoder() != null &&
