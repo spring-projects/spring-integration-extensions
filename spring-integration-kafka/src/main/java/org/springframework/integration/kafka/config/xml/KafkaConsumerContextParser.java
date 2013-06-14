@@ -28,11 +28,13 @@ import org.springframework.integration.kafka.support.ConsumerConnectionProvider;
 import org.springframework.integration.kafka.support.ConsumerMetadata;
 import org.springframework.integration.kafka.support.KafkaConsumerContext;
 import org.springframework.integration.kafka.support.MessageLeftOverTracker;
+import org.springframework.integration.kafka.support.TopicFilterConfiguration;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,15 +73,25 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 
 			final Map<String, Integer> topicStreamsMap = new HashMap<String, Integer>();
 
-			for (final Element topicConfiguration : DomUtils.getChildElementsByTagName(consumerConfiguration, "topic")) {
-				final String topic = topicConfiguration.getAttribute("id");
-				final String streams = topicConfiguration.getAttribute("streams");
-				final Integer streamsInt = Integer.valueOf(streams);
-				topicStreamsMap.put(topic, streamsInt);
+			final List<Element> topicConfigurations = DomUtils.getChildElementsByTagName(consumerConfiguration, "topic");
+			
+			if (topicConfigurations != null){
+				for (final Element topicConfiguration : topicConfigurations) {
+					final String topic = topicConfiguration.getAttribute("id");
+					final String streams = topicConfiguration.getAttribute("streams");
+					final Integer streamsInt = Integer.valueOf(streams);
+					topicStreamsMap.put(topic, streamsInt);
+				}
+				consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
 			}
+			
+			final Element topicFilter = DomUtils.getChildElementByTagName(consumerConfiguration, "topicFilter");
 
-			consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
-
+			if (topicFilter != null){
+				final TopicFilterConfiguration topicFilterConfiguration = new TopicFilterConfiguration(topicFilter.getAttribute("pattern"),Integer.valueOf(topicFilter.getAttribute("streams")), Boolean.valueOf(topicFilter.getAttribute("exclude")));
+				consumerMetadataBuilder.addPropertyValue("topicFilterConfiguration", topicFilterConfiguration);
+			}
+			
 			final BeanDefinition consumerMetadataBeanDef = consumerMetadataBuilder.getBeanDefinition();
 			registerBeanDefinition(new BeanDefinitionHolder(consumerMetadataBeanDef, "consumerMetadata_" + consumerConfiguration.getAttribute("group-id")),
 					parserContext.getRegistry());

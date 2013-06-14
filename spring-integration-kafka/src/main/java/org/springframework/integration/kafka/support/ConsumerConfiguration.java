@@ -49,6 +49,7 @@ public class ConsumerConfiguration {
 		this.consumerMetadata = consumerMetadata;
 		this.consumerConnectionProvider = consumerConnectionProvider;
 		this.messageLeftOverTracker = messageLeftOverTracker;
+		createConsumerMessageStreams();
 	}
 
 	public ConsumerMetadata getConsumerMetadata() {
@@ -61,8 +62,7 @@ public class ConsumerConfiguration {
 		final List<Callable<List<MessageAndMetadata>>> tasks = new LinkedList<Callable<List<MessageAndMetadata>>>();
 		final Object lock = new Object();
 
-		//final Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = getConsumerMapWithMessageStreams();
-		for (final List<KafkaStream<byte[], byte[]>> streams : getConsumerMessageStreams()) {
+		for (final List<KafkaStream<byte[], byte[]>> streams : consumerMessageStreams) {
 			for (final KafkaStream<byte[], byte[]> stream : streams) {
 				tasks.add(new Callable<List<MessageAndMetadata>>() {
 					@Override
@@ -174,28 +174,41 @@ public class ConsumerConfiguration {
 		}
 	}
 
-	public Collection<List<KafkaStream<byte[], byte[]>>> getConsumerMessageStreams(){
-
-	    if (consumerMessageStreams == null){
-	        LOGGER.info("RAJA called");
-	        //FIXME:
-	        //return getConsumerMapWithMessageStreams().values();
-	        consumerMessageStreams = new ArrayList<List<KafkaStream<byte[], byte[]>>>();
-	        List<KafkaStream<byte[], byte[]>> messageStream;  
-	                
-	        if (consumerMetadata.getValueDecoder() != null) {
-	            messageStream = getConsumerConnector().createMessageStreamsByFilter(new Blacklist("test.*"), 2, consumerMetadata.getKeyDecoder(), consumerMetadata.getValueDecoder());
-	        }else{
-	            messageStream = getConsumerConnector().createMessageStreamsByFilter(new Blacklist("test.*"),2); 
-	        }
-	        
-	        consumerMessageStreams.add(messageStream);
-	    }
-	    
-	    return consumerMessageStreams;
-	   
+	private void createConsumerMessageStreams(){
+        if (!(consumerMetadata.getTopicStreamMap() == null || consumerMetadata.getTopicStreamMap().isEmpty())){
+        	consumerMessageStreams = createMessageStreamsForTopic().values();
+        }
+        else{
+        	consumerMessageStreams = new ArrayList<List<KafkaStream<byte[], byte[]>>>();
+        	
+	        consumerMessageStreams.add(createMessageStreamsForTopicFilter());
+        }
 	}
 	
+	@SuppressWarnings("unchecked")
+	private  Map<String, List<KafkaStream<byte[], byte[]>>> createMessageStreamsForTopic(){
+		if (consumerMetadata.getValueDecoder() != null) {
+			return getConsumerConnector().createMessageStreams(
+					consumerMetadata.getTopicStreamMap(),
+					consumerMetadata.getKeyDecoder(),
+					consumerMetadata.getValueDecoder());
+		}
+
+		return getConsumerConnector().createMessageStreams(consumerMetadata.getTopicStreamMap());
+	}
+	
+	public List<KafkaStream<byte[], byte[]>> createMessageStreamsForTopicFilter(){
+		TopicFilterConfiguration topicFilterConfiguration = consumerMetadata.getTopicFilterConfiguration();
+		List<KafkaStream<byte[], byte[]>> messageStream;  
+        if (consumerMetadata.getValueDecoder() != null) {
+            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams(), consumerMetadata.getKeyDecoder(), consumerMetadata.getValueDecoder());
+        }else{
+            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams()); 
+        }
+        return messageStream;
+	}
+	
+	//FIXME
 	@SuppressWarnings("unchecked")
 	public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
 		if (consumerMetadata.getValueDecoder() != null &&

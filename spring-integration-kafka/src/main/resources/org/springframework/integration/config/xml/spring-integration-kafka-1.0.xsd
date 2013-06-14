@@ -241,8 +241,9 @@
                                         </xsd:element>
                                         <xsd:element name="topicFilter" maxOccurs="1">
                                             <xsd:complexType>
-                                                <xsd:attribute name="whitelist" type="xsd:string" use="required"/>
+                                                <xsd:attribute name="pattern" type="xsd:string" use="required"/>
                                                 <xsd:attribute name="streams" type="xsd:string" use="required"/>
+                                                <xsd:attribute name="exclude" type="xsd:boolean" use="optional" default="false"/>
                                             </xsd:complexType>
                                         </xsd:element>
                                     </xsd:choice>
