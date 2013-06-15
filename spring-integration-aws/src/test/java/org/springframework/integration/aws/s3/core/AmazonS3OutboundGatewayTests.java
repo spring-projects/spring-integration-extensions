@@ -13,32 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.aws.s3;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.springframework.integration.aws.common.AWSTestUtils.md5Hash;
-import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.FILE_NAME;
-import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.HEADER_LIST_NEXT_MARKER;
-import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.HEADER_LIST_PAGE_SIZE;
-import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.HEADER_REMOVE_OBJECT_NAME;
-import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.METADATA;
-import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.OBJECT_ACLS;
-import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.USER_METADATA;
-import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.BUCKET;
-import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.getLastListOperation;
-import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.getLastPutOperation;
-import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.mockAmazonS3Operations;
-import static org.springframework.integration.aws.s3.AmazonS3OutboundGateway.COMMAND_GET;
-import static org.springframework.integration.aws.s3.AmazonS3OutboundGateway.COMMAND_LIST;
-import static org.springframework.integration.aws.s3.AmazonS3OutboundGateway.COMMAND_PUT;
-import static org.springframework.integration.aws.s3.AmazonS3OutboundGateway.COMMAND_REMOVE;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+package org.springframework.integration.aws.s3.core;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -51,17 +26,23 @@ import org.springframework.integration.MessageChannel;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.core.BasicAWSCredentials;
-import org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.LastListOperationCall;
-import org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.LastPutOperationCall;
-import org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.LastRemoveOperationCall;
-import org.springframework.integration.aws.s3.core.AmazonS3Object;
-import org.springframework.integration.aws.s3.core.AmazonS3Operations;
-import org.springframework.integration.aws.s3.core.PaginatedObjectsView;
+import org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil;
+import org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.*;
+import org.springframework.integration.aws.s3.AmazonS3OutboundGateway;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
 import org.springframework.integration.support.MessageBuilder;
 
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.integration.aws.common.AWSTestUtils.md5Hash;
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.*;
+import static org.springframework.integration.aws.s3.AmazonS3OperationsMockingUtil.*;
+import static org.springframework.integration.aws.s3.AmazonS3OutboundGateway.*;
+
 /**
- * The test class for {@link AmazonS3OutboundGateway}
+ * The test class for {@link org.springframework.integration.aws.s3.AmazonS3OutboundGateway}
  *
  * @author Amol Nayak
  * @since 0.5
@@ -284,16 +265,16 @@ public class AmazonS3OutboundGatewayTests {
 		gateway.setRemoteDirectoryExpression(parser.parseExpression("headers['remoteDirectory']"));
 		gateway.handleMessage(message);
 		LastPutOperationCall lastOperation = getLastPutOperation();
-		Assert.assertEquals(BUCKET, lastOperation.getBucket());
-		Assert.assertEquals("TestFileName.txt", lastOperation.getObjectName());
-		Assert.assertEquals("/child", lastOperation.getFolder());
+		assertEquals(BUCKET, lastOperation.getBucket());
+		assertEquals("TestFileName.txt", lastOperation.getObjectName());
+		assertEquals("/child", lastOperation.getFolder());
 		AmazonS3Object object = lastOperation.getS3Object();
 		Assert.assertNotNull(object);
 		Assert.assertNotNull(object.getInputStream());
 		Assert.assertNotNull(object.getMetaData());
 		Assert.assertNotNull(object.getUserMetaData());
 		Assert.assertNotNull(object.getObjectACL());
-		Assert.assertEquals(2,object.getObjectACL().getGrants().size());
+		assertEquals(2,object.getObjectACL().getGrants().size());
 	}
 
 

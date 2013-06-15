@@ -134,7 +134,7 @@ public final class AmazonS3OperationsMockingUtil {
 					if(folderName.startsWith("/")) {
 						folderName = folderName.substring(1);
 					}
-					if(!folderName.endsWith("/")) {
+					if(StringUtils.hasText(folderName) && !folderName.endsWith("/")) {
 						folderName = folderName  + "/";
 					}
 				}
