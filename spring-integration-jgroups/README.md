@@ -31,8 +31,8 @@ This example starts new JGroups cluster, named mygroup and with configuration lo
 Inbound channel adapter:
 -----------------------------------------------------------------------------
 Inbound channel adapter is used to receive messages sent to the group. It expects 
-user to provide reference to the JGroups cluster object. You can also supply optional
-reference to custom JGroups header mapper.
+user to provide reference to the JGroups cluster object. You can also supply
+optional reference to custom JGroups header mapper.
 
 ### Example:
 ~~~~~xml
@@ -61,9 +61,9 @@ reference to custom JGroups header mapper.
 
 Outbound channel adapter:
 -----------------------------------------------------------------------------
-Outbound channel adapter is used to send insert data into Voldemort database
-from Spring Integration's channel. Component expects user to provide
-Voldemort store client and message converter.
+Outbound channel adapter is used to send messages to a group. It expects 
+user to provide reference to the JGroups cluster object. You can also supply
+optional reference to custom JGroups header mapper.
 
 ### Example:
 ~~~~~xml

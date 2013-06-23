@@ -26,11 +26,24 @@
 	</xsd:annotation>
 
 	<xsd:complexType name="xmlProtocolStackConfiguratorType">
+
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[ 
+Creates ProtocolStackConfigurator by reading XML file, it loades it using Spring resource abstraction, 
+so it can either file in local filesystem, in classoath or from remote URL.
+			]]></xsd:documentation>
+		</xsd:annotation>
+
 		<xsd:attribute name="resource" type="xsd:string" use="required" />
 	</xsd:complexType>
 
 
 	<xsd:element name="cluster">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[ 
+Connects to a JGroups cluster, and returns JChannel object.
+			]]></xsd:documentation>
+		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="xml-configurator" type="xmlProtocolStackConfiguratorType" />
@@ -40,6 +53,11 @@
 	</xsd:element>
 
 	<xsd:element name="inbound-channel-adapter">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[ 
+This inbound channel adapter receives all messages sent to JGroups cluster.
+			]]></xsd:documentation>
+		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:attributeGroup ref="integration:channelAdapterAttributes" />
 
@@ -70,13 +88,15 @@
 
 	<xsd:element name="outbound-channel-adapter">
 		<xsd:annotation>
-			<xsd:documentation>
-			</xsd:documentation>
+			<xsd:documentation><![CDATA[ 
+This outbound channel adapter sends message to cluster.
+At the moment it only supports sending messages to all members.
+			]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 
-			<xsd:sequence minOccurs="0" >
-				<xsd:element ref="integration:poller" minOccurs="0"/>
+			<xsd:sequence minOccurs="0">
+				<xsd:element ref="integration:poller" minOccurs="0" />
 			</xsd:sequence>
 
 			<xsd:attributeGroup ref="integration:channelAdapterAttributes" />

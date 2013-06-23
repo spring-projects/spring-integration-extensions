@@ -24,10 +24,13 @@ import org.jgroups.Message.Flag;
 import org.springframework.integration.MessageHeaders;
 
 /**
+ * Default JGroups header mapper, which rewrites all JGroups headers to Spring
+ * Integration message headers. If JGroups header was not set or was
+ * <code>false</code> then Spring integration header is not set.
  * 
  * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
  * @since 1.0.0
- *
+ * 
  */
 public class DefaultJGroupsHeaderMapper implements JGroupsHeaderMapper {
 

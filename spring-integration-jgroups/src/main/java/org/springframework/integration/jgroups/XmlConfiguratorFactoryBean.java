@@ -24,10 +24,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
 /**
+ * Factory bean which creates ProcotolStackConfigurator (
+ * {@link org.jgroups.conf.ProtocolStackConfigurator} ) based of XML file.
  * 
  * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
  * @since 1.0.0
- *
+ * 
  */
 public class XmlConfiguratorFactoryBean extends AbstractFactoryBean<ProtocolStackConfigurator> {
 
@@ -44,7 +46,7 @@ public class XmlConfiguratorFactoryBean extends AbstractFactoryBean<ProtocolStac
 
 	@Override
 	protected ProtocolStackConfigurator createInstance() throws Exception {
-		
+
 		Assert.notNull(resource, "no XML resource with JGroups configuration");
 
 		InputStream stream = resource.getInputStream();

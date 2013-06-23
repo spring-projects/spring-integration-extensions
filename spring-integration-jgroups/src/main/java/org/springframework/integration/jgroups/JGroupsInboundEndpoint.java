@@ -24,10 +24,12 @@ import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.support.MessageBuilder;
 
 /**
+ * InboundEndpoint which on start bounds itself, as receiver, to connected
+ * JGroups channel.
  * 
  * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
  * @since 1.0.0
- *
+ * 
  */
 public class JGroupsInboundEndpoint extends MessageProducerSupport {
 

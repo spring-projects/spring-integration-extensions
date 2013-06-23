@@ -19,7 +19,7 @@ import org.jgroups.Message;
 import org.springframework.integration.mapping.HeaderMapper;
 
 /**
- * 
+ * HeaderMapper interface for JGroups Message ( {@link org.jgroups.Message} )
  * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
  * @since 1.0.0
  *

@@ -21,10 +21,12 @@ import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.util.Assert;
 
 /**
+ * FactoryBean which creates instances of JChannel. Returned instance is already
+ * in connected state.
  * 
  * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
  * @since 1.0.0
- *
+ * 
  */
 public class JGroupsChannelFactoryBean extends AbstractFactoryBean<JChannel> {
 
@@ -35,11 +37,11 @@ public class JGroupsChannelFactoryBean extends AbstractFactoryBean<JChannel> {
 	public JChannel createInstance() throws Exception {
 
 		Assert.notNull(protocolStackConfigurator, "JGroups protocol stack configurator is null");
-		Assert.hasText(clusterName,"JGroups cluster name is null or empty");
-		
+		Assert.hasText(clusterName, "JGroups cluster name is null or empty");
+
 		JChannel channel = new JChannel(protocolStackConfigurator);
 		channel.connect(clusterName);
-		
+
 		return channel;
 
 	}
@@ -54,7 +56,7 @@ public class JGroupsChannelFactoryBean extends AbstractFactoryBean<JChannel> {
 	}
 
 	public void setClusterName(String clusterName) {
-		this.clusterName = clusterName;		
+		this.clusterName = clusterName;
 	}
 
 	@Override

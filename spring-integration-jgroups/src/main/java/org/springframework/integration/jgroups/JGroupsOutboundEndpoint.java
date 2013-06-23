@@ -20,10 +20,12 @@ import org.springframework.integration.Message;
 import org.springframework.integration.handler.AbstractMessageHandler;
 
 /**
+ * Outbound endpoint which sends messages to JGroups cluster/group. At the
+ * moment it only supports sending messages to all members.
  * 
  * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
  * @since 1.0.0
- *
+ * 
  */
 public class JGroupsOutboundEndpoint extends AbstractMessageHandler {
 
@@ -54,4 +56,4 @@ public class JGroupsOutboundEndpoint extends AbstractMessageHandler {
 		return jgroupsChannel;
 	}
 
-}  
+}
