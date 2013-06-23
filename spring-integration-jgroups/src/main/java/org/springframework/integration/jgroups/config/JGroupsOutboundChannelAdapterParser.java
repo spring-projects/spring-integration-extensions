@@ -21,6 +21,12 @@ import org.springframework.integration.config.xml.AbstractConsumerEndpointParser
 import org.springframework.integration.jgroups.JGroupsOutboundEndpoint;
 import org.w3c.dom.Element;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsOutboundChannelAdapterParser extends
 		AbstractConsumerEndpointParser {
 

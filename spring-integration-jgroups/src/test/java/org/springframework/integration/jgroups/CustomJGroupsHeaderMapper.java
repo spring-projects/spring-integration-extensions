@@ -20,6 +20,12 @@ import java.util.Map;
 import org.jgroups.Message;
 import org.springframework.integration.MessageHeaders;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class CustomJGroupsHeaderMapper implements JGroupsHeaderMapper {
 
 	@Override

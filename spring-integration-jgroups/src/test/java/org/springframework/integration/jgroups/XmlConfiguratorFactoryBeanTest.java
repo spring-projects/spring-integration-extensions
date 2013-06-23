@@ -24,6 +24,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.core.io.ClassPathResource;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class XmlConfiguratorFactoryBeanTest {
 
 	@Rule

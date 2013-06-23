@@ -31,6 +31,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsChannelFactoryBeanTest {
 
 	@Rule

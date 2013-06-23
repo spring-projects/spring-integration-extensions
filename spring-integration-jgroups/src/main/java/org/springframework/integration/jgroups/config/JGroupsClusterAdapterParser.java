@@ -25,6 +25,12 @@ import org.springframework.integration.jgroups.XmlConfiguratorFactoryBean;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsClusterAdapterParser extends AbstractBeanDefinitionParser {
 
 	@Override

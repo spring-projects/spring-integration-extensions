@@ -31,6 +31,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.integration.MessageHeaders;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 @RunWith(JUnitParamsRunner.class)
 public class DefaultJGroupsFlagHeaderMapperTest {
 

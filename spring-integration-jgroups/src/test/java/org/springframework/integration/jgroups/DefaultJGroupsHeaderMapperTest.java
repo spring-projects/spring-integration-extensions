@@ -25,6 +25,12 @@ import org.jgroups.Message;
 import org.jgroups.stack.IpAddress;
 import org.junit.Test;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class DefaultJGroupsHeaderMapperTest {
 
 	@Test

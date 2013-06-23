@@ -25,6 +25,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.integration.support.MessageBuilder;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsOutboundEndpointTest {
 
 	@Test

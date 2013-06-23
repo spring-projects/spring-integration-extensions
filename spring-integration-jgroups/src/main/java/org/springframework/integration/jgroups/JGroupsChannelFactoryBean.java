@@ -20,6 +20,12 @@ import org.jgroups.conf.ProtocolStackConfigurator;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.util.Assert;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsChannelFactoryBean extends AbstractFactoryBean<JChannel> {
 
 	private ProtocolStackConfigurator protocolStackConfigurator;

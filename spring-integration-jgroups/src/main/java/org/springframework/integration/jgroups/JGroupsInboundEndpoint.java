@@ -23,6 +23,12 @@ import org.jgroups.ReceiverAdapter;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.support.MessageBuilder;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsInboundEndpoint extends MessageProducerSupport {
 
 	private final JChannel jgroupsChannel;

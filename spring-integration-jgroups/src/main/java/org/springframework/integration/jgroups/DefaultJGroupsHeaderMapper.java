@@ -23,6 +23,12 @@ import org.jgroups.Message;
 import org.jgroups.Message.Flag;
 import org.springframework.integration.MessageHeaders;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class DefaultJGroupsHeaderMapper implements JGroupsHeaderMapper {
 
 	private static final String SCOPED_HEADER = "SCOPED";

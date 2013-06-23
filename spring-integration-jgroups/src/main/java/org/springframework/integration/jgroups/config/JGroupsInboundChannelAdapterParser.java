@@ -23,6 +23,12 @@ import org.springframework.integration.jgroups.JGroupsInboundEndpoint;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsInboundChannelAdapterParser extends AbstractChannelAdapterParser {
 
 

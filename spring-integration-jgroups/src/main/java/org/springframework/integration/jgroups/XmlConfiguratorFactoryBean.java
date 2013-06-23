@@ -23,6 +23,12 @@ import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class XmlConfiguratorFactoryBean extends AbstractFactoryBean<ProtocolStackConfigurator> {
 
 	private Resource resource;

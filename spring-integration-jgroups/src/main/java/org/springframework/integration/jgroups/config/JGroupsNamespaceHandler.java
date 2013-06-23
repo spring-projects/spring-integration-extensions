@@ -17,6 +17,12 @@ package org.springframework.integration.jgroups.config;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsNamespaceHandler extends NamespaceHandlerSupport{
 
 	public void init() {

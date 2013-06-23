@@ -19,6 +19,12 @@ import org.jgroups.JChannel;
 import org.springframework.integration.Message;
 import org.springframework.integration.handler.AbstractMessageHandler;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public class JGroupsOutboundEndpoint extends AbstractMessageHandler {
 
 	private final JChannel jgroupsChannel;

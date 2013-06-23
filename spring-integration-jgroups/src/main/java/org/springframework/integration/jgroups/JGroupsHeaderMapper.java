@@ -18,6 +18,12 @@ package org.springframework.integration.jgroups;
 import org.jgroups.Message;
 import org.springframework.integration.mapping.HeaderMapper;
 
+/**
+ * 
+ * @author Jaroslaw Palka <jaroslaw.palka@symentis.pl>
+ * @since 1.0.0
+ *
+ */
 public interface JGroupsHeaderMapper extends HeaderMapper<Message>{
 
 }
