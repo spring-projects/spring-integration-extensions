@@ -18,7 +18,8 @@ package org.springframework.integration.kafka.support;
 import java.util.*;
 import java.util.concurrent.*;
 
-import kafka.consumer.*;
+import kafka.consumer.ConsumerTimeoutException;
+import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 
@@ -49,7 +50,7 @@ public class ConsumerConfiguration {
 		this.consumerMetadata = consumerMetadata;
 		this.consumerConnectionProvider = consumerConnectionProvider;
 		this.messageLeftOverTracker = messageLeftOverTracker;
-		createConsumerMessageStreams();
+		//createConsumerMessageStreams();
 	}
 
 	public ConsumerMetadata getConsumerMetadata() {
@@ -62,7 +63,7 @@ public class ConsumerConfiguration {
 		final List<Callable<List<MessageAndMetadata>>> tasks = new LinkedList<Callable<List<MessageAndMetadata>>>();
 		final Object lock = new Object();
 
-		for (final List<KafkaStream<byte[], byte[]>> streams : consumerMessageStreams) {
+		for (final List<KafkaStream<byte[], byte[]>> streams : createConsumerMessageStreams()) {
 			for (final KafkaStream<byte[], byte[]> stream : streams) {
 				tasks.add(new Callable<List<MessageAndMetadata>>() {
 					@Override
@@ -174,15 +175,18 @@ public class ConsumerConfiguration {
 		}
 	}
 
-	private void createConsumerMessageStreams(){
-        if (!(consumerMetadata.getTopicStreamMap() == null || consumerMetadata.getTopicStreamMap().isEmpty())){
-        	consumerMessageStreams = createMessageStreamsForTopic().values();
-        }
-        else{
-        	consumerMessageStreams = new ArrayList<List<KafkaStream<byte[], byte[]>>>();
-        	
-	        consumerMessageStreams.add(createMessageStreamsForTopicFilter());
-        }
+	public Collection<List<KafkaStream<byte[], byte[]>>> createConsumerMessageStreams(){
+	    if (consumerMessageStreams == null){
+	        if (!(consumerMetadata.getTopicStreamMap() == null || consumerMetadata.getTopicStreamMap().isEmpty())){
+	            consumerMessageStreams = createMessageStreamsForTopic().values();
+	        }
+	        else{
+	            consumerMessageStreams = new ArrayList<List<KafkaStream<byte[], byte[]>>>();
+	            
+	            consumerMessageStreams.add(createMessageStreamsForTopicFilter());
+	        }
+	    }
+	    return consumerMessageStreams;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -210,7 +214,7 @@ public class ConsumerConfiguration {
 	
 	//FIXME
 	@SuppressWarnings("unchecked")
-	public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
+	/*public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
 		if (consumerMetadata.getValueDecoder() != null &&
 		    consumerMetadata.getKeyDecoder()   != null) {
 			return getConsumerConnector().createMessageStreams(
@@ -220,7 +224,7 @@ public class ConsumerConfiguration {
 		}
 
 		return getConsumerConnector().createMessageStreams(consumerMetadata.getTopicStreamMap());
-	}
+	}*/
 
 	public int getMaxMessages() {
 		return maxMessages;
