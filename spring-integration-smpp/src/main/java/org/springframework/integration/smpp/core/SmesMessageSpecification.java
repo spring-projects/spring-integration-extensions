@@ -19,7 +19,6 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jsmpp.bean.*;
-import org.jsmpp.bean.OptionalParameter.Short;
 import org.jsmpp.session.ClientSession;
 import org.jsmpp.session.SMPPSession;
 import org.jsmpp.util.AbsoluteTimeFormatter;
@@ -389,8 +388,8 @@ public class SmesMessageSpecification {
 				if (log.isDebugEnabled()) {
 					log.debug("Sending message using sar_msg_ref_num, sar_segment_seqnum and sar_total_segments");
 				}
-				Short sarMsgRefNum = OptionalParameters.newSarMsgRefNum(RandomUtils.nextInt(0x10000));
-				org.jsmpp.bean.OptionalParameter.Byte sarTotalSegments = OptionalParameters.newSarTotalSegments(shortMessageParts.size());
+				OptionalParameter sarMsgRefNum = OptionalParameters.newSarMsgRefNum(RandomUtils.nextInt(0x10000));
+				OptionalParameter sarTotalSegments = OptionalParameters.newSarTotalSegments(shortMessageParts.size());
 				String charsetName = DataCodingSpecification.getCharsetName(dataCoding.toByte());
 				for (int i = 0; i < shortMessageParts.size(); i++) {
 					byte[] shortMessagePart = shortMessageParts.get(i);
