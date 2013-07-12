@@ -185,7 +185,7 @@ public class ConsumerConfiguration {
 		if (consumerMetadata.getValueDecoder() != null) {
 			return getConsumerConnector().createMessageStreams(
 					consumerMetadata.getTopicStreamMap(),
-					consumerMetadata.getValueDecoder(),
+					consumerMetadata.getKeyDecoder(),
 					consumerMetadata.getValueDecoder());
 		}
 
