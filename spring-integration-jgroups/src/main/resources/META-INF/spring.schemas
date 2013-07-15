@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups-1.0.xsd=org/springframework/integration/jgroups/config/spring-integration-jgroups-1.0.xsd
+http\://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd=org/springframework/integration/jgroups/config/spring-integration-jgroups-1.0.xsd
