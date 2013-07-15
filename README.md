@@ -5,11 +5,13 @@ The Spring Integration Extensions project provides extension modules for [Spring
 
 ## Available Modules
 
+* [Kafka][] Support
+* [MQ Telemetry Transport][] (MQTT) Support
 * [SMB][] Support
 * [Print][] Support
-* [Atmosphere][] Support ([Websockets][])
 * [XQuery][] Support
 * [Splunk][] Support
+* [Voldemort][] Support
 * [Amazon Web Services (AWS)][] Support
 * [MQ Telemetry Transport (MQTT)][] Support
 
@@ -130,7 +132,9 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 
 [SMB]: http://en.wikipedia.org/wiki/Server_Message_Block
 [Print]: http://docs.oracle.com/javase/6/docs/technotes/guides/jps/index.html
-[Atmosphere]: https://github.com/Atmosphere/atmosphere
+[Kafka]: http://kafka.apache.org/
+[Voldemort]: http://www.project-voldemort.com/voldemort/
+[MQ Telemetry Transport]: http://mqtt.org/
 [Websockets]: http://www.html5rocks.com/en/tutorials/websockets/basics/
 [XQuery]: http://en.wikipedia.org/wiki/XQuery
 [Splunk]:http://www.splunk.com/
