@@ -5,15 +5,16 @@ The Spring Integration Extensions project provides extension modules for [Spring
 
 ## Available Modules
 
+* [Amazon Web Services (AWS)][] Support
 * [Kafka][] Support
-* [MQ Telemetry Transport][] (MQTT) Support
-* [SMB][] Support
+* [MQ Telemetry Transport (MQTT)][] Support
 * [Print][] Support
-* [XQuery][] Support
+* [SMB][] Support
+* [SMPP][] Support
 * [Splunk][] Support
 * [Voldemort][] Support
-* [Amazon Web Services (AWS)][] Support
-* [MQ Telemetry Transport (MQTT)][] Support
+* [XQuery][] Support
+
 
 ## Samples
 
@@ -131,6 +132,7 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [Apache License]: http://www.apache.org/licenses/LICENSE-2.0
 
 [SMB]: http://en.wikipedia.org/wiki/Server_Message_Block
+[SMPP]: http://en.wikipedia.org/wiki/Short_Message_Peer-to-Peer
 [Print]: http://docs.oracle.com/javase/6/docs/technotes/guides/jps/index.html
 [Kafka]: http://kafka.apache.org/
 [Voldemort]: http://www.project-voldemort.com/voldemort/
