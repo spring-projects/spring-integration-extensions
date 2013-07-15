@@ -137,4 +137,16 @@ public class ProducerMetadata<K,V> implements InitializingBean {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ProducerMetadata [keyEncoder=").append(keyEncoder).append(", valueEncoder=")
+                .append(valueEncoder).append(", topic=").append(topic).append(", compressionCodec=")
+                .append(compressionCodec).append(", partitioner=").append(partitioner).append(", async=").append(async)
+                .append(", batchNumMessages=").append(batchNumMessages).append("]");
+        return builder.toString();
+    }
+	
+	
 }
