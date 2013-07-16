@@ -45,6 +45,7 @@ import org.springframework.util.StringUtils;
  * be checked against the
  *
  * @author Amol Nayak
+ * @author Christos Kapasakalidis
  *
  * @since 0.5
  *
@@ -145,7 +146,7 @@ public class InboundFileSynchronizationImpl implements InboundFileSynchronizer,I
 							s3Object = client.getObject(bucketName, "/", key);
 							synchronizeObjectWithFile(localDirectory,summary,s3Object);
 						} finally {
-							if(s3Object.getInputStream() != null) {
+							if(s3Object != null && s3Object.getInputStream() != null) {
 								s3Object.getInputStream().close();
 							}
 						}
