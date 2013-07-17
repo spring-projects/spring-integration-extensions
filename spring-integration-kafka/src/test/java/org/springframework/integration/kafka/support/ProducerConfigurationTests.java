@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.integration.Message;
-import org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder;
+import org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaEncoder;
 import org.springframework.integration.kafka.test.utils.NonSerializableTestKey;
 import org.springframework.integration.kafka.test.utils.NonSerializableTestPayload;
 import org.springframework.integration.kafka.test.utils.TestKey;
@@ -130,7 +130,7 @@ public class ProducerConfigurationTests {
 	@SuppressWarnings("unchecked")
 	public void testSendMessageWithDefaultKeyEncoderAndNonDefaultValueEncoderAndCorrespondingData() throws Exception {
 		final ProducerMetadata<byte[], TestPayload> producerMetadata = new ProducerMetadata<byte[], TestPayload>("test");
-		final AvroBackedKafkaEncoder<TestPayload> encoder = new AvroBackedKafkaEncoder<TestPayload>(TestPayload.class);
+		final AvroReflectDatumBackedKafkaEncoder<TestPayload> encoder = new AvroReflectDatumBackedKafkaEncoder<TestPayload>(TestPayload.class);
 		producerMetadata.setValueEncoder(encoder);
 		producerMetadata.setKeyEncoder(new DefaultEncoder(null));
 		producerMetadata.setValueClassType(TestPayload.class);
@@ -171,7 +171,7 @@ public class ProducerConfigurationTests {
 	@SuppressWarnings("unchecked")
 	public void testSendMessageWithNonDefaultKeyEncoderAndDefaultValueEncoderAndCorrespondingData() throws Exception {
 		final ProducerMetadata<TestKey, byte[]> producerMetadata = new ProducerMetadata<TestKey, byte[]>("test");
-		final AvroBackedKafkaEncoder<TestKey> encoder = new AvroBackedKafkaEncoder<TestKey>(TestKey.class);
+		final AvroReflectDatumBackedKafkaEncoder<TestKey> encoder = new AvroReflectDatumBackedKafkaEncoder<TestKey>(TestKey.class);
 		producerMetadata.setKeyEncoder(encoder);
 		producerMetadata.setValueEncoder(new DefaultEncoder(null));
 		producerMetadata.setKeyClassType(TestKey.class);

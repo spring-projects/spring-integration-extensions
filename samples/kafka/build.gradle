@@ -7,10 +7,11 @@ apply plugin: 'idea'
 apply plugin: 'maven'
 
 repositories {
-	mavenLocal()
-	mavenCentral()
-	maven { url "http://repo.springsource.org/libs-snapshot" }
-        maven { url 'http://repo.springsource.org/plugins-release' }
+mavenLocal()
+maven {
+                url 'https://repository.apache.org/content/groups/public'
+        }
+        maven { url 'https://repo.springsource.org/libs-milestone' }
 }
 
 dependencies {
@@ -20,8 +21,12 @@ dependencies {
 	   compile "org.springframework.integration:spring-integration-stream:2.2.0.RELEASE"
 	compile("org.springframework.integration:spring-integration-kafka:0.5.0.BUILD-SNAPSHOT") {
    		exclude module: 'log4j'
+                exclude module: 'jms'
+                exclude module: 'jmxtools'
+                exclude module: 'jmxri'
 	}
 compile("log4j:log4j:1.2.15") {
+		exclude module: 'mail'
         exclude module: 'jms'
         exclude module: 'jmx'
         exclude module: 'jmxtools'
