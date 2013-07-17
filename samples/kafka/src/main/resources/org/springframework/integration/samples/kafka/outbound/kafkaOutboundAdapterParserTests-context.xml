@@ -21,8 +21,12 @@
     
     <task:executor id="taskExecutor" pool-size="5" keep-alive="120" queue-capacity="500"/>
 
-    <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
+    <bean id="kafkaReflectionEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaEncoder">
         <constructor-arg value="java.lang.String" />
+    </bean>
+
+    <bean id="kafkaSpecificEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroSpecificDatumBackedKafkaEncoder">
+            <constructor-arg value="org.springframework.integration.samples.kafka.user.User" />
     </bean>
 
     <bean id="customPartitioner" class="org.springframework.integration.samples.kafka.outbound.CustomPartitioner"/>
@@ -31,10 +35,10 @@
         <int-kafka:producer-configurations>
             <int-kafka:producer-configuration broker-list="localhost:9092"
                                               key-class-type="java.lang.String"
-                                              value-class-type="java.lang.String"
+                                              value-class-type="org.springframework.integration.samples.kafka.user.User"
                                               topic="test1"
-                                              value-encoder="kafkaEncoder"
-                                              key-encoder="kafkaEncoder"
+                                              value-encoder="kafkaSpecificEncoder"
+                                              key-encoder="kafkaReflectionEncoder"
                                               compression-codec="default"
                                               partitioner="customPartitioner"/>
             <int-kafka:producer-configuration broker-list="localhost:9092"

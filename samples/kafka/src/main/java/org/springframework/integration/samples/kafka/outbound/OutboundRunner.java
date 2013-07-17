@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.MessageChannel;
+import org.springframework.integration.samples.kafka.user.User;
 import org.springframework.integration.support.MessageBuilder;
 
 public class OutboundRunner {
@@ -34,8 +35,11 @@ public class OutboundRunner {
 
         //sending 100,000 messages to Kafka server for topic test1
         for (int i = 0; i < 500; i++) {
+			final User user = new User();
+			user.setFirstName("fname" + i);
+			user.setLastName("lname" + i);
             channel.send(
-                    MessageBuilder.withPayload("hello Fom ob adapter test1 -  " + i)
+                    MessageBuilder.withPayload(user)
                             .setHeader("messageKey", String.valueOf(i))
                             .setHeader("topic", "test1").build());
 
