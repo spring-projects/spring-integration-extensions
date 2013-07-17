@@ -25,14 +25,13 @@ import org.apache.commons.logging.LogFactory;
  * @author Soby Chacko
  * @since 0.5
  */
-public class AvroReflectDatumBackedKafkaEncoder<T> extends AvroReflectDatumSupport implements Encoder<T> {
+public class AvroReflectDatumBackedKafkaEncoder<T> extends AvroDatumSupport implements Encoder<T> {
 	private static final Log LOG = LogFactory.getLog(AvroReflectDatumBackedKafkaEncoder.class);
 
 	private final DatumWriter<T> writer;
 
-	public AvroReflectDatumBackedKafkaEncoder(final Class clazz) {
-		super(clazz);
-		this.writer = new ReflectDatumWriter<T>(getSchema());
+	public AvroReflectDatumBackedKafkaEncoder(final Class<T> clazz) {
+		this.writer = new ReflectDatumWriter<T>(clazz);
 	}
 
 	@Override

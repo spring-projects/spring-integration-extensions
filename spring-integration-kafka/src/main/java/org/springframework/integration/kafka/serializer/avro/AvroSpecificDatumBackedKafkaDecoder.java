@@ -1,7 +1,6 @@
 package org.springframework.integration.kafka.serializer.avro;
 
 import kafka.serializer.Decoder;
-import org.apache.avro.Schema;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.commons.logging.Log;
@@ -11,15 +10,14 @@ import org.apache.commons.logging.LogFactory;
  * @author Soby Chacko
  * @since 0.5
  */
-public class AvroSpecificDatumBackedKafkaDecoder<T> extends AvroSpecificDatumSupport implements Decoder<T> {
+public class AvroSpecificDatumBackedKafkaDecoder<T> extends AvroDatumSupport implements Decoder<T> {
 
 	private static final Log LOG = LogFactory.getLog(AvroSpecificDatumBackedKafkaDecoder.class);
 
 	private final DatumReader<T> reader;
 
-	public AvroSpecificDatumBackedKafkaDecoder(final Schema schema) {
-		super(schema);
-		this.reader = new SpecificDatumReader<T>(schema);
+	public AvroSpecificDatumBackedKafkaDecoder(final Class<T> specificRecordBase) {
+		this.reader = new SpecificDatumReader<T>(specificRecordBase);
 	}
 
 	@Override

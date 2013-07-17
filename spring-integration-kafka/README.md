@@ -116,8 +116,8 @@ the Kafka Partitioner interface.
 Here is an example of configuring an encoder.
 
 ```xml
-    <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaEncoder">
-        <constructor-arg value="java.lang.String" />
+    <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroSpecificDatumBackedKafkaEncoder">
+        <constructor-arg value="com.company.AvroGeneratedSpecificRecord" />
     </bean>
 ```
 
@@ -133,6 +133,23 @@ In the latter case, the Kafka adapter will automatically convert them to byte ar
 If the encoders are default and the objets sent are not serializalbe, then that would cause an error. By providing explicit encoders
 it is totally up to the developer to configure how the objects are serialized. In that case, the objects may or may not implement
 the Serializable interface.
+
+A bit more on the Avro support. There are two kinds of Avro encoders are provided, one based on the RefectDatum support and the other
+based on the SpecificDatum support. The encoding based on Reflection is fairly simple as you only have to configure your POJO or other class types
+along with the XML. Here is an example.
+
+```xml
+    <bean id="kafkaEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaEncoder">
+        <constructor-arg value="java.lang.String" />
+    </bean>
+```
+
+Reflection based encoding may not be appropriate for large scale systems and Avro also provides SpecificDatum support in which you can
+generate an specific Avro object (a glorified POJO) from a schema definition. The generated object will store the schema as well. In order to
+do this, you need to generate the Avro object separately though. There are both maven and gradle plugins available to do code generation
+automatically. You have to provide the avdl or avsc files to specify your schema. Once you take care of these issues, you can simply configure
+a specific datum based avro encoder (see the above example) and pass along the fully qualified class name of the generated Avro object
+for which you want to encode instances. The samples project has examples of using both of these encoders.
 
 Encoding String for key and value is a very common use case and Kafka provides a StringEncoder out of the box. It takes a Kafka specific VerifiableProperties object
  along with its

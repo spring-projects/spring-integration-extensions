@@ -25,7 +25,7 @@ import org.springframework.integration.kafka.test.utils.TestObject;
  * @author Soby Chacko
  * @since 0.5
  */
-public class AvroBackedKafkaSerializerTest {
+public class AvroReflectDatumBackedKafkaSerializerTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testDecodePlainSchema() {

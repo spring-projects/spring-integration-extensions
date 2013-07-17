@@ -27,8 +27,12 @@
         <int:poller fixed-delay="1" time-unit="MILLISECONDS"/>
     </int-kafka:inbound-channel-adapter>
 
-    <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaDecoder">
+    <bean id="kafkaReflectionDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaDecoder">
         <constructor-arg type="java.lang.Class" value="java.lang.String"/>
+    </bean>
+
+    <bean id="kafkaSpecificDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroSpecificDatumBackedKafkaDecoder">
+                <constructor-arg value="org.springframework.integration.samples.kafka.user.User" />
     </bean>
 
     <int-kafka:consumer-context id="consumerContext"
@@ -36,13 +40,13 @@
                                 zookeeper-connect="zookeeperConnect">
         <int-kafka:consumer-configurations>
             <int-kafka:consumer-configuration group-id="default"
-                                              value-decoder="kafkaDecoder"
-                                              key-decoder="kafkaDecoder"
+                                              value-decoder="kafkaSpecificDecoder"
+                                              key-decoder="kafkaReflectionDecoder"
                                               max-messages="5000">
                 <int-kafka:topic id="test1" streams="4"/>
             </int-kafka:consumer-configuration>
             <int-kafka:consumer-configuration group-id="default1"
-                                              max-messages="5">
+                                              max-messages="50">
                 <int-kafka:topic id="test2" streams="4"/>
             </int-kafka:consumer-configuration>
         </int-kafka:consumer-configurations>
