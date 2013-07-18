@@ -167,12 +167,12 @@ Inbound Channel Adapter:
 --------------------------------------------
 
 The Inbound channel adapter is used to consume messages from Kafka. These messages will be placed into a channel as Spring Integration specific Messages.
-Kafka provides two types of consumer API's primarily. One is called the high level consumer and the other is the Simple Consumer. Highlevel consumer is
+Kafka provides two types of consumer API's primarily. One is called the High Level Consumer and the other is the Simple Consumer. High Level consumer is
 pretty complex inside. Nonetheless, for the client, using the high level API is straightforward. Although easy to use, High level consumer
 does not provide any offset management. So, if you want to rewind and re-fetch messages, it is not possible to do so using the
-high level consumer API. Offsets are managed by the Zookeeper internally in the high level consumer. If your use case does not require any offset management
+High Level Consumer API. Offsets are managed by the Zookeeper internally in the High Level Consumer. If your use case does not require any offset management
 or re-reading messages from the same consumer, then high level consumer is a perfect fit. Spring Integration Kafka inbound channel adapter
-currently supports only the high level consumer. Here are the details of configuring one.
+currently supports only the High Level Consumer. Here are the details of configuring one.
 
 ```xml
 	<int-kafka:inbound-channel-adapter id="kafkaInboundChannelAdapter"
@@ -184,11 +184,11 @@ currently supports only the high level consumer. Here are the details of configu
 ```
 
 Since this inbound channel adapter uses a Polling Channel under the hood, it must be configured with a Poller. A notable difference
-between the poller configured with this inbound adapter and other pollers is that the receive-timeout specified here
+between the poller configured with this inbound adapter and other pollers used in Spring Integration is that the receive-timeout specified on this poller
 does not have any effect. The reason for this is because of the way Kafka implements iterators on the consumer stream.
 It is using a BlockingQueue internally and thus it would wait indefinitely. Instead of interrupting the underlying thread,
-we are leveraging on direct Kafka support for consumer time out. It is configured on the consumer context. Everything else
- is pretty much the same as in a regular inbound adapter. Any messages that it receives will be sent to the channel configured with it.
+we are leveraging a direct Kafka support for consumer time out. It is configured on the consumer context. Everything else
+is pretty much the same as in a regular inbound adapter. Any message that it receives will be sent to the channel configured with it.
 
 Inbound Kafka Adapter must specify a kafka-consumer-context-ref element and here is how it is configured:
 
@@ -224,19 +224,19 @@ In the above consumer context, you can also specify a consumer-timeout value whi
 timeout the consumer in case of no messages to consume.
 This timeout would be applicable to all the streams (threads) in the consumer.
 The default value for this in Kafka is -1 which would make it wait
-indefinitely. However, Sping Integration overrides it to be 5 seconds in order to make sure that no
+indefinitely. However, Sping Integration overrides it to be 5 seconds by default in order to make sure that no
 threads are blocking indefinitely in the lifecycle of the application and thereby
 giving them a chance to free up any resources or locks that they hold. It is recommended to
 override this value so as to meet any specific use case requirements.
-By providing a reasonable consumer-timeout and a fixed-delay value on the poller,
+By providing a reasonable consumer-timeout on the context and a fixed-delay value on the poller,
 this inbound adapter is capable of simulating a message driven behaviour.
 
-consumer context takes consumer-configurations which are at the center piece of the inbound adapter. It is a group of one or more
+consumer context takes consumer-configurations which are at the core of the inbound adapter. It is a group of one or more
 consumer-configuration elements which consists of a consumer group dictated by the group-id. Each consumer-configuration
-can be configured with one or more kafka-topic.
+can be configured with one or more kafka-topics.
 
 In the above example provided, we have a single consumer-configuration that consumes messages from two topics each having 4 streams.
- These streams are fundamentally same as the number of partitions that a topic is configured
+ These streams are fundamentally equivalent to the number of partitions that a topic is configured
  with in the producer. For instance, if you configure your topic with
 4 partitions, then the maximum number of streams that you may have in the consumer is also 4.
 Any more than this would be a no-op.
@@ -252,13 +252,24 @@ Consumer configuration can also be configured with optional decoders for key and
 The default ones provided by Kafka are basically no-ops and would consume as byte arrays.
 If you provide an encoder for key/value in the producer, then it is recommended to provide
 corresponding decoders.
-Spring Integration Kafka adapter gives Apache Avro based data serialization components
-out of the box. You can use any serialization component for this purpose.
-Here is how you would configure a kafka decoder bean that is Avro backed.
+As disussed already in the outbound adapter, Spring Integration Kafka adapter gives Apache Avro based data serialization components
+out of the box. You can use any serialization component for this purpose as long as you implement the required encoder/decoder interfaces from Kafka.
+As with the Avro encoder support, decoders provided also
+implement Reflection and Specific datum based de-serialization. Here is how you would configure kafka decoder beans that is Avro backed.
+
+Using Avro Specific support:
 
 ```xml
-   <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroBackedKafkaDecoder">
-		   <constructor-arg type="java.lang.Class" value="java.lang.String" />
+   <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroSpecificDatumBackedKafkaDecoder">
+		   <constructor-arg value="com.domain.AvroGeneratedSpecificRecord" />
+   </bean>
+```
+
+Using Reflection support:
+
+```xml
+   <bean id="kafkaDecoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaDecoder">
+		   <constructor-arg value="java.lang.String" />
    </bean>
 ```
 
@@ -266,13 +277,13 @@ Another important attribute for the consumer-configuration is the max-messages.
 Please note that this is different from the max-messages-per-poll configured on the inbound adapter
 element.
 There it means the number of times the receive method called on the adapter.
-The max-messages on consumer configuration is different. Kafka is used mainly for big data purposes
-and usually that means the influx of large amount of data constantly. Because of this,
+The max-messages on consumer configuration is different. When you use Kafka for ingesting messages,
+it usually means an influx of large amount of data constantly. Because of this,
 each time a receive is invoked on the adapter, you would basically get a collection of messages.
 The maximum number of messages to retrieve for a topic in each execution of the
 receive is what configured through the max-messages attribute on the consumer-configuration.
 Basically, if the use case is to receive a constant stream of
-large number of data, simply specifying a receive-timeout alone would not be enough.
+large number of data, simply specifying a consumer-timeout alone would not be enough.
 You would also need to specify the max number of messages to receive.
 
 The type of the payload of the Message returned by the adapter is the following:
