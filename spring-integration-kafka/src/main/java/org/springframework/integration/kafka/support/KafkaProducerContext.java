@@ -43,7 +43,7 @@ public class KafkaProducerContext implements BeanFactoryAware {
 		}
 	}
 
-	private ProducerConfiguration getTopicConfiguration(final String topic){
+	public ProducerConfiguration getTopicConfiguration(final String topic){
 		final Collection<ProducerConfiguration> topics = topicsConfiguration.values();
 
 		for (final ProducerConfiguration producerConfiguration : topics){
