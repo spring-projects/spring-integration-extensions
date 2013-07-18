@@ -148,6 +148,11 @@ public class ConsumerConfigurationTests {
 		final ConsumerConnectionProvider consumerConnectionProvider =
 				Mockito.mock(ConsumerConnectionProvider.class);
 		final MessageLeftOverTracker messageLeftOverTracker = Mockito.mock(MessageLeftOverTracker.class);
+		
+		Map<String, Integer> topicStreamMap = new HashMap<String, Integer>();
+		topicStreamMap.put("topic1", 3);
+		topicStreamMap.put("topic2", 3);
+		topicStreamMap.put("topic3", 3);
 
 		final ConsumerConnector consumerConnector = Mockito.mock(ConsumerConnector.class);
 
@@ -169,7 +174,7 @@ public class ConsumerConfigurationTests {
 		messageStreams.put("topic2", streams);
 		messageStreams.put("topic3", streams);
 
-		Mockito.when(consumerConfiguration.createConsumerMessageStreams()).thenReturn(messageStreams.values());
+		Mockito.when(consumerConfiguration.createMessageStreamsForTopic()).thenReturn(messageStreams);
 		final ConsumerIterator iterator1 = Mockito.mock(ConsumerIterator.class);
 		final ConsumerIterator iterator2 = Mockito.mock(ConsumerIterator.class);
 		final ConsumerIterator iterator3 = Mockito.mock(ConsumerIterator.class);
@@ -237,6 +242,9 @@ public class ConsumerConfigurationTests {
 		final MessageLeftOverTracker messageLeftOverTracker = Mockito.mock(MessageLeftOverTracker.class);
 		final ConsumerConnector consumerConnector = Mockito.mock(ConsumerConnector.class);
 
+		Map<String, Integer> topicStreamMap = new HashMap<String, Integer>();
+		topicStreamMap.put("topic1", 1);
+		Mockito.when(consumerMetadata.getTopicStreamMap()).thenReturn(topicStreamMap);
 		Mockito.when(messageLeftOverTracker.getCurrentCount()).thenReturn(3);
 		final MessageAndMetadata m1 = new MessageAndMetadata("key1", "value1", "topic1", 1, 1L);
 		final MessageAndMetadata m2 = new MessageAndMetadata("key2", "value2", "topic2", 1, 1L);
@@ -260,8 +268,7 @@ public class ConsumerConfigurationTests {
 		streams.add(stream);
 		final Map<String, List<KafkaStream<byte[], byte[]>>> messageStreams = new HashMap<String, List<KafkaStream<byte[], byte[]>>>();
 		messageStreams.put("topic1", streams);
-
-		Mockito.when(consumerConfiguration.createConsumerMessageStreams()).thenReturn(messageStreams.values());
+		Mockito.when(consumerConfiguration.createMessageStreamsForTopic()).thenReturn(messageStreams);
 		final ConsumerIterator iterator = Mockito.mock(ConsumerIterator.class);
 		Mockito.when(stream.iterator()).thenReturn(iterator);
 		final MessageAndMetadata messageAndMetadata = Mockito.mock(MessageAndMetadata.class);

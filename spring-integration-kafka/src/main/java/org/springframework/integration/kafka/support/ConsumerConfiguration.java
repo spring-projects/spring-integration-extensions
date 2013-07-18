@@ -190,7 +190,7 @@ public class ConsumerConfiguration {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private  Map<String, List<KafkaStream<byte[], byte[]>>> createMessageStreamsForTopic(){
+	public  Map<String, List<KafkaStream<byte[], byte[]>>> createMessageStreamsForTopic(){
 		if (consumerMetadata.getValueDecoder() != null) {
 			return getConsumerConnector().createMessageStreams(
 					consumerMetadata.getTopicStreamMap(),
@@ -202,13 +202,18 @@ public class ConsumerConfiguration {
 	}
 	
 	public List<KafkaStream<byte[], byte[]>> createMessageStreamsForTopicFilter(){
+		List<KafkaStream<byte[], byte[]>> messageStream = new ArrayList<KafkaStream<byte[], byte[]>>();
 		TopicFilterConfiguration topicFilterConfiguration = consumerMetadata.getTopicFilterConfiguration();
-		List<KafkaStream<byte[], byte[]>> messageStream;  
-        if (consumerMetadata.getValueDecoder() != null) {
-            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams(), consumerMetadata.getKeyDecoder(), consumerMetadata.getValueDecoder());
-        }else{
-            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams()); 
-        }
+		if (topicFilterConfiguration != null){
+			if (consumerMetadata.getValueDecoder() != null) {
+	            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams(), consumerMetadata.getKeyDecoder(), consumerMetadata.getValueDecoder());
+	        }else{
+	            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams()); 
+	        }
+		}else{
+			LOGGER.warn("No Topilc Filter Configuration defined");
+		}
+        
         return messageStream;
 	}
 	
