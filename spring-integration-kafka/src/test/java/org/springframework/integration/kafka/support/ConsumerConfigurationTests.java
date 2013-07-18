@@ -42,6 +42,10 @@ public class ConsumerConfigurationTests {
 		final MessageLeftOverTracker messageLeftOverTracker = Mockito.mock(MessageLeftOverTracker.class);
 		final ConsumerConnector consumerConnector = Mockito.mock(ConsumerConnector.class);
 
+		Map<String, Integer> topicStreamMap = new HashMap<String, Integer>();
+		topicStreamMap.put("topic1", 1);
+		Mockito.when(consumerMetadata.getTopicStreamMap()).thenReturn(topicStreamMap);
+		
 		Mockito.when(consumerConnectionProvider.getConsumerConnector()).thenReturn(consumerConnector);
 
 		final ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration(consumerMetadata,
@@ -54,7 +58,7 @@ public class ConsumerConfigurationTests {
 		final Map<String, List<KafkaStream<byte[], byte[]>>> messageStreams = new HashMap<String, List<KafkaStream<byte[], byte[]>>>();
 		messageStreams.put("topic", streams);
 
-		Mockito.when(consumerConfiguration.createConsumerMessageStreams()).thenReturn(messageStreams.values());
+		Mockito.when(consumerConfiguration.createMessageStreamsForTopic()).thenReturn(messageStreams);
 		final ConsumerIterator iterator = Mockito.mock(ConsumerIterator.class);
 		Mockito.when(stream.iterator()).thenReturn(iterator);
 		final MessageAndMetadata messageAndMetadata = Mockito.mock(MessageAndMetadata.class);
@@ -82,6 +86,10 @@ public class ConsumerConfigurationTests {
 				Mockito.mock(ConsumerConnectionProvider.class);
 		final MessageLeftOverTracker messageLeftOverTracker = Mockito.mock(MessageLeftOverTracker.class);
 
+		Map<String, Integer> topicStreamMap = new HashMap<String, Integer>();
+		topicStreamMap.put("topic1", 1);
+		Mockito.when(consumerMetadata.getTopicStreamMap()).thenReturn(topicStreamMap);
+		
 		final ConsumerConnector consumerConnector = Mockito.mock(ConsumerConnector.class);
 
 		Mockito.when(consumerConnectionProvider.getConsumerConnector()).thenReturn(consumerConnector);
@@ -100,7 +108,7 @@ public class ConsumerConfigurationTests {
 		final Map<String, List<KafkaStream<byte[], byte[]>>> messageStreams = new HashMap<String, List<KafkaStream<byte[], byte[]>>>();
 		messageStreams.put("topic", streams);
 
-		Mockito.when(consumerConfiguration.createConsumerMessageStreams()).thenReturn(messageStreams.values());
+		Mockito.when(consumerConfiguration.createMessageStreamsForTopic()).thenReturn(messageStreams);
 		final ConsumerIterator iterator1 = Mockito.mock(ConsumerIterator.class);
 		final ConsumerIterator iterator2 = Mockito.mock(ConsumerIterator.class);
 		final ConsumerIterator iterator3 = Mockito.mock(ConsumerIterator.class);
@@ -150,9 +158,9 @@ public class ConsumerConfigurationTests {
 		final MessageLeftOverTracker messageLeftOverTracker = Mockito.mock(MessageLeftOverTracker.class);
 		
 		Map<String, Integer> topicStreamMap = new HashMap<String, Integer>();
-		topicStreamMap.put("topic1", 3);
-		topicStreamMap.put("topic2", 3);
-		topicStreamMap.put("topic3", 3);
+		topicStreamMap.put("topic1", 1);
+		Mockito.when(consumerMetadata.getTopicStreamMap()).thenReturn(topicStreamMap);
+		
 
 		final ConsumerConnector consumerConnector = Mockito.mock(ConsumerConnector.class);
 
@@ -203,6 +211,7 @@ public class ConsumerConfigurationTests {
 		Mockito.when(messageAndMetadata1.partition()).thenAnswer(getAnswer());
 
 		final Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
+		
 		int sum = 0;
 
 		final Collection<Map<Integer, List<Object>>> values = messages.values();
