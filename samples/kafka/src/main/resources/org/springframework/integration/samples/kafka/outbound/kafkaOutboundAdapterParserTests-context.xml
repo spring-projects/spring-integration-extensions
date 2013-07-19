@@ -1,49 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:int="http://www.springframework.org/schema/integration"
-       xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
-       xmlns:task="http://www.springframework.org/schema/task"
-       xsi:schemaLocation="http://www.springframework.org/schema/integration/kafka http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
-		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/kafka http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
+	http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <int:channel id="inputToKafka">
-        <int:queue/>
-    </int:channel>
+	<int:channel id="inputToKafka">
+		<int:queue/>
+	</int:channel>
 
-    <int-kafka:outbound-channel-adapter kafka-producer-context-ref="kafkaProducerContext"
-                                        auto-startup="false"
-                                        channel="inputToKafka">
-        <int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
-    </int-kafka:outbound-channel-adapter>
-    
-    <task:executor id="taskExecutor" pool-size="5" keep-alive="120" queue-capacity="500"/>
+	<int-kafka:outbound-channel-adapter kafka-producer-context-ref="kafkaProducerContext"
+			auto-startup="false"
+			channel="inputToKafka">
+		<int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
+	</int-kafka:outbound-channel-adapter>
 
-    <bean id="kafkaReflectionEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaEncoder">
-        <constructor-arg value="java.lang.String" />
-    </bean>
+	<task:executor id="taskExecutor" pool-size="5" keep-alive="120" queue-capacity="500"/>
 
-    <bean id="kafkaSpecificEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroSpecificDatumBackedKafkaEncoder">
-            <constructor-arg value="org.springframework.integration.samples.kafka.user.User" />
-    </bean>
+	<bean id="kafkaReflectionEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroReflectDatumBackedKafkaEncoder">
+		<constructor-arg value="java.lang.String" />
+	</bean>
 
-    <bean id="customPartitioner" class="org.springframework.integration.samples.kafka.outbound.CustomPartitioner"/>
+	<bean id="kafkaSpecificEncoder" class="org.springframework.integration.kafka.serializer.avro.AvroSpecificDatumBackedKafkaEncoder">
+		<constructor-arg value="org.springframework.integration.samples.kafka.user.User" />
+	</bean>
 
-    <int-kafka:producer-context id="kafkaProducerContext">
-        <int-kafka:producer-configurations>
-            <int-kafka:producer-configuration broker-list="localhost:9092"
-                                              key-class-type="java.lang.String"
-                                              value-class-type="org.springframework.integration.samples.kafka.user.User"
-                                              topic="test1"
-                                              value-encoder="kafkaSpecificEncoder"
-                                              key-encoder="kafkaReflectionEncoder"
-                                              compression-codec="default"
-                                              partitioner="customPartitioner"/>
-            <int-kafka:producer-configuration broker-list="localhost:9092"
-                                              topic="test2"
-                                              compression-codec="default"/>
-        </int-kafka:producer-configurations>
-    </int-kafka:producer-context>
+	<bean id="customPartitioner" class="org.springframework.integration.samples.kafka.outbound.CustomPartitioner"/>
+
+	<int-kafka:producer-context id="kafkaProducerContext">
+		<int-kafka:producer-configurations>
+			<int-kafka:producer-configuration broker-list="localhost:9092"
+					key-class-type="java.lang.String"
+					value-class-type="org.springframework.integration.samples.kafka.user.User"
+					topic="test1"
+					value-encoder="kafkaSpecificEncoder"
+					key-encoder="kafkaReflectionEncoder"
+					compression-codec="default"
+					partitioner="customPartitioner"/>
+			<int-kafka:producer-configuration broker-list="localhost:9092"
+					topic="test2"
+					compression-codec="default"/>
+			<int-kafka:producer-configuration broker-list="localhost:9092"
+					topic="regextopic.*"
+					compression-codec="default"/>
+		</int-kafka:producer-configurations>
+	</int-kafka:producer-context>
 </beans>

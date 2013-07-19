@@ -18,10 +18,10 @@ package org.springframework.integration.samples.kafka.inbound;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class InboundRunner {
-    private static final String CONFIG = "kafkaInboundAdapterParserTests-context.xml";
+	private static final String CONFIG = "kafkaInboundAdapterParserTests-context.xml";
 
-    public static void main(final String args[]) {
-       final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(CONFIG, InboundRunner.class);
-       ctx.start();
-    }
+	public static void main(final String args[]) {
+		final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(CONFIG, InboundRunner.class);
+		ctx.start();
+	}
 }

@@ -23,37 +23,55 @@ import org.springframework.integration.samples.kafka.user.User;
 import org.springframework.integration.support.MessageBuilder;
 
 public class OutboundRunner {
-    private static final String CONFIG = "kafkaOutboundAdapterParserTests-context.xml";
-    private static final Log LOG = LogFactory.getLog(OutboundRunner.class);
+	private static final String CONFIG = "kafkaOutboundAdapterParserTests-context.xml";
+	private static final Log LOG = LogFactory.getLog(OutboundRunner.class);
 
-    public static void main(final String args[]) {
-        final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(CONFIG, OutboundRunner.class);
-        ctx.start();
+	public static void main(final String args[]) {
+		final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(CONFIG, OutboundRunner.class);
+		ctx.start();
 
-        final MessageChannel channel = ctx.getBean("inputToKafka", MessageChannel.class);
-        LOG.info(channel.getClass());
+		final MessageChannel channel = ctx.getBean("inputToKafka", MessageChannel.class);
+		LOG.info(channel.getClass());
 
-        //sending 100,000 messages to Kafka server for topic test1
-        for (int i = 0; i < 500; i++) {
+		//sending 100,000 messages to Kafka server for topic test1
+		for (int i = 0; i < 500; i++) {
 			final User user = new User();
 			user.setFirstName("fname" + i);
 			user.setLastName("lname" + i);
-            channel.send(
-                    MessageBuilder.withPayload(user)
-                            .setHeader("messageKey", String.valueOf(i))
-                            .setHeader("topic", "test1").build());
+			channel.send(
+					MessageBuilder.withPayload(user)
+							.setHeader("messageKey", String.valueOf(i))
+							.setHeader("topic", "test1").build());
 
-            LOG.info("message sent " + i);
-        }
+			LOG.info("message sent " + i);
+		}
 
-        //sending 5,000 messages to kafka server for topic test2
-        for (int i = 0; i < 50; i++) {
-            channel.send(
-                MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i)
-                    .setHeader("messageKey", String.valueOf(i))
-                    .setHeader("topic", "test2").build());
+		//sending 5,000 messages to kafka server for topic test2
+		for (int i = 0; i < 50; i++) {
+			channel.send(
+				MessageBuilder.withPayload("hello Fom ob adapter test2 -  " + i)
+					.setHeader("messageKey", String.valueOf(i))
+					.setHeader("topic", "test2").build());
 
-            LOG.info("message sent " + i);
-        }
-    }
+			LOG.info("message sent " + i);
+		}
+
+		//Send some messages to multiple topics matching regex.
+		for (int i = 0; i < 10; i++) {
+			channel.send(
+				MessageBuilder.withPayload("hello Fom ob adapter regextopic1 -  " + i)
+					.setHeader("messageKey", String.valueOf(i))
+					.setHeader("topic", "regextopic1").build());
+
+			LOG.info("message sent " + i);
+		}
+		for (int i = 0; i < 10; i++) {
+			channel.send(
+				MessageBuilder.withPayload("hello Fom ob adapter regextopic2 -  " + i)
+					.setHeader("messageKey", String.valueOf(i))
+					.setHeader("topic", "regextopic2").build());
+
+			LOG.info("message sent " + i);
+		}
+	}
 }

@@ -29,28 +29,28 @@ import java.util.Map;
  * @author Soby Chacko
  */
 public class PartitionlessTransformer implements Transformer {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Message<?> transform(final Message<?> message) {
+	@Override
+	@SuppressWarnings("unchecked")
+	public Message<?> transform(final Message<?> message) {
 
-        final Map<String, Map<Integer, List<Object>>> origData =
-                (Map<String, Map<Integer, List<Object>>>) message.getPayload();
+		final Map<String, Map<Integer, List<Object>>> origData =
+				(Map<String, Map<Integer, List<Object>>>) message.getPayload();
 
-        final Map<String, List<Object>> nonPartitionedData = new HashMap<String, List<Object>>();
+		final Map<String, List<Object>> nonPartitionedData = new HashMap<String, List<Object>>();
 
-        for(final String topic : origData.keySet()) {
-            final Map<Integer, List<Object>> partitionedData = origData.get(topic);
-            final Collection<List<Object>> nonPartitionedDataFromTopic = partitionedData.values();
+		for(final String topic : origData.keySet()) {
+			final Map<Integer, List<Object>> partitionedData = origData.get(topic);
+			final Collection<List<Object>> nonPartitionedDataFromTopic = partitionedData.values();
 
-            final List<Object> mergedList = new ArrayList<Object>();
+			final List<Object> mergedList = new ArrayList<Object>();
 
-            for (final List<Object> l : nonPartitionedDataFromTopic){
-                mergedList.addAll(l);
-            }
+			for (final List<Object> l : nonPartitionedDataFromTopic){
+				mergedList.addAll(l);
+			}
 
-            nonPartitionedData.put(topic, mergedList);
-        }
+			nonPartitionedData.put(topic, mergedList);
+		}
 
-        return MessageBuilder.withPayload(nonPartitionedData).build();
-    }
+		return MessageBuilder.withPayload(nonPartitionedData).build();
+	}
 }
