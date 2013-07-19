@@ -40,6 +40,13 @@
             <int-kafka:producer-configuration broker-list="localhost:9092"
                                               topic="test2"
                                               compression-codec="default"/>
+            <int-kafka:producer-configuration broker-list="localhost:9092"
+                                              key-class-type="java.lang.String"
+                                              value-class-type="java.lang.String"
+                                              topic="regextopic.*"
+                                              value-encoder="kafkaEncoder"
+                                              key-encoder="kafkaEncoder"
+                                              compression-codec="default"/>
         </int-kafka:producer-configurations>
     </int-kafka:producer-context>
 </beans>

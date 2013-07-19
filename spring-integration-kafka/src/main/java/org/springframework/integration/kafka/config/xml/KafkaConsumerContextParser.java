@@ -85,7 +85,7 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 				consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
 			}
 			
-			final Element topicFilter = DomUtils.getChildElementByTagName(consumerConfiguration, "topicFilter");
+			final Element topicFilter = DomUtils.getChildElementByTagName(consumerConfiguration, "topic-filter");
 
 			if (topicFilter != null){
 				final TopicFilterConfiguration topicFilterConfiguration = new TopicFilterConfiguration(topicFilter.getAttribute("pattern"),Integer.valueOf(topicFilter.getAttribute("streams")), Boolean.valueOf(topicFilter.getAttribute("exclude")));

@@ -50,7 +50,6 @@ public class ConsumerConfiguration {
 		this.consumerMetadata = consumerMetadata;
 		this.consumerConnectionProvider = consumerConnectionProvider;
 		this.messageLeftOverTracker = messageLeftOverTracker;
-		//createConsumerMessageStreams();
 	}
 
 	public ConsumerMetadata getConsumerMetadata() {
@@ -211,26 +210,12 @@ public class ConsumerConfiguration {
 	            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams()); 
 	        }
 		}else{
-			LOGGER.warn("No Topilc Filter Configuration defined");
+			LOGGER.warn("No Topic Filter Configuration defined");
 		}
         
         return messageStream;
 	}
 	
-	//FIXME
-	@SuppressWarnings("unchecked")
-	/*public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
-		if (consumerMetadata.getValueDecoder() != null &&
-		    consumerMetadata.getKeyDecoder()   != null) {
-			return getConsumerConnector().createMessageStreams(
-					consumerMetadata.getTopicStreamMap(),
-					consumerMetadata.getKeyDecoder(),
-					consumerMetadata.getValueDecoder());
-		}
-
-		return getConsumerConnector().createMessageStreams(consumerMetadata.getTopicStreamMap());
-	}*/
-
 	public int getMaxMessages() {
 		return maxMessages;
 	}
