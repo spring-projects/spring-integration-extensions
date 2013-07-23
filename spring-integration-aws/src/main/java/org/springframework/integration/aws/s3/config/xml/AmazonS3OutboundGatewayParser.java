@@ -25,6 +25,7 @@ import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.aws.config.xml.AbstractAWSConsumerEndpointParser;
 import org.springframework.integration.aws.s3.AmazonS3OutboundGateway;
 import org.springframework.integration.config.ExpressionFactoryBean;
+import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -76,6 +77,16 @@ public class AmazonS3OutboundGatewayParser extends
 			.addConstructorArgValue(remoteCommandExpression)
 			.getBeanDefinition();
 		}
+        IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "reply-timeout", "sendTimeout");
+        IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "reply-channel");
 		builder.addPropertyValue("remoteCommandExpression", expression);
 	}
+
+    /**
+     *
+     * @return
+     */
+    protected String getInputChannelAttributeName() {
+        return "request-channel";
+    }
 }

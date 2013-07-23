@@ -69,7 +69,11 @@
 					Defines an outbound mail-sending Channel Adapter for sending mails using Amazon SES.
 				</xsd:documentation>
 			</xsd:annotation>
-			<xsd:attribute name="id" type="xsd:string"/>
+            <xsd:sequence minOccurs="0" maxOccurs="1">
+                <xsd:element ref="integration:poller"/>
+                <xsd:element name="request-handler-advice-chain" type="integration:adviceChainType" minOccurs="0" maxOccurs="1" />
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string"/>
 			<xsd:attribute name="channel" type="xsd:string">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -140,7 +144,7 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="temporary-directory" type="xsd:string">
+		<xsd:attribute name="local-directory" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
 					If the payload of the message is an InputStream, byte[] or String
@@ -150,7 +154,7 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="temporary-suffix" type="xsd:string">
+		<xsd:attribute name="temporary-file-suffix" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
 					The suffix for the files if a temporary file is to be generated. The value
@@ -255,7 +259,11 @@
 					Defines an outbound S3 Channel Adapter for Uploading files to Amazon S3
 				</xsd:documentation>
 			</xsd:annotation>
-			<xsd:attribute name="channel" type="xsd:string">
+            <xsd:sequence minOccurs="0" maxOccurs="1">
+                <xsd:element ref="integration:poller"/>
+                <xsd:element name="request-handler-advice-chain" type="integration:adviceChainType" minOccurs="0" maxOccurs="1" />
+            </xsd:sequence>
+            <xsd:attribute name="channel" type="xsd:string">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
@@ -276,8 +284,15 @@
 					list, put, get and remove operations on Amazon S3 bucket
 				</xsd:documentation>
 			</xsd:annotation>
-			<xsd:attribute name="input-channel" type="xsd:string">
+            <xsd:sequence minOccurs="0" maxOccurs="1">
+                <xsd:element ref="integration:poller"/>
+                <xsd:element name="request-handler-advice-chain" type="integration:adviceChainType" minOccurs="0" maxOccurs="1" />
+            </xsd:sequence>
+            <xsd:attribute name="request-channel" type="xsd:string">
 				<xsd:annotation>
+                    <xsd:documentation>
+                        The receiving Message Channel of this endpoint.
+                    </xsd:documentation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
 							<tool:expected-type type="org.springframework.integration.core.MessageChannel"/>
@@ -285,7 +300,41 @@
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attributeGroup ref="s3OutboundTypeAttributes"/>
+            <xsd:attribute name="reply-timeout" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
+					Allows you to specify how long this gateway will wait for
+					the reply message to be sent successfully to the reply channel
+					before throwing an exception. This attribute only applies when the
+					channel might block, for example when using a bounded queue channel that
+					is currently full.
+					Also, keep in mind that when sending to a DirectChannel, the
+					invocation will occur in the sender's thread. Therefore,
+					the failing of the send operation may be caused by other
+					components further downstream.
+					The "reply-timeout" attribute maps to the "sendTimeout" property of the
+					underlying 'MessagingTemplate' instance (org.springframework.integration.core.MessagingTemplate).
+					The attribute will default, if not specified, to '-1', meaning that
+					by default, the Gateway will wait indefinitely. The value is
+					specified in milliseconds.
+				]]></xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="reply-channel" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <tool:annotation kind="ref">
+                            <tool:expected-type
+                                    type="org.springframework.integration.MessageChannel" />
+                        </tool:annotation>
+                    </xsd:appinfo>
+                    <xsd:documentation>
+                        Identifies the reply channel attached to this
+                        gateway.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attributeGroup ref="s3OutboundTypeAttributes"/>
 			<xsd:attribute name="remote-command">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -294,6 +343,9 @@
 						the valid accepted values are list, remove, put and get.
 					</xsd:documentation>
 				</xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:union memberTypes="supportedCommands xsd:string"/>
+                </xsd:simpleType>
 			</xsd:attribute>
 			<xsd:attribute name="remote-command-expression">
 				<xsd:annotation>
@@ -304,8 +356,8 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
+        </xsd:complexType>
+    </xsd:element>
 	<xsd:element name="s3-inbound-channel-adapter">
 		<xsd:complexType>
 			<xsd:annotation>
@@ -336,7 +388,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="temporary-suffix" type="xsd:string">
+			<xsd:attribute name="temporary-file-suffix" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						The suffix files will use while the are being written to the local file system.
@@ -432,4 +484,12 @@
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
+    <xsd:simpleType name="supportedCommands">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="list"/>
+            <xsd:enumeration value="remove"/>
+            <xsd:enumeration value="put"/>
+            <xsd:enumeration value="get"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 </xsd:schema>

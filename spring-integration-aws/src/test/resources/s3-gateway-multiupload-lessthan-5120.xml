@@ -12,7 +12,7 @@
 
 	<int-aws:s3-outbound-gateway
 			id="withDefaultServices"
-			input-channel="input"
+			request-channel="input"
 			bucket="TestBucket"
 			remote-command="list"
 			accessKey="dummy"

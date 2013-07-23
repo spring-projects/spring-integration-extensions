@@ -25,6 +25,7 @@ import static org.springframework.util.Assert.notNull;
 
 import org.springframework.expression.Expression;
 import org.springframework.integration.Message;
+import org.springframework.integration.MessageChannel;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
@@ -213,4 +214,12 @@ public class AmazonS3OutboundGateway extends AbstractReplyProducingMessageHandle
 			MessageProcessor<String> remoteCommandProcessor) {
 		this.remoteCommandProcessor = remoteCommandProcessor;
 	}
+
+    /**
+     * The channel on which the reply of the gateway is will be
+     * @param replyChannel
+     */
+    public void setReplyChannel(MessageChannel replyChannel) {
+       setOutputChannel(replyChannel);
+    }
 }

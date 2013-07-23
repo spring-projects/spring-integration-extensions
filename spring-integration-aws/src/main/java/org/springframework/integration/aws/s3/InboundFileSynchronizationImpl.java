@@ -105,7 +105,7 @@ public class InboundFileSynchronizationImpl implements InboundFileSynchronizer,I
 	public void synchronizeToLocalDirectory(File localDirectory, String bucketName, String remoteFolder) {
 			if(!lock.tryLock())	{
 				if(logger.isInfoEnabled()) {
-					logger.info("Sync already in progess");
+					logger.info("Sync already in progress");
 				}
 				//Prevent concurrent synchronization requests
 				return;

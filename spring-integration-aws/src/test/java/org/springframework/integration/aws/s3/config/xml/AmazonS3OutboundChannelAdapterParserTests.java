@@ -102,7 +102,7 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 		assertEquals("dummy", getPropertyValue(handler, "s3Operations.credentials.secretKey", String.class));
 		assertEquals(5120, getPropertyValue(handler, "s3Operations.multipartUploadThreshold", Long.class).longValue());
 		assertEquals(".write", getPropertyValue(handler, "s3Operations.temporaryFileSuffix", String.class));
-		assertEquals(".write", getPropertyValue(handler, "fileNameGenerator.temporarySuffix", String.class));
+		assertEquals(".write", getPropertyValue(handler, "fileNameGenerator.temporaryFileSuffix", String.class));
 		assertEquals("headers['name']", getPropertyValue(handler, "fileNameGenerator.fileNameExpression", String.class));
 		assertEquals(ctx.getBean("executor"), getPropertyValue(handler, "s3Operations.threadPoolExecutor"));
 		ctx.destroy();

@@ -30,7 +30,7 @@
 			charset="US-ASCII"
 			thread-pool-executor="executor"
 			multipart-upload-threshold="5120"
-			temporary-suffix=".write"
+			temporary-file-suffix=".write"
 			file-name-generation-expression="headers['name']"/>
 
 

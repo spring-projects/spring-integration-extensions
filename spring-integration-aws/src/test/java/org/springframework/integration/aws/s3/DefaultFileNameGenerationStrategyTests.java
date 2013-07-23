@@ -99,7 +99,7 @@ public class DefaultFileNameGenerationStrategyTests {
 	 * Tests with the file name generation expression as a null value
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void withNullExprssion() {
+	public void withNullExpression() {
 		DefaultFileNameGenerationStrategy strategy = new DefaultFileNameGenerationStrategy();
 		strategy.setFileNameExpression(null);
 	}
@@ -110,6 +110,6 @@ public class DefaultFileNameGenerationStrategyTests {
 	@Test(expected=IllegalArgumentException.class)
 	public void withNullTemporarySuffix() {
 		DefaultFileNameGenerationStrategy strategy = new DefaultFileNameGenerationStrategy();
-		strategy.setTemporarySuffix(null);
+		strategy.setTemporaryFileSuffix(null);
 	}
 }

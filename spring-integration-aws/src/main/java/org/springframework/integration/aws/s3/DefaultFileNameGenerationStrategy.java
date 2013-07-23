@@ -47,7 +47,7 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 
 	private final Log logger = LogFactory.getLog(DefaultFileNameGenerationStrategy.class);
 
-	private volatile String temporarySuffix = ".writing";
+	private volatile String temporaryFileSuffix = ".writing";
 
 	private volatile String fileNameExpression = "headers['" + FILE_NAME + "']" ;
 
@@ -70,9 +70,9 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 		Object payload = message.getPayload();
 		if(payload instanceof File) {
 			String fileName = ((File)payload).getName();
-			if(fileName.endsWith(temporarySuffix)) {
+			if(fileName.endsWith(temporaryFileSuffix)) {
 				//chop off the temp suffix
-				generatedFileName =  fileName.substring(0, fileName.indexOf(temporarySuffix));
+				generatedFileName =  fileName.substring(0, fileName.indexOf(temporaryFileSuffix));
 			}
 			else {
 				generatedFileName =  fileName;
@@ -90,9 +90,9 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 
 	}
 
-	public void setTemporarySuffix(String temporarySuffix) {
-		Assert.hasText(temporarySuffix, "Temporary directory suffix should be non null, non empty");
-		this.temporarySuffix = temporarySuffix;
+	public void setTemporaryFileSuffix(String temporaryFileSuffix) {
+		Assert.hasText(temporaryFileSuffix, "Temporary file suffix should be non null, non empty");
+		this.temporaryFileSuffix= temporaryFileSuffix;
 	}
 
 	public void setFileNameExpression(String fileNameExpression) {

@@ -42,8 +42,8 @@ public class AmazonS3ParserUtils {
 	private static final String S3_BUCKET 						= 	"bucket";
 	private static final String CHARSET 						=	"charset";
 	private static final String MULTIPART_THRESHOLD				=	"multipart-upload-threshold";
-	private static final String TEMPORARY_DIRECTORY				=	"temporary-directory";
-	private static final String TEMPORARY_SUFFIX				=	"temporary-suffix";
+	private static final String LOCAL_DIRECTORY				    =	"local-directory";
+	private static final String TEMPORARY_FILE_SUFFIX			=	"temporary-file-suffix";
 	private static final String THREADPOOL_EXECUTOR				=	"thread-pool-executor";
 	private static final String REMOTE_DIRECTORY				=	"remote-directory";
 	private static final String REMOTE_DIRECTORY_EXPRESSION		=	"remote-directory-expression";
@@ -65,11 +65,11 @@ public class AmazonS3ParserUtils {
 		if(StringUtils.hasText(s3Operations)) {
 			//custom implementation provided
 			if(element.hasAttribute(MULTIPART_THRESHOLD)
-					|| element.hasAttribute(TEMPORARY_DIRECTORY)
-					|| element.hasAttribute(TEMPORARY_SUFFIX)
+					|| element.hasAttribute(LOCAL_DIRECTORY)
+					|| element.hasAttribute(TEMPORARY_FILE_SUFFIX)
 					|| element.hasAttribute(THREADPOOL_EXECUTOR)) {
 				throw new BeanDefinitionStoreException("Attributes '" + MULTIPART_THRESHOLD + "', '"
-						+ TEMPORARY_DIRECTORY + "', '" + TEMPORARY_SUFFIX + "' and '" + THREADPOOL_EXECUTOR
+						+ LOCAL_DIRECTORY + "', '" + TEMPORARY_FILE_SUFFIX + "' and '" + THREADPOOL_EXECUTOR
 						+ " are mutually exclusive to the '" + S3_OPERATIONS + "' attribute");
 			}
 			operationsService = s3Operations;
@@ -78,8 +78,8 @@ public class AmazonS3ParserUtils {
 			BeanDefinitionBuilder s3OpBuilder = BeanDefinitionBuilder.genericBeanDefinition(DefaultAmazonS3Operations.class);
 			s3OpBuilder.addConstructorArgReference(awsCredentialsGeneratedName);
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, MULTIPART_THRESHOLD);
-			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, TEMPORARY_DIRECTORY);
-			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, TEMPORARY_SUFFIX,"temporaryFileSuffix");
+			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, LOCAL_DIRECTORY);
+			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, TEMPORARY_FILE_SUFFIX);
 			IntegrationNamespaceUtils.setReferenceIfAttributeDefined(s3OpBuilder, element, THREADPOOL_EXECUTOR);
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(s3OpBuilder, element, AWS_ENDPOINT);
 			operationsService = BeanDefinitionReaderUtils.registerWithGeneratedName(s3OpBuilder.getBeanDefinition(), context.getRegistry());
@@ -129,9 +129,9 @@ public class AmazonS3ParserUtils {
 		else {
 			BeanDefinitionBuilder fileNameGeneratorBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(DefaultFileNameGenerationStrategy.class);
-			String tempDirectorySuffix = element.getAttribute(TEMPORARY_SUFFIX);
-			if(StringUtils.hasText(tempDirectorySuffix)) {
-				fileNameGeneratorBuilder.addPropertyValue("temporarySuffix",tempDirectorySuffix);
+			String tempFileSuffix = element.getAttribute(TEMPORARY_FILE_SUFFIX);
+			if(StringUtils.hasText(tempFileSuffix)) {
+				fileNameGeneratorBuilder.addPropertyValue("temporaryFileSuffix",tempFileSuffix);
 			}
 			if(hasFileGenerationExpression) {
 				fileNameGeneratorBuilder.addPropertyValue("fileNameExpression", fileNameGenerationExpression);

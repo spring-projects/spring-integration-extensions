@@ -52,7 +52,7 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 	private volatile String remoteDirectory;
 	private volatile File directory;
 	private volatile AWSCredentials credentials;
-	private volatile String temporarySuffix = ".writing";
+	private volatile String temporaryFileSuffix = ".writing";
 	private volatile int maxObjectsPerBatch;
 	private volatile String fileNameWildcard;
 	private volatile String fileNameRegex;
@@ -108,7 +108,7 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 
 		if(AbstractAmazonS3Operations.class.isAssignableFrom(s3Operations.getClass())) {
 			AbstractAmazonS3Operations abstractOperation = (AbstractAmazonS3Operations)s3Operations;
-			abstractOperation.setTemporaryFileSuffix(temporarySuffix);
+			abstractOperation.setTemporaryFileSuffix(temporaryFileSuffix);
 			if(StringUtils.hasText(awsEndpoint)) {
 				abstractOperation.setAwsEndpoint(awsEndpoint);
 			}
@@ -117,7 +117,7 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 
 		//Now the file operations class
 		InboundLocalFileOperationsImpl fileOperations = new InboundLocalFileOperationsImpl();
-		fileOperations.setTemporaryFileSuffix(temporarySuffix);
+		fileOperations.setTemporaryFileSuffix(temporaryFileSuffix);
 		fileOperations.addEventListener(this);
 
 		InboundFileSynchronizationImpl synchronizationImpl =
@@ -151,11 +151,11 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 	 * The temporary suffix that would be used to indicate that the file is being writtem and the operation
 	 * is not yet complete
 	 *
-	 * @param temporarySuffix
+	 * @param temporaryFileSuffix
 	 */
-	public void setTemporarySuffix(String temporarySuffix) {
-		Assert.hasText(temporarySuffix,"Provide a non null non empty string as temporary suffix");
-		this.temporarySuffix = temporarySuffix;
+	public void setTemporaryFileSuffix(String temporaryFileSuffix) {
+		Assert.hasText(temporaryFileSuffix,"Provide a non null non empty string as temporary file suffix");
+		this.temporaryFileSuffix = temporaryFileSuffix;
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class AmazonS3InboundSynchronizationMessageSource extends
 	 * @param maxObjectsPerBatch
 	 */
 	public void setMaxObjectsPerBatch(int maxObjectsPerBatch) {
-		Assert.isTrue(maxObjectsPerBatch > 0, "Provide a non sero, non negative number for max objects per batch");
+		Assert.isTrue(maxObjectsPerBatch > 0, "Provide a non zero, non negative number for max objects per batch");
 		this.maxObjectsPerBatch = maxObjectsPerBatch;
 	}
 

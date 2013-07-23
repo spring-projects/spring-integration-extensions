@@ -13,7 +13,7 @@
 
 	<int-aws:s3-outbound-gateway
 			id="withCustomNameGenerator"
-			input-channel="input"
+			request-channel="input"
 			s3-operations="customOps"
 			bucket="TestBucket"
 			accessKey="dummy"

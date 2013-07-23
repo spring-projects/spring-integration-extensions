@@ -50,7 +50,7 @@ public class AmazonS3InboundChannelAdapterParserTests {
 		SourcePollingChannelAdapter valid = ctx.getBean("validInbound", SourcePollingChannelAdapter.class);
 		AmazonS3InboundSynchronizationMessageSource source = getPropertyValue(valid, "source", AmazonS3InboundSynchronizationMessageSource.class);
 		assertEquals("TestBucket", getPropertyValue(source, "bucket"));
-		assertEquals(".temp", getPropertyValue(source, "temporarySuffix"));
+		assertEquals(".temp", getPropertyValue(source, "temporaryFileSuffix"));
 		assertEquals(new File(System.getProperty("java.io.tmpdir")), getPropertyValue(source, "directory"));
 		assertEquals("remote", getPropertyValue(source, "remoteDirectory"));
 		assertEquals(true, getPropertyValue(source, "acceptSubFolders", Boolean.class).booleanValue());
