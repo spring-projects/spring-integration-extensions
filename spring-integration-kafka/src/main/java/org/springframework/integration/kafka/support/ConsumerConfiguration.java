@@ -15,26 +15,21 @@
  */
 package org.springframework.integration.kafka.support;
 
+import java.util.*;
+import java.util.concurrent.*;
+
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.MessagingException;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class ConsumerConfiguration {
@@ -46,6 +41,7 @@ public class ConsumerConfiguration {
 	private ConsumerConnector consumerConnector;
 	private volatile int count = 0;
 	private int maxMessages = 1;
+	private Collection<List<KafkaStream<byte[], byte[]>>> consumerMessageStreams;
 
 	private ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -67,8 +63,7 @@ public class ConsumerConfiguration {
 		final List<Callable<List<MessageAndMetadata>>> tasks = new LinkedList<Callable<List<MessageAndMetadata>>>();
 		final Object lock = new Object();
 
-		final Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = getConsumerMapWithMessageStreams();
-		for (final List<KafkaStream<byte[], byte[]>> streams : consumerMap.values()) {
+		for (final List<KafkaStream<byte[], byte[]>> streams : createConsumerMessageStreams()) {
 			for (final KafkaStream<byte[], byte[]> stream : streams) {
 				tasks.add(new Callable<List<MessageAndMetadata>>() {
 					@Override
@@ -180,10 +175,23 @@ public class ConsumerConfiguration {
 		}
 	}
 
+	private Collection<List<KafkaStream<byte[], byte[]>>> createConsumerMessageStreams(){
+	    if (consumerMessageStreams == null){
+	        if (!(consumerMetadata.getTopicStreamMap() == null || consumerMetadata.getTopicStreamMap().isEmpty())){
+	            consumerMessageStreams = createMessageStreamsForTopic().values();
+	        }
+	        else{
+	            consumerMessageStreams = new ArrayList<List<KafkaStream<byte[], byte[]>>>();
+	            
+	            consumerMessageStreams.add(createMessageStreamsForTopicFilter());
+	        }
+	    }
+	    return consumerMessageStreams;
+	}
+	
 	@SuppressWarnings("unchecked")
-	public Map<String, List<KafkaStream<byte[], byte[]>>> getConsumerMapWithMessageStreams() {
-		if (consumerMetadata.getValueDecoder() != null &&
-		    consumerMetadata.getKeyDecoder()   != null) {
+	public  Map<String, List<KafkaStream<byte[], byte[]>>> createMessageStreamsForTopic(){
+		if (consumerMetadata.getValueDecoder() != null && consumerMetadata.getKeyDecoder() !=null ) {
 			return getConsumerConnector().createMessageStreams(
 					consumerMetadata.getTopicStreamMap(),
 					consumerMetadata.getKeyDecoder(),
@@ -192,7 +200,23 @@ public class ConsumerConfiguration {
 
 		return getConsumerConnector().createMessageStreams(consumerMetadata.getTopicStreamMap());
 	}
-
+	
+	public List<KafkaStream<byte[], byte[]>> createMessageStreamsForTopicFilter(){
+		List<KafkaStream<byte[], byte[]>> messageStream = new ArrayList<KafkaStream<byte[], byte[]>>();
+		TopicFilterConfiguration topicFilterConfiguration = consumerMetadata.getTopicFilterConfiguration();
+		if (topicFilterConfiguration != null){
+			if (consumerMetadata.getValueDecoder() != null) {
+	            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams(), consumerMetadata.getKeyDecoder(), consumerMetadata.getValueDecoder());
+	        }else{
+	            messageStream = getConsumerConnector().createMessageStreamsByFilter(topicFilterConfiguration.getTopicFilter(),topicFilterConfiguration.getNumberOfStreams()); 
+	        }
+		}else{
+			LOGGER.warn("No Topic Filter Configuration defined");
+		}
+        
+        return messageStream;
+	}
+	
 	public int getMaxMessages() {
 		return maxMessages;
 	}

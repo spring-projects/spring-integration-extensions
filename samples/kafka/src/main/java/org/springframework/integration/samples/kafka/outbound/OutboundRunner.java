@@ -51,5 +51,23 @@ public class OutboundRunner {
 
             LOG.info("message sent " + i);
         }
+       
+        //Send some messages to multiple topics matching regex.
+        for (int i = 0; i < 10; i++) {
+            channel.send(
+                MessageBuilder.withPayload("hello Fom ob adapter regextopic1 -  " + i)
+                    .setHeader("messageKey", String.valueOf(i))
+                    .setHeader("topic", "regextopic1").build());
+
+            LOG.info("message sent " + i);
+        }
+        for (int i = 0; i < 10; i++) {
+            channel.send(
+                MessageBuilder.withPayload("hello Fom ob adapter regextopic2 -  " + i)
+                    .setHeader("messageKey", String.valueOf(i))
+                    .setHeader("topic", "regextopic2").build());
+
+            LOG.info("message sent " + i);
+        }
     }
 }
