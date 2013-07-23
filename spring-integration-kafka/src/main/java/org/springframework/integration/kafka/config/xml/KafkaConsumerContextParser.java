@@ -15,6 +15,8 @@
  */
 package org.springframework.integration.kafka.config.xml;
 
+import java.util.*;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -22,23 +24,14 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.kafka.support.ConsumerConfigFactoryBean;
-import org.springframework.integration.kafka.support.ConsumerConfiguration;
-import org.springframework.integration.kafka.support.ConsumerConnectionProvider;
-import org.springframework.integration.kafka.support.ConsumerMetadata;
-import org.springframework.integration.kafka.support.KafkaConsumerContext;
-import org.springframework.integration.kafka.support.MessageLeftOverTracker;
-import org.springframework.integration.kafka.support.TopicFilterConfiguration;
+import org.springframework.integration.kafka.support.*;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionParser {

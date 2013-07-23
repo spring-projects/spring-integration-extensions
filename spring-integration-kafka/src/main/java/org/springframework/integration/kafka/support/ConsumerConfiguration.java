@@ -29,6 +29,7 @@ import org.springframework.integration.MessagingException;
 
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class ConsumerConfiguration {

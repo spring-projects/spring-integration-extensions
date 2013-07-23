@@ -27,6 +27,7 @@ import org.springframework.integration.Message;
 
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class ProducerConfiguration<K,V> {

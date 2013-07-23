@@ -15,13 +15,15 @@
  */
 package org.springframework.integration.kafka.support;
 
-import kafka.serializer.Decoder;
-import org.springframework.integration.kafka.core.KafkaConsumerDefaults;
-
 import java.util.Map;
+
+import kafka.serializer.Decoder;
+
+import org.springframework.integration.kafka.core.KafkaConsumerDefaults;
 
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class ConsumerMetadata<K,V> {
