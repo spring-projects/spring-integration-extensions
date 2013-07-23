@@ -175,7 +175,7 @@ public class ConsumerConfiguration {
 		}
 	}
 
-	public Collection<List<KafkaStream<byte[], byte[]>>> createConsumerMessageStreams(){
+	private Collection<List<KafkaStream<byte[], byte[]>>> createConsumerMessageStreams(){
 	    if (consumerMessageStreams == null){
 	        if (!(consumerMetadata.getTopicStreamMap() == null || consumerMetadata.getTopicStreamMap().isEmpty())){
 	            consumerMessageStreams = createMessageStreamsForTopic().values();
