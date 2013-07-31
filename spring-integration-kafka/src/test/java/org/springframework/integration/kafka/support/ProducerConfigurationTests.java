@@ -39,7 +39,7 @@ import java.io.ObjectInputStream;
  * @author Soby Chacko
  * @since 0.5
  */
-public class ProducerConfigurationTests {
+public class ProducerConfigurationTests<K,V> {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testSendMessageWithNonDefaultKeyAndValueEncoders() throws Exception {
@@ -61,10 +61,12 @@ public class ProducerConfigurationTests {
 
 		Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-		final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+		final ArgumentCaptor<KeyedMessage<String, String>> argument =
+				(ArgumentCaptor<KeyedMessage<String, String>>) (Object)
+				ArgumentCaptor.forClass(KeyedMessage.class);
 		Mockito.verify(producer).send(argument.capture());
 
-		final KeyedMessage capturedKeyMessage = argument.getValue();
+		final KeyedMessage<String, String> capturedKeyMessage = argument.getValue();
 
 		Assert.assertEquals(capturedKeyMessage.key(), "key");
 		Assert.assertEquals(capturedKeyMessage.message(), "test message");
@@ -93,12 +95,14 @@ public class ProducerConfigurationTests {
 
 		Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-		final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+		final ArgumentCaptor<KeyedMessage<byte[], byte[]>> argument =
+				(ArgumentCaptor<KeyedMessage<byte[], byte[]>>) (Object)
+				ArgumentCaptor.forClass(KeyedMessage.class);
 		Mockito.verify(producer).send(argument.capture());
 
-		final KeyedMessage capturedKeyMessage = argument.getValue();
+		final KeyedMessage<byte[], byte[]> capturedKeyMessage = argument.getValue();
 
-		final byte[] keyBytes = (byte[])capturedKeyMessage.key();
+		final byte[] keyBytes = capturedKeyMessage.key();
 
 		final ByteArrayInputStream keyInputStream = new ByteArrayInputStream (keyBytes);
 		final ObjectInputStream keyObjectInputStream = new ObjectInputStream (keyInputStream);
@@ -109,7 +113,7 @@ public class ProducerConfigurationTests {
 		Assert.assertEquals(tk.getKeyPart1(), "compositePart1");
 		Assert.assertEquals(tk.getKeyPart2(), "compositePart2");
 
-		final byte[] messageBytes = (byte[])capturedKeyMessage.message();
+		final byte[] messageBytes = capturedKeyMessage.message();
 
 		final ByteArrayInputStream messageInputStream = new ByteArrayInputStream (messageBytes);
 		final ObjectInputStream messageObjectInputStream = new ObjectInputStream (messageInputStream);
@@ -147,12 +151,14 @@ public class ProducerConfigurationTests {
 
 		Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-		final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+		final ArgumentCaptor<KeyedMessage<byte[], TestPayload>> argument =
+				(ArgumentCaptor<KeyedMessage<byte[], TestPayload>>) (Object)
+				ArgumentCaptor.forClass(KeyedMessage.class);
 		Mockito.verify(producer).send(argument.capture());
 
-		final KeyedMessage capturedKeyMessage = argument.getValue();
+		final KeyedMessage<byte[], TestPayload> capturedKeyMessage = argument.getValue();
 
-		final byte[] keyBytes = (byte[])capturedKeyMessage.key();
+		final byte[] keyBytes = capturedKeyMessage.key();
 
 		final ByteArrayInputStream keyInputStream = new ByteArrayInputStream (keyBytes);
 		final ObjectInputStream keyObjectInputStream = new ObjectInputStream (keyInputStream);
@@ -187,14 +193,16 @@ public class ProducerConfigurationTests {
 
 		Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-		final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+		final ArgumentCaptor<KeyedMessage<TestKey, byte[]>> argument =
+				(ArgumentCaptor<KeyedMessage<TestKey, byte[]>>) (Object)
+				ArgumentCaptor.forClass(KeyedMessage.class);
 		Mockito.verify(producer).send(argument.capture());
 
-		final KeyedMessage capturedKeyMessage = argument.getValue();
+		final KeyedMessage<TestKey, byte[]> capturedKeyMessage = argument.getValue();
 
 		Assert.assertEquals(capturedKeyMessage.key(), tk);
 
-		final byte[] payloadBytes = (byte[])capturedKeyMessage.message();
+		final byte[] payloadBytes = capturedKeyMessage.message();
 
 		final ByteArrayInputStream payloadBis = new ByteArrayInputStream (payloadBytes);
 		final ObjectInputStream payloadOis = new ObjectInputStream (payloadBis);
@@ -226,11 +234,13 @@ public class ProducerConfigurationTests {
 
 		Mockito.verify(producer, Mockito.times(1)).send(Mockito.any(KeyedMessage.class));
 
-		final ArgumentCaptor<KeyedMessage> argument = ArgumentCaptor.forClass(KeyedMessage.class);
+		final ArgumentCaptor<KeyedMessage<byte[], byte[]>> argument =
+				(ArgumentCaptor<KeyedMessage<byte[], byte[]>>) (Object)
+				ArgumentCaptor.forClass(KeyedMessage.class);
 		Mockito.verify(producer).send(argument.capture());
 
-		final KeyedMessage capturedKeyMessage = argument.getValue();
-		final byte[] keyBytes = (byte[])capturedKeyMessage.key();
+		final KeyedMessage<byte[], byte[]> capturedKeyMessage = argument.getValue();
+		final byte[] keyBytes = capturedKeyMessage.key();
 
 		final ByteArrayInputStream keyBis = new ByteArrayInputStream (keyBytes);
 		final ObjectInputStream keyOis = new ObjectInputStream (keyBis);
@@ -238,7 +248,7 @@ public class ProducerConfigurationTests {
 
 		Assert.assertEquals("key", keyObj);
 
-		final byte[] payloadBytes = (byte[])capturedKeyMessage.message();
+		final byte[] payloadBytes = capturedKeyMessage.message();
 
 		final ByteArrayInputStream payloadBis = new ByteArrayInputStream (payloadBytes);
 		final ObjectInputStream payloadOis = new ObjectInputStream (payloadBis);

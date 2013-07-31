@@ -15,10 +15,10 @@ public abstract class AvroDatumSupport<T> {
 
 	private static final Log LOG = LogFactory.getLog(AvroDatumSupport.class);
 
-	private final AvroSerializer avroSerializer;
+	private final AvroSerializer<T> avroSerializer;
 
 	protected AvroDatumSupport() {
-		this.avroSerializer = new AvroSerializer();
+		this.avroSerializer = new AvroSerializer<T>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -34,7 +34,7 @@ public abstract class AvroDatumSupport<T> {
 	@SuppressWarnings("unchecked")
 	public T fromBytes(final byte[] bytes, final DatumReader<T> reader) {
 		try {
-			return (T) avroSerializer.deserialize(bytes, reader);
+			return avroSerializer.deserialize(bytes, reader);
 		} catch (IOException e) {
 			LOG.error("Failed to decode byte array: " + e);
 		}

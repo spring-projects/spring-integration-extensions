@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Soby Chacko
  * @since 0.5
  */
-public class AvroReflectDatumBackedKafkaEncoder<T> extends AvroDatumSupport implements Encoder<T> {
+public class AvroReflectDatumBackedKafkaEncoder<T> extends AvroDatumSupport<T> implements Encoder<T> {
 	private static final Log LOG = LogFactory.getLog(AvroReflectDatumBackedKafkaEncoder.class);
 
 	private final DatumWriter<T> writer;

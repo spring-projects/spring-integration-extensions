@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Soby Chacko
  * @since 0.5
  */
-public class AvroReflectDatumBackedKafkaDecoder<T> extends AvroDatumSupport implements Decoder<T> {
+public class AvroReflectDatumBackedKafkaDecoder<T> extends AvroDatumSupport<T> implements Decoder<T> {
 	private static final Log LOG = LogFactory.getLog(AvroReflectDatumBackedKafkaDecoder.class);
 
 	private final DatumReader<T> reader;
@@ -37,7 +37,7 @@ public class AvroReflectDatumBackedKafkaDecoder<T> extends AvroDatumSupport impl
 	@Override
 	@SuppressWarnings("unchecked")
 	public T fromBytes(final byte[] bytes) {
-		return (T) fromBytes(bytes, reader);
+		return fromBytes(bytes, reader);
 	}
 }
 

@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Soby Chacko
  * @since 0.5
  */
-public class AvroSpecificDatumBackedKafkaEncoder<T> extends AvroDatumSupport implements Encoder<T> {
+public class AvroSpecificDatumBackedKafkaEncoder<T> extends AvroDatumSupport<T> implements Encoder<T> {
 
 	private static final Log LOG = LogFactory.getLog(AvroSpecificDatumBackedKafkaEncoder.class);
 

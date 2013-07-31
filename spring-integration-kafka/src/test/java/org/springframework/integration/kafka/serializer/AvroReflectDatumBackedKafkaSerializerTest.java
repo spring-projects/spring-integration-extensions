@@ -29,7 +29,7 @@ public class AvroReflectDatumBackedKafkaSerializerTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testDecodePlainSchema() {
-		final AvroReflectDatumBackedKafkaEncoder avroBackedKafkaEncoder = new AvroReflectDatumBackedKafkaEncoder(TestObject.class);
+		final AvroReflectDatumBackedKafkaEncoder<TestObject> avroBackedKafkaEncoder = new AvroReflectDatumBackedKafkaEncoder<TestObject>(TestObject.class);
 
 		final TestObject testObject = new TestObject();
 		testObject.setTestData1("\"Test Data1\"");
@@ -37,8 +37,8 @@ public class AvroReflectDatumBackedKafkaSerializerTest {
 
 		final byte[] data = avroBackedKafkaEncoder.toBytes(testObject);
 
-		final AvroReflectDatumBackedKafkaDecoder avroReflectDatumBackedKafkaDecoder = new AvroReflectDatumBackedKafkaDecoder(TestObject.class);
-		final TestObject decodedFbu = (TestObject) avroReflectDatumBackedKafkaDecoder.fromBytes(data);
+		final AvroReflectDatumBackedKafkaDecoder<TestObject> avroReflectDatumBackedKafkaDecoder = new AvroReflectDatumBackedKafkaDecoder<TestObject>(TestObject.class);
+		final TestObject decodedFbu = avroReflectDatumBackedKafkaDecoder.fromBytes(data);
 
 		Assert.assertEquals(testObject.getTestData1(), decodedFbu.getTestData1());
 		Assert.assertEquals(testObject.getTestData2(), decodedFbu.getTestData2());
@@ -47,12 +47,12 @@ public class AvroReflectDatumBackedKafkaSerializerTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void anotherTest() {
-		final AvroReflectDatumBackedKafkaEncoder avroBackedKafkaEncoder = new AvroReflectDatumBackedKafkaEncoder(java.lang.String.class);
+		final AvroReflectDatumBackedKafkaEncoder<String> avroBackedKafkaEncoder = new AvroReflectDatumBackedKafkaEncoder<String>(java.lang.String.class);
 		final String testString = "Testing Avro";
 		final byte[] data = avroBackedKafkaEncoder.toBytes(testString);
 
-		final AvroReflectDatumBackedKafkaDecoder avroReflectDatumBackedKafkaDecoder = new AvroReflectDatumBackedKafkaDecoder(java.lang.String.class);
-		final String decodedS = (String) avroReflectDatumBackedKafkaDecoder.fromBytes(data);
+		final AvroReflectDatumBackedKafkaDecoder<String> avroReflectDatumBackedKafkaDecoder = new AvroReflectDatumBackedKafkaDecoder<String>(java.lang.String.class);
+		final String decodedS = avroReflectDatumBackedKafkaDecoder.fromBytes(data);
 
 		Assert.assertEquals(testString, decodedS);
 	}
