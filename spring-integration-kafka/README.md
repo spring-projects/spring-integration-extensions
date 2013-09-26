@@ -87,8 +87,8 @@ Producer context is at the heart of the kafka outbound adapter. Here is an examp
 					   compression-codec="default"
 					   async="true"/>
 			<int-kafka:producer-configuration broker-list="localhost:9092"
-                  			   topic="regextopic.*"
-                	       		   compression-codec="default"/>
+						topic="regextopic.*"
+						compression-codec="default"/>
 		</int-kafka:producer-configurations>
 	</int-kafka:producer-context>
 ```
@@ -183,7 +183,7 @@ currently supports only the High Level Consumer. Here are the details of configu
 										   auto-startup="false"
 										   channel="inputFromKafka">
 			<int:poller fixed-delay="10" time-unit="MILLISECONDS" max-messages-per-poll="5"/>
-		</int-kafka:inbound-channel-adapter>
+	</int-kafka:inbound-channel-adapter>
 ```
 
 Since this inbound channel adapter uses a Polling Channel under the hood, it must be configured with a Poller. A notable difference
@@ -208,13 +208,13 @@ Inbound Kafka Adapter must specify a kafka-consumer-context-ref element and here
 				   <int-kafka:topic id="test2" streams="4"/>
 			   </int-kafka:consumer-configuration>
 			   <int-kafka:consumer-configuration group-id="default3"
-                                              value-decoder="kafkaSpecificDecoder"
-                                              key-decoder="kafkaReflectionDecoder"
-                                              max-messages="10">
-                		  <int-kafka:topic-filter pattern="regextopic.*" streams="4" exclude="false"/>
-            		  </int-kafka:consumer-configuration>
+						value-decoder="kafkaSpecificDecoder"
+						key-decoder="kafkaReflectionDecoder"
+						max-messages="10">
+				   <int-kafka:topic-filter pattern="regextopic.*" streams="4" exclude="false"/>
+			   </int-kafka:consumer-configuration>
 		   </int-kafka:consumer-configurations>
-	   </int-kafka:consumer-context>
+   </int-kafka:consumer-context>
 ```
 
 `consumer-configuration` supports consuming from specific topic using a `topic` child element or from multiple topics matching a topic regex using `topic-filter` child element. `topic-filter` supports both whitelist and blacklist filter based on `exclude` attribute.
