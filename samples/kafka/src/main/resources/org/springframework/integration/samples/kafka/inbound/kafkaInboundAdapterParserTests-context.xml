@@ -39,15 +39,21 @@
                                 consumer-timeout="1000"
                                 zookeeper-connect="zookeeperConnect">
         <int-kafka:consumer-configurations>
-            <int-kafka:consumer-configuration group-id="default"
+          	<int-kafka:consumer-configuration group-id="default1"
                                               value-decoder="kafkaSpecificDecoder"
                                               key-decoder="kafkaReflectionDecoder"
                                               max-messages="5000">
                 <int-kafka:topic id="test1" streams="4"/>
             </int-kafka:consumer-configuration>
-            <int-kafka:consumer-configuration group-id="default1"
+               <int-kafka:consumer-configuration group-id="default2"
                                               max-messages="50">
                 <int-kafka:topic id="test2" streams="4"/>
+            </int-kafka:consumer-configuration> 
+            <int-kafka:consumer-configuration group-id="default3"
+                                              value-decoder="kafkaSpecificDecoder"
+                                              key-decoder="kafkaReflectionDecoder"
+                                              max-messages="10">
+                <int-kafka:topic-filter pattern="regextopic.*" streams="4" exclude="false"/>
             </int-kafka:consumer-configuration>
         </int-kafka:consumer-configurations>
     </int-kafka:consumer-context>

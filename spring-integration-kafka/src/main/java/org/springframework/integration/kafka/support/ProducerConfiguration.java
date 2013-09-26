@@ -15,19 +15,19 @@
  */
 package org.springframework.integration.kafka.support;
 
+import java.io.*;
+
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.serializer.DefaultEncoder;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.integration.Message;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class ProducerConfiguration<K,V> {
@@ -46,10 +46,11 @@ public class ProducerConfiguration<K,V> {
 	public void send(final Message<?> message) throws Exception {
 		final V v = getPayload(message);
 
+		String topic = message.getHeaders().get("topic", String.class);
 		if (message.getHeaders().containsKey("messageKey")) {
-			producer.send(new KeyedMessage<K, V>(producerMetadata.getTopic(), getKey(message), v));
+			producer.send(new KeyedMessage<K, V>(topic, getKey(message), v));
 		} else {
-			producer.send(new KeyedMessage<K, V>(producerMetadata.getTopic(), v));
+			producer.send(new KeyedMessage<K, V>(topic, v));
 		}
 	}
 
@@ -100,4 +101,11 @@ public class ProducerConfiguration<K,V> {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ProducerConfiguration [producerMetadata=").append(producerMetadata).append("]");
+        return builder.toString();
+    }
 }

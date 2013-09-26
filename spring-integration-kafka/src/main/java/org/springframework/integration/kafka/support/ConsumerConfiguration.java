@@ -15,26 +15,21 @@
  */
 package org.springframework.integration.kafka.support;
 
+import java.util.*;
+import java.util.concurrent.*;
+
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.MessagingException;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class ConsumerConfiguration<K,V> {
@@ -46,8 +41,9 @@ public class ConsumerConfiguration<K,V> {
 	private ConsumerConnector consumerConnector;
 	private volatile int count = 0;
 	private int maxMessages = 1;
+	private Collection<List<KafkaStream<K, V>>> consumerMessageStreams;
 
-	private ExecutorService executorService = Executors.newCachedThreadPool();
+	private final ExecutorService executorService = Executors.newCachedThreadPool();
 
 	public ConsumerConfiguration(final ConsumerMetadata<K,V> consumerMetadata,
 								 final ConsumerConnectionProvider consumerConnectionProvider,
@@ -67,16 +63,15 @@ public class ConsumerConfiguration<K,V> {
 
 		final List<Callable<List<MessageAndMetadata<K,V>>>> tasks = new LinkedList<Callable<List<MessageAndMetadata<K,V>>>>();
 
-		final Map<String, List<KafkaStream<K, V>>> consumerMap = getConsumerMapWithMessageStreams();
-		for (final List<KafkaStream<K,V>> streams : consumerMap.values()) {
-			for (final KafkaStream<K,V> stream : streams) {
-				tasks.add(new Callable<List<MessageAndMetadata<K,V>>>() {
+        for (final List<KafkaStream<K, V>> streams : createConsumerMessageStreams()) {
+            for (final KafkaStream<K, V> stream : streams) {
+                tasks.add(new Callable<List<MessageAndMetadata<K, V>>>() {
 					@Override
 					public List<MessageAndMetadata<K,V>> call() throws Exception {
 						final List<MessageAndMetadata<K,V>> rawMessages = new ArrayList<MessageAndMetadata<K,V>>();
 						try {
 							while (count < maxMessages) {
-								final MessageAndMetadata<K,V> messageAndMetadata = stream.iterator().next();
+                                final MessageAndMetadata<K, V> messageAndMetadata = stream.iterator().next();
 								synchronized (lock) {
 									if (count < maxMessages) {
 										rawMessages.add(messageAndMetadata);
@@ -180,14 +175,42 @@ public class ConsumerConfiguration<K,V> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public Map<String, List<KafkaStream<K,V>>> getConsumerMapWithMessageStreams() {
-		return getConsumerConnector().createMessageStreams(
-				consumerMetadata.getTopicStreamMap(),
-				consumerMetadata.getKeyDecoder(),
-				consumerMetadata.getValueDecoder());
+    private Collection<List<KafkaStream<K, V>>> createConsumerMessageStreams() {
+	    if (consumerMessageStreams == null){
+	        if (!(consumerMetadata.getTopicStreamMap() == null || consumerMetadata.getTopicStreamMap().isEmpty())){
+	            consumerMessageStreams = createMessageStreamsForTopic().values();
+	        }
+	        else{
+	            consumerMessageStreams = new ArrayList<List<KafkaStream<K, V>>>();
+	            
+	            consumerMessageStreams.add(createMessageStreamsForTopicFilter());
+	        }
+	    }
+	    return consumerMessageStreams;
 	}
-
+	
+	@SuppressWarnings("unchecked")
+    public Map<String, List<KafkaStream<K, V>>> createMessageStreamsForTopic() {
+        return getConsumerConnector().createMessageStreams(
+					consumerMetadata.getTopicStreamMap(),
+					consumerMetadata.getKeyDecoder(),
+					consumerMetadata.getValueDecoder());
+	}
+	
+    public List<KafkaStream<K, V>> createMessageStreamsForTopicFilter() {
+        List<KafkaStream<K, V>> messageStream = new ArrayList<KafkaStream<K, V>>();
+		TopicFilterConfiguration topicFilterConfiguration = consumerMetadata.getTopicFilterConfiguration();
+		if (topicFilterConfiguration != null){
+            messageStream = getConsumerConnector().createMessageStreamsByFilter(
+                    topicFilterConfiguration.getTopicFilter(), topicFilterConfiguration.getNumberOfStreams(),
+                    consumerMetadata.getKeyDecoder(), consumerMetadata.getValueDecoder());
+		}else{
+			LOGGER.warn("No Topic Filter Configuration defined");
+		}
+        
+        return messageStream;
+	}
+	
 	public int getMaxMessages() {
 		return maxMessages;
 	}
