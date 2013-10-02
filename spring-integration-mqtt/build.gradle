@@ -15,6 +15,7 @@ group = 'org.springframework.integration'
 
 repositories {
 	maven { url 'http://repo.springsource.org/snapshot' }
+	maven { url 'https://repo.eclipse.org/content/repositories/paho-releases/' }
 	maven { url 'http://repo.springsource.org/plugins-release' }
 }
 
@@ -60,7 +61,7 @@ configurations {
 
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile "org.eclipse.paho:mqtt-client:0.2.1"
+	compile "org.eclipse.paho:mqtt-client:0.4.0"
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "junit:junit-dep:$junitVersion"
 	testCompile "log4j:log4j:$log4jVersion"
