@@ -50,8 +50,6 @@
                 <int-kafka:topic id="test2" streams="4"/>
             </int-kafka:consumer-configuration> 
             <int-kafka:consumer-configuration group-id="default3"
-                                              value-decoder="kafkaSpecificDecoder"
-                                              key-decoder="kafkaReflectionDecoder"
                                               max-messages="10">
                 <int-kafka:topic-filter pattern="regextopic.*" streams="4" exclude="false"/>
             </int-kafka:consumer-configuration>
