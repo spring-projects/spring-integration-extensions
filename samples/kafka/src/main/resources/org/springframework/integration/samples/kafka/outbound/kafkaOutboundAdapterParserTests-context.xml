@@ -48,8 +48,8 @@
                                               key-class-type="java.lang.String"
                                               value-class-type="java.lang.String"
                                               topic="regextopic.*"
-                                              value-encoder="kafkaEncoder"
-                                              key-encoder="kafkaEncoder"
+                                              value-encoder="kafkaSpecificEncoder"
+                                              key-encoder="kafkaReflectionEncoder"
                                               compression-codec="default"/>
         </int-kafka:producer-configurations>
     </int-kafka:producer-context>
