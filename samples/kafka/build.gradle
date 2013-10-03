@@ -5,6 +5,7 @@ buildscript {
     repositories {
             mavenCentral()
         mavenLocal()
+	maven { url 'https://repo.spring.io/simple/ext-release-local' }
     }
         dependencies {
             classpath 'org.apache.maven:maven-artifact:2.2.1' // 3.x won't work
