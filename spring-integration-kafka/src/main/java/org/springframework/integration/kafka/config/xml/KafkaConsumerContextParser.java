@@ -23,12 +23,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.kafka.support.ConsumerConfigFactoryBean;
-import org.springframework.integration.kafka.support.ConsumerConfiguration;
-import org.springframework.integration.kafka.support.ConsumerConnectionProvider;
-import org.springframework.integration.kafka.support.ConsumerMetadata;
-import org.springframework.integration.kafka.support.KafkaConsumerContext;
-import org.springframework.integration.kafka.support.MessageLeftOverTracker;
+import org.springframework.integration.kafka.support.*;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -40,6 +35,7 @@ import java.util.Map;
 
 /**
  * @author Soby Chacko
+ * @author Rajasekar Elango
  * @since 0.5
  */
 public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionParser {
@@ -75,15 +71,25 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 
 			final Map<String, Integer> topicStreamsMap = new HashMap<String, Integer>();
 
-			for (final Element topicConfiguration : DomUtils.getChildElementsByTagName(consumerConfiguration, "topic")) {
-				final String topic = topicConfiguration.getAttribute("id");
-				final String streams = topicConfiguration.getAttribute("streams");
-				final Integer streamsInt = Integer.valueOf(streams);
-				topicStreamsMap.put(topic, streamsInt);
+			final List<Element> topicConfigurations = DomUtils.getChildElementsByTagName(consumerConfiguration, "topic");
+			
+			if (topicConfigurations != null){
+				for (final Element topicConfiguration : topicConfigurations) {
+					final String topic = topicConfiguration.getAttribute("id");
+					final String streams = topicConfiguration.getAttribute("streams");
+					final Integer streamsInt = Integer.valueOf(streams);
+					topicStreamsMap.put(topic, streamsInt);
+				}
+				consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
 			}
+			
+			final Element topicFilter = DomUtils.getChildElementByTagName(consumerConfiguration, "topic-filter");
 
-			consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
-
+			if (topicFilter != null){
+				final TopicFilterConfiguration topicFilterConfiguration = new TopicFilterConfiguration(topicFilter.getAttribute("pattern"),Integer.valueOf(topicFilter.getAttribute("streams")), Boolean.valueOf(topicFilter.getAttribute("exclude")));
+				consumerMetadataBuilder.addPropertyValue("topicFilterConfiguration", topicFilterConfiguration);
+			}
+			
 			final BeanDefinition consumerMetadataBeanDef = consumerMetadataBuilder.getBeanDefinition();
 			registerBeanDefinition(new BeanDefinitionHolder(consumerMetadataBeanDef, "consumerMetadata_" + consumerConfiguration.getAttribute("group-id")),
 					parserContext.getRegistry());
