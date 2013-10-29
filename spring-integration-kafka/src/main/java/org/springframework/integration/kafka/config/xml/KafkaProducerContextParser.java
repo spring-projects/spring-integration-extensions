@@ -46,11 +46,11 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 		super.doParse(element, parserContext, builder);
 
 		final Element topics = DomUtils.getChildElementByTagName(element, "producer-configurations");
-        parseProducerConfigurations(topics, parserContext, builder, element);
+		parseProducerConfigurations(topics, parserContext, builder, element);
 	}
 
-    private void parseProducerConfigurations(final Element topics, final ParserContext parserContext,
-            final BeanDefinitionBuilder builder, final Element parentElem) {
+	private void parseProducerConfigurations(final Element topics, final ParserContext parserContext,
+			final BeanDefinitionBuilder builder, final Element parentElem) {
 		for (final Element producerConfiguration : DomUtils.getChildElementsByTagName(topics, "producer-configuration")){
 			final BeanDefinitionBuilder producerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerConfiguration.class);
 
@@ -79,9 +79,9 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 				producerFactoryBuilder.addConstructorArgValue(producerConfiguration.getAttribute("broker-list"));
 			}
 
-            if (StringUtils.hasText(producerPropertiesBean)) {
-                producerFactoryBuilder.addConstructorArgReference(producerPropertiesBean);
-            }
+			if (StringUtils.hasText(producerPropertiesBean)) {
+				producerFactoryBuilder.addConstructorArgReference(producerPropertiesBean);
+			}
 
 			final BeanDefinition producerfactoryBeanDefinition = producerFactoryBuilder.getBeanDefinition();
 			registerBeanDefinition(new BeanDefinitionHolder(producerfactoryBeanDefinition, "prodFactory_" + producerConfiguration.getAttribute("topic")), parserContext.getRegistry());

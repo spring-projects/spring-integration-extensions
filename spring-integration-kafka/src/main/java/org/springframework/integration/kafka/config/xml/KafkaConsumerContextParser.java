@@ -98,11 +98,11 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 			consumerConfigFactoryBuilder.addConstructorArgReference("consumerMetadata_" + consumerConfiguration.getAttribute("group-id"));
 
 			if (StringUtils.hasText(zookeeperConnectBean)) {
-                consumerConfigFactoryBuilder.addConstructorArgReference(zookeeperConnectBean);
+				consumerConfigFactoryBuilder.addConstructorArgReference(zookeeperConnectBean);
 			}
 
             if (StringUtils.hasText(consumerPropertiesBean)) {
-                consumerConfigFactoryBuilder.addConstructorArgReference(consumerPropertiesBean);
+				consumerConfigFactoryBuilder.addConstructorArgReference(consumerPropertiesBean);
             }
 
 			final BeanDefinition consumerConfigFactoryBuilderBeanDefinition = consumerConfigFactoryBuilder.getBeanDefinition();
