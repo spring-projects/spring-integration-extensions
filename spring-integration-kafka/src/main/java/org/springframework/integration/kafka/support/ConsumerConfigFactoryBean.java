@@ -38,9 +38,9 @@ public class ConsumerConfigFactoryBean<K,V> implements FactoryBean<ConsumerConfi
 			final ZookeeperConnect zookeeperConnect, final Properties consumerProperties) {
 		this.consumerMetadata = consumerMetadata;
 		this.zookeeperConnect = zookeeperConnect;
-        if (consumerProperties != null) {
-            this.consumerProperties = consumerProperties;
-        }
+		if (consumerProperties != null) {
+			this.consumerProperties = consumerProperties;
+		}
 	}
 
     public ConsumerConfigFactoryBean(final ConsumerMetadata consumerMetadata, final ZookeeperConnect zookeeperConnect) {
@@ -49,9 +49,9 @@ public class ConsumerConfigFactoryBean<K,V> implements FactoryBean<ConsumerConfi
 
 	@Override
 	public ConsumerConfig getObject() throws Exception {
-        final Properties properties = new Properties();
-        properties.putAll(consumerProperties);
-        properties.put("zookeeper.connect", zookeeperConnect.getZkConnect());
+		final Properties properties = new Properties();
+		properties.putAll(consumerProperties);
+		properties.put("zookeeper.connect", zookeeperConnect.getZkConnect());
 		properties.put("zookeeper.session.timeout.ms", zookeeperConnect.getZkSessionTimeout());
 		properties.put("zookeeper.sync.time.ms", zookeeperConnect.getZkSyncTime());
 

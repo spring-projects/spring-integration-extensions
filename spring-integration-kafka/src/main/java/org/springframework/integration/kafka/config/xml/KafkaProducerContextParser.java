@@ -69,7 +69,7 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 			registerBeanDefinition(new BeanDefinitionHolder(producerMetadataBeanDef, "producerMetadata_" + producerConfiguration.getAttribute("topic")),
 										parserContext.getRegistry());
 
-            final String producerPropertiesBean = parentElem.getAttribute("producer-properties");
+			final String producerPropertiesBean = parentElem.getAttribute("producer-properties");
 
 			final BeanDefinitionBuilder producerFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerFactoryBean.class);
 			producerFactoryBuilder.addConstructorArgReference("producerMetadata_" + producerConfiguration.getAttribute("topic"));
