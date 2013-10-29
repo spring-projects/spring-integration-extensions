@@ -45,9 +45,9 @@ public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
             final Properties producerProperties) {
 		this.producerMetadata = producerMetadata;
 		this.brokerList = brokerList;
-        if (producerProperties != null) {
-            this.producerProperties = producerProperties;
-        }
+		if (producerProperties != null) {
+			this.producerProperties = producerProperties;
+		}
     }
 
     public ProducerFactoryBean(final ProducerMetadata<K, V> producerMetadata, final String brokerList) {
@@ -57,7 +57,7 @@ public class ProducerFactoryBean<K,V> implements FactoryBean<Producer<K,V>> {
 	@Override
 	public Producer<K, V> getObject() throws Exception {
 		final Properties props = new Properties();
-        props.putAll(producerProperties);
+		props.putAll(producerProperties);
 		props.put("metadata.broker.list", brokerList);
 		props.put("compression.codec", producerMetadata.getCompressionCodec());
 

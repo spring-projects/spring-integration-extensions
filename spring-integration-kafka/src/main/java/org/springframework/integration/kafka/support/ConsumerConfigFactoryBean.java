@@ -55,10 +55,6 @@ public class ConsumerConfigFactoryBean<K,V> implements FactoryBean<ConsumerConfi
 		properties.put("zookeeper.session.timeout.ms", zookeeperConnect.getZkSessionTimeout());
 		properties.put("zookeeper.sync.time.ms", zookeeperConnect.getZkSyncTime());
 
-        if (!properties.containsKey("consumer.timeout.ms")) {
-            properties.put("consumer.timeout.ms", consumerMetadata.getConsumerTimeout());
-        }
-
 		properties.put("group.id", consumerMetadata.getGroupId());
 
         LOGGER.info("Using consumer properties => " + properties);
