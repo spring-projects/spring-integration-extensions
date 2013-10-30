@@ -166,6 +166,33 @@ In the wrapper bean provided, this property can simply be injected as a value wi
 in the package org.springframework.integration.kafka.serializer.common.StringEncoder. The avro support for serialization is
 also available in a package called avro under serializer.
 
+#### Tuning Producer Properties
+Kafka Producer API provides several [Producer Configs] (http://kafka.apache.org/documentation.html#producerconfigs) to fine tune producers.
+To specify those properties, `producer-context` element supports optional `producer-properties` attribute that can reference the spring properties bean.
+This properties will be applied to all Producer Configurations within the producer context. For Eg:
+
+```xml
+
+	<bean id="producerProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="topic.metadata.refresh.interval.ms">3600000</prop>
+				<prop key="message.send.max.retries">5</prop> 
+				<prop key="send.buffer.bytes">5242880</prop> 
+			</props>
+		</property>
+	</bean>
+
+	<int-kafka:producer-context id="kafkaProducerContext" producer-properties="producerProperties">
+		<int-kafka:producer-configurations>
+			<int-kafka:producer-configuration ... > ... </int-kafka:producer-configuration>
+			<int-kafka:producer-configuration ... > ... </int-kafka:producer-configuration>
+			...
+		<int-kafka:producer-configurations>
+	</int-kafka:producer-context>
+```	
+	
+
 Inbound Channel Adapter:
 --------------------------------------------
 
@@ -326,3 +353,32 @@ Map.
 
 If your use case does not require ordering of messages during consumption, then you can easily pass this
 payload to a standard SI transformer and just get a full dump of the actual payload sent by Kafka.
+
+#### Tuning Consumer Properties
+Kafka Consumer API provides several [Consumer Configs] (http://kafka.apache.org/documentation.html#consumerconfigs) to fine tune consumers.
+To specify those properties, `consumer-context` element supports optional `consumer-properties` attribute that can reference the spring properties bean.
+This properties will be applied to all Consumer Configurations within the consumer context. For Eg:
+
+```xml
+
+	<bean id="consumerProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="auto.offset.reset">smallest</prop>
+                <prop key="socket.receive.buffer.bytes">10485760</prop> <!-- 10M -->
+                <prop key="fetch.message.max.bytes">5242880</prop> 
+                <prop key="auto.commit.interval.ms">1000</prop>
+			</props>
+		</property>
+	</bean>
+
+	<int-kafka:consumer-context id="consumerContext"
+			consumer-timeout="1000"
+			zookeeper-connect="zookeeperConnect" consumer-properties="consumerProperties">
+		<int-kafka:consumer-configurations>
+			<int-kafka:consumer-configuration ... > ... </int-kafka:consumer-configuration>
+			<int-kafka:consumer-configuration ... > ... </int-kafka:consumer-configuration>
+			...
+		</<int-kafka:consumer-configurations>>
+	</int-kafka:producer-context>
+```

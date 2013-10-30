@@ -15,9 +15,7 @@
  */
 package org.springframework.integration.kafka.config.xml;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -26,13 +24,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.kafka.support.ConsumerConfigFactoryBean;
-import org.springframework.integration.kafka.support.ConsumerConfiguration;
-import org.springframework.integration.kafka.support.ConsumerConnectionProvider;
-import org.springframework.integration.kafka.support.ConsumerMetadata;
-import org.springframework.integration.kafka.support.KafkaConsumerContext;
-import org.springframework.integration.kafka.support.MessageLeftOverTracker;
-import org.springframework.integration.kafka.support.TopicFilterConfiguration;
+import org.springframework.integration.kafka.support.*;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -75,7 +67,7 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 			final Map<String, Integer> topicStreamsMap = new HashMap<String, Integer>();
 
 			final List<Element> topicConfigurations = DomUtils.getChildElementsByTagName(consumerConfiguration, "topic");
-
+			
 			if (topicConfigurations != null){
 				for (final Element topicConfiguration : topicConfigurations) {
 					final String topic = topicConfiguration.getAttribute("id");
@@ -85,14 +77,14 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 				}
 				consumerMetadataBuilder.addPropertyValue("topicStreamMap", topicStreamsMap);
 			}
-
+			
 			final Element topicFilter = DomUtils.getChildElementByTagName(consumerConfiguration, "topic-filter");
 
 			if (topicFilter != null){
 				final TopicFilterConfiguration topicFilterConfiguration = new TopicFilterConfiguration(topicFilter.getAttribute("pattern"),Integer.valueOf(topicFilter.getAttribute("streams")), Boolean.valueOf(topicFilter.getAttribute("exclude")));
 				consumerMetadataBuilder.addPropertyValue("topicFilterConfiguration", topicFilterConfiguration);
 			}
-
+			
 			final BeanDefinition consumerMetadataBeanDef = consumerMetadataBuilder.getBeanDefinition();
 			registerBeanDefinition(new BeanDefinitionHolder(consumerMetadataBeanDef, "consumerMetadata_" + consumerConfiguration.getAttribute("group-id")),
 					parserContext.getRegistry());
@@ -100,11 +92,17 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 			final String zookeeperConnectBean = parentElem.getAttribute("zookeeper-connect");
 			IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, parentElem, zookeeperConnectBean);
 
+			final String consumerPropertiesBean = parentElem.getAttribute("consumer-properties");
+
 			final BeanDefinitionBuilder consumerConfigFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfigFactoryBean.class);
 			consumerConfigFactoryBuilder.addConstructorArgReference("consumerMetadata_" + consumerConfiguration.getAttribute("group-id"));
 
 			if (StringUtils.hasText(zookeeperConnectBean)) {
 				consumerConfigFactoryBuilder.addConstructorArgReference(zookeeperConnectBean);
+			}
+
+			if (StringUtils.hasText(consumerPropertiesBean)) {
+				consumerConfigFactoryBuilder.addConstructorArgReference(consumerPropertiesBean);
 			}
 
 			final BeanDefinition consumerConfigFactoryBuilderBeanDefinition = consumerConfigFactoryBuilder.getBeanDefinition();

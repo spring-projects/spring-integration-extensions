@@ -30,8 +30,18 @@
 	</bean>
 
 	<bean id="customPartitioner" class="org.springframework.integration.samples.kafka.outbound.CustomPartitioner"/>
+	
+	<bean id="producerProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="topic.metadata.refresh.interval.ms">3600000</prop>
+				<prop key="message.send.max.retries">5</prop> 
+				<prop key="send.buffer.bytes">5242880</prop> 
+			</props>
+		</property>
+	</bean>
 
-	<int-kafka:producer-context id="kafkaProducerContext">
+	<int-kafka:producer-context id="kafkaProducerContext" producer-properties="producerProperties">
 		<int-kafka:producer-configurations>
 			<int-kafka:producer-configuration broker-list="localhost:9092"
 					key-class-type="java.lang.String"
