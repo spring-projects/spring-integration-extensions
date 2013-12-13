@@ -16,11 +16,10 @@
 package org.springframework.integration.mqtt.support;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.support.converter.MessageConversionException;
+import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.util.Assert;
 
 
