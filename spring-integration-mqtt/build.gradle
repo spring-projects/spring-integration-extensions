@@ -14,8 +14,7 @@ apply plugin: 'idea'
 group = 'org.springframework.integration'
 
 repositories {
-	maven { url 'http://repo.spring.io/libs-snapshot' }
-	maven { url 'http://repo.springsource.org/milestone' }
+	maven { url 'http://repo.spring.io/milestone' }
 	maven { url 'https://repo.eclipse.org/content/repositories/paho-releases/' }
 	maven { url 'http://repo.springsource.org/plugins-release' }
 }
@@ -27,8 +26,8 @@ ext {
 	junitVersion = '4.11'
 	log4jVersion = '1.2.17'
 	mockitoVersion = '1.9.5'
-	springVersion = '4.0.0.BUILD-SNAPSHOT'
-	springIntegrationVersion = '4.0.0.BUILD-SNAPSHOT'
+	springVersion = '4.0.0.RELEASE'
+	springIntegrationVersion = '4.0.0.M2'
 
 	idPrefix = 'mqtt'
 
