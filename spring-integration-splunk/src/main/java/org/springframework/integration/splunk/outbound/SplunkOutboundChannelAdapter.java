@@ -16,10 +16,10 @@
 
 package org.springframework.integration.splunk.outbound;
 
-import org.springframework.integration.Message;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.splunk.support.SplunkExecutor;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 
@@ -47,13 +47,6 @@ public class SplunkOutboundChannelAdapter extends AbstractReplyProducingMessageH
 		this.splunkExecutor = splunkExecutor;
 	}
 
-	/**
-	 *
-	 */
-	@Override
-	protected void onInit() {
-		super.onInit();
-	}
 
 	@Override
 	protected Object handleRequestMessage(Message<?> requestMessage) {
