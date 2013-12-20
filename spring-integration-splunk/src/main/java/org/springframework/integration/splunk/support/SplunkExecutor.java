@@ -19,12 +19,12 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
-import org.springframework.integration.MessagingException;
 import org.springframework.integration.splunk.core.DataReader;
 import org.springframework.integration.splunk.core.DataWriter;
 import org.springframework.integration.splunk.event.SplunkEvent;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
 
 /**
  * Bundles common core logic for the Splunk components.
