@@ -1,25 +1,26 @@
 description = 'Spring Integration Java DSL'
 
 apply plugin: 'java'
-apply from:   "${rootProject.projectDir}/publish-maven.gradle"
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 group = 'org.springframework.integration'
 
 repositories {
+//	mavenLocal()
 	if (version.endsWith('BUILD-SNAPSHOT')) {
-			maven { url 'http://repo.spring.io/libs-snapshot' }
-		}
-		maven { url 'http://repo.spring.io/libs-milestone' }
+		maven { url 'http://repo.spring.io/libs-snapshot' }
+	}
+	maven { url 'http://repo.spring.io/libs-milestone' }
 }
 
 compileJava {
-	sourceCompatibility=1.6
+	sourceCompatibility = 1.6
 }
 
 compileTestJava {
-	sourceCompatibility=1.8
+	sourceCompatibility = 1.8
 }
 
 ext {
@@ -30,10 +31,10 @@ ext {
 	springIntegrationVersion = '4.0.0.BUILD-SNAPSHOT'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
-	linkCi       = 'https://build.springsource.org/browse/INTEXT'
-	linkIssue    = 'https://jira.springsource.org/browse/INTEXT'
-	linkScmUrl           = 'https://github.com/spring-projects/spring-integration-extensions'
-	linkScmConnection    = 'https://github.com/spring-projects/spring-integration-extensions.git'
+	linkCi = 'https://build.springsource.org/browse/INTEXT'
+	linkIssue = 'https://jira.springsource.org/browse/INTEXT'
+	linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
 	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
 }
 
@@ -56,9 +57,8 @@ dependencies {
 	testCompile "org.mockito:mockito-all:$mockitoVersion"
 	testCompile "org.springframework:spring-test:$springVersion"
 
-	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.6.2.201302030002", classifier: "runtime"
+	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
 }
-
 
 // enable all compiler warnings; individual projects may customize further
 ext.xLintArg = '-Xlint:all,-options'
@@ -119,7 +119,7 @@ task docsZip(type: Zip) {
 	description = "Builds -${classifier} archive containing the api " +
 			"for deployment at static.springframework.org/spring-integration/docs."
 
-	from (api) {
+	from(api) {
 		into 'api'
 	}
 }
@@ -128,7 +128,7 @@ task distZip(type: Zip, dependsOn: docsZip) {
 	group = 'Distribution'
 	classifier = 'dist'
 	description = "Builds -${classifier} archive, containing all jars and docs, " +
-		"suitable for community download page."
+			"suitable for community download page."
 
 	ext.baseDir = "${project.name}-${project.version}";
 
@@ -142,7 +142,7 @@ task distZip(type: Zip, dependsOn: docsZip) {
 		into "${baseDir}/docs"
 	}
 
-	into ("${baseDir}/libs") {
+	into("${baseDir}/libs") {
 		from project.jar
 		from project.sourcesJar
 		from project.javadocJar
@@ -155,7 +155,7 @@ task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
 	group = 'Distribution'
 	classifier = 'dist-with-deps'
 	description = "Builds -${classifier} archive, containing everything " +
-		"in the -${distZip.classifier} archive plus all dependencies."
+			"in the -${distZip.classifier} archive plus all dependencies."
 
 	from zipTree(distZip.archivePath)
 
