@@ -24,7 +24,7 @@ import org.springframework.messaging.Message;
 /**
  * @author Artem Bilan
  */
-public class PriorityChannelSpec extends ChannelSpecSupport<PriorityChannelSpec, PriorityChannel> {
+public class PriorityChannelSpec extends MessageChannelSpec<PriorityChannelSpec, PriorityChannel> {
 
 	private int capacity;
 
@@ -41,9 +41,9 @@ public class PriorityChannelSpec extends ChannelSpecSupport<PriorityChannelSpec,
 	}
 
 	@Override
-	public PriorityChannel get() {
+	protected PriorityChannel doGet() {
 		this.channel = new PriorityChannel(this.capacity, this.comparator);
-		return super.get();
+		return super.doGet();
 	}
 
 

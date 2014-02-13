@@ -24,7 +24,7 @@ import org.springframework.util.ErrorHandler;
 /**
  * @author Artem Bilan
  */
-public class PublishSubscribeChannelSpec extends ChannelSpecSupport<PublishSubscribeChannelSpec, PublishSubscribeChannel> {
+public class PublishSubscribeChannelSpec extends MessageChannelSpec<PublishSubscribeChannelSpec, PublishSubscribeChannel> {
 
 	PublishSubscribeChannelSpec() {
 		this.channel = new PublishSubscribeChannel();

@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.channel;
-
-import org.springframework.integration.channel.DirectChannel;
+package org.springframework.integration.dsl.core;
 
 /**
  * @author Artem Bilan
+ * @since 4.0
  */
-public class DirectChannelSpec extends LoadBalancingChannelSpec<DirectChannelSpec, DirectChannel> {
+public abstract class Spec<S extends Spec<S, T>, T> {
 
-	@Override
-	protected DirectChannel doGet() {
-		this.channel = new DirectChannel(this.loadBalancingStrategy);
-		if (this.failover != null) {
-			this.channel.setFailover(this.failover);
+	private volatile T target;
+
+	public final T get() {
+		if (this.target == null) {
+			this.target = this.doGet();
 		}
-		if (this.maxSubscribers != null) {
-			this.channel.setMaxSubscribers(this.maxSubscribers);
-		}
-		return super.doGet();
+		return this.target;
 	}
 
-	DirectChannelSpec() {
+	protected abstract T doGet();
+
+	@SuppressWarnings("unchecked")
+	protected S _this() {
+		return (S) this;
 	}
+
 }

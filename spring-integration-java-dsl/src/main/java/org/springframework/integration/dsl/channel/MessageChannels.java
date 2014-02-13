@@ -19,7 +19,6 @@ package org.springframework.integration.dsl.channel;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 
-import org.springframework.integration.dispatcher.LoadBalancingStrategy;
 import org.springframework.integration.store.MessageGroupStore;
 import org.springframework.messaging.Message;
 
@@ -32,44 +31,80 @@ public final class MessageChannels {
 		return new DirectChannelSpec();
 	}
 
-	public static DirectChannelSpec direct(LoadBalancingStrategy loadBalancingStrategy) {
-		return direct().loadBalancer(loadBalancingStrategy);
+	public static DirectChannelSpec direct(String id) {
+		return direct().id(id);
 	}
 
 	public static QueueChannelSpec queue() {
 		return new QueueChannelSpec();
 	}
 
+	public static QueueChannelSpec queue(String id) {
+		return queue().id(id);
+	}
+
 	public static QueueChannelSpec queue(BlockingQueue<Message<?>> queue) {
 		return new QueueChannelSpec(queue);
+	}
+
+	public static QueueChannelSpec queue(String id, BlockingQueue<Message<?>> queue) {
+		return queue(queue).id(id);
 	}
 
 	public static QueueChannelSpec queue(Integer capacity) {
 		return new QueueChannelSpec(capacity);
 	}
 
+	public static QueueChannelSpec queue(String id, Integer capacity) {
+		return queue(capacity).id(id);
+	}
+
 	public static QueueChannelSpec.MessageStoreSpec queue(MessageGroupStore messageGroupStore, Object groupId) {
 		return new QueueChannelSpec.MessageStoreSpec(messageGroupStore, groupId);
+	}
+
+	public static QueueChannelSpec.MessageStoreSpec queue(String id, MessageGroupStore messageGroupStore, Object groupId) {
+		return queue(messageGroupStore, groupId).id(id);
 	}
 
 	public static ExecutorChannelSpec executor(Executor executor) {
 		return new ExecutorChannelSpec(executor);
 	}
 
+	public static ExecutorChannelSpec executor(String id, Executor executor) {
+		return executor(executor).id(id);
+	}
+
 	public static RendezvousChannelSpec rendezvous() {
 		return new RendezvousChannelSpec();
+	}
+
+	public static RendezvousChannelSpec rendezvous(String id) {
+		return rendezvous().id(id);
 	}
 
 	public static PriorityChannelSpec priority() {
 		return new PriorityChannelSpec();
 	}
 
+	public static PriorityChannelSpec priority(String id) {
+		return priority().id(id);
+	}
+
 	public static PublishSubscribeChannelSpec publishSubscribe() {
 		return new PublishSubscribeChannelSpec();
 	}
 
+	public static PublishSubscribeChannelSpec publishSubscribe(String id) {
+		return publishSubscribe().id(id);
+	}
+
 	public static PublishSubscribeChannelSpec publishSubscribe(Executor executor) {
 		return new PublishSubscribeChannelSpec(executor);
+	}
+
+	public static PublishSubscribeChannelSpec publishSubscribe(String id, Executor executor) {
+		return publishSubscribe(executor).id(id);
 	}
 
 	private MessageChannels() {

@@ -21,7 +21,7 @@ import org.springframework.integration.channel.RendezvousChannel;
 /**
  * @author Artem Bilan
  */
-public class RendezvousChannelSpec extends ChannelSpecSupport<RendezvousChannelSpec, RendezvousChannel> {
+public class RendezvousChannelSpec extends MessageChannelSpec<RendezvousChannelSpec, RendezvousChannel> {
 
 	RendezvousChannelSpec() {
 		this.channel = new RendezvousChannel();

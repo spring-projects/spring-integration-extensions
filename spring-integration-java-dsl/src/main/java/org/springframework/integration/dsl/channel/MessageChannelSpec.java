@@ -19,12 +19,13 @@ package org.springframework.integration.dsl.channel;
 import java.util.Arrays;
 
 import org.springframework.integration.channel.AbstractMessageChannel;
+import org.springframework.integration.dsl.core.Spec;
 import org.springframework.messaging.support.ChannelInterceptor;
 
 /**
  * @author Artem Bilan
  */
-public abstract class ChannelSpecSupport<S extends ChannelSpecSupport<S, C>, C extends AbstractMessageChannel> {
+public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C extends AbstractMessageChannel> extends Spec<S, C> {
 
 	protected C channel;
 
@@ -33,6 +34,11 @@ public abstract class ChannelSpecSupport<S extends ChannelSpecSupport<S, C>, C e
 	private Class<?>[] datatypes;
 
 	private ChannelInterceptor[] interceptors;
+
+	S id(String id) {
+		this.id = id;
+		return _this();
+	}
 
 	public S datatypes(Class<?>... datatypes) {
 		this.datatypes = datatypes;
@@ -44,12 +50,8 @@ public abstract class ChannelSpecSupport<S extends ChannelSpecSupport<S, C>, C e
 		return _this();
 	}
 
-	public S id(String id) {
-		this.id = id;
-		return _this();
-	}
-
-	public C get() {
+	@Override
+	protected C doGet() {
 		this.channel.setDatatypes(this.datatypes);
 		this.channel.setBeanName(this.id);
 		if (this.interceptors != null) {
@@ -58,9 +60,5 @@ public abstract class ChannelSpecSupport<S extends ChannelSpecSupport<S, C>, C e
 		return this.channel;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected S _this() {
-		return (S) this;
-	}
 
 }

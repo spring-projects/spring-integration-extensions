@@ -27,7 +27,7 @@ import org.springframework.messaging.Message;
 /**
  * @author Artem Bilan
  */
-public class QueueChannelSpec extends ChannelSpecSupport<QueueChannelSpec, QueueChannel> {
+public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, QueueChannel> {
 
 	protected BlockingQueue<Message<?>> queue;
 
@@ -45,7 +45,7 @@ public class QueueChannelSpec extends ChannelSpecSupport<QueueChannelSpec, Queue
 	}
 
 	@Override
-	public QueueChannel get() {
+	protected QueueChannel doGet() {
 		if (this.queue != null) {
 			this.channel = new QueueChannel(this.queue);
 		}
@@ -55,7 +55,7 @@ public class QueueChannelSpec extends ChannelSpecSupport<QueueChannelSpec, Queue
 		else {
 			this.channel = new QueueChannel();
 		}
-		return super.get();
+		return super.doGet();
 	}
 
 	public static class MessageStoreSpec extends QueueChannelSpec {
@@ -72,6 +72,11 @@ public class QueueChannelSpec extends ChannelSpecSupport<QueueChannelSpec, Queue
 			this.groupId = groupId;
 		}
 
+		@Override
+		MessageStoreSpec id(String id) {
+			return (MessageStoreSpec) super.id(id);
+		}
+
 		public MessageStoreSpec capacity(Integer capacity) {
 			this.capacity = capacity;
 			return this;
@@ -83,7 +88,7 @@ public class QueueChannelSpec extends ChannelSpecSupport<QueueChannelSpec, Queue
 		}
 
 		@Override
-		public QueueChannel get() {
+		protected QueueChannel doGet() {
 			if (this.capacity != null) {
 				if (this.storeLock != null) {
 					this.queue = new MessageGroupQueue(messageGroupStore, groupId, this.capacity, this.storeLock);
@@ -98,7 +103,7 @@ public class QueueChannelSpec extends ChannelSpecSupport<QueueChannelSpec, Queue
 			else {
 				this.queue = new MessageGroupQueue(messageGroupStore, groupId);
 			}
-			return super.get();
+			return super.doGet();
 		}
 
 	}

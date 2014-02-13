@@ -23,6 +23,7 @@ import org.springframework.integration.config.SourcePollingChannelAdapterFactory
 import org.springframework.integration.core.GenericSelector;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.core.MessageSelector;
+import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.filter.MessageFilter;
@@ -34,6 +35,7 @@ import org.springframework.integration.transformer.MessageTransformingHandler;
 import org.springframework.integration.transformer.MethodInvokingTransformer;
 import org.springframework.integration.transformer.Transformer;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
@@ -62,8 +64,51 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public IntegrationFlowBuilder channel(MessageChannel messageChannel) {
+		Assert.notNull(messageChannel);
 		this.currentMessageChannel = messageChannel;
 		return this.addComponent(this.currentMessageChannel).registerOutputChannelIfCan(this.currentMessageChannel);
+	}
+
+	public IntegrationFlowBuilder channel(MessageChannelSpec<?, ?> messageChannelSpec) {
+		Assert.notNull(messageChannelSpec);
+		return this.channel(messageChannelSpec.get());
+	}
+
+	public IntegrationFlowBuilder transform(String expression) {
+		return this.transform(PARSER.parseExpression(expression));
+	}
+
+	public IntegrationFlowBuilder transform(Expression expression) {
+		return this.transform(new ExpressionEvaluatingTransformer(expression));
+	}
+
+	public <S, T> IntegrationFlowBuilder transform(GenericTransformer<S, T> genericTransformer) {
+		return this.transform(genericTransformer, null);
+	}
+
+	public <S, T> IntegrationFlowBuilder transform(GenericTransformer<S, T> genericTransformer,
+												   EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		Transformer transformer = genericTransformer instanceof Transformer
+				? (Transformer) genericTransformer : new MethodInvokingTransformer(genericTransformer);
+		return this.register(new GenericEndpointSpec<MessageTransformingHandler>(new MessageTransformingHandler(transformer)), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder filter(String expression) {
+		return this.filter(PARSER.parseExpression(expression));
+	}
+
+	public IntegrationFlowBuilder filter(Expression expression) {
+		return this.filter(new ExpressionEvaluatingSelector(expression));
+	}
+
+	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector) {
+		return this.filter(genericSelector, null);
+	}
+
+	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector, EndpointConfigurer<FilterEndpointSpec> endpointConfigurer) {
+		MessageSelector selector = genericSelector instanceof MessageSelector
+				? (MessageSelector) genericSelector : new MethodInvokingSelector(genericSelector);
+		return this.register(new FilterEndpointSpec(new MessageFilter(selector)), endpointConfigurer);
 	}
 
 	private IntegrationFlowBuilder registerOutputChannelIfCan(MessageChannel outputChannel) {
@@ -83,50 +128,10 @@ public final class IntegrationFlowBuilder {
 		return this;
 	}
 
-	public IntegrationFlowBuilder transform(String expression) {
-		return this.transform(PARSER.parseExpression(expression));
-	}
-
-	public IntegrationFlowBuilder transform(Expression expression) {
-		return this.transform(new ExpressionEvaluatingTransformer(expression));
-	}
-
-	public <S, T> IntegrationFlowBuilder transform(GenericTransformer<S, T> genericTransformer) {
-		Transformer transformer = genericTransformer instanceof Transformer
-				? (Transformer) genericTransformer : new MethodInvokingTransformer(genericTransformer);
-		return this.transform(genericTransformer, new DefaultEndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>>());
-	}
-
-	public <S, T> IntegrationFlowBuilder transform(GenericTransformer<S, T> genericTransformer,
-												   EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
-		Transformer transformer = genericTransformer instanceof Transformer
-				? (Transformer) genericTransformer : new MethodInvokingTransformer(genericTransformer);
-		GenericEndpointSpec<MessageTransformingHandler> spec = new GenericEndpointSpec<MessageTransformingHandler>(new MessageTransformingHandler(transformer));
-		endpointConfigurer.configure(spec);
-		return this.register(spec);
-	}
-
-	public IntegrationFlowBuilder filter(String expression) {
-		return this.filter(PARSER.parseExpression(expression));
-	}
-
-	public IntegrationFlowBuilder filter(Expression expression) {
-		return this.filter(new ExpressionEvaluatingSelector(expression));
-	}
-
-	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector) {
-		return this.filter(genericSelector, new DefaultEndpointConfigurer<FilterEndpointSpec>());
-	}
-
-	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector, EndpointConfigurer<FilterEndpointSpec> endpointConfigurer) {
-		MessageSelector selector = genericSelector instanceof MessageSelector
-				? (MessageSelector) genericSelector : new MethodInvokingSelector(genericSelector);
-		FilterEndpointSpec spec = new FilterEndpointSpec(new MessageFilter(selector));
-		endpointConfigurer.configure(spec);
-		return this.register(spec);
-	}
-
-	private IntegrationFlowBuilder register(EndpointSpec<?, ?> endpointSpec) {
+	private <S extends EndpointSpec<?, ?>> IntegrationFlowBuilder register(S endpointSpec, EndpointConfigurer<S> endpointConfigurer) {
+		if (endpointConfigurer != null) {
+			endpointConfigurer.configure(endpointSpec);
+		}
 		MessageChannel inputChannel = this.currentMessageChannel;
 		this.currentMessageChannel = null;
 		if (inputChannel == null) {
@@ -141,14 +146,6 @@ public final class IntegrationFlowBuilder {
 
 	public IntegrationFlow get() {
 		return this.flow;
-	}
-
-	private class DefaultEndpointConfigurer<S extends EndpointSpec<?, ?>> implements EndpointConfigurer<S> {
-
-		@Override
-		public void configure(S spec) {
-
-		}
 	}
 
 }

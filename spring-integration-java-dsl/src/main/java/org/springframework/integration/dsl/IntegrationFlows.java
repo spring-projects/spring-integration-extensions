@@ -18,9 +18,11 @@ package org.springframework.integration.dsl;
 
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.endpoint.AbstractEndpoint;
+import org.springframework.integration.dsl.channel.MessageChannelSpec;
+import org.springframework.integration.dsl.support.PollerSpec;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
@@ -31,8 +33,17 @@ public final class IntegrationFlows {
 		return new IntegrationFlowBuilder().channel(messageChannel);
 	}
 
+	public static IntegrationFlowBuilder from(MessageChannelSpec<?, ?> messageChannelSpec) {
+		return from(messageChannelSpec.get());
+	}
+
 	public static IntegrationFlowBuilder from(MessageSource<?> messageSource) {
-		return from(messageSource, null);
+		return from(messageSource, (PollerMetadata) null);
+	}
+
+	public static IntegrationFlowBuilder from(MessageSource<?> messageSource, PollerSpec pollerSpec) {
+		Assert.notNull(pollerSpec);
+		return from(messageSource, pollerSpec.get());
 	}
 
 	public static IntegrationFlowBuilder from(MessageSource<?> messageSource, PollerMetadata pollerMetadata) {
@@ -45,9 +56,9 @@ public final class IntegrationFlows {
 				.currentComponent(factoryBean);
 	}
 
-	public static IntegrationFlowBuilder from(AbstractEndpoint endpoint) {
+	/*public static IntegrationFlowBuilder from(AbstractEndpoint endpoint) {
 		return new IntegrationFlowBuilder();
-	}
+	}*/
 
 	private IntegrationFlows() {
 	}

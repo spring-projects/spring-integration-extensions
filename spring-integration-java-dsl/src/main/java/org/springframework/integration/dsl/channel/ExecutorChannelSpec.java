@@ -23,7 +23,7 @@ import org.springframework.integration.channel.ExecutorChannel;
 /**
  * @author Artem Bilan
  */
-public class ExecutorChannelSpec extends LoadBalancingChannelSpecSupport<ExecutorChannelSpec, ExecutorChannel> {
+public class ExecutorChannelSpec extends LoadBalancingChannelSpec<ExecutorChannelSpec, ExecutorChannel> {
 
 	private final Executor executor;
 
@@ -31,7 +31,8 @@ public class ExecutorChannelSpec extends LoadBalancingChannelSpecSupport<Executo
 		this.executor = executor;
 	}
 
-	public ExecutorChannel get() {
+	@Override
+	protected ExecutorChannel doGet() {
 		this.channel = new ExecutorChannel(this.executor, this.loadBalancingStrategy);
 		if (this.failover != null) {
 			this.channel.setFailover(this.failover);
@@ -39,7 +40,7 @@ public class ExecutorChannelSpec extends LoadBalancingChannelSpecSupport<Executo
 		if (this.maxSubscribers != null) {
 			this.channel.setMaxSubscribers(this.maxSubscribers);
 		}
-		return super.get();
+		return super.doGet();
 	}
 
 }

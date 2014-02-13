@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.aopalliance.aop.Advice;
@@ -42,7 +43,10 @@ import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
+import org.springframework.integration.dsl.channel.QueueChannelSpec;
+import org.springframework.integration.dsl.support.PollerSpec;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
@@ -119,6 +123,16 @@ public class IntegrationFlowTests {
 	public static class ContextConfiguration {
 
 		@Bean
+		public DirectChannelSpec inputChannel() {
+			return MessageChannels.direct();
+		}
+
+		@Bean
+		public QueueChannelSpec successChannel() {
+			return MessageChannels.queue();
+		}
+
+		@Bean
 		public MessageSource<?> integerMessageSource() {
 			MethodInvokingMessageSource source = new MethodInvokingMessageSource();
 			source.setObject(new AtomicInteger());
@@ -128,48 +142,51 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow flow1() {
-			return IntegrationFlows.from(this.integerMessageSource(), Pollers.fixedRate(100).get())
+			return IntegrationFlows.from(this.integerMessageSource(), Pollers.fixedRate(100))
 					.transform("payload.toString()")
-					.channel(MessageChannels.queue().id("flow1QueueChannel").get())
+					.channel(MessageChannels.queue("flow1QueueChannel"))
 					.get();
 		}
 
-		@Bean
-		public DirectChannel inputChannel() {
-			return MessageChannels.direct().get();
-		}
-
-		@Bean
-		public QueueChannel successChannel() {
-			return MessageChannels.queue().get();
-		}
-
 		@Bean(name = PollerMetadata.DEFAULT_POLLER_METADATA_BEAN_NAME)
-		public PollerMetadata poller() {
-			return Pollers.fixedRate(500).get();
+		public PollerSpec poller() {
+			return Pollers.fixedRate(500);
 		}
+
+	}
+
+	@Configuration
+	public static class ContextConfiguration2 {
+
+		@Autowired
+		@Qualifier("inputChannel")
+		private DirectChannel inputChannel;
+
+		@Autowired
+		@Qualifier("successChannel")
+		private PollableChannel successChannel;
 
 		@Bean
 		public Advice expressionAdvice() {
 			ExpressionEvaluatingRequestHandlerAdvice advice = new ExpressionEvaluatingRequestHandlerAdvice();
 			advice.setOnSuccessExpression("payload");
-			advice.setSuccessChannel(this.successChannel());
+			advice.setSuccessChannel(this.successChannel);
 			return advice;
 		}
 
 		@Bean
 		public IntegrationFlow flow2() {
-			return IntegrationFlows.from(this.inputChannel())
+			return IntegrationFlows.from(this.inputChannel)
 					.filter(p -> p instanceof String, c -> c.id("filter"))
 					.<String, Integer>transform(Integer::parseInt)
 					.transform(new PayloadSerializingTransformer(),
 							c -> c.autoStartup(false).id("payloadSerializingTransformer"))
-					.channel(MessageChannels.queue(new SimpleMessageStore(), "fooQueue").get())
+					.channel(MessageChannels.queue(new SimpleMessageStore(), "fooQueue"))
 					.transform(new PayloadDeserializingTransformer())
+					.channel(MessageChannels.executor("executor", Executors.newCachedThreadPool()))
 					.transform((Integer p) -> p * 2, c -> c.advice(this.expressionAdvice()))
 					.get();
 		}
-
 	}
 
 }

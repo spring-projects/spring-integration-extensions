@@ -23,6 +23,7 @@ import java.util.List;
 import org.aopalliance.aop.Advice;
 
 import org.springframework.integration.config.ConsumerEndpointFactoryBean;
+import org.springframework.integration.dsl.support.PollerSpec;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.messaging.MessageHandler;
@@ -31,17 +32,17 @@ import org.springframework.messaging.MessageHandler;
  * @author Artem Bilan
  * @since 4.0
  */
-public abstract class EndpointSpec<S extends EndpointSpec<S, C>, C extends MessageHandler> {
+public abstract class EndpointSpec<S extends EndpointSpec<S, H>, H extends MessageHandler> {
 
 	private final ConsumerEndpointFactoryBean endpointFactoryBean = new ConsumerEndpointFactoryBean();
 
-	private final C messageHandler;
+	private final H messageHandler;
 
 	private final List<Advice> adviceChain = new LinkedList<Advice>();
 
 	private String id;
 
-	EndpointSpec(C messageHandler) {
+	EndpointSpec(H messageHandler) {
 		this.messageHandler = messageHandler;
 		this.endpointFactoryBean.setHandler(this.messageHandler);
 		if (this.messageHandler instanceof AbstractReplyProducingMessageHandler) {
@@ -78,6 +79,11 @@ public abstract class EndpointSpec<S extends EndpointSpec<S, C>, C extends Messa
 		return _this();
 	}
 
+	public S poller(PollerSpec pollerMetadataSpec) {
+		this.endpointFactoryBean.setPollerMetadata(pollerMetadataSpec.get());
+		return _this();
+	}
+
 	String getId() {
 		return id;
 	}
@@ -86,7 +92,7 @@ public abstract class EndpointSpec<S extends EndpointSpec<S, C>, C extends Messa
 		return this.endpointFactoryBean;
 	}
 
-	C getHandler() {
+	H getHandler() {
 		return this.messageHandler;
 	}
 
