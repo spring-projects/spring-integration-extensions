@@ -16,13 +16,24 @@
 
 package org.springframework.integration.dsl;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.parsing.BeanComponentDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.integration.channel.AbstractMessageChannel;
+import org.springframework.integration.config.ConsumerEndpointFactoryBean;
 import org.springframework.integration.config.IntegrationConfigurationInitializer;
+import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
+import org.springframework.integration.dsl.config.InstanceBeanDefinition;
 import org.springframework.integration.dsl.core.Spec;
+import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
 
 /**
@@ -34,24 +45,87 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 
 	@Override
 	public void initialize(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
+		Assert.isInstanceOf(BeanDefinitionRegistry.class, configurableListableBeanFactory,
+				"To use Spring Integration Java DSL the 'beanFactory' has to be an instance of 'BeanDefinitionRegistry'." +
+						"Consider using 'GenericApplicationContext' implementation.");
+		this.initializeIntegrationFlows(configurableListableBeanFactory);
 		this.populateBeansFromSpecs(configurableListableBeanFactory);
-		configurableListableBeanFactory.addBeanPostProcessor(new IntegrationFlowBeanPostProcessor(configurableListableBeanFactory));
+	}
+
+	private void initializeIntegrationFlows(ConfigurableListableBeanFactory beanFactory) {
+		Map<String, IntegrationFlow> integrationFlows = beanFactory.getBeansOfType(IntegrationFlow.class, false, false);
+		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+		for (Map.Entry<String, IntegrationFlow> integrationFlowEntry : integrationFlows.entrySet()) {
+			String flowName = integrationFlowEntry.getKey();
+			String flowNamePrefix = flowName + ":";
+			IntegrationFlow flow = integrationFlowEntry.getValue();
+			int channelNameIndex = 0;
+			for (AbstractBeanDefinition beanDefinition : flow.getIntegrationComponents()) {
+				if (beanDefinition instanceof InstanceBeanDefinition) {
+					final Object instance = beanDefinition.getSource();
+					Collection<?> values = beanFactory.getBeansOfType(instance.getClass(), false, false).values();
+					if (!values.contains(instance)) {
+						if (instance instanceof AbstractMessageChannel) {
+							String channelBeanName = ((AbstractMessageChannel) instance).getComponentName();
+							if (channelBeanName == null) {
+								channelBeanName = flowNamePrefix + "channel" + BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
+							}
+							registry.registerBeanDefinition(channelBeanName, beanDefinition);
+						}
+						else if (instance instanceof EndpointSpec) {
+							EndpointSpec<?, ?> endpointSpec = (EndpointSpec<?, ?>) instance;
+							MessageHandler messageHandler = endpointSpec.getHandler();
+							ConsumerEndpointFactoryBean endpoint = endpointSpec.getEndpoint();
+							String id = endpointSpec.getId();
+
+							String handlerBeanName = generateInstanceBeanDefinitionName(registry, messageHandler);
+							String[] handlerAlias = id != null ? new String[]{id + IntegrationNamespaceUtils.HANDLER_ALIAS_SUFFIX} : null;
+							BeanComponentDefinition definitionHolder = new BeanComponentDefinition(new InstanceBeanDefinition(messageHandler), handlerBeanName, handlerAlias);
+							BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
+
+							String endpointBeanName = id;
+							if (endpointBeanName == null) {
+								endpointBeanName = generateInstanceBeanDefinitionName(registry, endpoint);
+							}
+							registry.registerBeanDefinition(endpointBeanName, new InstanceBeanDefinition(endpoint));
+						}
+						else {
+							String beanName = generateInstanceBeanDefinitionName(registry, instance);
+							registry.registerBeanDefinition(beanName, beanDefinition);
+						}
+					}
+				}
+				else {
+					BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, registry);
+				}
+			}
+			registry.removeBeanDefinition(flowName);
+			beanFactory.destroyBean(flowName);
+		}
+
 	}
 
 	private void populateBeansFromSpecs(ConfigurableListableBeanFactory beanFactory) {
-		Assert.isInstanceOf(BeanDefinitionRegistry.class, beanFactory,
-				"To use Spring Integration Java DSL the 'beanFactory' has to be an instance of 'BeanDefinitionRegistry'." +
-						"Consider using 'GenericApplicationContext' implementation."
-		);
 		Map<String, Spec> specs = beanFactory.getBeansOfType(Spec.class, false, false);
 		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 		for (Map.Entry<String, Spec> specEntry : specs.entrySet()) {
 			String id = specEntry.getKey();
 			Spec<?, ?> spec = specEntry.getValue();
 			registry.removeBeanDefinition(id);
-			beanFactory.destroyBean(id);
 			beanFactory.registerSingleton(id, spec.get());
+			beanFactory.initializeBean(spec.get(), id);
 		}
+	}
+
+	@SuppressWarnings("serial")
+	private static String generateInstanceBeanDefinitionName(BeanDefinitionRegistry registry, final Object instance) {
+		return BeanDefinitionReaderUtils.generateBeanName(new GenericBeanDefinition() {
+
+			@Override
+			public String getBeanClassName() {
+				return instance.getClass().getName();
+			}
+		}, registry);
 	}
 
 }

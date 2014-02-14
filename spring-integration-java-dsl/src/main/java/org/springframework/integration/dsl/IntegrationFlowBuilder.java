@@ -28,7 +28,6 @@ import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.integration.filter.MethodInvokingSelector;
-import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.transformer.ExpressionEvaluatingTransformer;
 import org.springframework.integration.transformer.GenericTransformer;
 import org.springframework.integration.transformer.MessageTransformingHandler;
@@ -116,9 +115,6 @@ public final class IntegrationFlowBuilder {
 		if (this.currentComponent != null) {
 			if (this.currentComponent instanceof MessageProducer) {
 				((MessageProducer) this.currentComponent).setOutputChannel(outputChannel);
-			}
-			if (this.currentComponent instanceof AbstractReplyProducingMessageHandler) {
-				((AbstractReplyProducingMessageHandler) this.currentComponent).setOutputChannel(outputChannel);
 			}
 			else if (this.currentComponent instanceof SourcePollingChannelAdapterFactoryBean) {
 				((SourcePollingChannelAdapterFactoryBean) this.currentComponent).setOutputChannel(outputChannel);

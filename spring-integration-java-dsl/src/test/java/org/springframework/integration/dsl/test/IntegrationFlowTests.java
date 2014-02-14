@@ -22,7 +22,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.aopalliance.aop.Advice;
@@ -35,8 +34,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.MessageDispatchingException;
+import org.springframework.integration.annotation.MessageEndpoint;
+import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
@@ -123,16 +125,6 @@ public class IntegrationFlowTests {
 	public static class ContextConfiguration {
 
 		@Bean
-		public DirectChannelSpec inputChannel() {
-			return MessageChannels.direct();
-		}
-
-		@Bean
-		public QueueChannelSpec successChannel() {
-			return MessageChannels.queue();
-		}
-
-		@Bean
 		public MessageSource<?> integerMessageSource() {
 			MethodInvokingMessageSource source = new MethodInvokingMessageSource();
 			source.setObject(new AtomicInteger());
@@ -156,37 +148,50 @@ public class IntegrationFlowTests {
 	}
 
 	@Configuration
+	@ComponentScan
 	public static class ContextConfiguration2 {
 
-		@Autowired
-		@Qualifier("inputChannel")
-		private DirectChannel inputChannel;
+		@Bean
+		public QueueChannelSpec successChannel() {
+			return MessageChannels.queue();
+		}
 
-		@Autowired
-		@Qualifier("successChannel")
-		private PollableChannel successChannel;
+		@Bean
+		public DirectChannelSpec inputChannel() {
+			return MessageChannels.direct();
+		}
 
 		@Bean
 		public Advice expressionAdvice() {
 			ExpressionEvaluatingRequestHandlerAdvice advice = new ExpressionEvaluatingRequestHandlerAdvice();
 			advice.setOnSuccessExpression("payload");
-			advice.setSuccessChannel(this.successChannel);
+			advice.setSuccessChannel(this.successChannel().get());
 			return advice;
 		}
 
 		@Bean
 		public IntegrationFlow flow2() {
-			return IntegrationFlows.from(this.inputChannel)
+			return IntegrationFlows.from(this.inputChannel())
 					.filter(p -> p instanceof String, c -> c.id("filter"))
 					.<String, Integer>transform(Integer::parseInt)
 					.transform(new PayloadSerializingTransformer(),
 							c -> c.autoStartup(false).id("payloadSerializingTransformer"))
 					.channel(MessageChannels.queue(new SimpleMessageStore(), "fooQueue"))
 					.transform(new PayloadDeserializingTransformer())
-					.channel(MessageChannels.executor("executor", Executors.newCachedThreadPool()))
+					.channel(MessageChannels.publishSubscribe("publishSubscribeChannel"))
 					.transform((Integer p) -> p * 2, c -> c.advice(this.expressionAdvice()))
 					.get();
 		}
 	}
+
+	@MessageEndpoint
+	public static class AnnotationTestService {
+
+		@ServiceActivator(inputChannel = "publishSubscribeChannel")
+		public void handle(Object payload) {
+			assertEquals(100, payload);
+		}
+	}
+
 
 }
