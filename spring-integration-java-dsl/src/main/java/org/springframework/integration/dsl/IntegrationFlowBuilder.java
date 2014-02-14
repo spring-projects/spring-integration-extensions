@@ -24,6 +24,7 @@ import org.springframework.integration.core.GenericSelector;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
+import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.filter.MessageFilter;
@@ -124,7 +125,7 @@ public final class IntegrationFlowBuilder {
 		return this;
 	}
 
-	private <S extends EndpointSpec<?, ?>> IntegrationFlowBuilder register(S endpointSpec, EndpointConfigurer<S> endpointConfigurer) {
+	private <S extends ConsumerEndpointSpec<?, ?>> IntegrationFlowBuilder register(S endpointSpec, EndpointConfigurer<S> endpointConfigurer) {
 		if (endpointConfigurer != null) {
 			endpointConfigurer.configure(endpointSpec);
 		}
@@ -135,9 +136,9 @@ public final class IntegrationFlowBuilder {
 			this.registerOutputChannelIfCan(inputChannel);
 		}
 
-		endpointSpec.getEndpoint().setInputChannel(inputChannel);
+		endpointSpec.get().getT1().setInputChannel(inputChannel);
 
-		return this.addComponent(endpointSpec).currentComponent(endpointSpec.getHandler());
+		return this.addComponent(endpointSpec).currentComponent(endpointSpec.get().getT2());
 	}
 
 	public IntegrationFlow get() {

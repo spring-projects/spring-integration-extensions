@@ -16,13 +16,13 @@
 
 package org.springframework.integration.dsl.support;
 
-import org.springframework.integration.dsl.EndpointSpec;
+import org.springframework.integration.dsl.core.EndpointSpec;
 
 /**
  * @author Artem Bilan
  * @since 4.0
  */
-public interface EndpointConfigurer<S extends EndpointSpec<?, ?>> {
+public interface EndpointConfigurer<S extends EndpointSpec<?, ?, ?>> {
 
 	void configure(S spec);
 

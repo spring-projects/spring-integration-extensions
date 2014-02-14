@@ -73,7 +73,7 @@ public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, Queue
 		}
 
 		@Override
-		MessageStoreSpec id(String id) {
+		protected MessageStoreSpec id(String id) {
 			return (MessageStoreSpec) super.id(id);
 		}
 

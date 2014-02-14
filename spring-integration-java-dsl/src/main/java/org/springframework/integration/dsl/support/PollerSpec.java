@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
 
 import org.aopalliance.aop.Advice;
 
-import org.springframework.integration.dsl.core.Spec;
+import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.transaction.TransactionSynchronizationFactory;
 import org.springframework.scheduling.Trigger;
@@ -36,7 +36,7 @@ import org.springframework.util.ErrorHandler;
 * @author Artem Bilan
 * @since 4.0
 */
-public final class PollerSpec extends Spec<PollerSpec, PollerMetadata> {
+public final class PollerSpec extends IntegrationComponentSpec<PollerSpec, PollerMetadata> {
 
 	private final PollerMetadata pollerMetadata = new PollerMetadata();
 

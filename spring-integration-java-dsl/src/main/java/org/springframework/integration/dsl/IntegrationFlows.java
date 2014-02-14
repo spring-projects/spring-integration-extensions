@@ -19,10 +19,8 @@ package org.springframework.integration.dsl;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
-import org.springframework.integration.dsl.support.PollerSpec;
-import org.springframework.integration.scheduling.PollerMetadata;
+import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
@@ -38,22 +36,16 @@ public final class IntegrationFlows {
 	}
 
 	public static IntegrationFlowBuilder from(MessageSource<?> messageSource) {
-		return from(messageSource, (PollerMetadata) null);
+		return from(messageSource, null);
 	}
 
-	public static IntegrationFlowBuilder from(MessageSource<?> messageSource, PollerSpec pollerSpec) {
-		Assert.notNull(pollerSpec);
-		return from(messageSource, pollerSpec.get());
-	}
-
-	public static IntegrationFlowBuilder from(MessageSource<?> messageSource, PollerMetadata pollerMetadata) {
-		SourcePollingChannelAdapterFactoryBean factoryBean = new SourcePollingChannelAdapterFactoryBean();
-		factoryBean.setSource(messageSource);
-		factoryBean.setPollerMetadata(pollerMetadata);
-		return new IntegrationFlowBuilder()
-				.addComponent(messageSource)
-				.addComponent(factoryBean)
-				.currentComponent(factoryBean);
+	public static IntegrationFlowBuilder from(MessageSource<?> messageSource, EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+		SourcePollingChannelAdapterSpec spec = new SourcePollingChannelAdapterSpec(messageSource);
+		if (endpointConfigurer != null) {
+			endpointConfigurer.configure(spec);
+		}
+		SourcePollingChannelAdapterFactoryBean sourcePollingChannelAdapterFactoryBean = spec.get().getT1();
+		return new IntegrationFlowBuilder().addComponent(sourcePollingChannelAdapterFactoryBean).currentComponent(sourcePollingChannelAdapterFactoryBean);
 	}
 
 	/*public static IntegrationFlowBuilder from(AbstractEndpoint endpoint) {

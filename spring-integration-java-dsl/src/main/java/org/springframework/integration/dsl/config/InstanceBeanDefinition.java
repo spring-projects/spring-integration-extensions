@@ -23,7 +23,7 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
  * @author Artem Bilan
  */
 @SuppressWarnings("serial")
-public class InstanceBeanDefinition extends GenericBeanDefinition {
+public final class InstanceBeanDefinition extends GenericBeanDefinition {
 
 	private final Object instance;
 

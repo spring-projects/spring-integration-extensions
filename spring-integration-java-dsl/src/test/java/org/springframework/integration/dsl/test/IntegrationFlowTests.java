@@ -134,7 +134,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow flow1() {
-			return IntegrationFlows.from(this.integerMessageSource(), Pollers.fixedRate(100))
+			return IntegrationFlows.from(this.integerMessageSource(), c -> c.poller(Pollers.fixedRate(100)))
 					.transform("payload.toString()")
 					.channel(MessageChannels.queue("flow1QueueChannel"))
 					.get();

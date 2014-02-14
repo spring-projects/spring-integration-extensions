@@ -19,25 +19,23 @@ package org.springframework.integration.dsl.channel;
 import java.util.Arrays;
 
 import org.springframework.integration.channel.AbstractMessageChannel;
-import org.springframework.integration.dsl.core.Spec;
+import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.messaging.support.ChannelInterceptor;
 
 /**
  * @author Artem Bilan
  */
-public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C extends AbstractMessageChannel> extends Spec<S, C> {
+public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C extends AbstractMessageChannel> extends IntegrationComponentSpec<S, C> {
 
 	protected C channel;
-
-	private String id;
 
 	private Class<?>[] datatypes;
 
 	private ChannelInterceptor[] interceptors;
 
-	S id(String id) {
-		this.id = id;
-		return _this();
+	@Override
+	protected S id(String id) {
+		return super.id(id);
 	}
 
 	public S datatypes(Class<?>... datatypes) {
@@ -59,6 +57,5 @@ public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C e
 		}
 		return this.channel;
 	}
-
 
 }

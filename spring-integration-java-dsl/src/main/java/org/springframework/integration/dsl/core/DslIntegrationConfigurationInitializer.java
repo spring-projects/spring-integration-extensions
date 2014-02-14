@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl;
+package org.springframework.integration.dsl.core;
 
 import java.util.Collection;
 import java.util.Map;
@@ -31,8 +31,8 @@ import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.config.ConsumerEndpointFactoryBean;
 import org.springframework.integration.config.IntegrationConfigurationInitializer;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
+import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.config.InstanceBeanDefinition;
-import org.springframework.integration.dsl.core.Spec;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
 
@@ -72,10 +72,10 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 							}
 							registry.registerBeanDefinition(channelBeanName, beanDefinition);
 						}
-						else if (instance instanceof EndpointSpec) {
-							EndpointSpec<?, ?> endpointSpec = (EndpointSpec<?, ?>) instance;
-							MessageHandler messageHandler = endpointSpec.getHandler();
-							ConsumerEndpointFactoryBean endpoint = endpointSpec.getEndpoint();
+						else if (instance instanceof ConsumerEndpointSpec) {
+							ConsumerEndpointSpec<?, ?> endpointSpec = (ConsumerEndpointSpec<?, ?>) instance;
+							MessageHandler messageHandler = endpointSpec.get().getT2();
+							ConsumerEndpointFactoryBean endpoint = endpointSpec.get().getT1();
 							String id = endpointSpec.getId();
 
 							String handlerBeanName = generateInstanceBeanDefinitionName(registry, messageHandler);
@@ -106,11 +106,11 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 	}
 
 	private void populateBeansFromSpecs(ConfigurableListableBeanFactory beanFactory) {
-		Map<String, Spec> specs = beanFactory.getBeansOfType(Spec.class, false, false);
+		Map<String, ?> specs = beanFactory.getBeansOfType(IntegrationComponentSpec.class, false, false);
 		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-		for (Map.Entry<String, Spec> specEntry : specs.entrySet()) {
+		for (Map.Entry<String, ?> specEntry : specs.entrySet()) {
 			String id = specEntry.getKey();
-			Spec<?, ?> spec = specEntry.getValue();
+			IntegrationComponentSpec<?, ?> spec = (IntegrationComponentSpec<?, ?>) specEntry.getValue();
 			registry.removeBeanDefinition(id);
 			beanFactory.registerSingleton(id, spec.get());
 			beanFactory.initializeBean(spec.get(), id);

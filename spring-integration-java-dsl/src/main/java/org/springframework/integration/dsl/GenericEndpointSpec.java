@@ -16,13 +16,14 @@
 
 package org.springframework.integration.dsl;
 
+import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
 import org.springframework.messaging.MessageHandler;
 
 /**
  * @author Artem Bilan
  * @since 4.0
  */
-public final class GenericEndpointSpec<H extends MessageHandler> extends EndpointSpec<GenericEndpointSpec<H>, H> {
+public final class GenericEndpointSpec<H extends MessageHandler> extends ConsumerEndpointSpec<GenericEndpointSpec<H>, H> {
 
 	GenericEndpointSpec(H messageHandler) {
 		super(messageHandler);

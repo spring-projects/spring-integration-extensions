@@ -20,9 +20,20 @@ package org.springframework.integration.dsl.core;
  * @author Artem Bilan
  * @since 4.0
  */
-public abstract class Spec<S extends Spec<S, T>, T> {
+public abstract class IntegrationComponentSpec<S extends IntegrationComponentSpec<S, T>, T> {
 
-	private volatile T target;
+	protected volatile T target;
+
+	protected String id;
+
+	protected S id(String id) {
+		this.id = id;
+		return _this();
+	}
+
+	String getId() {
+		return id;
+	}
 
 	public final T get() {
 		if (this.target == null) {
@@ -34,7 +45,7 @@ public abstract class Spec<S extends Spec<S, T>, T> {
 	protected abstract T doGet();
 
 	@SuppressWarnings("unchecked")
-	protected S _this() {
+	protected final S _this() {
 		return (S) this;
 	}
 
