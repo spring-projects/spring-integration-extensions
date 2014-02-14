@@ -18,21 +18,27 @@ package org.springframework.integration.dsl.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.aopalliance.aop.Advice;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -51,6 +57,8 @@ import org.springframework.integration.dsl.channel.QueueChannelSpec;
 import org.springframework.integration.dsl.support.PollerSpec;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
+import org.springframework.integration.event.core.MessagingEvent;
+import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.store.SimpleMessageStore;
@@ -60,6 +68,7 @@ import org.springframework.integration.transformer.PayloadSerializingTransformer
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -72,17 +81,42 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 public class IntegrationFlowTests {
 
 	@Autowired
+	private BeanFactory beanFactory;
+
+	@Autowired
 	@Qualifier("flow1QueueChannel")
 	private PollableChannel outputChannel;
 
 	@Autowired
+	@Qualifier("inputChannel")
 	private DirectChannel inputChannel;
 
 	@Autowired
+	@Qualifier("successChannel")
 	private PollableChannel successChannel;
 
 	@Autowired
-	private BeanFactory beanFactory;
+	@Qualifier("flow3Input")
+	private DirectChannel flow3Input;
+
+	@Autowired
+	private AtomicReference<Object> eventHolder;
+
+	@Autowired
+	@Qualifier("bridgeFlowInput")
+	private PollableChannel bridgeFlowInput;
+
+	@Autowired
+	@Qualifier("bridgeFlowOutput")
+	private PollableChannel bridgeFlowOutput;
+
+	@Autowired
+	@Qualifier("bridgeFlow2Input")
+	private DirectChannel bridgeFlow2Input;
+
+	@Autowired
+	@Qualifier("bridgeFlow2Output")
+	private PollableChannel bridgeFlow2Output;
 
 	@Test
 	public void testPollingFlow() {
@@ -118,6 +152,50 @@ public class IntegrationFlowTests {
 		assertNotNull(successMessage);
 		assertEquals(100, successMessage.getPayload());
 	}
+
+	@Test
+	public void testHandle() {
+		assertNull(this.eventHolder.get());
+		this.flow3Input.send(new GenericMessage<>("foo"));
+		assertNotNull(this.eventHolder.get());
+		assertEquals("foo", this.eventHolder.get());
+	}
+
+	@Test
+	public void testBridge() {
+		GenericMessage<String> message = new GenericMessage<>("test");
+		this.bridgeFlowInput.send(message);
+		Message<?> reply = this.bridgeFlowOutput.receive(5000);
+		assertNotNull(reply);
+		assertEquals("test", reply.getPayload());
+
+		try {
+			this.bridgeFlow2Input.send(message);
+			fail("Expected MessageDispatchingException");
+		}
+		catch (Exception e) {
+			assertThat(e, Matchers.instanceOf(MessageDeliveryException.class));
+			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
+			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
+		}
+		this.beanFactory.getBean("bridge", Lifecycle.class).start();
+		this.bridgeFlow2Input.send(message);
+		reply = this.bridgeFlow2Output.receive(5000);
+		assertNotNull(reply);
+		assertEquals("test", reply.getPayload());
+	}
+
+	@Test
+	public void testWrongLastComponent() {
+		try {
+			new AnnotationConfigApplicationContext(InvalidLastComponentFlowContext.class);
+		}
+		catch (Exception e) {
+			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
+			assertThat(e.getMessage(), Matchers.containsString("is a one-way 'MessageHandler'"));
+		}
+	}
+
 
 
 	@Configuration
@@ -182,6 +260,7 @@ public class IntegrationFlowTests {
 					.transform((Integer p) -> p * 2, c -> c.advice(this.expressionAdvice()))
 					.get();
 		}
+
 	}
 
 	@MessageEndpoint
@@ -193,5 +272,59 @@ public class IntegrationFlowTests {
 		}
 	}
 
+	@Configuration
+	public static class ContextConfiguration3 {
+
+		@Bean
+		public AtomicReference<Object> eventHolder() {
+			return new AtomicReference<>();
+		}
+
+		@Bean
+		public ApplicationListener<MessagingEvent> eventListener() {
+			return new ApplicationListener<MessagingEvent>() {
+
+				@Override
+				public void onApplicationEvent(MessagingEvent event) {
+					eventHolder().set(event.getMessage().getPayload());
+				}
+			};
+		}
+
+		@Bean
+		public IntegrationFlow flow3() {
+			return IntegrationFlows.from(MessageChannels.direct("flow3Input"))
+					.handle(new ApplicationEventPublishingMessageHandler())
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow bridgeFlow() {
+			return IntegrationFlows.from(MessageChannels.queue("bridgeFlowInput"))
+					.channel(MessageChannels.queue("bridgeFlowOutput"))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow bridgeFlow2() {
+			return IntegrationFlows.from(MessageChannels.direct("bridgeFlow2Input"))
+					.bridge(c -> c.autoStartup(false).id("bridge"))
+					.channel(MessageChannels.queue("bridgeFlow2Output"))
+					.get();
+		}
+
+	}
+
+	private static class InvalidLastComponentFlowContext {
+
+		@Bean
+		public IntegrationFlow wrongLastComponent() {
+			return IntegrationFlows.from(MessageChannels.direct())
+					.handle(Object::toString)
+					.channel(MessageChannels.direct())
+					.get();
+		}
+
+	}
 
 }

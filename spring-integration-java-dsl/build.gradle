@@ -57,6 +57,8 @@ dependencies {
 	testCompile "org.mockito:mockito-all:$mockitoVersion"
 	testCompile "org.springframework:spring-test:$springVersion"
 
+	testCompile "org.springframework.integration:spring-integration-event:$springIntegrationVersion"
+
 	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
 }
 

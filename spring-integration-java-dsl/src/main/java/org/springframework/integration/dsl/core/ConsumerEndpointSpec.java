@@ -67,4 +67,12 @@ public abstract class ConsumerEndpointSpec<S extends ConsumerEndpointSpec<S, H>,
 		return _this();
 	}
 
+	public S sendTimeout(long sendTimeout) {
+		H handler = this.target.getT2();
+		if (handler instanceof AbstractReplyProducingMessageHandler) {
+			((AbstractReplyProducingMessageHandler) handler).setSendTimeout(sendTimeout);
+		}
+		return _this();
+	}
+
 }
