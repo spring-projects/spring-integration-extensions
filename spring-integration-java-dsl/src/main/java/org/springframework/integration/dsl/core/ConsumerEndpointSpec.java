@@ -29,7 +29,7 @@ import org.springframework.messaging.MessageHandler;
 
 /**
  * @author Artem Bilan
- * @since 4.0
+
  */
 public abstract class ConsumerEndpointSpec<S extends ConsumerEndpointSpec<S, H>, H extends MessageHandler>
 		extends EndpointSpec<S, ConsumerEndpointFactoryBean, H> {

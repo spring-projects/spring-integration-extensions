@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,10 +33,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -59,6 +59,9 @@ import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
+import org.springframework.integration.file.DefaultFileNameGenerator;
+import org.springframework.integration.file.FileHeaders;
+import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.store.SimpleMessageStore;
@@ -67,8 +70,11 @@ import org.springframework.integration.transformer.PayloadDeserializingTransform
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageDeliveryException;
+import org.springframework.messaging.MessageHandlingException;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -80,8 +86,10 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class IntegrationFlowTests {
 
+	private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+
 	@Autowired
-	private BeanFactory beanFactory;
+	private ListableBeanFactory beanFactory;
 
 	@Autowired
 	@Qualifier("flow1QueueChannel")
@@ -117,6 +125,18 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("bridgeFlow2Output")
 	private PollableChannel bridgeFlow2Output;
+
+	@Autowired
+	@Qualifier("fileFlow1Input")
+	private DirectChannel fileFlow1Input;
+
+	@Autowired
+	@Qualifier("fileWritingMessageHandler")
+	private FileWritingMessageHandler fileWritingMessageHandler;
+
+	@Autowired
+	@Qualifier("methodInvokingInput")
+	private DirectChannel methodInvokingInput;
 
 	@Test
 	public void testPollingFlow() {
@@ -196,6 +216,34 @@ public class IntegrationFlowTests {
 		}
 	}
 
+
+	@Test
+	public void testFileHandler() {
+		assertEquals(1, this.beanFactory.getBeansOfType(FileWritingMessageHandler.class).size());
+		Message<?> message = MessageBuilder.withPayload("foo").setHeader(FileHeaders.FILENAME, "foo").build();
+		try {
+			this.fileFlow1Input.send(message);
+			fail("NullPointerException expected");
+		}
+		catch (Exception e) {
+			assertThat(e, Matchers.instanceOf(MessageHandlingException.class));
+			assertThat(e.getCause(), Matchers.instanceOf(NullPointerException.class));
+		}
+		this.fileWritingMessageHandler.setFileNameGenerator(new DefaultFileNameGenerator());
+		this.fileFlow1Input.send(message);
+
+		assertTrue(new File(tmpDir, "foo").exists());
+	}
+
+	@Test
+	public void testMethodInvokingMessageHandler() {
+		QueueChannel replyChannel = new QueueChannel();
+		Message<?> message = MessageBuilder.withPayload("world").setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel).build();
+		this.methodInvokingInput.send(message);
+		Message<?> receive = replyChannel.receive(5000);
+		assertNotNull(receive);
+		assertEquals("Hello, world", receive.getPayload());
+	}
 
 
 	@Configuration
@@ -314,6 +362,41 @@ public class IntegrationFlowTests {
 		}
 
 	}
+
+	@Configuration
+	public static class ContextConfiguration4 {
+
+		@Bean
+		public FileWritingMessageHandler fileWritingMessageHandler() {
+			return new FileWritingMessageHandler(tmpDir);
+		}
+
+		@Bean
+		public IntegrationFlow fileFlow1() {
+			return IntegrationFlows.from(MessageChannels.direct("fileFlow1Input"))
+					.handle(this.fileWritingMessageHandler(), c -> {
+						FileWritingMessageHandler handler = c.get().getT2();
+						handler.setFileNameGenerator(message -> null);
+						handler.setExpectReply(false); })
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow methodInvokingFlow() {
+			return IntegrationFlows.from(MessageChannels.direct("methodInvokingInput"))
+					.handle("greetingService", null)
+					.get();
+		}
+	}
+
+	@Component("greetingService")
+	public static class GreetingService {
+
+		public String greeting(String payload) {
+			return "Hello, " + payload;
+		}
+	}
+
 
 	private static class InvalidLastComponentFlowContext {
 

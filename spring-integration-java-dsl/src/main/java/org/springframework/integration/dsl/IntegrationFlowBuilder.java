@@ -25,6 +25,7 @@ import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
+import org.springframework.integration.dsl.support.BeanNameMethodInvokingMessageHandler;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.filter.MessageFilter;
@@ -68,7 +69,7 @@ public final class IntegrationFlowBuilder {
 	public IntegrationFlowBuilder channel(MessageChannel messageChannel) {
 		Assert.notNull(messageChannel);
 		if (this.currentMessageChannel != null) {
-			GenericEndpointSpec endpointSpec = new GenericEndpointSpec(new BridgeHandler());
+			GenericEndpointSpec<BridgeHandler> endpointSpec = new GenericEndpointSpec<BridgeHandler>(new BridgeHandler());
 			endpointSpec.get().getT1().setInputChannel(this.currentMessageChannel);
 			this.addComponent(endpointSpec).currentComponent(endpointSpec.get().getT2());
 		}
@@ -90,7 +91,7 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public <S, T> IntegrationFlowBuilder transform(GenericTransformer<S, T> genericTransformer,
-												   EndpointConfigurer<GenericEndpointSpec> endpointConfigurer) {
+												   EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
 		Transformer transformer = genericTransformer instanceof Transformer
 				? (Transformer) genericTransformer : new MethodInvokingTransformer(genericTransformer);
 		return this.handle(new MessageTransformingHandler(transformer), endpointConfigurer);
@@ -114,12 +115,20 @@ public final class IntegrationFlowBuilder {
 		return this.handle(messageHandler, null);
 	}
 
-	public IntegrationFlowBuilder handle(MessageHandler messageHandler, EndpointConfigurer<GenericEndpointSpec> endpointConfigurer) {
-		return this.register(new GenericEndpointSpec(messageHandler), endpointConfigurer);
+	public IntegrationFlowBuilder handle(String target, String methodName) {
+		return this.handle(target, methodName, null);
 	}
 
-	public IntegrationFlowBuilder bridge(EndpointConfigurer<GenericEndpointSpec> endpointConfigurer) {
-		return this.register(new GenericEndpointSpec(new BridgeHandler()), endpointConfigurer);
+	public IntegrationFlowBuilder handle(String beanName, String methodName, EndpointConfigurer<GenericEndpointSpec<BeanNameMethodInvokingMessageHandler>> endpointConfigurer) {
+		return this.handle(new BeanNameMethodInvokingMessageHandler(beanName, methodName) , endpointConfigurer);
+	}
+
+	public <H extends MessageHandler> IntegrationFlowBuilder handle(H messageHandler, EndpointConfigurer<GenericEndpointSpec<H>> endpointConfigurer) {
+		return this.register(new GenericEndpointSpec<H>(messageHandler), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder bridge(EndpointConfigurer<GenericEndpointSpec<BridgeHandler>> endpointConfigurer) {
+		return this.register(new GenericEndpointSpec<BridgeHandler>(new BridgeHandler()), endpointConfigurer);
 	}
 
 	private IntegrationFlowBuilder registerOutputChannelIfCan(MessageChannel outputChannel) {

@@ -34,7 +34,7 @@ import org.springframework.util.ErrorHandler;
 
 /**
 * @author Artem Bilan
-* @since 4.0
+
 */
 public final class PollerSpec extends IntegrationComponentSpec<PollerSpec, PollerMetadata> {
 

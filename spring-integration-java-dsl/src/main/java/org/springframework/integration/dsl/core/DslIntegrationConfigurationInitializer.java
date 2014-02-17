@@ -47,7 +47,8 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 	public void initialize(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
 		Assert.isInstanceOf(BeanDefinitionRegistry.class, configurableListableBeanFactory,
 				"To use Spring Integration Java DSL the 'beanFactory' has to be an instance of 'BeanDefinitionRegistry'." +
-						"Consider using 'GenericApplicationContext' implementation.");
+						"Consider using 'GenericApplicationContext' implementation."
+		);
 		this.initializeIntegrationFlows(configurableListableBeanFactory);
 		this.populateBeansFromSpecs(configurableListableBeanFactory);
 	}
@@ -78,10 +79,15 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 							ConsumerEndpointFactoryBean endpoint = endpointSpec.get().getT1();
 							String id = endpointSpec.getId();
 
-							String handlerBeanName = generateInstanceBeanDefinitionName(registry, messageHandler);
-							String[] handlerAlias = id != null ? new String[]{id + IntegrationNamespaceUtils.HANDLER_ALIAS_SUFFIX} : null;
-							BeanComponentDefinition definitionHolder = new BeanComponentDefinition(new InstanceBeanDefinition(messageHandler), handlerBeanName, handlerAlias);
-							BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
+							Collection<?> messageHandlers = beanFactory.getBeansOfType(messageHandler.getClass(), false, false).values();
+
+							if (!messageHandlers.contains(messageHandler)) {
+								String handlerBeanName = generateInstanceBeanDefinitionName(registry, messageHandler);
+								String[] handlerAlias = id != null ? new String[]{id + IntegrationNamespaceUtils.HANDLER_ALIAS_SUFFIX} : null;
+								BeanComponentDefinition definitionHolder = new BeanComponentDefinition(new InstanceBeanDefinition(messageHandler),
+										handlerBeanName, handlerAlias);
+								BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
+							}
 
 							String endpointBeanName = id;
 							if (endpointBeanName == null) {
@@ -111,9 +117,7 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 		for (Map.Entry<String, ?> specEntry : specs.entrySet()) {
 			String id = specEntry.getKey();
 			IntegrationComponentSpec<?, ?> spec = (IntegrationComponentSpec<?, ?>) specEntry.getValue();
-			registry.removeBeanDefinition(id);
-			beanFactory.registerSingleton(id, spec.get());
-			beanFactory.initializeBean(spec.get(), id);
+			registry.registerBeanDefinition(id, new InstanceBeanDefinition(spec.get()));
 		}
 	}
 

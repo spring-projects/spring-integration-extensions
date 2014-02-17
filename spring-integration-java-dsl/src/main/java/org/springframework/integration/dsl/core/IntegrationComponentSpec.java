@@ -18,7 +18,7 @@ package org.springframework.integration.dsl.core;
 
 /**
  * @author Artem Bilan
- * @since 4.0
+
  */
 public abstract class IntegrationComponentSpec<S extends IntegrationComponentSpec<S, T>, T> {
 
@@ -31,7 +31,7 @@ public abstract class IntegrationComponentSpec<S extends IntegrationComponentSpe
 		return _this();
 	}
 
-	String getId() {
+	final String getId() {
 		return id;
 	}
 
