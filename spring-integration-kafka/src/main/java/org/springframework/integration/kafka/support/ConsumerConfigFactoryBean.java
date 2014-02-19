@@ -43,7 +43,7 @@ public class ConsumerConfigFactoryBean<K,V> implements FactoryBean<ConsumerConfi
 		}
 	}
 
-    public ConsumerConfigFactoryBean(final ConsumerMetadata consumerMetadata, final ZookeeperConnect zookeeperConnect) {
+    public ConsumerConfigFactoryBean(final ConsumerMetadata<K, V> consumerMetadata, final ZookeeperConnect zookeeperConnect) {
         this(consumerMetadata, zookeeperConnect, null);
     }
 
