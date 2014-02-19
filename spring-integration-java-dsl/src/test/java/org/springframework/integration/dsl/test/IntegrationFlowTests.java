@@ -53,8 +53,6 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
-import org.springframework.integration.dsl.channel.QueueChannelSpec;
-import org.springframework.integration.dsl.support.PollerSpec;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
@@ -69,6 +67,7 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.transformer.PayloadDeserializingTransformer;
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessageHeaders;
@@ -209,6 +208,7 @@ public class IntegrationFlowTests {
 	public void testWrongLastComponent() {
 		try {
 			new AnnotationConfigApplicationContext(InvalidLastComponentFlowContext.class);
+			fail("BeanCreationException expected");
 		}
 		catch (Exception e) {
 			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
@@ -245,6 +245,19 @@ public class IntegrationFlowTests {
 		assertEquals("Hello, world", receive.getPayload());
 	}
 
+	@Test
+	public void testWrongConfigurationWithSpecBean() {
+		try {
+			new AnnotationConfigApplicationContext(InvalidConfigurationWithSpec.class);
+			fail("BeanCreationException expected");
+		}
+		catch (Exception e) {
+			assertThat(e, Matchers.instanceOf(IllegalArgumentException.class));
+			assertThat(e.getCause(), Matchers.instanceOf(BeanCreationException.class));
+			assertThat(e.getCause().getMessage(), Matchers.containsString("must be populated to target objects via 'get()' method call"));
+		}
+	}
+
 
 	@Configuration
 	@EnableIntegration
@@ -267,8 +280,13 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean(name = PollerMetadata.DEFAULT_POLLER_METADATA_BEAN_NAME)
-		public PollerSpec poller() {
-			return Pollers.fixedRate(500);
+		public PollerMetadata poller() {
+			return Pollers.fixedRate(500).get();
+		}
+
+		@Bean
+		public DirectChannel inputChannel() {
+			return MessageChannels.direct().get();
 		}
 
 	}
@@ -277,27 +295,26 @@ public class IntegrationFlowTests {
 	@ComponentScan
 	public static class ContextConfiguration2 {
 
-		@Bean
-		public QueueChannelSpec successChannel() {
-			return MessageChannels.queue();
-		}
+		@Autowired
+		@Qualifier("inputChannel")
+		private MessageChannel inputChannel;
 
-		@Bean
-		public DirectChannelSpec inputChannel() {
-			return MessageChannels.direct();
-		}
+		@Autowired
+		@Qualifier("successChannel")
+		private PollableChannel successChannel;
+
 
 		@Bean
 		public Advice expressionAdvice() {
 			ExpressionEvaluatingRequestHandlerAdvice advice = new ExpressionEvaluatingRequestHandlerAdvice();
 			advice.setOnSuccessExpression("payload");
-			advice.setSuccessChannel(this.successChannel().get());
+			advice.setSuccessChannel(this.successChannel);
 			return advice;
 		}
 
 		@Bean
 		public IntegrationFlow flow2() {
-			return IntegrationFlows.from(this.inputChannel())
+			return IntegrationFlows.from(this.inputChannel)
 					.filter(p -> p instanceof String, c -> c.id("filter"))
 					.<String, Integer>transform(Integer::parseInt)
 					.transform(new PayloadSerializingTransformer(),
@@ -322,6 +339,11 @@ public class IntegrationFlowTests {
 
 	@Configuration
 	public static class ContextConfiguration3 {
+
+		@Bean
+		public QueueChannel successChannel() {
+			return MessageChannels.queue().get();
+		}
 
 		@Bean
 		public AtomicReference<Object> eventHolder() {
@@ -377,7 +399,8 @@ public class IntegrationFlowTests {
 					.handle(this.fileWritingMessageHandler(), c -> {
 						FileWritingMessageHandler handler = c.get().getT2();
 						handler.setFileNameGenerator(message -> null);
-						handler.setExpectReply(false); })
+						handler.setExpectReply(false);
+					})
 					.get();
 		}
 
@@ -406,6 +429,16 @@ public class IntegrationFlowTests {
 					.handle(Object::toString)
 					.channel(MessageChannels.direct())
 					.get();
+		}
+
+	}
+
+	@EnableIntegration
+	public static class InvalidConfigurationWithSpec {
+
+		@Bean
+		public DirectChannelSpec invalidBean() {
+			return MessageChannels.direct();
 		}
 
 	}
