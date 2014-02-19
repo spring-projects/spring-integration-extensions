@@ -16,11 +16,17 @@
 
 package org.springframework.integration.dsl.core;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -49,21 +55,35 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 				"To use Spring Integration Java DSL the 'beanFactory' has to be an instance of 'BeanDefinitionRegistry'." +
 						"Consider using 'GenericApplicationContext' implementation."
 		);
+		this.checkSpecBeans(configurableListableBeanFactory);
 		this.initializeIntegrationFlows(configurableListableBeanFactory);
-		this.populateBeansFromSpecs(configurableListableBeanFactory);
+	}
+
+	private void checkSpecBeans(ConfigurableListableBeanFactory beanFactory) {
+		List<String> specBeanNames = Arrays.asList(beanFactory.getBeanNamesForType(IntegrationComponentSpec.class, false, false));
+		if (!specBeanNames.isEmpty()) {
+			throw new BeanCreationException("'IntegrationComponentSpec' beans: '" + specBeanNames + "' must be populated " +
+					"to target objects via 'get()' method call. It is important for @Autowired injections.");
+		}
 	}
 
 	private void initializeIntegrationFlows(ConfigurableListableBeanFactory beanFactory) {
-		Map<String, IntegrationFlow> integrationFlows = beanFactory.getBeansOfType(IntegrationFlow.class, false, false);
+		AutowiredAnnotationBeanPostProcessor autowiredAnnotationBeanPostProcessor = beanFactory.getBean(AutowiredAnnotationBeanPostProcessor.class);
 		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-		for (Map.Entry<String, IntegrationFlow> integrationFlowEntry : integrationFlows.entrySet()) {
-			String flowName = integrationFlowEntry.getKey();
+		String[] integrationFlowBeanNames = beanFactory.getBeanNamesForType(IntegrationFlow.class, false, false);
+		Set<String> processedConfigurations = new HashSet<String>();
+		for (String flowName : integrationFlowBeanNames) {
+			BeanDefinition flowBeanDefinition = beanFactory.getBeanDefinition(flowName);
+			String configurationBeanName = flowBeanDefinition.getFactoryBeanName();
+			if (processedConfigurations.add(configurationBeanName)) {
+				autowiredAnnotationBeanPostProcessor.processInjection(beanFactory.getBean(configurationBeanName));
+			}
 			String flowNamePrefix = flowName + ":";
-			IntegrationFlow flow = integrationFlowEntry.getValue();
+			IntegrationFlow flow = beanFactory.getBean(flowName, IntegrationFlow.class);
 			int channelNameIndex = 0;
-			for (AbstractBeanDefinition beanDefinition : flow.getIntegrationComponents()) {
-				if (beanDefinition instanceof InstanceBeanDefinition) {
-					final Object instance = beanDefinition.getSource();
+			for (AbstractBeanDefinition component : flow.getIntegrationComponents()) {
+				if (component instanceof InstanceBeanDefinition) {
+					final Object instance = component.getSource();
 					Collection<?> values = beanFactory.getBeansOfType(instance.getClass(), false, false).values();
 					if (!values.contains(instance)) {
 						if (instance instanceof AbstractMessageChannel) {
@@ -71,7 +91,7 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 							if (channelBeanName == null) {
 								channelBeanName = flowNamePrefix + "channel" + BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
 							}
-							registry.registerBeanDefinition(channelBeanName, beanDefinition);
+							registry.registerBeanDefinition(channelBeanName, component);
 						}
 						else if (instance instanceof ConsumerEndpointSpec) {
 							ConsumerEndpointSpec<?, ?> endpointSpec = (ConsumerEndpointSpec<?, ?>) instance;
@@ -97,28 +117,18 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 						}
 						else {
 							String beanName = generateInstanceBeanDefinitionName(registry, instance);
-							registry.registerBeanDefinition(beanName, beanDefinition);
+							registry.registerBeanDefinition(beanName, component);
 						}
 					}
 				}
 				else {
-					BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, registry);
+					BeanDefinitionReaderUtils.registerWithGeneratedName(component, registry);
 				}
 			}
-			registry.removeBeanDefinition(flowName);
-			beanFactory.destroyBean(flowName);
+//			registry.removeBeanDefinition(flowName);
+//			beanFactory.destroyBean(flowName);
 		}
 
-	}
-
-	private void populateBeansFromSpecs(ConfigurableListableBeanFactory beanFactory) {
-		Map<String, ?> specs = beanFactory.getBeansOfType(IntegrationComponentSpec.class, false, false);
-		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-		for (Map.Entry<String, ?> specEntry : specs.entrySet()) {
-			String id = specEntry.getKey();
-			IntegrationComponentSpec<?, ?> spec = (IntegrationComponentSpec<?, ?>) specEntry.getValue();
-			registry.registerBeanDefinition(id, new InstanceBeanDefinition(spec.get()));
-		}
 	}
 
 	@SuppressWarnings("serial")
