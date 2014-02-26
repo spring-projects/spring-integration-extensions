@@ -21,7 +21,6 @@ import org.springframework.messaging.MessageHandler;
 
 /**
  * @author Artem Bilan
-
  */
 public final class GenericEndpointSpec<H extends MessageHandler> extends ConsumerEndpointSpec<GenericEndpointSpec<H>, H> {
 

@@ -24,10 +24,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.aopalliance.aop.Advice;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -137,6 +140,10 @@ public class IntegrationFlowTests {
 	@Qualifier("methodInvokingInput")
 	private DirectChannel methodInvokingInput;
 
+	@Autowired
+	@Qualifier("delayedAdvice")
+	private DelayedAdvice delayedAdvice;
+
 	@Test
 	public void testPollingFlow() {
 		for (int i = 0; i < 10; i++) {
@@ -202,6 +209,7 @@ public class IntegrationFlowTests {
 		reply = this.bridgeFlow2Output.receive(5000);
 		assertNotNull(reply);
 		assertEquals("test", reply.getPayload());
+		assertTrue(this.delayedAdvice.getInvoked());
 	}
 
 	@Test
@@ -340,6 +348,10 @@ public class IntegrationFlowTests {
 	@Configuration
 	public static class ContextConfiguration3 {
 
+		@Autowired
+		@Qualifier("delayedAdvice")
+		private MethodInterceptor delayedAdvice;
+
 		@Bean
 		public QueueChannel successChannel() {
 			return MessageChannels.queue().get();
@@ -379,8 +391,26 @@ public class IntegrationFlowTests {
 		public IntegrationFlow bridgeFlow2() {
 			return IntegrationFlows.from(MessageChannels.direct("bridgeFlow2Input"))
 					.bridge(c -> c.autoStartup(false).id("bridge"))
+					.delay("delayer", "200", c -> c.advice(this.delayedAdvice))
 					.channel(MessageChannels.queue("bridgeFlow2Output"))
 					.get();
+		}
+
+	}
+
+	@Component("delayedAdvice")
+	public static class DelayedAdvice implements MethodInterceptor {
+
+		private final AtomicBoolean invoked = new AtomicBoolean();
+
+		@Override
+		public Object invoke(MethodInvocation invocation) throws Throwable {
+			this.invoked.set(true);
+			return invocation.proceed();
+		}
+
+		public Boolean getInvoked() {
+			return invoked.get();
 		}
 
 	}
@@ -403,13 +433,13 @@ public class IntegrationFlowTests {
 					})
 					.get();
 		}
-
 		@Bean
 		public IntegrationFlow methodInvokingFlow() {
 			return IntegrationFlows.from(MessageChannels.direct("methodInvokingInput"))
 					.handle("greetingService", null)
 					.get();
 		}
+
 	}
 
 	@Component("greetingService")

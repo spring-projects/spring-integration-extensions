@@ -31,6 +31,7 @@ import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.integration.filter.MethodInvokingSelector;
 import org.springframework.integration.handler.BridgeHandler;
+import org.springframework.integration.handler.DelayHandler;
 import org.springframework.integration.transformer.ExpressionEvaluatingTransformer;
 import org.springframework.integration.transformer.GenericTransformer;
 import org.springframework.integration.transformer.MessageTransformingHandler;
@@ -39,6 +40,7 @@ import org.springframework.integration.transformer.Transformer;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Artem Bilan
@@ -129,6 +131,18 @@ public final class IntegrationFlowBuilder {
 
 	public IntegrationFlowBuilder bridge(EndpointConfigurer<GenericEndpointSpec<BridgeHandler>> endpointConfigurer) {
 		return this.register(new GenericEndpointSpec<BridgeHandler>(new BridgeHandler()), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder delay(String groupId, String expression) {
+		return this.delay(groupId, expression, null);
+	}
+
+	public IntegrationFlowBuilder delay(String groupId, String expression, EndpointConfigurer<GenericEndpointSpec<DelayHandler>> endpointConfigurer) {
+		DelayHandler delayHandler = new DelayHandler(groupId);
+		if (StringUtils.hasText(expression)) {
+			delayHandler.setDelayExpression(PARSER.parseExpression(expression));
+		}
+		return this.register(new GenericEndpointSpec<DelayHandler>(delayHandler), endpointConfigurer);
 	}
 
 	private IntegrationFlowBuilder registerOutputChannelIfCan(MessageChannel outputChannel) {

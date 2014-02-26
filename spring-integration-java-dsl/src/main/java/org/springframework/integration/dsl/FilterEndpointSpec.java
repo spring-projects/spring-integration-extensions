@@ -22,7 +22,6 @@ import org.springframework.messaging.MessageChannel;
 
 /**
  * @author Artem Bilan
-
  */
 public final class FilterEndpointSpec extends ConsumerEndpointSpec<FilterEndpointSpec, MessageFilter> {
 

@@ -125,8 +125,6 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 					BeanDefinitionReaderUtils.registerWithGeneratedName(component, registry);
 				}
 			}
-//			registry.removeBeanDefinition(flowName);
-//			beanFactory.destroyBean(flowName);
 		}
 
 	}
