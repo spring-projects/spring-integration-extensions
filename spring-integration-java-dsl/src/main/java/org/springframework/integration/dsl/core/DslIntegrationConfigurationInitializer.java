@@ -35,8 +35,8 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.config.ConsumerEndpointFactoryBean;
+import org.springframework.integration.config.IntegrationConfigUtils;
 import org.springframework.integration.config.IntegrationConfigurationInitializer;
-import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.config.InstanceBeanDefinition;
 import org.springframework.messaging.MessageHandler;
@@ -103,7 +103,7 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 
 							if (!messageHandlers.contains(messageHandler)) {
 								String handlerBeanName = generateInstanceBeanDefinitionName(registry, messageHandler);
-								String[] handlerAlias = id != null ? new String[]{id + IntegrationNamespaceUtils.HANDLER_ALIAS_SUFFIX} : null;
+								String[] handlerAlias = id != null ? new String[]{id + IntegrationConfigUtils.HANDLER_ALIAS_SUFFIX} : null;
 								BeanComponentDefinition definitionHolder = new BeanComponentDefinition(new InstanceBeanDefinition(messageHandler),
 										handlerBeanName, handlerAlias);
 								BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
@@ -114,6 +114,12 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 								endpointBeanName = generateInstanceBeanDefinitionName(registry, endpoint);
 							}
 							registry.registerBeanDefinition(endpointBeanName, new InstanceBeanDefinition(endpoint));
+						}
+						else if (instance instanceof MessageChannelReference) {
+							String channelName = ((MessageChannelReference) instance).getName();
+							if (!registry.containsBeanDefinition(channelName)) {
+								IntegrationConfigUtils.autoCreateDirectChannel(channelName, registry);
+							}
 						}
 						else {
 							String beanName = generateInstanceBeanDefinitionName(registry, instance);

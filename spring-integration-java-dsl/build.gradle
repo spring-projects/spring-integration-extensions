@@ -24,10 +24,6 @@ compileTestJava {
 }
 
 ext {
-	junitVersion = '4.11'
-	log4jVersion = '1.2.17'
-	mockitoVersion = '1.9.5'
-	springVersion = '4.0.1.RELEASE'
 	springIntegrationVersion = '4.0.0.BUILD-SNAPSHOT'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
@@ -52,11 +48,6 @@ dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-	testCompile "junit:junit-dep:$junitVersion"
-	testCompile "log4j:log4j:$log4jVersion"
-	testCompile "org.mockito:mockito-all:$mockitoVersion"
-	testCompile "org.springframework:spring-test:$springVersion"
-
 	testCompile "org.springframework.integration:spring-integration-event:$springIntegrationVersion"
 	testCompile "org.springframework.integration:spring-integration-file:$springIntegrationVersion"
 

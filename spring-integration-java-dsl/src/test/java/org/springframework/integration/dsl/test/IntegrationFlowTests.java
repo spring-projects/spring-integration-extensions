@@ -24,6 +24,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,6 +52,7 @@ import org.springframework.integration.MessageDispatchingException;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessageSource;
@@ -102,6 +106,10 @@ public class IntegrationFlowTests {
 	private DirectChannel inputChannel;
 
 	@Autowired
+	@Qualifier("foo")
+	private PublishSubscribeChannel foo;
+
+	@Autowired
 	@Qualifier("successChannel")
 	private PollableChannel successChannel;
 
@@ -144,6 +152,11 @@ public class IntegrationFlowTests {
 	@Qualifier("delayedAdvice")
 	private DelayedAdvice delayedAdvice;
 
+	@Autowired
+	@Qualifier("enricherInput")
+	private DirectChannel enricherInput;
+
+
 	@Test
 	public void testPollingFlow() {
 		for (int i = 0; i < 10; i++) {
@@ -169,6 +182,11 @@ public class IntegrationFlowTests {
 			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
 		}
 		this.beanFactory.getBean("payloadSerializingTransformer", Lifecycle.class).start();
+
+		final AtomicBoolean used = new AtomicBoolean();
+
+		this.foo.subscribe(m -> used.set(true));
+
 		this.inputChannel.send(message);
 		Message<?> reply = replyChannel.receive(5000);
 		assertNotNull(reply);
@@ -177,6 +195,8 @@ public class IntegrationFlowTests {
 		Message<?> successMessage = this.successChannel.receive(5000);
 		assertNotNull(successMessage);
 		assertEquals(100, successMessage.getPayload());
+
+		assertTrue(used.get());
 	}
 
 	@Test
@@ -266,6 +286,22 @@ public class IntegrationFlowTests {
 		}
 	}
 
+	@Test
+	public void testContentEnricher() {
+		QueueChannel replyChannel = new QueueChannel();
+		Message<?> message = MessageBuilder.withPayload(new TestPojo("Bar")).setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel).build();
+		this.enricherInput.send(message);
+		Message<?> receive = replyChannel.receive(5000);
+		assertNotNull(receive);
+		assertEquals("Bar Bar", receive.getHeaders().get("foo"));
+		Object payload = receive.getPayload();
+		assertThat(payload, Matchers.instanceOf(TestPojo.class));
+		TestPojo result = (TestPojo) payload;
+		assertEquals("Bar Bar", result.getName());
+		assertNotNull(result.getDate());
+		assertThat(new Date(), Matchers.greaterThan(result.getDate()));
+	}
+
 
 	@Configuration
 	@EnableIntegration
@@ -282,6 +318,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow flow1() {
 			return IntegrationFlows.from(this.integerMessageSource(), c -> c.poller(Pollers.fixedRate(100)))
+					.channel("integerChannel")
 					.transform("payload.toString()")
 					.channel(MessageChannels.queue("flow1QueueChannel"))
 					.get();
@@ -295,6 +332,11 @@ public class IntegrationFlowTests {
 		@Bean
 		public DirectChannel inputChannel() {
 			return MessageChannels.direct().get();
+		}
+
+		@Bean
+		public PublishSubscribeChannel foo() {
+			return MessageChannels.publishSubscribe().get();
 		}
 
 	}
@@ -324,6 +366,7 @@ public class IntegrationFlowTests {
 		public IntegrationFlow flow2() {
 			return IntegrationFlows.from(this.inputChannel)
 					.filter(p -> p instanceof String, c -> c.id("filter"))
+					.channel("foo")
 					.<String, Integer>transform(Integer::parseInt)
 					.transform(new PayloadSerializingTransformer(),
 							c -> c.autoStartup(false).id("payloadSerializingTransformer"))
@@ -375,7 +418,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow flow3() {
-			return IntegrationFlows.from(MessageChannels.direct("flow3Input"))
+			return IntegrationFlows.from("flow3Input")
 					.handle(new ApplicationEventPublishingMessageHandler())
 					.get();
 		}
@@ -389,7 +432,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow bridgeFlow2() {
-			return IntegrationFlows.from(MessageChannels.direct("bridgeFlow2Input"))
+			return IntegrationFlows.from("bridgeFlow2Input")
 					.bridge(c -> c.autoStartup(false).id("bridge"))
 					.delay("delayer", "200", c -> c.advice(this.delayedAdvice))
 					.channel(MessageChannels.queue("bridgeFlow2Output"))
@@ -425,7 +468,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow fileFlow1() {
-			return IntegrationFlows.from(MessageChannels.direct("fileFlow1Input"))
+			return IntegrationFlows.from("fileFlow1Input")
 					.handle(this.fileWritingMessageHandler(), c -> {
 						FileWritingMessageHandler handler = c.get().getT2();
 						handler.setFileNameGenerator(message -> null);
@@ -433,10 +476,31 @@ public class IntegrationFlowTests {
 					})
 					.get();
 		}
+
 		@Bean
 		public IntegrationFlow methodInvokingFlow() {
-			return IntegrationFlows.from(MessageChannels.direct("methodInvokingInput"))
+			return IntegrationFlows.from("methodInvokingInput")
 					.handle("greetingService", null)
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow enricherFlow() {
+			return IntegrationFlows.from("enricherInput")
+					.enrich(e -> e.requestChannel("enrichChannel")
+									.requestPayloadExpression("payload")
+									.shouldClonePayload(false)
+									.propertyExpression("name", "payload['name']")
+									.propertyExpression("date", "new java.util.Date()")
+									.headerExpression("foo", "payload['name']")
+					)
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow enrichFlow() {
+			return IntegrationFlows.from("enrichChannel")
+					.<TestPojo, Map<?, ?>>transform(p -> Collections.singletonMap("name", p.getName() + " Bar"))
 					.get();
 		}
 
@@ -469,6 +533,34 @@ public class IntegrationFlowTests {
 		@Bean
 		public DirectChannelSpec invalidBean() {
 			return MessageChannels.direct();
+		}
+
+	}
+
+	private static class TestPojo {
+
+		private String name;
+
+		private Date date;
+
+		private TestPojo(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public Date getDate() {
+			return date;
+		}
+
+		public void setDate(Date date) {
+			this.date = date;
 		}
 
 	}

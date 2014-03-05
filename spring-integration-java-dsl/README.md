@@ -26,15 +26,12 @@ Spring Integration message flows from Spring `@Configuration` classes.
 
         @Bean
         public IntegrationFlow myFlow() {
-            PollerMetadata pollerMetadata = new PollerMetadata();
-            pollerMetadata.setTrigger(new PeriodicTrigger(100));
-
-            return IntegrationFlows.from(this.integerMessageSource())
-                        .poll(this.inputChannel(), pollerMetadata)
-                        .transform((Integer p) -> p * 2)
+            return IntegrationFlows.from(this.integerMessageSource(), c -> c.poller(Pollers.fixedRate(100)))
+                        .channel(this.inputChannel())
+                        .filter((Integer p) -> p > 0)
                         .transform(Object::toString)
-                        .channel(new QueueChannel())
-                        .build();
+                        .channel(MessageChannels.queue())
+                        .get();
         }
     }
 ````
