@@ -1,4 +1,4 @@
-package org.springframework.integration.dsl.core;
+package org.springframework.integration.dsl.support;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;

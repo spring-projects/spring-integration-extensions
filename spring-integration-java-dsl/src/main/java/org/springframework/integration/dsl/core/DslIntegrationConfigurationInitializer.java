@@ -34,11 +34,13 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.integration.channel.AbstractMessageChannel;
+import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.config.ConsumerEndpointFactoryBean;
 import org.springframework.integration.config.IntegrationConfigUtils;
 import org.springframework.integration.config.IntegrationConfigurationInitializer;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.config.InstanceBeanDefinition;
+import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
 
@@ -120,6 +122,14 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 							if (!registry.containsBeanDefinition(channelName)) {
 								IntegrationConfigUtils.autoCreateDirectChannel(channelName, registry);
 							}
+						}
+						else if (instance instanceof FixedSubscriberChannel) {
+							FixedSubscriberChannel fixedSubscriberChannel = (FixedSubscriberChannel) instance;
+							String channelBeanName = fixedSubscriberChannel.getComponentName();
+							if ("Unnamed fixed subscriber channel".equals(channelBeanName)) {
+								channelBeanName = flowNamePrefix + "channel" + BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
+							}
+							registry.registerBeanDefinition(channelBeanName, component);
 						}
 						else {
 							String beanName = generateInstanceBeanDefinitionName(registry, instance);

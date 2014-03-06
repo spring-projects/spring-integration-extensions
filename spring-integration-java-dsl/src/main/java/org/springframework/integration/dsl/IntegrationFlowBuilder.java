@@ -19,12 +19,14 @@ package org.springframework.integration.dsl;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.core.GenericSelector;
 import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
-import org.springframework.integration.dsl.core.MessageChannelReference;
+import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
+import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.dsl.support.BeanNameMethodInvokingMessageHandler;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.dsl.support.EnricherConfigurer;
@@ -71,6 +73,14 @@ public final class IntegrationFlowBuilder {
 		return this;
 	}
 
+	public IntegrationFlowBuilder fixedSubscriberChannel() {
+		return this.fixedSubscriberChannel(null);
+	}
+
+	public IntegrationFlowBuilder fixedSubscriberChannel(String messageChannelName) {
+		return this.channel(new FixedSubscriberChannelPrototype(messageChannelName));
+	}
+
 	public IntegrationFlowBuilder channel(String messageChannelName) {
 		return this.channel(new MessageChannelReference(messageChannelName));
 	}
@@ -78,14 +88,7 @@ public final class IntegrationFlowBuilder {
 	public IntegrationFlowBuilder channel(MessageChannel messageChannel) {
 		Assert.notNull(messageChannel);
 		if (this.currentMessageChannel != null) {
-			GenericEndpointSpec<BridgeHandler> endpointSpec = new GenericEndpointSpec<BridgeHandler>(new BridgeHandler());
-			if (this.currentMessageChannel instanceof MessageChannelReference) {
-				endpointSpec.get().getT1().setInputChannelName(((MessageChannelReference) this.currentMessageChannel).getName());
-			}
-			else {
-				endpointSpec.get().getT1().setInputChannel(this.currentMessageChannel);
-			}
-			this.addComponent(endpointSpec).currentComponent(endpointSpec.get().getT2());
+			this.register(new GenericEndpointSpec<BridgeHandler>(new BridgeHandler()), null);
 		}
 		this.currentMessageChannel = messageChannel;
 		return this.registerOutputChannelIfCan(this.currentMessageChannel);
@@ -188,6 +191,14 @@ public final class IntegrationFlowBuilder {
 			endpointSpec.get().getT1().setInputChannelName(((MessageChannelReference) inputChannel).getName());
 		}
 		else {
+			if (inputChannel instanceof FixedSubscriberChannelPrototype) {
+				String beanName = ((FixedSubscriberChannelPrototype) inputChannel).getName();
+				inputChannel = new FixedSubscriberChannel(endpointSpec.get().getT2());
+				if (beanName != null) {
+					((FixedSubscriberChannel) inputChannel).setBeanName(beanName);
+				}
+				this.registerOutputChannelIfCan(inputChannel);
+			}
 			endpointSpec.get().getT1().setInputChannel(inputChannel);
 		}
 
@@ -195,40 +206,47 @@ public final class IntegrationFlowBuilder {
 	}
 
 	private IntegrationFlowBuilder registerOutputChannelIfCan(MessageChannel outputChannel) {
-		this.flow.addComponent(outputChannel);
-		String channelName = null;
-		if (outputChannel instanceof MessageChannelReference) {
-			channelName = ((MessageChannelReference) outputChannel).getName();
-		}
-		if (this.currentComponent != null) {
-			if (this.currentComponent instanceof AbstractReplyProducingMessageHandler) {
-				AbstractReplyProducingMessageHandler messageProducer = (AbstractReplyProducingMessageHandler) this.currentComponent;
-				if (channelName != null) {
-					messageProducer.setOutputChannelName(channelName);
+		if (!(outputChannel instanceof FixedSubscriberChannelPrototype)) {
+			this.flow.addComponent(outputChannel);
+			if (this.currentComponent != null) {
+				String channelName = null;
+				if (outputChannel instanceof MessageChannelReference) {
+					channelName = ((MessageChannelReference) outputChannel).getName();
+				}
+				if (this.currentComponent instanceof AbstractReplyProducingMessageHandler) {
+					AbstractReplyProducingMessageHandler messageProducer = (AbstractReplyProducingMessageHandler) this.currentComponent;
+					if (channelName != null) {
+						messageProducer.setOutputChannelName(channelName);
+					}
+					else {
+						messageProducer.setOutputChannel(outputChannel);
+					}
+				}
+				else if (this.currentComponent instanceof SourcePollingChannelAdapterFactoryBean) {
+					SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean = (SourcePollingChannelAdapterFactoryBean) this.currentComponent;
+					if (channelName != null) {
+						pollingChannelAdapterFactoryBean.setOutputChannelName(channelName);
+					}
+					else {
+						pollingChannelAdapterFactoryBean.setOutputChannel(outputChannel);
+					}
 				}
 				else {
-					messageProducer.setOutputChannel(outputChannel);
+					throw new BeanCreationException("The 'currentComponent' (" + this.currentComponent + ") is a one-way 'MessageHandler'" +
+							" and it isn't appropriate to configure 'outputChannel'. This is the end of the integration flow.");
 				}
+				this.currentComponent = null;
 			}
-			else if (this.currentComponent instanceof SourcePollingChannelAdapterFactoryBean) {
-				SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean = (SourcePollingChannelAdapterFactoryBean) this.currentComponent;
-				if (channelName != null) {
-					pollingChannelAdapterFactoryBean.setOutputChannelName(channelName);
-				}
-				else {
-					pollingChannelAdapterFactoryBean.setOutputChannel(outputChannel);
-				}
-			}
-			else {
-				throw new BeanCreationException("The 'currentComponent' (" + this.currentComponent + ") is a one-way 'MessageHandler'" +
-						"and it isn't appropriate to configure 'outputChannel'. This is the end of the integration flow.");
-			}
-			this.currentComponent = null;
 		}
 		return this;
 	}
 
 	public IntegrationFlow get() {
+		if (this.currentMessageChannel instanceof FixedSubscriberChannelPrototype) {
+			throw new BeanCreationException("The 'currentMessageChannel' (" + this.currentMessageChannel + ") is a prototype" +
+					" for FixedSubscriberChannel which can't be created without MessageHandler constructor argument. " +
+					"That means that '.fixedSubscriberChannel()' can't be the last EIP-method in the IntegrationFlow definition.");
+		}
 		return this.flow;
 	}
 

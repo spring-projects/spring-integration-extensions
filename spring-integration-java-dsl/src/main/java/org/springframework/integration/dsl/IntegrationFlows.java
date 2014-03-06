@@ -19,7 +19,8 @@ package org.springframework.integration.dsl;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
-import org.springframework.integration.dsl.core.MessageChannelReference;
+import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
+import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.messaging.MessageChannel;
 
@@ -28,8 +29,23 @@ import org.springframework.messaging.MessageChannel;
  */
 public final class IntegrationFlows {
 
+	/**
+	 * @param messageChannelName the name of existing {@link org.springframework.messaging.MessageChannel} bean.
+	 *                           The new {@link org.springframework.integration.channel.DirectChannel} bean will be
+	 *                           created on context startup, if there is on bean with this name.
+	 * @return new {@link IntegrationFlowBuilder}
+	 */
 	public static IntegrationFlowBuilder from(String messageChannelName) {
 		return from(new MessageChannelReference(messageChannelName));
+	}
+
+	/**
+	 * @param messageChannelName the name for {@link org.springframework.integration.channel.FixedSubscriberChannel}
+	 *                           to be created on context startup, not reference.
+	 * @return new {@link IntegrationFlowBuilder}
+	 */
+	public static IntegrationFlowBuilder fromFixedMessageChannel(String messageChannelName) {
+		return from(new FixedSubscriberChannelPrototype(messageChannelName));
 	}
 
 	public static IntegrationFlowBuilder from(MessageChannel messageChannel) {

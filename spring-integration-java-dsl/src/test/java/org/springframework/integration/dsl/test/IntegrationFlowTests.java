@@ -52,6 +52,7 @@ import org.springframework.integration.MessageDispatchingException;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
@@ -154,11 +155,12 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("enricherInput")
-	private DirectChannel enricherInput;
+	private FixedSubscriberChannel enricherInput;
 
 
 	@Test
 	public void testPollingFlow() {
+		assertThat(this.beanFactory.getBean("integerChannel"), Matchers.instanceOf(FixedSubscriberChannel.class));
 		for (int i = 0; i < 10; i++) {
 			Message<?> message = this.outputChannel.receive(5000);
 			assertNotNull(message);
@@ -215,6 +217,9 @@ public class IntegrationFlowTests {
 		assertNotNull(reply);
 		assertEquals("test", reply.getPayload());
 
+		assertTrue(this.beanFactory.containsBean("bridgeFlow2:channel#0"));
+		assertThat(this.beanFactory.getBean("bridgeFlow2:channel#0"), Matchers.instanceOf(FixedSubscriberChannel.class));
+
 		try {
 			this.bridgeFlow2Input.send(message);
 			fail("Expected MessageDispatchingException");
@@ -241,6 +246,18 @@ public class IntegrationFlowTests {
 		catch (Exception e) {
 			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
 			assertThat(e.getMessage(), Matchers.containsString("is a one-way 'MessageHandler'"));
+		}
+	}
+
+	@Test
+	public void testWrongLastMessageChannel() {
+		try {
+			new AnnotationConfigApplicationContext(InvalidLastMessageChannelFlowContext.class);
+			fail("BeanCreationException expected");
+		}
+		catch (Exception e) {
+			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
+			assertThat(e.getMessage(), Matchers.containsString("'.fixedSubscriberChannel()' can't be the last EIP-method in the IntegrationFlow definition"));
 		}
 	}
 
@@ -318,7 +335,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow flow1() {
 			return IntegrationFlows.from(this.integerMessageSource(), c -> c.poller(Pollers.fixedRate(100)))
-					.channel("integerChannel")
+					.fixedSubscriberChannel("integerChannel")
 					.transform("payload.toString()")
 					.channel(MessageChannels.queue("flow1QueueChannel"))
 					.get();
@@ -367,6 +384,7 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from(this.inputChannel)
 					.filter(p -> p instanceof String, c -> c.id("filter"))
 					.channel("foo")
+					.fixedSubscriberChannel()
 					.<String, Integer>transform(Integer::parseInt)
 					.transform(new PayloadSerializingTransformer(),
 							c -> c.autoStartup(false).id("payloadSerializingTransformer"))
@@ -434,6 +452,7 @@ public class IntegrationFlowTests {
 		public IntegrationFlow bridgeFlow2() {
 			return IntegrationFlows.from("bridgeFlow2Input")
 					.bridge(c -> c.autoStartup(false).id("bridge"))
+					.fixedSubscriberChannel()
 					.delay("delayer", "200", c -> c.advice(this.delayedAdvice))
 					.channel(MessageChannels.queue("bridgeFlow2Output"))
 					.get();
@@ -486,7 +505,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow enricherFlow() {
-			return IntegrationFlows.from("enricherInput")
+			return IntegrationFlows.fromFixedMessageChannel("enricherInput")
 					.enrich(e -> e.requestChannel("enrichChannel")
 									.requestPayloadExpression("payload")
 									.shouldClonePayload(false)
@@ -522,6 +541,17 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from(MessageChannels.direct())
 					.handle(Object::toString)
 					.channel(MessageChannels.direct())
+					.get();
+		}
+
+	}
+
+	private static class InvalidLastMessageChannelFlowContext {
+
+		@Bean
+		public IntegrationFlow wrongLastComponent() {
+			return IntegrationFlows.from(MessageChannels.direct())
+					.fixedSubscriberChannel()
 					.get();
 		}
 
