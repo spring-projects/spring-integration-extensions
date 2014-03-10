@@ -16,14 +16,14 @@
 
 package org.springframework.integration.dsl.support;
 
-import org.springframework.integration.dsl.EnricherSpec;
+import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 
 /**
  * @author Artem Bilan
 
  */
-public interface EnricherConfigurer {
+public interface ComponentConfigurer<S extends IntegrationComponentSpec<?, ?>> {
 
-	void configure(EnricherSpec spec);
+	void configure(S spec);
 
 }

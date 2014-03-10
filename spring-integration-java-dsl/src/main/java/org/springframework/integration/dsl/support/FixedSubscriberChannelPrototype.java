@@ -5,7 +5,6 @@ import org.springframework.messaging.MessageChannel;
 
 /**
  * @author Artem Bilan
- * @since 4.0
  */
 public class FixedSubscriberChannelPrototype implements MessageChannel {
 

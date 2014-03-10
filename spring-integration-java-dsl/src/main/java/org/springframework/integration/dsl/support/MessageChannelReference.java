@@ -6,7 +6,6 @@ import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
- * @since 4.0
  */
 public class MessageChannelReference implements MessageChannel {
 

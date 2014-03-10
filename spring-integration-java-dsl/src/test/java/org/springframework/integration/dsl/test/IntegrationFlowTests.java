@@ -17,6 +17,7 @@
 package org.springframework.integration.dsl.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -24,9 +25,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -57,10 +64,12 @@ import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessageSource;
+import org.springframework.integration.dsl.GenericEndpointSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
+import org.springframework.integration.dsl.support.GenericSplitter;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
@@ -70,10 +79,12 @@ import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
 import org.springframework.integration.scheduling.PollerMetadata;
+import org.springframework.integration.splitter.DefaultMessageSplitter;
 import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.transformer.PayloadDeserializingTransformer;
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
+import org.springframework.integration.xml.transformer.XPathHeaderEnricher;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
@@ -84,12 +95,11 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 /**
  * @author Artem Bilan
  */
-@ContextConfiguration(loader = AnnotationConfigContextLoader.class)
+@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 public class IntegrationFlowTests {
 
@@ -156,6 +166,14 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("enricherInput")
 	private FixedSubscriberChannel enricherInput;
+
+	@Autowired
+	@Qualifier("splitInput")
+	private DirectChannel splitInput;
+
+	@Autowired
+	@Qualifier("xpathHeaderEnricherInput")
+	private DirectChannel xpathHeaderEnricherInput;
 
 
 	@Test
@@ -274,7 +292,9 @@ public class IntegrationFlowTests {
 			assertThat(e, Matchers.instanceOf(MessageHandlingException.class));
 			assertThat(e.getCause(), Matchers.instanceOf(NullPointerException.class));
 		}
-		this.fileWritingMessageHandler.setFileNameGenerator(new DefaultFileNameGenerator());
+		DefaultFileNameGenerator fileNameGenerator = new DefaultFileNameGenerator();
+		fileNameGenerator.setBeanFactory(this.beanFactory);
+		this.fileWritingMessageHandler.setFileNameGenerator(fileNameGenerator);
 		this.fileFlow1Input.send(message);
 
 		assertTrue(new File(tmpDir, "foo").exists());
@@ -319,6 +339,53 @@ public class IntegrationFlowTests {
 		assertThat(new Date(), Matchers.greaterThan(result.getDate()));
 	}
 
+	@Test
+	public void testSplitter() {
+		QueueChannel replyChannel = new QueueChannel();
+
+		this.splitInput.send(MessageBuilder.withPayload("").setReplyChannel(replyChannel).setHeader("foo", "bar").build());
+
+		List<Object> results = new ArrayList<Object>();
+
+		for (int i = 0; i < 12; i++) {
+			Message<?> receive = replyChannel.receive(2000);
+			assertNotNull(receive);
+			assertFalse(receive.getHeaders().containsKey("foo"));
+			assertTrue(receive.getHeaders().containsKey("FOO"));
+			assertEquals("BAR", receive.getHeaders().get("FOO"));
+			results.add(receive.getPayload());
+		}
+
+		assertTrue(results.containsAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)));
+	}
+
+	@Test
+	public void testHeaderEnricher() {
+		QueueChannel replyChannel = new QueueChannel();
+
+		Message<String> message = MessageBuilder.withPayload("<root><elementOne>1</elementOne><elementTwo>2</elementTwo></root>")
+				.setReplyChannel(replyChannel)
+				.build();
+
+		try {
+			this.xpathHeaderEnricherInput.send(message);
+			fail("Expected MessageDispatchingException");
+		}
+		catch (Exception e) {
+			assertThat(e, Matchers.instanceOf(MessageDeliveryException.class));
+			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
+			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
+		}
+
+		this.beanFactory.getBean("xpathHeaderEnricher", Lifecycle.class).start();
+		this.xpathHeaderEnricherInput.send(message);
+
+		Message<?> result = replyChannel.receive(2000);
+		assertNotNull(result);
+		MessageHeaders headers = result.getHeaders();
+		assertEquals("1", headers.get("one"));
+		assertEquals("2", headers.get("two"));
+	}
 
 	@Configuration
 	@EnableIntegration
@@ -523,6 +590,56 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
+		@Bean
+		public Executor taskExecutor() {
+			return Executors.newCachedThreadPool();
+		}
+
+		@Bean
+		public TestSplitterPojo testSplitterData() {
+			List<String> first = new ArrayList<>();
+			first.add("1,2,3");
+			first.add("4,5,6");
+
+			List<String> second = new ArrayList<>();
+			second.add("7,8,9");
+			second.add("10,11,12");
+
+			return new TestSplitterPojo(first, second);
+		}
+
+		@Bean
+		public IntegrationFlow splitFlow() {
+			return IntegrationFlows.from("splitInput")
+					.enrichHeaders(s -> s.header("FOO", "BAR"))
+					.split("testSplitterData", "buildList", c -> c.get().getT2().setApplySequence(true))
+					.channel(MessageChannels.executor(this.taskExecutor()))
+					.split(new GenericSplitter<Message<List<?>>>() {
+
+						@Override
+						public Collection<?> split(Message<List<?>> target) {
+							return target.getPayload();
+						}
+					})
+					.channel(MessageChannels.executor(this.taskExecutor()))
+					.split((GenericEndpointSpec<DefaultMessageSplitter> s) -> s.get().getT2().setDelimiters(","))
+					.channel(MessageChannels.executor(this.taskExecutor()))
+					.<String, Integer>transform(Integer::parseInt)
+					.headerFilter("foo", false)
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow xpathHeaderEnricherFlow() {
+			return IntegrationFlows.from("xpathHeaderEnricherInput")
+					.enrichHeaders(
+							s -> s.header("one", new XPathHeaderEnricher.XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementOne"))
+									.header("two", new XPathHeaderEnricher.XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementTwo")),
+							c -> c.autoStartup(false).id("xpathHeaderEnricher")
+					)
+					.get();
+		}
+
 	}
 
 	@Component("greetingService")
@@ -591,6 +708,31 @@ public class IntegrationFlowTests {
 
 		public void setDate(Date date) {
 			this.date = date;
+		}
+
+	}
+
+	private static class TestSplitterPojo {
+
+		final List<String> first;
+
+		final List<String> second;
+
+		private TestSplitterPojo(List<String> first, List<String> second) {
+			this.first = first;
+			this.second = second;
+		}
+
+		public List<String> getFirst() {
+			return first;
+		}
+
+		public List<String> getSecond() {
+			return second;
+		}
+
+		public List<List<String>> buildList() {
+			return Arrays.asList(this.first, this.second);
 		}
 
 	}

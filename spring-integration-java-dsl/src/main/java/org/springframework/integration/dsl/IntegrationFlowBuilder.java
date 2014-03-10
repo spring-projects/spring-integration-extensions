@@ -16,6 +16,8 @@
 
 package org.springframework.integration.dsl;
 
+import java.util.Collection;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.channel.DirectChannel;
@@ -25,20 +27,28 @@ import org.springframework.integration.core.GenericSelector;
 import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
-import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
-import org.springframework.integration.dsl.support.MessageChannelReference;
-import org.springframework.integration.dsl.support.BeanNameMethodInvokingMessageHandler;
+import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
+import org.springframework.integration.dsl.support.ComponentConfigurer;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
-import org.springframework.integration.dsl.support.EnricherConfigurer;
+import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
+import org.springframework.integration.dsl.support.GenericSplitter;
+import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.integration.filter.MethodInvokingSelector;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.BridgeHandler;
 import org.springframework.integration.handler.DelayHandler;
+import org.springframework.integration.handler.ServiceActivatingHandler;
+import org.springframework.integration.splitter.AbstractMessageSplitter;
+import org.springframework.integration.splitter.DefaultMessageSplitter;
+import org.springframework.integration.splitter.ExpressionEvaluatingSplitter;
+import org.springframework.integration.splitter.MethodInvokingSplitter;
 import org.springframework.integration.transformer.ContentEnricher;
 import org.springframework.integration.transformer.ExpressionEvaluatingTransformer;
 import org.springframework.integration.transformer.GenericTransformer;
+import org.springframework.integration.transformer.HeaderEnricher;
+import org.springframework.integration.transformer.HeaderFilter;
 import org.springframework.integration.transformer.MessageTransformingHandler;
 import org.springframework.integration.transformer.MethodInvokingTransformer;
 import org.springframework.integration.transformer.Transformer;
@@ -136,12 +146,12 @@ public final class IntegrationFlowBuilder {
 		return this.handle(messageHandler, null);
 	}
 
-	public IntegrationFlowBuilder handle(String target, String methodName) {
-		return this.handle(target, methodName, null);
+	public IntegrationFlowBuilder handle(String beanName, String methodName) {
+		return this.handle(beanName, methodName, null);
 	}
 
-	public IntegrationFlowBuilder handle(String beanName, String methodName, EndpointConfigurer<GenericEndpointSpec<BeanNameMethodInvokingMessageHandler>> endpointConfigurer) {
-		return this.handle(new BeanNameMethodInvokingMessageHandler(beanName, methodName), endpointConfigurer);
+	public IntegrationFlowBuilder handle(String beanName, String methodName, EndpointConfigurer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
+		return this.handle(new ServiceActivatingHandler(new BeanNameMessageProcessor<Object>(beanName, methodName)), endpointConfigurer);
 	}
 
 	public <H extends MessageHandler> IntegrationFlowBuilder handle(H messageHandler, EndpointConfigurer<GenericEndpointSpec<H>> endpointConfigurer) {
@@ -165,15 +175,114 @@ public final class IntegrationFlowBuilder {
 		return this.register(new GenericEndpointSpec<DelayHandler>(delayHandler), endpointConfigurer);
 	}
 
-	public IntegrationFlowBuilder enrich(EnricherConfigurer enricherConfigurer) {
+	public IntegrationFlowBuilder enrich(ComponentConfigurer<EnricherSpec> enricherConfigurer) {
 		return this.enrich(enricherConfigurer, null);
 	}
 
-	public IntegrationFlowBuilder enrich(EnricherConfigurer enricherConfigurer, EndpointConfigurer<GenericEndpointSpec<ContentEnricher>> endpointConfigurer) {
+	public IntegrationFlowBuilder enrich(ComponentConfigurer<EnricherSpec> enricherConfigurer, EndpointConfigurer<GenericEndpointSpec<ContentEnricher>> endpointConfigurer) {
 		Assert.notNull(enricherConfigurer);
 		EnricherSpec enricherSpec = new EnricherSpec();
 		enricherConfigurer.configure(enricherSpec);
-		return this.register(new GenericEndpointSpec<ContentEnricher>(enricherSpec.get()), endpointConfigurer);
+		return this.enrich(enricherSpec.get(), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder enrich(ContentEnricher contentEnricher) {
+		return this.enrich(contentEnricher, null);
+	}
+
+	public IntegrationFlowBuilder enrich(ContentEnricher contentEnricher, EndpointConfigurer<GenericEndpointSpec<ContentEnricher>> endpointConfigurer) {
+		return this.handle(contentEnricher, endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder enrichHeaders(ComponentConfigurer<HeaderEnricherSpec> headerEnricherConfigurer) {
+		return this.enrichHeaders(headerEnricherConfigurer, null);
+	}
+
+	public IntegrationFlowBuilder enrichHeaders(ComponentConfigurer<HeaderEnricherSpec> headerEnricherConfigurer,
+												EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		Assert.notNull(headerEnricherConfigurer);
+		HeaderEnricherSpec headerEnricherSpec = new HeaderEnricherSpec();
+		headerEnricherConfigurer.configure(headerEnricherSpec);
+		return this.enrichHeaders(headerEnricherSpec.get(), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder enrichHeaders(HeaderEnricher headerEnricher) {
+		return this.enrichHeaders(headerEnricher, null);
+	}
+
+	public IntegrationFlowBuilder enrichHeaders(HeaderEnricher headerEnricher, EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		return this.transform(headerEnricher, endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder split() {
+		return this.split((EndpointConfigurer<GenericEndpointSpec<DefaultMessageSplitter>>) null);
+	}
+
+	public IntegrationFlowBuilder split(EndpointConfigurer<GenericEndpointSpec<DefaultMessageSplitter>> endpointConfigurer) {
+		return this.split(new DefaultMessageSplitter(), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder split(String expression) {
+		return this.split(expression, (EndpointConfigurer<GenericEndpointSpec<ExpressionEvaluatingSplitter>>) null);
+	}
+
+	public IntegrationFlowBuilder split(String expression, EndpointConfigurer<GenericEndpointSpec<ExpressionEvaluatingSplitter>> endpointConfigurer) {
+		return this.split(new ExpressionEvaluatingSplitter(PARSER.parseExpression(expression)), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder split(String beanName, String methodName) {
+		return this.split(beanName, methodName, null);
+	}
+
+	public IntegrationFlowBuilder split(String beanName, String methodName,
+										EndpointConfigurer<GenericEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
+		return this.split(new MethodInvokingSplitter(new BeanNameMessageProcessor<Collection<?>>(beanName, methodName)),
+				endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder split(AbstractMessageSplitter splitter) {
+		return this.split(splitter, null);
+	}
+
+	public <T> IntegrationFlowBuilder split(GenericSplitter<T> splitter) {
+		return this.split(splitter, null);
+	}
+
+	public <T> IntegrationFlowBuilder split(GenericSplitter<T> splitter,
+											EndpointConfigurer<GenericEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
+		return this.split(new MethodInvokingSplitter(splitter, "split"), endpointConfigurer);
+	}
+
+	public <T extends AbstractMessageSplitter> IntegrationFlowBuilder split(T splitter, EndpointConfigurer<GenericEndpointSpec<T>> endpointConfigurer) {
+		return this.handle(splitter, endpointConfigurer);
+	}
+
+	/**
+	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlow}.
+	 *
+	 * @param headersToRemove the array of headers (or patterns) to remove from {@link org.springframework.messaging.MessageHeaders}.
+	 * @return the {@link IntegrationFlowBuilder}.
+	 */
+	public IntegrationFlowBuilder headerFilter(String... headersToRemove) {
+		return this.headerFilter(new HeaderFilter(headersToRemove), null);
+	}
+
+	/**
+	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlow}.
+	 *
+	 * @param headersToRemove the comma separated headers (or patterns) to remove from {@link org.springframework.messaging.MessageHeaders}.
+	 * @param patternMatch the {@code boolean} flag to indicate if {@code headersToRemove} should be interpreted as patterns or direct header names.
+	 * @return the {@link IntegrationFlowBuilder}.
+	 */
+
+	public IntegrationFlowBuilder headerFilter(String headersToRemove, boolean patternMatch) {
+		HeaderFilter headerFilter = new HeaderFilter(StringUtils.delimitedListToStringArray(headersToRemove, ",", " "));
+		headerFilter.setPatternMatch(patternMatch);
+		return this.headerFilter(headerFilter, null);
+	}
+
+	public IntegrationFlowBuilder headerFilter(HeaderFilter headerFilter, EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		return this.transform(headerFilter, endpointConfigurer);
 	}
 
 	private <S extends ConsumerEndpointSpec<?, ?>> IntegrationFlowBuilder register(S endpointSpec, EndpointConfigurer<S> endpointConfigurer) {
