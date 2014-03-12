@@ -50,7 +50,6 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.Lifecycle;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -109,6 +108,10 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	private ListableBeanFactory beanFactory;
+
+	@Autowired
+	@Qualifier("controlBus")
+	private MessageChannel controlBus;
 
 	@Autowired
 	@Qualifier("flow1QueueChannel")
@@ -207,7 +210,7 @@ public class IntegrationFlowTests {
 			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
 			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
 		}
-		this.beanFactory.getBean("payloadSerializingTransformer", Lifecycle.class).start();
+		this.controlBus.send(new GenericMessage<Object>("@payloadSerializingTransformer.start()"));
 
 		final AtomicBoolean used = new AtomicBoolean();
 
@@ -253,7 +256,7 @@ public class IntegrationFlowTests {
 			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
 			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
 		}
-		this.beanFactory.getBean("bridge", Lifecycle.class).start();
+		this.controlBus.send(new GenericMessage<Object>("@bridge.start()"));
 		this.bridgeFlow2Input.send(message);
 		reply = this.bridgeFlow2Output.receive(5000);
 		assertNotNull(reply);
@@ -396,7 +399,7 @@ public class IntegrationFlowTests {
 			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
 		}
 
-		this.beanFactory.getBean("xpathHeaderEnricher", Lifecycle.class).start();
+		this.controlBus.send(new GenericMessage<Object>("@xpathHeaderEnricher.start()"));
 		this.xpathHeaderEnricherInput.send(message);
 
 		Message<?> result = replyChannel.receive(2000);
@@ -416,6 +419,11 @@ public class IntegrationFlowTests {
 			source.setObject(new AtomicInteger());
 			source.setMethodName("getAndIncrement");
 			return source;
+		}
+
+		@Bean
+		public IntegrationFlow controlBusFlow() {
+			return IntegrationFlows.from("controlBus").controlBus().get();
 		}
 
 		@Bean

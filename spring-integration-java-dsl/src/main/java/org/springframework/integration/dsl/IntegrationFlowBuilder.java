@@ -16,9 +16,16 @@
 
 package org.springframework.integration.dsl;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.Lifecycle;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.expression.MethodFilter;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
 import org.springframework.integration.aggregator.AggregatingMessageHandler;
@@ -44,6 +51,7 @@ import org.springframework.integration.filter.MethodInvokingSelector;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.BridgeHandler;
 import org.springframework.integration.handler.DelayHandler;
+import org.springframework.integration.handler.ExpressionCommandMessageProcessor;
 import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.integration.splitter.AbstractMessageSplitter;
 import org.springframework.integration.splitter.DefaultMessageSplitter;
@@ -57,9 +65,13 @@ import org.springframework.integration.transformer.HeaderFilter;
 import org.springframework.integration.transformer.MessageTransformingHandler;
 import org.springframework.integration.transformer.MethodInvokingTransformer;
 import org.springframework.integration.transformer.Transformer;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
+import org.springframework.util.CustomizableThreadCreator;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -112,6 +124,10 @@ public final class IntegrationFlowBuilder {
 	public IntegrationFlowBuilder channel(MessageChannelSpec<?, ?> messageChannelSpec) {
 		Assert.notNull(messageChannelSpec);
 		return this.channel(messageChannelSpec.get());
+	}
+
+	public IntegrationFlowBuilder controlBus() {
+		return this.handle(new ServiceActivatingHandler(new ExpressionCommandMessageProcessor(new ControlBusMethodFilter())), null);
 	}
 
 	public IntegrationFlowBuilder transform(String expression) {
@@ -436,6 +452,42 @@ public final class IntegrationFlowBuilder {
 					"That means that '.fixedSubscriberChannel()' can't be the last EIP-method in the IntegrationFlow definition.");
 		}
 		return this.flow;
+	}
+
+
+	private static class ControlBusMethodFilter implements MethodFilter {
+
+		public List<Method> filter(List<Method> methods) {
+			List<Method> supportedMethods = new ArrayList<Method>();
+			for (Method method : methods) {
+				if (this.accept(method)) {
+					supportedMethods.add(method);
+				}
+			}
+			return supportedMethods;
+		}
+
+		private boolean accept(Method method) {
+			Class<?> declaringClass = method.getDeclaringClass();
+			if (Lifecycle.class.isAssignableFrom(declaringClass)
+					&& ReflectionUtils.findMethod(Lifecycle.class, method.getName(), method.getParameterTypes()) != null) {
+				return true;
+			}
+			if (CustomizableThreadCreator.class.isAssignableFrom(declaringClass)
+					&& (method.getName().startsWith("get")
+					|| method.getName().startsWith("set")
+					|| method.getName().startsWith("shutdown"))) {
+				return true;
+			}
+			if (this.hasAnnotation(method, ManagedAttribute.class) || this.hasAnnotation(method, ManagedOperation.class)) {
+				return true;
+			}
+			return false;
+		}
+
+		private boolean hasAnnotation(Method method, Class<? extends Annotation> annotationType) {
+			return AnnotationUtils.findAnnotation(method, annotationType) != null;
+		}
 	}
 
 }
