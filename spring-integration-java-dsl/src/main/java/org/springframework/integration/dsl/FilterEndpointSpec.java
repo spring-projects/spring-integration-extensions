@@ -39,6 +39,11 @@ public final class FilterEndpointSpec extends ConsumerEndpointSpec<FilterEndpoin
 		return _this();
 	}
 
+	public FilterEndpointSpec discardChannel(String discardChannelName) {
+		this.target.getT2().setDiscardChannelName(discardChannelName);
+		return _this();
+	}
+
 	public FilterEndpointSpec discardWithinAdvice(boolean discardWithinAdvice) {
 		this.target.getT2().setDiscardWithinAdvice(discardWithinAdvice);
 		return _this();

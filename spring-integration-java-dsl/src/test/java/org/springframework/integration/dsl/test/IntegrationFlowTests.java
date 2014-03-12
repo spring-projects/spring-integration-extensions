@@ -55,6 +55,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.MessageDispatchingException;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -64,9 +65,10 @@ import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.dsl.GenericEndpointSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.ResequencerSpec;
+import org.springframework.integration.dsl.SplitterEndpointSpec;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.support.GenericSplitter;
@@ -84,7 +86,7 @@ import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.transformer.PayloadDeserializingTransformer;
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
-import org.springframework.integration.xml.transformer.XPathHeaderEnricher;
+import org.springframework.integration.xml.transformer.support.XPathExpressionEvaluatingHeaderValueMessageProcessor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
@@ -174,6 +176,10 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("xpathHeaderEnricherInput")
 	private DirectChannel xpathHeaderEnricherInput;
+
+	@Autowired
+	@Qualifier("splitAggregateInput")
+	private MessageChannel splitAggregateInput;
 
 
 	@Test
@@ -336,16 +342,14 @@ public class IntegrationFlowTests {
 		TestPojo result = (TestPojo) payload;
 		assertEquals("Bar Bar", result.getName());
 		assertNotNull(result.getDate());
-		assertThat(new Date(), Matchers.greaterThan(result.getDate()));
+		assertThat(new Date(), Matchers.greaterThanOrEqualTo(result.getDate()));
 	}
 
 	@Test
-	public void testSplitter() {
+	public void testSplitterResequencer() {
 		QueueChannel replyChannel = new QueueChannel();
 
 		this.splitInput.send(MessageBuilder.withPayload("").setReplyChannel(replyChannel).setHeader("foo", "bar").build());
-
-		List<Object> results = new ArrayList<Object>();
 
 		for (int i = 0; i < 12; i++) {
 			Message<?> receive = replyChannel.receive(2000);
@@ -353,10 +357,25 @@ public class IntegrationFlowTests {
 			assertFalse(receive.getHeaders().containsKey("foo"));
 			assertTrue(receive.getHeaders().containsKey("FOO"));
 			assertEquals("BAR", receive.getHeaders().get("FOO"));
-			results.add(receive.getPayload());
+			assertEquals(new Integer(i + 1), receive.getPayload());
 		}
+	}
 
-		assertTrue(results.containsAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)));
+	@Test
+	public void testSplitterAggregator() {
+		List<Character> payload = Arrays.asList('a', 'b', 'c', 'd', 'e');
+
+		QueueChannel replyChannel = new QueueChannel();
+		this.splitAggregateInput.send(MessageBuilder.withPayload(payload).setReplyChannel(replyChannel).build());
+
+		Message<?> receive = replyChannel.receive(2000);
+		assertNotNull(receive);
+		assertThat(receive.getPayload(), Matchers.instanceOf(List.class));
+		@SuppressWarnings("unchecked")
+		List<Object> result = (List<Object>) receive.getPayload();
+		for (int i = 0; i < payload.size(); i++) {
+			assertEquals(payload.get(i), result.get(i));
+		}
 	}
 
 	@Test
@@ -609,10 +628,10 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
-		public IntegrationFlow splitFlow() {
+		public IntegrationFlow splitResequenceFlow() {
 			return IntegrationFlows.from("splitInput")
 					.enrichHeaders(s -> s.header("FOO", "BAR"))
-					.split("testSplitterData", "buildList", c -> c.get().getT2().setApplySequence(true))
+					.split("testSplitterData", "buildList", c -> c.applySequence(false))
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.split(new GenericSplitter<Message<List<?>>>() {
 
@@ -620,12 +639,24 @@ public class IntegrationFlowTests {
 						public Collection<?> split(Message<List<?>> target) {
 							return target.getPayload();
 						}
-					})
+					}, c -> c.applySequence(false))
 					.channel(MessageChannels.executor(this.taskExecutor()))
-					.split((GenericEndpointSpec<DefaultMessageSplitter> s) -> s.get().getT2().setDelimiters(","))
+					.split((SplitterEndpointSpec<DefaultMessageSplitter> s) -> s.applySequence(false).get().getT2().setDelimiters(","))
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.<String, Integer>transform(Integer::parseInt)
+					.enrichHeaders(s -> s.headerExpression(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, "payload"))
+					.resequence((ResequencerSpec r) -> r.releasePartialSequences(true).correlationExpression("'foo'"))
 					.headerFilter("foo", false)
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow splitAggregateFlow() {
+			return IntegrationFlows.fromFixedMessageChannel("splitAggregateInput")
+					.split()
+					.channel(MessageChannels.executor(this.taskExecutor()))
+					.resequence()
+					.aggregate()
 					.get();
 		}
 
@@ -633,8 +664,8 @@ public class IntegrationFlowTests {
 		public IntegrationFlow xpathHeaderEnricherFlow() {
 			return IntegrationFlows.from("xpathHeaderEnricherInput")
 					.enrichHeaders(
-							s -> s.header("one", new XPathHeaderEnricher.XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementOne"))
-									.header("two", new XPathHeaderEnricher.XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementTwo")),
+							s -> s.header("one", new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementOne"))
+									.header("two", new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementTwo")),
 							c -> c.autoStartup(false).id("xpathHeaderEnricher")
 					)
 					.get();

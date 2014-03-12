@@ -20,6 +20,11 @@ import java.util.Collection;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
+import org.springframework.integration.aggregator.AggregatingMessageHandler;
+import org.springframework.integration.aggregator.DefaultAggregatingMessageGroupProcessor;
+import org.springframework.integration.aggregator.ResequencingMessageGroupProcessor;
+import org.springframework.integration.aggregator.ResequencingMessageHandler;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
@@ -150,11 +155,13 @@ public final class IntegrationFlowBuilder {
 		return this.handle(beanName, methodName, null);
 	}
 
-	public IntegrationFlowBuilder handle(String beanName, String methodName, EndpointConfigurer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
+	public IntegrationFlowBuilder handle(String beanName, String methodName,
+										 EndpointConfigurer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
 		return this.handle(new ServiceActivatingHandler(new BeanNameMessageProcessor<Object>(beanName, methodName)), endpointConfigurer);
 	}
 
-	public <H extends MessageHandler> IntegrationFlowBuilder handle(H messageHandler, EndpointConfigurer<GenericEndpointSpec<H>> endpointConfigurer) {
+	public <H extends MessageHandler> IntegrationFlowBuilder handle(H messageHandler,
+																	EndpointConfigurer<GenericEndpointSpec<H>> endpointConfigurer) {
 		Assert.notNull(messageHandler);
 		return this.register(new GenericEndpointSpec<H>(messageHandler), endpointConfigurer);
 	}
@@ -179,7 +186,8 @@ public final class IntegrationFlowBuilder {
 		return this.enrich(enricherConfigurer, null);
 	}
 
-	public IntegrationFlowBuilder enrich(ComponentConfigurer<EnricherSpec> enricherConfigurer, EndpointConfigurer<GenericEndpointSpec<ContentEnricher>> endpointConfigurer) {
+	public IntegrationFlowBuilder enrich(ComponentConfigurer<EnricherSpec> enricherConfigurer,
+										 EndpointConfigurer<GenericEndpointSpec<ContentEnricher>> endpointConfigurer) {
 		Assert.notNull(enricherConfigurer);
 		EnricherSpec enricherSpec = new EnricherSpec();
 		enricherConfigurer.configure(enricherSpec);
@@ -210,23 +218,24 @@ public final class IntegrationFlowBuilder {
 		return this.enrichHeaders(headerEnricher, null);
 	}
 
-	public IntegrationFlowBuilder enrichHeaders(HeaderEnricher headerEnricher, EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
-		return this.transform(headerEnricher, endpointConfigurer);
+	public IntegrationFlowBuilder enrichHeaders(HeaderEnricher headerEnricher,
+												EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		return this.addComponent(headerEnricher).transform(headerEnricher, endpointConfigurer);
 	}
 
 	public IntegrationFlowBuilder split() {
-		return this.split((EndpointConfigurer<GenericEndpointSpec<DefaultMessageSplitter>>) null);
+		return this.split((EndpointConfigurer<SplitterEndpointSpec<DefaultMessageSplitter>>) null);
 	}
 
-	public IntegrationFlowBuilder split(EndpointConfigurer<GenericEndpointSpec<DefaultMessageSplitter>> endpointConfigurer) {
+	public IntegrationFlowBuilder split(EndpointConfigurer<SplitterEndpointSpec<DefaultMessageSplitter>> endpointConfigurer) {
 		return this.split(new DefaultMessageSplitter(), endpointConfigurer);
 	}
 
 	public IntegrationFlowBuilder split(String expression) {
-		return this.split(expression, (EndpointConfigurer<GenericEndpointSpec<ExpressionEvaluatingSplitter>>) null);
+		return this.split(expression, (EndpointConfigurer<SplitterEndpointSpec<ExpressionEvaluatingSplitter>>) null);
 	}
 
-	public IntegrationFlowBuilder split(String expression, EndpointConfigurer<GenericEndpointSpec<ExpressionEvaluatingSplitter>> endpointConfigurer) {
+	public IntegrationFlowBuilder split(String expression, EndpointConfigurer<SplitterEndpointSpec<ExpressionEvaluatingSplitter>> endpointConfigurer) {
 		return this.split(new ExpressionEvaluatingSplitter(PARSER.parseExpression(expression)), endpointConfigurer);
 	}
 
@@ -235,7 +244,7 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public IntegrationFlowBuilder split(String beanName, String methodName,
-										EndpointConfigurer<GenericEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
+										EndpointConfigurer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
 		return this.split(new MethodInvokingSplitter(new BeanNameMessageProcessor<Collection<?>>(beanName, methodName)),
 				endpointConfigurer);
 	}
@@ -249,12 +258,13 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public <T> IntegrationFlowBuilder split(GenericSplitter<T> splitter,
-											EndpointConfigurer<GenericEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
+											EndpointConfigurer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
 		return this.split(new MethodInvokingSplitter(splitter, "split"), endpointConfigurer);
 	}
 
-	public <T extends AbstractMessageSplitter> IntegrationFlowBuilder split(T splitter, EndpointConfigurer<GenericEndpointSpec<T>> endpointConfigurer) {
-		return this.handle(splitter, endpointConfigurer);
+	public <S extends AbstractMessageSplitter> IntegrationFlowBuilder split(S splitter, EndpointConfigurer<SplitterEndpointSpec<S>> endpointConfigurer) {
+		Assert.notNull(splitter);
+		return this.register(new SplitterEndpointSpec<S>(splitter), endpointConfigurer);
 	}
 
 	/**
@@ -281,11 +291,71 @@ public final class IntegrationFlowBuilder {
 		return this.headerFilter(headerFilter, null);
 	}
 
-	public IntegrationFlowBuilder headerFilter(HeaderFilter headerFilter, EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+	public IntegrationFlowBuilder headerFilter(HeaderFilter headerFilter,
+											   EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
 		return this.transform(headerFilter, endpointConfigurer);
 	}
 
-	private <S extends ConsumerEndpointSpec<?, ?>> IntegrationFlowBuilder register(S endpointSpec, EndpointConfigurer<S> endpointConfigurer) {
+	public IntegrationFlowBuilder resequence() {
+		return this.resequence((EndpointConfigurer<GenericEndpointSpec<ResequencingMessageHandler>>) null);
+	}
+
+	public IntegrationFlowBuilder resequence(EndpointConfigurer<GenericEndpointSpec<ResequencingMessageHandler>> endpointConfigurer) {
+		return this.resequence(new ResequencingMessageHandler(new ResequencingMessageGroupProcessor()), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder resequence(ComponentConfigurer<ResequencerSpec> resequencerConfigurer) {
+		return this.resequence(resequencerConfigurer, null);
+	}
+
+	public IntegrationFlowBuilder resequence(ComponentConfigurer<ResequencerSpec> resequencerConfigurer,
+											 EndpointConfigurer<GenericEndpointSpec<ResequencingMessageHandler>> endpointConfigurer) {
+		Assert.notNull(resequencerConfigurer);
+		ResequencerSpec spec = new ResequencerSpec();
+		resequencerConfigurer.configure(spec);
+		return this.resequence(spec.get(), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder resequence(ResequencingMessageHandler resequencer) {
+		return this.resequence(resequencer, null);
+	}
+
+	public IntegrationFlowBuilder resequence(ResequencingMessageHandler resequencer,
+											 EndpointConfigurer<GenericEndpointSpec<ResequencingMessageHandler>> endpointConfigurer) {
+		return this.handle(resequencer, endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder aggregate() {
+		return this.aggregate((EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>>) null);
+	}
+
+	public IntegrationFlowBuilder aggregate(EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
+		return this.aggregate(new AggregatingMessageHandler(new DefaultAggregatingMessageGroupProcessor()), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder aggregate(ComponentConfigurer<AggregatorSpec> aggregatorConfigurer) {
+		return this.aggregate(aggregatorConfigurer, null);
+	}
+
+	public IntegrationFlowBuilder aggregate(ComponentConfigurer<AggregatorSpec> aggregatorConfigurer,
+											 EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
+		Assert.notNull(aggregatorConfigurer);
+		AggregatorSpec spec = new AggregatorSpec();
+		aggregatorConfigurer.configure(spec);
+		return this.aggregate(spec.get(), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder aggregate(AggregatingMessageHandler aggregator) {
+		return this.aggregate(aggregator, null);
+	}
+
+	public IntegrationFlowBuilder aggregate(AggregatingMessageHandler aggregator,
+											EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
+		return this.handle(aggregator, endpointConfigurer);
+	}
+
+
+	private <S extends ConsumerEndpointSpec<S, ?>> IntegrationFlowBuilder register(S endpointSpec, EndpointConfigurer<S> endpointConfigurer) {
 		if (endpointConfigurer != null) {
 			endpointConfigurer.configure(endpointSpec);
 		}
@@ -338,6 +408,15 @@ public final class IntegrationFlowBuilder {
 					}
 					else {
 						pollingChannelAdapterFactoryBean.setOutputChannel(outputChannel);
+					}
+				}
+				else if (this.currentComponent instanceof AbstractCorrelatingMessageHandler) {
+					AbstractCorrelatingMessageHandler messageProducer = (AbstractCorrelatingMessageHandler) this.currentComponent;
+					if (channelName != null) {
+						messageProducer.setOutputChannelName(channelName);
+					}
+					else {
+						messageProducer.setOutputChannel(outputChannel);
 					}
 				}
 				else {
