@@ -17,8 +17,9 @@
 package org.springframework.integration.dsl.core;
 
 /**
+ * The common Builder abstraction.
+ *
  * @author Artem Bilan
-
  */
 public abstract class IntegrationComponentSpec<S extends IntegrationComponentSpec<S, T>, T> {
 

@@ -25,6 +25,8 @@ import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.messaging.MessageChannel;
 
 /**
+ * The central factory for fluent {@link IntegrationFlowBuilder} API.
+ *
  * @author Artem Bilan
  */
 public final class IntegrationFlows {
