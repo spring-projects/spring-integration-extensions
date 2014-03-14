@@ -56,7 +56,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.MessageDispatchingException;
+import org.springframework.integration.annotation.Header;
+import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.MessageEndpoint;
+import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.FixedSubscriberChannel;
@@ -79,6 +82,7 @@ import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
+import org.springframework.integration.router.MethodInvokingRouter;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.splitter.DefaultMessageSplitter;
 import org.springframework.integration.store.SimpleMessageStore;
@@ -91,7 +95,9 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.core.DestinationResolutionException;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
@@ -110,8 +116,7 @@ public class IntegrationFlowTests {
 	private ListableBeanFactory beanFactory;
 
 	@Autowired
-	@Qualifier("controlBus")
-	private MessageChannel controlBus;
+	private ControlBusGateway controlBus;
 
 	@Autowired
 	@Qualifier("flow1QueueChannel")
@@ -184,6 +189,49 @@ public class IntegrationFlowTests {
 	@Qualifier("splitAggregateInput")
 	private MessageChannel splitAggregateInput;
 
+	@Autowired
+	@Qualifier("routerInput")
+	private MessageChannel routerInput;
+
+	@Autowired
+	@Qualifier("oddChannel")
+	private PollableChannel oddChannel;
+
+	@Autowired
+	@Qualifier("evenChannel")
+	private PollableChannel evenChannel;
+
+	@Autowired
+	@Qualifier("routerMethodInput")
+	private MessageChannel routerMethodInput;
+
+	@Autowired
+	@Qualifier("foo-channel")
+	private PollableChannel fooChannel;
+
+	@Autowired
+	@Qualifier("bar-channel")
+	private PollableChannel barChannel;
+
+	@Autowired
+	@Qualifier("routerMethod2Input")
+	private MessageChannel routerMethod2Input;
+
+	@Autowired
+	@Qualifier("routerMethod3Input")
+	private MessageChannel routerMethod3Input;
+
+	@Autowired
+	@Qualifier("routerMultiInput")
+	private MessageChannel routerMultiInput;
+
+	@Autowired
+	@Qualifier("recipientListInput")
+	private MessageChannel recipientListInput;
+
+	@Autowired
+	@Qualifier("defaultOutputChannel")
+	private QueueChannel defaultOutputChannel;
 
 	@Test
 	public void testPollingFlow() {
@@ -210,7 +258,7 @@ public class IntegrationFlowTests {
 			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
 			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
 		}
-		this.controlBus.send(new GenericMessage<Object>("@payloadSerializingTransformer.start()"));
+		this.controlBus.send("@payloadSerializingTransformer.start()");
 
 		final AtomicBoolean used = new AtomicBoolean();
 
@@ -256,7 +304,7 @@ public class IntegrationFlowTests {
 			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
 			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
 		}
-		this.controlBus.send(new GenericMessage<Object>("@bridge.start()"));
+		this.controlBus.send("@bridge.start()");
 		this.bridgeFlow2Input.send(message);
 		reply = this.bridgeFlow2Output.receive(5000);
 		assertNotNull(reply);
@@ -399,7 +447,7 @@ public class IntegrationFlowTests {
 			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
 		}
 
-		this.controlBus.send(new GenericMessage<Object>("@xpathHeaderEnricher.start()"));
+		this.controlBus.send("@xpathHeaderEnricher.start()");
 		this.xpathHeaderEnricherInput.send(message);
 
 		Message<?> result = replyChannel.receive(2000);
@@ -409,8 +457,188 @@ public class IntegrationFlowTests {
 		assertEquals("2", headers.get("two"));
 	}
 
+	@Test
+	public void testRouter() {
+
+		int[] payloads = new int[]{1, 2, 3, 4, 5, 6};
+
+		for (int payload : payloads) {
+			this.routerInput.send(new GenericMessage<Integer>(payload));
+		}
+
+		for (int i = 0; i < 3; i++) {
+			Message<?> receive = this.oddChannel.receive(2000);
+			assertNotNull(receive);
+			assertEquals(new Integer(i * 2 + 1), receive.getPayload());
+
+			receive = this.evenChannel.receive(2000);
+			assertNotNull(receive);
+			assertEquals(new Integer(i * 2 + 2), receive.getPayload());
+		}
+
+	}
+
+	@Test
+	public void testMethodInvokingRouter() {
+		Message<String> fooMessage = new GenericMessage<String>("foo");
+		Message<String> barMessage = new GenericMessage<String>("bar");
+		Message<String> badMessage = new GenericMessage<String>("bad");
+
+		this.routerMethodInput.send(fooMessage);
+
+		Message<?> result1a = this.fooChannel.receive(2000);
+		assertNotNull(result1a);
+		assertEquals("foo", result1a.getPayload());
+		assertNull(this.barChannel.receive(0));
+
+		this.routerMethodInput.send(barMessage);
+		assertNull(this.fooChannel.receive(0));
+		Message<?> result2b = this.barChannel.receive(2000);
+		assertNotNull(result2b);
+		assertEquals("bar", result2b.getPayload());
+
+		try {
+			this.routerMethodInput.send(badMessage);
+			fail("MessageDeliveryException expected.");
+		}
+		catch (MessageDeliveryException e) {
+			assertThat(e.getMessage(), Matchers.containsString("no channel resolved by router and no default output channel defined"));
+		}
+
+	}
+
+	@Test
+	public void testMethodInvokingRouter2() {
+		Message<String> fooMessage = MessageBuilder.withPayload("foo").setHeader("targetChannel", "foo").build();
+		Message<String> barMessage = MessageBuilder.withPayload("bar").setHeader("targetChannel", "bar").build();
+		Message<String> badMessage = MessageBuilder.withPayload("bad").setHeader("targetChannel", "bad").build();
+
+		this.routerMethod2Input.send(fooMessage);
+
+		Message<?> result1a = this.fooChannel.receive(2000);
+		assertNotNull(result1a);
+		assertEquals("foo", result1a.getPayload());
+		assertNull(this.barChannel.receive(0));
+
+		this.routerMethod2Input.send(barMessage);
+		assertNull(this.fooChannel.receive(0));
+		Message<?> result2b = this.barChannel.receive(2000);
+		assertNotNull(result2b);
+		assertEquals("bar", result2b.getPayload());
+
+		try {
+			this.routerMethod2Input.send(badMessage);
+			fail("DestinationResolutionException expected.");
+		}
+		catch (MessagingException e) {
+			assertThat(e.getCause(), Matchers.instanceOf(DestinationResolutionException.class));
+			assertThat(e.getCause().getMessage(), Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
+		}
+
+	}
+
+	@Test
+	public void testMethodInvokingRouter3() {
+		Message<String> fooMessage = new GenericMessage<String>("foo");
+		Message<String> barMessage = new GenericMessage<String>("bar");
+		Message<String> badMessage = new GenericMessage<String>("bad");
+
+		this.routerMethod3Input.send(fooMessage);
+
+		Message<?> result1a = this.fooChannel.receive(2000);
+		assertNotNull(result1a);
+		assertEquals("foo", result1a.getPayload());
+		assertNull(this.barChannel.receive(0));
+
+		this.routerMethod3Input.send(barMessage);
+		assertNull(this.fooChannel.receive(0));
+		Message<?> result2b = this.barChannel.receive(2000);
+		assertNotNull(result2b);
+		assertEquals("bar", result2b.getPayload());
+
+		try {
+			this.routerMethod3Input.send(badMessage);
+			fail("DestinationResolutionException expected.");
+		}
+		catch (MessagingException e) {
+			assertThat(e.getCause(), Matchers.instanceOf(DestinationResolutionException.class));
+			assertThat(e.getCause().getMessage(), Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
+		}
+	}
+
+	@Test
+	public void testMultiRouter() {
+
+		Message<String> fooMessage = new GenericMessage<String>("foo");
+		Message<String> barMessage = new GenericMessage<String>("bar");
+		Message<String> badMessage = new GenericMessage<String>("bad");
+
+		this.routerMultiInput.send(fooMessage);
+		Message<?> result1a = this.fooChannel.receive(2000);
+		assertNotNull(result1a);
+		assertEquals("foo", result1a.getPayload());
+		Message<?> result1b = this.barChannel.receive(2000);
+		assertNotNull(result1b);
+		assertEquals("foo", result1b.getPayload());
+
+		this.routerMultiInput.send(barMessage);
+		Message<?> result2a = this.fooChannel.receive(2000);
+		assertNotNull(result2a);
+		assertEquals("bar", result2a.getPayload());
+		Message<?> result2b = this.barChannel.receive(2000);
+		assertNotNull(result2b);
+		assertEquals("bar", result2b.getPayload());
+
+		try {
+			this.routerMultiInput.send(badMessage);
+			fail("MessageDeliveryException expected.");
+		}
+		catch (MessageDeliveryException e) {
+			assertThat(e.getMessage(), Matchers.containsString("no channel resolved by router and no default output channel defined"));
+		}
+	}
+
+	@Test
+	public void testRecipientListRouter() {
+
+		Message<String> fooMessage = MessageBuilder.withPayload("fooPayload").setHeader("recipient", true).build();
+		Message<String> barMessage = MessageBuilder.withPayload("barPayload").setHeader("recipient", true).build();
+		Message<String> badMessage = new GenericMessage<String>("badPayload");
+
+		this.recipientListInput.send(fooMessage);
+		Message<?> result1a = this.fooChannel.receive(2000);
+		assertNotNull(result1a);
+		assertEquals("foo", result1a.getPayload());
+		Message<?> result1b = this.barChannel.receive(2000);
+		assertNotNull(result1b);
+		assertEquals("foo", result1b.getPayload());
+
+		this.recipientListInput.send(barMessage);
+		assertNull(this.fooChannel.receive(0));
+		Message<?> result2b = this.barChannel.receive(2000);
+		assertNotNull(result2b);
+		assertEquals("bar", result2b.getPayload());
+
+
+		this.recipientListInput.send(badMessage);
+		assertNull(this.fooChannel.receive(0));
+		assertNull(this.barChannel.receive(0));
+		Message<?> result3c = this.defaultOutputChannel.receive(2000);
+		assertNotNull(result3c);
+		assertEquals("bad", result3c.getPayload());
+
+	}
+
+
+	@MessagingGateway(defaultRequestChannel = "controlBus")
+	private static interface ControlBusGateway {
+
+		void send(String command);
+	}
+
 	@Configuration
 	@EnableIntegration
+	@IntegrationComponentScan
 	public static class ContextConfiguration {
 
 		@Bean
@@ -552,6 +780,33 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
+		@Bean(name = "foo-channel")
+		public QueueChannel fooChannel() {
+			return new QueueChannel();
+		}
+
+		@Bean(name = "bar-channel")
+		public QueueChannel barChannel() {
+			return new QueueChannel();
+		}
+
+		@Bean
+		public QueueChannel defaultOutputChannel() {
+			return new QueueChannel();
+		}
+
+		@Bean
+		public IntegrationFlow recipientListFlow() {
+			return IntegrationFlows.from("recipientListInput")
+					.<String, String>transform(p -> p.replaceFirst("Payload", ""))
+					.recipientListRoute(r ->
+									r.defaultOutputChannel(defaultOutputChannel())
+											.recipient("foo-channel", "'foo' == payload")
+											.recipient("bar-channel", m ->
+													m.getHeaders().containsKey("recipient") && (boolean) m.getHeaders().get("recipient"))
+					)
+					.get();
+		}
 	}
 
 	@Component("delayedAdvice")
@@ -679,6 +934,83 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
+		@Bean
+		public QueueChannel oddChannel() {
+			return new QueueChannel();
+		}
+
+		@Bean
+		public QueueChannel evenChannel() {
+			return new QueueChannel();
+		}
+
+		@Bean
+		public IntegrationFlow routeFlow() {
+			return IntegrationFlows.from("routerInput")
+					.<Integer, Boolean>route(p -> p % 2 == 0,
+							m -> m.suffix("Channel")
+									.channelMapping("true", "even")
+									.channelMapping("false", "odd")
+					)
+					.get();
+		}
+
+		@Bean
+		public RoutingTestBean routingTestBean() {
+			return new RoutingTestBean();
+		}
+
+		@Bean
+		public IntegrationFlow routeMethodInvocationFlow() {
+			return IntegrationFlows.from("routerMethodInput")
+					.route("routingTestBean", "routeMessage")
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow routeMethodInvocationFlow2() {
+			return IntegrationFlows.from("routerMethod2Input")
+					.route(new MethodInvokingRouter(new RoutingTestBean(), "routeByHeader"))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow routeMethodInvocationFlow3() {
+			return IntegrationFlows.from("routerMethod3Input")
+					.route((String p) -> ContextConfiguration4.this.routingTestBean().routePayload(p))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow routeMultiMethodInvocationFlow() {
+			return IntegrationFlows.from("routerMultiInput")
+					.<String, String[]>route(p -> p.equals("foo") || p.equals("bar") ? new String[]{"foo", "bar"} : null,
+							s -> s.suffix("-channel")
+					)
+					.get();
+		}
+
+	}
+
+	private static class RoutingTestBean {
+
+		public String routePayload(String name) {
+			return name + "-channel";
+		}
+
+		public String routeByHeader(@Header("targetChannel") String name) {
+			return name + "-channel";
+		}
+
+		public String routeMessage(Message<?> message) {
+			if (message.getPayload().equals("foo")) {
+				return "foo-channel";
+			}
+			else if (message.getPayload().equals("bar")) {
+				return "bar-channel";
+			}
+			return null;
+		}
 	}
 
 	@Component("greetingService")
@@ -695,7 +1027,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow wrongLastComponent() {
 			return IntegrationFlows.from(MessageChannels.direct())
-					.handle(Object::toString)
+					.route(Object::toString)
 					.channel(MessageChannels.direct())
 					.get();
 		}

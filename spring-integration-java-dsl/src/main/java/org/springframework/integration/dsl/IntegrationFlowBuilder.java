@@ -16,16 +16,9 @@
 
 package org.springframework.integration.dsl;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.context.Lifecycle;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.expression.MethodFilter;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
 import org.springframework.integration.aggregator.AggregatingMessageHandler;
@@ -43,8 +36,10 @@ import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
 import org.springframework.integration.dsl.support.ComponentConfigurer;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
+import org.springframework.integration.dsl.support.GenericRouter;
 import org.springframework.integration.dsl.support.GenericSplitter;
 import org.springframework.integration.dsl.support.MessageChannelReference;
+import org.springframework.integration.expression.ControlBusMethodFilter;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.integration.filter.MethodInvokingSelector;
@@ -53,6 +48,11 @@ import org.springframework.integration.handler.BridgeHandler;
 import org.springframework.integration.handler.DelayHandler;
 import org.springframework.integration.handler.ExpressionCommandMessageProcessor;
 import org.springframework.integration.handler.ServiceActivatingHandler;
+import org.springframework.integration.router.AbstractMappingMessageRouter;
+import org.springframework.integration.router.AbstractMessageRouter;
+import org.springframework.integration.router.ExpressionEvaluatingRouter;
+import org.springframework.integration.router.MethodInvokingRouter;
+import org.springframework.integration.router.RecipientListRouter;
 import org.springframework.integration.splitter.AbstractMessageSplitter;
 import org.springframework.integration.splitter.DefaultMessageSplitter;
 import org.springframework.integration.splitter.ExpressionEvaluatingSplitter;
@@ -65,13 +65,9 @@ import org.springframework.integration.transformer.HeaderFilter;
 import org.springframework.integration.transformer.MessageTransformingHandler;
 import org.springframework.integration.transformer.MethodInvokingTransformer;
 import org.springframework.integration.transformer.Transformer;
-import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
-import org.springframework.util.CustomizableThreadCreator;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -297,7 +293,7 @@ public final class IntegrationFlowBuilder {
 	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlow}.
 	 *
 	 * @param headersToRemove the comma separated headers (or patterns) to remove from {@link org.springframework.messaging.MessageHeaders}.
-	 * @param patternMatch the {@code boolean} flag to indicate if {@code headersToRemove} should be interpreted as patterns or direct header names.
+	 * @param patternMatch    the {@code boolean} flag to indicate if {@code headersToRemove} should be interpreted as patterns or direct header names.
 	 * @return the {@link IntegrationFlowBuilder}.
 	 */
 
@@ -354,7 +350,7 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public IntegrationFlowBuilder aggregate(ComponentConfigurer<AggregatorSpec> aggregatorConfigurer,
-											 EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
+											EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
 		Assert.notNull(aggregatorConfigurer);
 		AggregatorSpec spec = new AggregatorSpec();
 		aggregatorConfigurer.configure(spec);
@@ -368,6 +364,88 @@ public final class IntegrationFlowBuilder {
 	public IntegrationFlowBuilder aggregate(AggregatingMessageHandler aggregator,
 											EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
 		return this.handle(aggregator, endpointConfigurer);
+	}
+
+
+	public IntegrationFlowBuilder route(String beanName, String method) {
+		return this.route(beanName, method, null);
+	}
+
+	public IntegrationFlowBuilder route(String beanName, String method,
+										ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
+		return this.route(beanName, method, routerConfigurer, null);
+	}
+
+	public IntegrationFlowBuilder route(String beanName, String method,
+										ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
+										EndpointConfigurer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
+		return this.route(new MethodInvokingRouter(new BeanNameMessageProcessor<Object>(beanName, method)), routerConfigurer, endpointConfigurer);
+	}
+
+
+	public IntegrationFlowBuilder route(String expression) {
+		return this.route(expression, (ComponentConfigurer<RouterSpec<ExpressionEvaluatingRouter>>) null);
+	}
+
+	public IntegrationFlowBuilder route(String expression, ComponentConfigurer<RouterSpec<ExpressionEvaluatingRouter>> routerConfigurer) {
+		return this.route(expression, routerConfigurer, null);
+	}
+
+	public IntegrationFlowBuilder route(String expression,
+										ComponentConfigurer<RouterSpec<ExpressionEvaluatingRouter>> routerConfigurer,
+										EndpointConfigurer<GenericEndpointSpec<ExpressionEvaluatingRouter>> endpointConfigurer) {
+		return this.route(new ExpressionEvaluatingRouter(PARSER.parseExpression(expression)), routerConfigurer, endpointConfigurer);
+	}
+
+	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router) {
+		return this.route(router, (ComponentConfigurer<RouterSpec<MethodInvokingRouter>>) null);
+	}
+
+	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router, ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
+		return this.route(router, routerConfigurer, null);
+	}
+
+	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router,
+										ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
+										EndpointConfigurer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
+		return this.route(new MethodInvokingRouter(router), routerConfigurer, endpointConfigurer);
+	}
+
+	public <R extends AbstractMappingMessageRouter> IntegrationFlowBuilder route(R router, ComponentConfigurer<RouterSpec<R>> routerConfigurer) {
+		return this.route(router, routerConfigurer, null);
+	}
+
+	public <R extends AbstractMappingMessageRouter> IntegrationFlowBuilder route(R router,
+																				 ComponentConfigurer<RouterSpec<R>> routerConfigurer,
+																				 EndpointConfigurer<GenericEndpointSpec<R>> endpointConfigurer) {
+		if (routerConfigurer != null) {
+			RouterSpec<R> routerSpec = new RouterSpec<R>(router);
+			routerConfigurer.configure(routerSpec);
+		}
+		return this.route(router, endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder recipientListRoute(ComponentConfigurer<RecipientListRouterSpec> routerConfigurer) {
+		return this.recipientListRoute(routerConfigurer, null);
+	}
+
+	public IntegrationFlowBuilder recipientListRoute(ComponentConfigurer<RecipientListRouterSpec> routerConfigurer,
+													 EndpointConfigurer<GenericEndpointSpec<RecipientListRouter>> endpointConfigurer) {
+		Assert.notNull(routerConfigurer);
+		RecipientListRouterSpec spec = new RecipientListRouterSpec();
+		routerConfigurer.configure(spec);
+		DslRecipientListRouter recipientListRouter = (DslRecipientListRouter) spec.get();
+		Assert.notEmpty(recipientListRouter.getRecipients(), "recipient list must not be empty");
+		return this.route(recipientListRouter, endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder route(AbstractMessageRouter router) {
+		return this.route(router, null);
+	}
+
+	public <R extends AbstractMessageRouter> IntegrationFlowBuilder route(R router,
+																		  EndpointConfigurer<GenericEndpointSpec<R>> endpointConfigurer) {
+		return this.handle(router, endpointConfigurer);
 	}
 
 
@@ -452,42 +530,6 @@ public final class IntegrationFlowBuilder {
 					"That means that '.fixedSubscriberChannel()' can't be the last EIP-method in the IntegrationFlow definition.");
 		}
 		return this.flow;
-	}
-
-
-	private static class ControlBusMethodFilter implements MethodFilter {
-
-		public List<Method> filter(List<Method> methods) {
-			List<Method> supportedMethods = new ArrayList<Method>();
-			for (Method method : methods) {
-				if (this.accept(method)) {
-					supportedMethods.add(method);
-				}
-			}
-			return supportedMethods;
-		}
-
-		private boolean accept(Method method) {
-			Class<?> declaringClass = method.getDeclaringClass();
-			if (Lifecycle.class.isAssignableFrom(declaringClass)
-					&& ReflectionUtils.findMethod(Lifecycle.class, method.getName(), method.getParameterTypes()) != null) {
-				return true;
-			}
-			if (CustomizableThreadCreator.class.isAssignableFrom(declaringClass)
-					&& (method.getName().startsWith("get")
-					|| method.getName().startsWith("set")
-					|| method.getName().startsWith("shutdown"))) {
-				return true;
-			}
-			if (this.hasAnnotation(method, ManagedAttribute.class) || this.hasAnnotation(method, ManagedOperation.class)) {
-				return true;
-			}
-			return false;
-		}
-
-		private boolean hasAnnotation(Method method, Class<? extends Annotation> annotationType) {
-			return AnnotationUtils.findAnnotation(method, annotationType) != null;
-		}
 	}
 
 }
