@@ -32,7 +32,7 @@ public final class IntegrationFlows {
 	/**
 	 * @param messageChannelName the name of existing {@link org.springframework.messaging.MessageChannel} bean.
 	 *                           The new {@link org.springframework.integration.channel.DirectChannel} bean will be
-	 *                           created on context startup, if there is on bean with this name.
+	 *                           created on context startup, if there is no bean with this name.
 	 * @return new {@link IntegrationFlowBuilder}
 	 */
 	public static IntegrationFlowBuilder from(String messageChannelName) {

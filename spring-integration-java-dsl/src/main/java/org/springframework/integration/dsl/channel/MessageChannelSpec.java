@@ -16,11 +16,15 @@
 
 package org.springframework.integration.dsl.channel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
@@ -29,32 +33,32 @@ public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C e
 
 	protected C channel;
 
-	private Class<?>[] datatypes;
+	private final List<Class<?>> datatypes = new ArrayList<Class<?>>();
 
-	private ChannelInterceptor[] interceptors;
+	private final List<ChannelInterceptor> interceptors = new LinkedList<ChannelInterceptor>();
 
 	@Override
 	protected S id(String id) {
 		return super.id(id);
 	}
 
-	public S datatypes(Class<?>... datatypes) {
-		this.datatypes = datatypes;
+	public S datatype(Class<?>... datatypes) {
+		Assert.noNullElements(datatypes);
+		this.datatypes.addAll(Arrays.asList(datatypes));
 		return _this();
 	}
 
-	public S interceptors(ChannelInterceptor... interceptors) {
-		this.interceptors = interceptors;
+	public S interceptor(ChannelInterceptor... interceptors) {
+		Assert.noNullElements(interceptors);
+		this.interceptors.addAll(Arrays.asList(interceptors));
 		return _this();
 	}
 
 	@Override
 	protected C doGet() {
-		this.channel.setDatatypes(this.datatypes);
+		this.channel.setDatatypes(this.datatypes.toArray(new Class<?>[this.datatypes.size()]));
 		this.channel.setBeanName(this.id);
-		if (this.interceptors != null) {
-			this.channel.setInterceptors(Arrays.asList(this.interceptors));
-		}
+		this.channel.setInterceptors(this.interceptors);
 		return this.channel;
 	}
 
