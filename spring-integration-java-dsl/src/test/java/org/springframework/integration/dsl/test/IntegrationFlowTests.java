@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -85,8 +86,10 @@ import org.springframework.integration.handler.advice.ExpressionEvaluatingReques
 import org.springframework.integration.router.MethodInvokingRouter;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.splitter.DefaultMessageSplitter;
+import org.springframework.integration.store.MessageStore;
 import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.support.MutableMessageBuilder;
 import org.springframework.integration.transformer.PayloadDeserializingTransformer;
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
 import org.springframework.integration.xml.transformer.support.XPathExpressionEvaluatingHeaderValueMessageProcessor;
@@ -232,6 +235,13 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("defaultOutputChannel")
 	private QueueChannel defaultOutputChannel;
+
+	@Autowired
+	private MessageStore messageStore;
+
+	@Autowired
+	@Qualifier("claimCheckInput")
+	private MessageChannel claimCheckInput;
 
 	@Test
 	public void testPollingFlow() {
@@ -629,6 +639,22 @@ public class IntegrationFlowTests {
 
 	}
 
+	@Test
+	public void testClaimCheck() {
+		QueueChannel replyChannel = new QueueChannel();
+
+		Message<String> message = MutableMessageBuilder.withPayload("foo").setReplyChannel(replyChannel).build();
+
+		this.claimCheckInput.send(message);
+
+		Message<?> receive = replyChannel.receive(2000);
+		assertNotNull(receive);
+		assertSame(message, receive);
+
+		assertEquals(1, this.messageStore.getMessageCount());
+		assertSame(message, this.messageStore.getMessage(message.getHeaders().getId()));
+	}
+
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
@@ -777,6 +803,19 @@ public class IntegrationFlowTests {
 					.fixedSubscriberChannel()
 					.delay("delayer", "200", c -> c.advice(this.delayedAdvice))
 					.channel(MessageChannels.queue("bridgeFlow2Output"))
+					.get();
+		}
+
+		@Bean
+		public MessageStore messageStore() {
+			return new SimpleMessageStore();
+		}
+
+		@Bean
+		public IntegrationFlow claimCheckFlow() {
+			return IntegrationFlows.from("claimCheckInput")
+					.claimCheckIn(this.messageStore())
+					.claimCheckOut(this.messageStore())
 					.get();
 		}
 

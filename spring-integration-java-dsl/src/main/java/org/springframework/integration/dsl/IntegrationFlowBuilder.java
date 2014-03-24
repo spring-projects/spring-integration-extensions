@@ -57,6 +57,9 @@ import org.springframework.integration.splitter.AbstractMessageSplitter;
 import org.springframework.integration.splitter.DefaultMessageSplitter;
 import org.springframework.integration.splitter.ExpressionEvaluatingSplitter;
 import org.springframework.integration.splitter.MethodInvokingSplitter;
+import org.springframework.integration.store.MessageStore;
+import org.springframework.integration.transformer.ClaimCheckInTransformer;
+import org.springframework.integration.transformer.ClaimCheckOutTransformer;
 import org.springframework.integration.transformer.ContentEnricher;
 import org.springframework.integration.transformer.ExpressionEvaluatingTransformer;
 import org.springframework.integration.transformer.GenericTransformer;
@@ -306,6 +309,29 @@ public final class IntegrationFlowBuilder {
 	public IntegrationFlowBuilder headerFilter(HeaderFilter headerFilter,
 											   EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
 		return this.transform(headerFilter, endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder claimCheckIn(MessageStore messageStore) {
+		return this.claimCheckIn(messageStore, null);
+	}
+
+	public IntegrationFlowBuilder claimCheckIn(MessageStore messageStore, EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		return this.transform(new ClaimCheckInTransformer(messageStore), endpointConfigurer);
+	}
+
+	public IntegrationFlowBuilder claimCheckOut(MessageStore messageStore) {
+		return this.claimCheckOut(messageStore, false);
+	}
+
+	public IntegrationFlowBuilder claimCheckOut(MessageStore messageStore, boolean removeMessage) {
+		return this.claimCheckOut(messageStore, removeMessage, null);
+	}
+
+	public IntegrationFlowBuilder claimCheckOut(MessageStore messageStore, boolean removeMessage,
+												EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		ClaimCheckOutTransformer claimCheckOutTransformer = new ClaimCheckOutTransformer(messageStore);
+		claimCheckOutTransformer.setRemoveMessage(removeMessage);
+		return this.transform(claimCheckOutTransformer, endpointConfigurer);
 	}
 
 	public IntegrationFlowBuilder resequence() {
