@@ -74,6 +74,7 @@ public class DownstreamExceptionTests {
 
 	@Test
 	public void testNoErrorChannel() throws Exception {
+		service.barrier.reset();
 		service.n = 0;
 		Log logger = spy(TestUtils.getPropertyValue(noErrorChannel, "logger", Log.class));
 		final  CountDownLatch latch = new CountDownLatch(1);
@@ -105,6 +106,7 @@ public class DownstreamExceptionTests {
 
 	@Test
 	public void testWithErrorChannel() throws Exception {
+		service.barrier.reset();
 		assertSame(this.errors, TestUtils.getPropertyValue(this.withErrorChannel, "errorChannel"));
 		service.n = 0;
 		MqttPahoMessageHandler adapter = new MqttPahoMessageHandler("tcp://localhost:1883", "si-test-out");
