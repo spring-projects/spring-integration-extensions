@@ -17,7 +17,7 @@ apply plugin: 'idea'
 group = 'org.springframework.integration'
 
 repositories {
-	maven { url 'http://repo.springsource.org/libs-milestone' }
+	maven { url 'http://repo.springsource.org/milestone' }
 	maven { url 'http://repo.springsource.org/plugins-release' } // for bundlor
 }
 
@@ -43,6 +43,7 @@ configurations {
 
 dependencies {
 	compile("com.splunk:splunk:$splunkVersion")
+	compile "org.springframework:spring-core:$springVersion"
 	compile "org.springframework:spring-beans:$springVersion"
 	compile "org.springframework:spring-context:$springVersion"
 	compile "org.springframework:spring-expression:$springVersion"
