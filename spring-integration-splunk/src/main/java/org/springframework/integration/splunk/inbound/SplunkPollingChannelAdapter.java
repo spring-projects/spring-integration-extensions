@@ -17,7 +17,7 @@ package org.springframework.integration.splunk.inbound;
 
 import java.util.List;
 
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 import org.springframework.integration.context.IntegrationObjectSupport;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.splunk.event.SplunkEvent;
