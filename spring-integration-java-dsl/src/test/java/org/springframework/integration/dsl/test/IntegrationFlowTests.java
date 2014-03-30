@@ -62,11 +62,13 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.integration.channel.AbstractPollableChannel;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
+import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -101,6 +103,7 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.core.DestinationResolutionException;
+import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
@@ -123,7 +126,10 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("flow1QueueChannel")
-	private PollableChannel outputChannel;
+	private AbstractPollableChannel outputChannel;
+
+	@Autowired
+	private TestChannelInterceptor testChannelInterceptor;
 
 	@Autowired
 	@Qualifier("inputChannel")
@@ -251,6 +257,9 @@ public class IntegrationFlowTests {
 			assertNotNull(message);
 			assertEquals("" + i, message.getPayload());
 		}
+
+		assertTrue(this.outputChannel.getChannelInterceptors().contains(this.testChannelInterceptor));
+		assertEquals(new Integer(10), this.testChannelInterceptor.getInvoked());
 	}
 
 	@Test
@@ -1090,6 +1099,24 @@ public class IntegrationFlowTests {
 		@Bean
 		public DirectChannelSpec invalidBean() {
 			return MessageChannels.direct();
+		}
+
+	}
+
+	@Component
+	@GlobalChannelInterceptor(patterns = "flow1QueueChannel")
+	public static class TestChannelInterceptor extends ChannelInterceptorAdapter {
+
+		private final AtomicInteger invoked = new AtomicInteger();
+
+		@Override
+		public Message<?> preSend(Message<?> message, MessageChannel channel) {
+			this.invoked.incrementAndGet();
+			return message;
+		}
+
+		public Integer getInvoked() {
+			return invoked.get();
 		}
 
 	}

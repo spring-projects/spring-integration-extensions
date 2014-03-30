@@ -62,7 +62,7 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 	}
 
 	private void checkSpecBeans(ConfigurableListableBeanFactory beanFactory) {
-		List<String> specBeanNames = Arrays.asList(beanFactory.getBeanNamesForType(IntegrationComponentSpec.class, false, false));
+		List<String> specBeanNames = Arrays.asList(beanFactory.getBeanNamesForType(IntegrationComponentSpec.class, true, false));
 		if (!specBeanNames.isEmpty()) {
 			throw new BeanCreationException("'IntegrationComponentSpec' beans: '" + specBeanNames + "' must be populated " +
 					"to target objects via 'get()' method call. It is important for @Autowired injections.");
