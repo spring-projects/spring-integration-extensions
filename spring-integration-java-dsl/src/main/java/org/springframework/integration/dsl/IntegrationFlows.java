@@ -62,13 +62,16 @@ public final class IntegrationFlows {
 		return from(messageSource, null);
 	}
 
-	public static IntegrationFlowBuilder from(MessageSource<?> messageSource, EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+	public static IntegrationFlowBuilder from(MessageSource<?> messageSource,
+			EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
 		SourcePollingChannelAdapterSpec spec = new SourcePollingChannelAdapterSpec(messageSource);
 		if (endpointConfigurer != null) {
 			endpointConfigurer.configure(spec);
 		}
 		SourcePollingChannelAdapterFactoryBean sourcePollingChannelAdapterFactoryBean = spec.get().getT1();
-		return new IntegrationFlowBuilder().addComponent(sourcePollingChannelAdapterFactoryBean).currentComponent(sourcePollingChannelAdapterFactoryBean);
+		return new IntegrationFlowBuilder()
+				.addComponent(sourcePollingChannelAdapterFactoryBean)
+				.currentComponent(sourcePollingChannelAdapterFactoryBean);
 	}
 
 	/*public static IntegrationFlowBuilder from(AbstractEndpoint endpoint) {

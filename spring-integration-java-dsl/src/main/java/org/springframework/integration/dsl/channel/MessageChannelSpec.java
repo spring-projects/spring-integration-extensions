@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.util.Assert;
 
@@ -36,6 +37,8 @@ public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C e
 	private final List<Class<?>> datatypes = new ArrayList<Class<?>>();
 
 	private final List<ChannelInterceptor> interceptors = new LinkedList<ChannelInterceptor>();
+
+	private MessageConverter messageConverter;
 
 	@Override
 	protected S id(String id) {
@@ -54,11 +57,17 @@ public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C e
 		return _this();
 	}
 
+	public S messageConverter(MessageConverter messageConverter) {
+		this.messageConverter = messageConverter;
+		return _this();
+	}
+
 	@Override
 	protected C doGet() {
 		this.channel.setDatatypes(this.datatypes.toArray(new Class<?>[this.datatypes.size()]));
 		this.channel.setBeanName(this.id);
 		this.channel.setInterceptors(this.interceptors);
+		this.channel.setMessageConverter(this.messageConverter);
 		return this.channel;
 	}
 

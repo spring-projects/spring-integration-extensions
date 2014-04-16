@@ -16,16 +16,10 @@
 
 package org.springframework.integration.dsl.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,10 +33,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.mongodb.Mongo;
+import com.mongodb.MongoURI;
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodProcess;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.hamcrest.Matchers;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,6 +60,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.MessageDispatchingException;
 import org.springframework.integration.annotation.Header;
@@ -85,10 +92,12 @@ import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
+import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
 import org.springframework.integration.router.MethodInvokingRouter;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.splitter.DefaultMessageSplitter;
 import org.springframework.integration.store.MessageStore;
+import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.support.MutableMessageBuilder;
@@ -106,6 +115,7 @@ import org.springframework.messaging.core.DestinationResolutionException;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -114,9 +124,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
+@DirtiesContext
 public class IntegrationFlowTests {
 
 	private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+
+	private static MongodExecutable mongodExe;
+
+	private static MongodProcess mongod;
 
 	@Autowired
 	private ListableBeanFactory beanFactory;
@@ -248,6 +263,30 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("claimCheckInput")
 	private MessageChannel claimCheckInput;
+
+	@Autowired
+	@Qualifier("priorityChannel")
+	private MessageChannel priorityChannel;
+
+	@Autowired
+	@Qualifier("priorityReplyChannel")
+	private PollableChannel priorityReplyChannel;
+
+	@BeforeClass
+	public static void setup() throws IOException {
+		mongodExe = MongodStarter.getDefaultInstance()
+				.prepare(new MongodConfigBuilder()
+						.version(Version.Main.PRODUCTION)
+						.net(new Net(12345, Network.localhostIsIPv6()))
+						.build());
+		mongod = mongodExe.start();
+	}
+
+	@AfterClass
+	public static void tearDown() {
+		mongod.stop();
+		mongodExe.stop();
+	}
 
 	@Test
 	public void testPollingFlow() {
@@ -664,6 +703,61 @@ public class IntegrationFlowTests {
 		assertSame(message, this.messageStore.getMessage(message.getHeaders().getId()));
 	}
 
+	@Test
+	public void testPriority() throws InterruptedException {
+
+		Message<String> message = MessageBuilder.withPayload("1").setPriority(1).build();
+		this.priorityChannel.send(message);
+
+		message = MessageBuilder.withPayload("-1").setPriority(-1).build();
+		this.priorityChannel.send(message);
+
+		message = MessageBuilder.withPayload("3").setPriority(3).build();
+		this.priorityChannel.send(message);
+
+		message = MessageBuilder.withPayload("0").setPriority(0).build();
+		this.priorityChannel.send(message);
+
+		message = MessageBuilder.withPayload("2").setPriority(2).build();
+		this.priorityChannel.send(message);
+
+		message = MessageBuilder.withPayload("none").build();
+		this.priorityChannel.send(message);
+
+		message = MessageBuilder.withPayload("31").setPriority(3).build();
+		this.priorityChannel.send(message);
+
+		Thread.sleep(1000);
+
+		Message<?> receive = this.priorityReplyChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("3", receive.getPayload());
+
+		receive = this.priorityReplyChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("31", receive.getPayload());
+
+		receive = this.priorityReplyChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("2", receive.getPayload());
+
+		receive = this.priorityReplyChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("1", receive.getPayload());
+
+		receive = this.priorityReplyChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("0", receive.getPayload());
+
+		receive = this.priorityReplyChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("-1", receive.getPayload());
+
+		receive = this.priorityReplyChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("none", receive.getPayload());
+	}
+
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
@@ -749,6 +843,27 @@ public class IntegrationFlowTests {
 					.transform(new PayloadDeserializingTransformer())
 					.channel(MessageChannels.publishSubscribe("publishSubscribeChannel"))
 					.transform((Integer p) -> p * 2, c -> c.advice(this.expressionAdvice()))
+					.get();
+		}
+
+		@Bean
+		public MongoDbFactory mongoDbFactory() throws Exception {
+			return new SimpleMongoDbFactory(new MongoURI("mongodb://localhost:12345/local"));
+		}
+
+		@Bean
+		public MongoDbChannelMessageStore mongoDbChannelMessageStore(MongoDbFactory mongoDbFactory) {
+			MongoDbChannelMessageStore mongoDbChannelMessageStore = new MongoDbChannelMessageStore(mongoDbFactory);
+			mongoDbChannelMessageStore.setPriorityEnabled(true);
+			return mongoDbChannelMessageStore;
+		}
+
+		@Bean
+		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
+			return IntegrationFlows.from(MessageChannels.priority("priorityChannel",
+					mongoDbChannelMessageStore,	"priorityGroup"))
+					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 2000)))
+					.channel(MessageChannels.queue("priorityReplyChannel"))
 					.get();
 		}
 
@@ -851,7 +966,8 @@ public class IntegrationFlowTests {
 									r.defaultOutputChannel(defaultOutputChannel())
 											.recipient("foo-channel", "'foo' == payload")
 											.recipient("bar-channel", m ->
-													m.getHeaders().containsKey("recipient") && (boolean) m.getHeaders().get("recipient"))
+													m.getHeaders().containsKey("recipient")
+															&& (boolean) m.getHeaders().get("recipient"))
 					)
 					.get();
 		}
@@ -1175,3 +1291,4 @@ public class IntegrationFlowTests {
 	}
 
 }
+

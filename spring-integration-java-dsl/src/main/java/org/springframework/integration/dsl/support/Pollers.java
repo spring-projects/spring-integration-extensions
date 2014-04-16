@@ -37,7 +37,14 @@ public final class Pollers {
 	}
 
 	public static PollerSpec fixedRate(long period, TimeUnit timeUnit) {
-		return periodicTrigger(period, timeUnit, true);
+		return fixedRate(period, timeUnit, 0);
+	}
+	public static PollerSpec fixedRate(long period, long initialDelay) {
+		return periodicTrigger(period, null, true, initialDelay);
+	}
+
+	public static PollerSpec fixedRate(long period, TimeUnit timeUnit, long initialDelay) {
+		return periodicTrigger(period, timeUnit, true, initialDelay);
 	}
 
 	public static PollerSpec fixedDelay(long period) {
@@ -45,12 +52,21 @@ public final class Pollers {
 	}
 
 	public static PollerSpec fixedDelay(long period, TimeUnit timeUnit) {
-		return periodicTrigger(period, timeUnit, false);
+		return fixedDelay(period, timeUnit, 0);
 	}
 
-	private static PollerSpec periodicTrigger(long period, TimeUnit timeUnit, boolean fixedRate) {
+	public static PollerSpec fixedDelay(long period, long initialDelay) {
+		return periodicTrigger(period, null, false, initialDelay);
+	}
+
+	public static PollerSpec fixedDelay(long period, TimeUnit timeUnit, long initialDelay) {
+		return periodicTrigger(period, timeUnit, false, initialDelay);
+	}
+
+	private static PollerSpec periodicTrigger(long period, TimeUnit timeUnit, boolean fixedRate, long initialDelay) {
 		PeriodicTrigger periodicTrigger = new PeriodicTrigger(period, timeUnit);
 		periodicTrigger.setFixedRate(fixedRate);
+		periodicTrigger.setInitialDelay(initialDelay);
 		return new PollerSpec(periodicTrigger);
 	}
 

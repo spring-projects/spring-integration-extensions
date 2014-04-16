@@ -20,8 +20,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
 
 import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.store.ChannelMessageStore;
 import org.springframework.integration.store.MessageGroupQueue;
-import org.springframework.integration.store.MessageGroupStore;
+import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.messaging.Message;
 
 /**
@@ -60,13 +61,13 @@ public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, Queue
 
 	public static class MessageStoreSpec extends QueueChannelSpec {
 
-		private final MessageGroupStore messageGroupStore;
+		private final ChannelMessageStore messageGroupStore;
 
 		private final Object groupId;
 
 		private Lock storeLock;
 
-		MessageStoreSpec(MessageGroupStore messageGroupStore, Object groupId) {
+		MessageStoreSpec(ChannelMessageStore messageGroupStore, Object groupId) {
 			super();
 			this.messageGroupStore = messageGroupStore;
 			this.groupId = groupId;
@@ -76,6 +77,7 @@ public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, Queue
 		protected MessageStoreSpec id(String id) {
 			return (MessageStoreSpec) super.id(id);
 		}
+
 
 		public MessageStoreSpec capacity(Integer capacity) {
 			this.capacity = capacity;
@@ -91,18 +93,21 @@ public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, Queue
 		protected QueueChannel doGet() {
 			if (this.capacity != null) {
 				if (this.storeLock != null) {
-					this.queue = new MessageGroupQueue(messageGroupStore, groupId, this.capacity, this.storeLock);
+					this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId, this.capacity, this.storeLock);
 				}
 				else {
-					this.queue = new MessageGroupQueue(messageGroupStore, groupId, this.capacity);
+					this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId, this.capacity);
 				}
 			}
 			else if (this.storeLock != null) {
-				this.queue = new MessageGroupQueue(messageGroupStore, groupId, this.storeLock);
+				this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId, this.storeLock);
 			}
 			else {
-				this.queue = new MessageGroupQueue(messageGroupStore, groupId);
+				this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId);
 			}
+
+			((MessageGroupQueue) this.queue).setPriority(this.messageGroupStore instanceof PriorityCapableChannelMessageStore);
+
 			return super.doGet();
 		}
 

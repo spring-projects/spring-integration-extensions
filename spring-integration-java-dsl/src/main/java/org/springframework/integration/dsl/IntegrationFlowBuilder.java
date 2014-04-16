@@ -555,6 +555,19 @@ public final class IntegrationFlowBuilder {
 					" for FixedSubscriberChannel which can't be created without MessageHandler constructor argument. " +
 					"That means that '.fixedSubscriberChannel()' can't be the last EIP-method in the IntegrationFlow definition.");
 		}
+
+		if (this.flow.getIntegrationComponents().size() == 1) {
+			if (this.currentComponent != null) {
+				if (this.currentComponent instanceof SourcePollingChannelAdapterFactoryBean) {
+					throw new BeanCreationException("The 'SourcePollingChannelAdapter' (" + this.currentComponent + ") " +
+							"must be configured with at least one 'MessageChanel' or 'MessageHandler'.");
+				}
+			}
+			else if (this.currentMessageChannel != null) {
+				throw new BeanCreationException("The 'IntegrationFlow' can't consist of only one 'MessageChannel'. " +
+						"Add at lest '.bridge()' EIP-method before the end of flow.");
+			}
+		}
 		return this.flow;
 	}
 

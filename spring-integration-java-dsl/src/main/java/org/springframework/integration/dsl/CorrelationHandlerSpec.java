@@ -16,6 +16,9 @@
 
 package org.springframework.integration.dsl;
 
+import org.springframework.expression.Expression;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
 import org.springframework.integration.aggregator.CorrelationStrategy;
 import org.springframework.integration.aggregator.ExpressionEvaluatingCorrelationStrategy;
@@ -26,6 +29,7 @@ import org.springframework.integration.config.ReleaseStrategyFactoryBean;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.store.MessageGroupStore;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.scheduling.TaskScheduler;
 
 /**
  * @author Artem Bilan
@@ -33,11 +37,17 @@ import org.springframework.messaging.MessageChannel;
 public abstract class CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S, H>, H extends AbstractCorrelatingMessageHandler>
 		extends IntegrationComponentSpec<S, H> {
 
+	protected final static SpelExpressionParser PARSER = new SpelExpressionParser();
+
 	protected MessageGroupStore messageStore;
 
 	protected boolean sendPartialResultOnExpiry;
 
 	private long minimumTimeoutForEmptyGroups;
+
+	private Expression groupTimeoutExpression;
+
+	private TaskScheduler taskScheduler;
 
 	private MessageChannel discardChannel;
 
@@ -59,6 +69,21 @@ public abstract class CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S,
 
 	public S minimumTimeoutForEmptyGroups(long minimumTimeoutForEmptyGroups) {
 		this.minimumTimeoutForEmptyGroups = minimumTimeoutForEmptyGroups;
+		return _this();
+	}
+
+	public S groupTimeout(long groupTimeout) {
+		this.groupTimeoutExpression = new LiteralExpression("" + groupTimeout);
+		return _this();
+	}
+
+	public S groupTimeoutExpression(String expression) {
+		this.groupTimeoutExpression = PARSER.parseExpression(expression);
+		return _this();
+	}
+
+	public S taskScheduler(TaskScheduler taskScheduler) {
+		this.taskScheduler = taskScheduler;
 		return _this();
 	}
 
@@ -127,6 +152,10 @@ public abstract class CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S,
 			handler.setMessageStore(this.messageStore);
 		}
 		handler.setMinimumTimeoutForEmptyGroups(this.minimumTimeoutForEmptyGroups);
+		handler.setGroupTimeoutExpression(this.groupTimeoutExpression);
+		if (this.taskScheduler != null) {
+			handler.setTaskScheduler(this.taskScheduler);
+		}
 		handler.setSendPartialResultOnExpiry(this.sendPartialResultOnExpiry);
 		if (this.correlationStrategy != null) {
 			handler.setCorrelationStrategy(this.correlationStrategy);

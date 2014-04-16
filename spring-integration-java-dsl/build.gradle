@@ -24,7 +24,7 @@ compileTestJava {
 }
 
 ext {
-	springIntegrationVersion = '4.0.0.BUILD-SNAPSHOT'
+	springIntegrationVersion = '4.0.0.RC1'
 	log4jVersion = '1.2.17'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
@@ -51,6 +51,8 @@ dependencies {
 	testCompile "org.springframework.integration:spring-integration-event:$springIntegrationVersion"
 	testCompile "org.springframework.integration:spring-integration-file:$springIntegrationVersion"
 	testCompile "org.springframework.integration:spring-integration-xml:$springIntegrationVersion"
+	testCompile "org.springframework.integration:spring-integration-mongodb:$springIntegrationVersion"
+	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:1.43"
 
 	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
 }

@@ -87,7 +87,7 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 		return this.headerExpression(name, expression, overwrite, null);
 	}
 
-	public HeaderEnricherSpec headerExpression(String name, String expression, Class<?> type) {
+	public <T> HeaderEnricherSpec headerExpression(String name, String expression, Class<T> type) {
 		return this.headerExpression(name, expression, null, type);
 	}
 
@@ -103,7 +103,6 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 		this.headerToAdd.put(name, headerValueMessageProcessor);
 		return _this();
 	}
-
 
 	@Override
 	protected HeaderEnricher doGet() {

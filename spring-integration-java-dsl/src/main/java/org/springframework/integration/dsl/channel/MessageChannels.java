@@ -19,7 +19,8 @@ package org.springframework.integration.dsl.channel;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 
-import org.springframework.integration.store.MessageGroupStore;
+import org.springframework.integration.store.ChannelMessageStore;
+import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.messaging.Message;
 
 /**
@@ -59,11 +60,11 @@ public final class MessageChannels {
 		return queue(capacity).id(id);
 	}
 
-	public static QueueChannelSpec.MessageStoreSpec queue(MessageGroupStore messageGroupStore, Object groupId) {
+	public static QueueChannelSpec.MessageStoreSpec queue(ChannelMessageStore messageGroupStore, Object groupId) {
 		return new QueueChannelSpec.MessageStoreSpec(messageGroupStore, groupId);
 	}
 
-	public static QueueChannelSpec.MessageStoreSpec queue(String id, MessageGroupStore messageGroupStore, Object groupId) {
+	public static QueueChannelSpec.MessageStoreSpec queue(String id, ChannelMessageStore messageGroupStore, Object groupId) {
 		return queue(messageGroupStore, groupId).id(id);
 	}
 
@@ -89,6 +90,16 @@ public final class MessageChannels {
 
 	public static PriorityChannelSpec priority(String id) {
 		return priority().id(id);
+	}
+
+	public static QueueChannelSpec.MessageStoreSpec priority(PriorityCapableChannelMessageStore messageGroupStore,
+			Object groupId) {
+		return new QueueChannelSpec.MessageStoreSpec(messageGroupStore, groupId);
+	}
+
+	public static QueueChannelSpec.MessageStoreSpec priority(String id, PriorityCapableChannelMessageStore messageGroupStore,
+			Object groupId) {
+		return queue(messageGroupStore, groupId).id(id);
 	}
 
 	public static PublishSubscribeChannelSpec publishSubscribe() {

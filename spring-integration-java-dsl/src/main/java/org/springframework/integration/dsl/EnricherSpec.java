@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.expression.Expression;
-import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.transformer.ContentEnricher;
 import org.springframework.integration.transformer.support.AbstractHeaderValueMessageProcessor;
 import org.springframework.integration.transformer.support.ExpressionEvaluatingHeaderValueMessageProcessor;
@@ -87,8 +87,8 @@ public class EnricherSpec extends IntegrationComponentSpec<EnricherSpec, Content
 		return _this();
 	}
 
-	public EnricherSpec property(String key, String value) {
-		this.propertyExpressions.put(key, new LiteralExpression(value));
+	public <V> EnricherSpec property(String key, V value) {
+		this.propertyExpressions.put(key, new ValueExpression<V>(value));
 		return _this();
 	}
 
@@ -109,20 +109,12 @@ public class EnricherSpec extends IntegrationComponentSpec<EnricherSpec, Content
 	}
 
 	public EnricherSpec headerExpression(String name, String expression) {
-		return this.headerExpression(name, expression, null, null);
+		return this.headerExpression(name, expression, null);
 	}
 
 	public EnricherSpec headerExpression(String name, String expression, Boolean overwrite) {
-		return this.headerExpression(name, expression, overwrite, null);
-	}
-
-	public EnricherSpec headerExpression(String name, String expression, Class<?> type) {
-		return this.headerExpression(name, expression, null, type);
-	}
-
-	public <T> EnricherSpec headerExpression(String name, String expression, Boolean overwrite, Class<T> type) {
-		AbstractHeaderValueMessageProcessor<T> headerValueMessageProcessor =
-				new ExpressionEvaluatingHeaderValueMessageProcessor<T>(expression, type);
+		AbstractHeaderValueMessageProcessor<?> headerValueMessageProcessor =
+				new ExpressionEvaluatingHeaderValueMessageProcessor<Object>(expression, null);
 		headerValueMessageProcessor.setOverwrite(overwrite);
 		return this.header(name, headerValueMessageProcessor);
 	}
@@ -132,7 +124,6 @@ public class EnricherSpec extends IntegrationComponentSpec<EnricherSpec, Content
 		this.headerExpressions.put(name, headerValueMessageProcessor);
 		return _this();
 	}
-
 
 	@Override
 	protected ContentEnricher doGet() {
