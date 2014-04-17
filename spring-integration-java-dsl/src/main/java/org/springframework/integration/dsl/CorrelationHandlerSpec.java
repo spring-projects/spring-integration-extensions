@@ -17,7 +17,6 @@
 package org.springframework.integration.dsl;
 
 import org.springframework.expression.Expression;
-import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
 import org.springframework.integration.aggregator.CorrelationStrategy;
@@ -27,6 +26,7 @@ import org.springframework.integration.aggregator.ReleaseStrategy;
 import org.springframework.integration.config.CorrelationStrategyFactoryBean;
 import org.springframework.integration.config.ReleaseStrategyFactoryBean;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.store.MessageGroupStore;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.TaskScheduler;
@@ -73,7 +73,7 @@ public abstract class CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S,
 	}
 
 	public S groupTimeout(long groupTimeout) {
-		this.groupTimeoutExpression = new LiteralExpression("" + groupTimeout);
+		this.groupTimeoutExpression = new ValueExpression<Long>(groupTimeout);
 		return _this();
 	}
 

@@ -69,36 +69,28 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 		return this.messageProcessor(new BeanNameMessageProcessor<Object>(beanName, methodName));
 	}
 
-	public HeaderEnricherSpec header(String name, Object value) {
+	public <V> HeaderEnricherSpec header(String name, V value) {
 		return this.header(name, value, null);
 	}
 
-	public HeaderEnricherSpec header(String name, Object value, Boolean overwrite) {
-		AbstractHeaderValueMessageProcessor<?> headerValueMessageProcessor = new StaticHeaderValueMessageProcessor<Object>(value);
+	public <V> HeaderEnricherSpec header(String name, V value, Boolean overwrite) {
+		AbstractHeaderValueMessageProcessor<V> headerValueMessageProcessor = new StaticHeaderValueMessageProcessor<V>(value);
 		headerValueMessageProcessor.setOverwrite(overwrite);
 		return this.header(name, headerValueMessageProcessor);
 	}
 
 	public HeaderEnricherSpec headerExpression(String name, String expression) {
-		return this.headerExpression(name, expression, null, null);
+		return this.headerExpression(name, expression, null);
 	}
 
 	public HeaderEnricherSpec headerExpression(String name, String expression, Boolean overwrite) {
-		return this.headerExpression(name, expression, overwrite, null);
-	}
-
-	public <T> HeaderEnricherSpec headerExpression(String name, String expression, Class<T> type) {
-		return this.headerExpression(name, expression, null, type);
-	}
-
-	public <T> HeaderEnricherSpec headerExpression(String name, String expression, Boolean overwrite, Class<T> type) {
-		AbstractHeaderValueMessageProcessor<T> headerValueMessageProcessor =
-				new ExpressionEvaluatingHeaderValueMessageProcessor<T>(expression, type);
+		AbstractHeaderValueMessageProcessor<?> headerValueMessageProcessor =
+				new ExpressionEvaluatingHeaderValueMessageProcessor<Object>(expression, null);
 		headerValueMessageProcessor.setOverwrite(overwrite);
 		return this.header(name, headerValueMessageProcessor);
 	}
 
-	public HeaderEnricherSpec header(String name, HeaderValueMessageProcessor<?> headerValueMessageProcessor) {
+	public <V> HeaderEnricherSpec header(String name, HeaderValueMessageProcessor<V> headerValueMessageProcessor) {
 		Assert.notNull(name);
 		this.headerToAdd.put(name, headerValueMessageProcessor);
 		return _this();

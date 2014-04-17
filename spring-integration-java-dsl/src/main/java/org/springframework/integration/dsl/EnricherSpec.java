@@ -98,12 +98,12 @@ public class EnricherSpec extends IntegrationComponentSpec<EnricherSpec, Content
 		return _this();
 	}
 
-	public EnricherSpec header(String name, Object value) {
+	public <V> EnricherSpec header(String name, V value) {
 		return this.header(name, value, null);
 	}
 
-	public EnricherSpec header(String name, Object value, Boolean overwrite) {
-		AbstractHeaderValueMessageProcessor<?> headerValueMessageProcessor = new StaticHeaderValueMessageProcessor<Object>(value);
+	public <V> EnricherSpec header(String name, V value, Boolean overwrite) {
+		AbstractHeaderValueMessageProcessor<V> headerValueMessageProcessor = new StaticHeaderValueMessageProcessor<V>(value);
 		headerValueMessageProcessor.setOverwrite(overwrite);
 		return this.header(name, headerValueMessageProcessor);
 	}
@@ -119,7 +119,7 @@ public class EnricherSpec extends IntegrationComponentSpec<EnricherSpec, Content
 		return this.header(name, headerValueMessageProcessor);
 	}
 
-	public EnricherSpec header(String name, HeaderValueMessageProcessor<?> headerValueMessageProcessor) {
+	public <V> EnricherSpec header(String name, HeaderValueMessageProcessor<V> headerValueMessageProcessor) {
 		Assert.notNull(name);
 		this.headerExpressions.put(name, headerValueMessageProcessor);
 		return _this();

@@ -53,4 +53,5 @@ public class AbstractRouterSpec<S extends AbstractRouterSpec<S, R>, R extends Ab
 	protected R doGet() {
 		throw new UnsupportedOperationException();
 	}
+
 }
