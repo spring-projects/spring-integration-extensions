@@ -16,9 +16,11 @@
 package org.springframework.integration.splunk.config.xml;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
@@ -64,16 +66,31 @@ public class SplunkOutboundChannelAdapterParser extends AbstractOutboundChannelA
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(argsBuilder, element, "host");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(argsBuilder, element, "host-regex");
 
-		BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
+        BeanDefinitionBuilder dataWriterBuilder = parseDataWriter(element, parserContext);
 
-		String splunkServerBeanName = element.getAttribute("splunk-server-ref");
-		if (StringUtils.hasText(splunkServerBeanName)) {
-			serviceFactoryBuilder.addConstructorArgReference(splunkServerBeanName);
-		}
+        // initialize splunk servers references
+        {
+            BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
+
+            String splunkServerBeanNames = element.getAttribute( "splunk-server-ref" );
+            if ( StringUtils.hasText( splunkServerBeanNames ) )
+            {
+
+                ManagedList<RuntimeBeanReference> splunkServersList = new ManagedList<RuntimeBeanReference>( );
+
+                for(String splunkServerBeanName : StringUtils.delimitedListToStringArray( splunkServerBeanNames, ";" ))
+                {
+                    splunkServersList.add( new RuntimeBeanReference( splunkServerBeanName ) );
+                }
+                serviceFactoryBuilder.addConstructorArgValue( splunkServersList );
+            }
+
+            dataWriterBuilder.addConstructorArgValue(serviceFactoryBuilder.getBeanDefinition());
+        }
 
 
-		BeanDefinitionBuilder dataWriterBuilder = parseDataWriter(element, parserContext);
-		dataWriterBuilder.addConstructorArgValue(serviceFactoryBuilder.getBeanDefinition());
+
+
 		dataWriterBuilder.addConstructorArgValue(argsBuilder.getBeanDefinition());
 
 		String channelAdapterId = this.resolveId(element, splunkOutboundChannelAdapterBuilder.getRawBeanDefinition(),

@@ -123,6 +123,18 @@ Indicates the connection timeout in ms.
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
+      <xsd:attribute name="testOnBorrow" type="xsd:boolean" use="optional">
+        <xsd:annotation>
+          <xsd:documentation><![CDATA[
+To test or not the connection when reusing it.
+			]]></xsd:documentation>
+          <xsd:appinfo>
+            <tool:annotation kind="direct">
+              <tool:expected-type type="java.lang.Boolean" />
+            </tool:annotation>
+          </xsd:appinfo>
+        </xsd:annotation>
+      </xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 

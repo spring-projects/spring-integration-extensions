@@ -34,6 +34,10 @@ public class SplunkServer {
 	private String username;
 	private String password;
 	private int timeout;
+    /**
+     * if <code> will test i
+     */
+    private boolean testOnBorrow = false;
 
 	/**
 	 * @return the host
@@ -153,4 +157,59 @@ public class SplunkServer {
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
+
+    public boolean isTestOnBorrow()
+    {
+        return testOnBorrow;
+    }
+
+    public void setTestOnBorrow( boolean testOnBorrow )
+    {
+        this.testOnBorrow = testOnBorrow;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        SplunkServer that = (SplunkServer) o;
+
+        if ( port != that.port )
+        {
+            return false;
+        }
+        if ( !host.equals( that.host ) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = host.hashCode();
+        result = 31 * result + port;
+        return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SplunkServer{" +
+            "host='" + host + '\'' +
+            ", port=" + port +
+            ", scheme='" + scheme + '\'' +
+            ", app='" + app + '\'' +
+            '}';
+    }
 }

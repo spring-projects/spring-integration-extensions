@@ -57,6 +57,7 @@ public class SplunkServerParser extends AbstractSimpleBeanDefinitionParser {
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "username");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "password");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "timeout");
+        IntegrationNamespaceUtils.setValueIfAttributeDefined( builder, element, "testOnBorrow" );
 
 	}
 
