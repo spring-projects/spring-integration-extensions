@@ -12,18 +12,22 @@
  */
 package org.springframework.integration.splunk.support;
 
+import com.splunk.Service;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.integration.splunk.core.ServiceFactory;
+
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.integration.splunk.core.ServiceFactory;
-
-import com.splunk.Service;
 
 /**
  * A {@link FactoryBean} for creating a {@link Service}
@@ -31,56 +35,126 @@ import com.splunk.Service;
  * @author David Turanski
  */
 public class SplunkServiceFactory implements ServiceFactory {
-	private final SplunkServer splunkServer;
-	private Service service;
+	private final List<SplunkServer> splunkServers;
+	private Map<SplunkServer, Service> servicePerServer = new ConcurrentHashMap<SplunkServer, Service>(  );
+    private static final Log LOGGER = LogFactory.getLog( SplunkServiceFactory.class );
+
 
 	public SplunkServiceFactory(SplunkServer splunkServer) {
-		this.splunkServer = splunkServer;
+		this.splunkServers = Arrays.asList(splunkServer);
 	}
 
-	@Override
-	public synchronized Service getService() {
-		if (service != null) {
-			return service;
-		}
-		final Map<String, Object> args = new HashMap<String, Object>();
-		if (splunkServer.getHost() != null) {
-			args.put("host", splunkServer.getHost());
-		}
-		if (splunkServer.getPort() != 0) {
-			args.put("port", splunkServer.getPort());
-		}
-		if (splunkServer.getScheme() != null) {
-			args.put("scheme", splunkServer.getScheme());
-		}
-		if (splunkServer.getApp() != null) {
-			args.put("app", splunkServer.getApp());
-		}
-		if (splunkServer.getOwner() != null) {
-			args.put("owner", splunkServer.getOwner());
-		}
+    /*public SplunkServiceFactory(SplunkServer[] splunkServers) {
+        this.splunkServers = Arrays.asList( splunkServers );
+    }*/
 
-		args.put("username", splunkServer.getUsername());
-		args.put("password", splunkServer.getPassword());
+    public SplunkServiceFactory(List<SplunkServer> splunkServers) {
+        this.splunkServers = splunkServers;
+    }
 
-		 ExecutorService executor = Executors.newSingleThreadExecutor();
+    @Override
+    public synchronized Service getService() {
+        return getServiceInternal();
+    }
 
-		 Future<Service> future = executor.submit(new Callable<Service>(){
-			public Service call() throws Exception {
-				return Service.connect(args);
-			}
-		});
+	private Service getServiceInternal() {
 
-		 try {
-			if (splunkServer.getTimeout() > 0) {
-				service = future.get(splunkServer.getTimeout(),TimeUnit.MILLISECONDS);
-			} else {
-				service = future.get();
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(String.format("could not connect to Splunk Server @ %s:%d - %s",
-					splunkServer.getHost(),splunkServer.getPort(),e.getMessage()));
-		}
-		return service;
+        for (SplunkServer splunkServer : splunkServers)
+        {
+            Service service = servicePerServer.get( splunkServer );
+            // service already exist and no test on borrow it so simply use it
+            if ( service != null && !splunkServer.isTestOnBorrow() )
+            {
+                return service;
+            }
+
+            if (service!=null && splunkServer.isTestOnBorrow()){
+                if (pingService( service )){
+                    return service;
+                } else {
+                    // fail so try next server
+                    continue;
+                }
+            }
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+
+            Callable<Service> callable = buildServiceCallable( splunkServer );
+
+            Future<Service> future = executor.submit( callable );
+
+            try
+            {
+                if ( splunkServer.getTimeout() > 0 )
+                {
+                    service = future.get( splunkServer.getTimeout(), TimeUnit.MILLISECONDS );
+                }
+                else
+                {
+                    service = future.get();
+                }
+
+                servicePerServer.put( splunkServer, service );
+                return service;
+            }
+            catch ( Exception e )
+            {
+                if (LOGGER.isInfoEnabled())
+                {
+                    LOGGER.info( String.format( "could not connect to Splunk Server @ %s:%d - %s, try next one", splunkServer.getHost(),
+                                   splunkServer.getPort(), e.getMessage() ) );
+                }
+            }
+        }
+        String message = String.format( "could not connect to any of Splunk Servers %s", this.splunkServers);
+        LOGGER.error( message );
+        throw new RuntimeException( message );
 	}
+
+    private Callable<Service> buildServiceCallable( SplunkServer splunkServer )
+    {
+        final Map<String, Object> args = new HashMap<String, Object>();
+        if ( splunkServer.getHost() != null )
+        {
+            args.put( "host", splunkServer.getHost() );
+        }
+        if ( splunkServer.getPort() != 0 )
+        {
+            args.put( "port", splunkServer.getPort() );
+        }
+        if ( splunkServer.getScheme() != null )
+        {
+            args.put( "scheme", splunkServer.getScheme() );
+        }
+        if ( splunkServer.getApp() != null )
+        {
+            args.put( "app", splunkServer.getApp() );
+        }
+        if ( splunkServer.getOwner() != null )
+        {
+            args.put( "owner", splunkServer.getOwner() );
+        }
+
+        args.put( "username", splunkServer.getUsername() );
+        args.put( "password", splunkServer.getPassword() );
+
+        return  new Callable<Service>()
+        {
+            public Service call()
+                throws Exception
+            {
+                return Service.connect( args );
+            }
+        };
+    }
+
+    private boolean pingService(Service service){
+        try{
+            service.getInfo();
+            return true;
+        } catch ( Exception e ) {
+            return false;
+        }
+    }
+
 }

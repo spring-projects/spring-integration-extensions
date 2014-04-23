@@ -17,16 +17,24 @@ package org.springframework.integration.splunk.config.xml;
 
 import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.ListFactoryBean;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractPollingInboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.splunk.inbound.SplunkPollingChannelAdapter;
 import org.springframework.integration.splunk.support.SplunkDataReader;
+import org.springframework.integration.splunk.support.SplunkServer;
 import org.springframework.integration.splunk.support.SplunkServiceFactory;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Splunk Inbound Channel adapter parser
@@ -40,7 +48,8 @@ public class SplunkInboundChannelAdapterParser extends AbstractPollingInboundCha
 
 	protected BeanMetadataElement parseSource(Element element, ParserContext parserContext) {
 
-		BeanDefinitionBuilder splunkPollingChannelAdapterBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkPollingChannelAdapter.class);
+		BeanDefinitionBuilder splunkPollingChannelAdapterBuilder =
+            BeanDefinitionBuilder.genericBeanDefinition(SplunkPollingChannelAdapter.class);
 
 		BeanDefinitionBuilder splunkExecutorBuilder = SplunkParserUtils.getSplunkExecutorBuilder(element, parserContext);
 
@@ -60,14 +69,24 @@ public class SplunkInboundChannelAdapterParser extends AbstractPollingInboundCha
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "earliest-time");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "latest-time");
 
-		BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
+        // initialize splunk servers references
+        {
+            BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
 
-		String splunkServerBeanName = element.getAttribute("splunk-server-ref");
-		if (StringUtils.hasText(splunkServerBeanName)) {
-			serviceFactoryBuilder.addConstructorArgReference(splunkServerBeanName);
-		}
+            String splunkServerBeanNames = element.getAttribute( "splunk-server-ref" );
+            if ( StringUtils.hasText( splunkServerBeanNames ) )
+            {
 
-		splunkDataReaderBuilder.addConstructorArgValue(serviceFactoryBuilder.getBeanDefinition());
+                ManagedList<RuntimeBeanReference> splunkServersList = new ManagedList<RuntimeBeanReference>( );
+
+                for(String splunkServerBeanName : StringUtils.delimitedListToStringArray( splunkServerBeanNames, ";" ))
+                {
+                    splunkServersList.add( new RuntimeBeanReference( splunkServerBeanName ) );
+                }
+                serviceFactoryBuilder.addConstructorArgValue( splunkServersList );
+                splunkDataReaderBuilder.addConstructorArgValue( serviceFactoryBuilder.getBeanDefinition() );
+            }
+        }
 
 		String channelAdapterId = this.resolveId(element, splunkPollingChannelAdapterBuilder.getRawBeanDefinition(),
 				parserContext);
