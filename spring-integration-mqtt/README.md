@@ -1,6 +1,9 @@
 Spring Integration MQTT Support
 ===============================
 
+####Note: as of version 4.0.0, this extension has been moved to the main [Spring Integration Project](https://github.com/spring-projects/spring-integration)
+
+
 `inbound` and `outbound` channel adapters are provided for [MQ Telemetry Transport (MQTT)][]. The current implementation uses the [Eclipse Paho][] client.
 
 __Note:__ Starting with version 4.0.0, this module has been moved to the main [Spring Integration][] project.
