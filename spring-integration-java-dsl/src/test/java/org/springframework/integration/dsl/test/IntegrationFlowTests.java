@@ -33,8 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.mongodb.Mongo;
-import com.mongodb.MongoURI;
+import com.mongodb.MongoClient;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -56,6 +55,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -372,25 +372,38 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testWrongLastComponent() {
+		ConfigurableApplicationContext context = null;
 		try {
-			new AnnotationConfigApplicationContext(InvalidLastComponentFlowContext.class);
+			context = new AnnotationConfigApplicationContext(InvalidLastComponentFlowContext.class);
 			fail("BeanCreationException expected");
 		}
 		catch (Exception e) {
 			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
 			assertThat(e.getMessage(), Matchers.containsString("is a one-way 'MessageHandler'"));
 		}
+		finally {
+			if (context != null) {
+				context.close();
+			}
+		}
 	}
 
 	@Test
 	public void testWrongLastMessageChannel() {
+		ConfigurableApplicationContext context = null;
 		try {
-			new AnnotationConfigApplicationContext(InvalidLastMessageChannelFlowContext.class);
+			context = new AnnotationConfigApplicationContext(InvalidLastMessageChannelFlowContext.class);
 			fail("BeanCreationException expected");
 		}
 		catch (Exception e) {
 			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
-			assertThat(e.getMessage(), Matchers.containsString("'.fixedSubscriberChannel()' can't be the last EIP-method in the IntegrationFlow definition"));
+			assertThat(e.getMessage(), Matchers.containsString("'.fixedSubscriberChannel()' " +
+					"can't be the last EIP-method in the IntegrationFlow definition"));
+		}
+		finally {
+			if (context != null) {
+				context.close();
+			}
 		}
 	}
 
@@ -418,7 +431,9 @@ public class IntegrationFlowTests {
 	@Test
 	public void testMethodInvokingMessageHandler() {
 		QueueChannel replyChannel = new QueueChannel();
-		Message<?> message = MessageBuilder.withPayload("world").setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel).build();
+		Message<?> message = MessageBuilder.withPayload("world")
+				.setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel)
+				.build();
 		this.methodInvokingInput.send(message);
 		Message<?> receive = replyChannel.receive(5000);
 		assertNotNull(receive);
@@ -427,21 +442,30 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testWrongConfigurationWithSpecBean() {
+		ConfigurableApplicationContext context = null;
 		try {
-			new AnnotationConfigApplicationContext(InvalidConfigurationWithSpec.class);
+			context = new AnnotationConfigApplicationContext(InvalidConfigurationWithSpec.class);
 			fail("BeanCreationException expected");
 		}
 		catch (Exception e) {
 			assertThat(e, Matchers.instanceOf(IllegalArgumentException.class));
 			assertThat(e.getCause(), Matchers.instanceOf(BeanCreationException.class));
-			assertThat(e.getCause().getMessage(), Matchers.containsString("must be populated to target objects via 'get()' method call"));
+			assertThat(e.getCause().getMessage(),
+					Matchers.containsString("must be populated to target objects via 'get()' method call"));
+		}
+		finally {
+			if (context != null) {
+				context.close();
+			}
 		}
 	}
 
 	@Test
 	public void testContentEnricher() {
 		QueueChannel replyChannel = new QueueChannel();
-		Message<?> message = MessageBuilder.withPayload(new TestPojo("Bar")).setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel).build();
+		Message<?> message = MessageBuilder.withPayload(new TestPojo("Bar"))
+				.setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel)
+				.build();
 		this.enricherInput.send(message);
 		Message<?> receive = replyChannel.receive(5000);
 		assertNotNull(receive);
@@ -458,7 +482,10 @@ public class IntegrationFlowTests {
 	public void testSplitterResequencer() {
 		QueueChannel replyChannel = new QueueChannel();
 
-		this.splitInput.send(MessageBuilder.withPayload("").setReplyChannel(replyChannel).setHeader("foo", "bar").build());
+		this.splitInput.send(MessageBuilder.withPayload("")
+				.setReplyChannel(replyChannel)
+				.setHeader("foo", "bar")
+				.build());
 
 		for (int i = 0; i < 12; i++) {
 			Message<?> receive = replyChannel.receive(2000);
@@ -475,7 +502,9 @@ public class IntegrationFlowTests {
 		List<Character> payload = Arrays.asList('a', 'b', 'c', 'd', 'e');
 
 		QueueChannel replyChannel = new QueueChannel();
-		this.splitAggregateInput.send(MessageBuilder.withPayload(payload).setReplyChannel(replyChannel).build());
+		this.splitAggregateInput.send(MessageBuilder.withPayload(payload)
+				.setReplyChannel(replyChannel)
+				.build());
 
 		Message<?> receive = replyChannel.receive(2000);
 		assertNotNull(receive);
@@ -491,9 +520,10 @@ public class IntegrationFlowTests {
 	public void testHeaderEnricher() {
 		QueueChannel replyChannel = new QueueChannel();
 
-		Message<String> message = MessageBuilder.withPayload("<root><elementOne>1</elementOne><elementTwo>2</elementTwo></root>")
-				.setReplyChannel(replyChannel)
-				.build();
+		Message<String> message =
+				MessageBuilder.withPayload("<root><elementOne>1</elementOne><elementTwo>2</elementTwo></root>")
+						.setReplyChannel(replyChannel)
+						.build();
 
 		try {
 			this.xpathHeaderEnricherInput.send(message);
@@ -560,7 +590,8 @@ public class IntegrationFlowTests {
 			fail("MessageDeliveryException expected.");
 		}
 		catch (MessageDeliveryException e) {
-			assertThat(e.getMessage(), Matchers.containsString("no channel resolved by router and no default output channel defined"));
+			assertThat(e.getMessage(),
+					Matchers.containsString("no channel resolved by router and no default output channel defined"));
 		}
 
 	}
@@ -590,7 +621,8 @@ public class IntegrationFlowTests {
 		}
 		catch (MessagingException e) {
 			assertThat(e.getCause(), Matchers.instanceOf(DestinationResolutionException.class));
-			assertThat(e.getCause().getMessage(), Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
+			assertThat(e.getCause().getMessage(),
+					Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
 		}
 
 	}
@@ -620,7 +652,8 @@ public class IntegrationFlowTests {
 		}
 		catch (MessagingException e) {
 			assertThat(e.getCause(), Matchers.instanceOf(DestinationResolutionException.class));
-			assertThat(e.getCause().getMessage(), Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
+			assertThat(e.getCause().getMessage(),
+					Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
 		}
 	}
 
@@ -652,7 +685,8 @@ public class IntegrationFlowTests {
 			fail("MessageDeliveryException expected.");
 		}
 		catch (MessageDeliveryException e) {
-			assertThat(e.getMessage(), Matchers.containsString("no channel resolved by router and no default output channel defined"));
+			assertThat(e.getMessage(),
+					Matchers.containsString("no channel resolved by router and no default output channel defined"));
 		}
 	}
 
@@ -848,7 +882,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public MongoDbFactory mongoDbFactory() throws Exception {
-			return new SimpleMongoDbFactory(new MongoURI("mongodb://localhost:12345/local"));
+			return new SimpleMongoDbFactory(new MongoClient("localhost",12345), "local");
 		}
 
 		@Bean
@@ -1068,7 +1102,8 @@ public class IntegrationFlowTests {
 						}
 					}, c -> c.applySequence(false))
 					.channel(MessageChannels.executor(this.taskExecutor()))
-					.split((SplitterEndpointSpec<DefaultMessageSplitter> s) -> s.applySequence(false).get().getT2().setDelimiters(","))
+					.split((SplitterEndpointSpec<DefaultMessageSplitter> s) ->
+							s.applySequence(false).get().getT2().setDelimiters(","))
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.<String, Integer>transform(Integer::parseInt)
 					.enrichHeaders(s -> s.headerExpression(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, "payload"))

@@ -22,7 +22,8 @@ import org.springframework.integration.splitter.AbstractMessageSplitter;
 /**
  * @author Artem Bilan
  */
-public final class SplitterEndpointSpec<S extends AbstractMessageSplitter> extends ConsumerEndpointSpec<SplitterEndpointSpec<S>, S> {
+public final class SplitterEndpointSpec<S extends AbstractMessageSplitter>
+		extends ConsumerEndpointSpec<SplitterEndpointSpec<S>, S> {
 
 	SplitterEndpointSpec(S splitter) {
 		super(splitter);

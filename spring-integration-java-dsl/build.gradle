@@ -24,12 +24,14 @@ compileTestJava {
 }
 
 ext {
-	springIntegrationVersion = '4.0.0.RC1'
+	embedMongoVersion = '1.43'
+	jacocoVersion = '0.7.0.201403182114'
 	log4jVersion = '1.2.17'
+	springIntegrationVersion = '4.0.0.RELEASE'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
-	linkCi = 'https://build.springsource.org/browse/INTEXT'
-	linkIssue = 'https://jira.springsource.org/browse/INTEXT'
+	linkCi = 'https://build.spring.io/browse/INTEXT'
+	linkIssue = 'https://jira.spring.io/browse/INTEXT'
 	linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
 	linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
 	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
@@ -52,9 +54,9 @@ dependencies {
 	testCompile "org.springframework.integration:spring-integration-file:$springIntegrationVersion"
 	testCompile "org.springframework.integration:spring-integration-xml:$springIntegrationVersion"
 	testCompile "org.springframework.integration:spring-integration-mongodb:$springIntegrationVersion"
-	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:1.43"
+	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embedMongoVersion"
 
-	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
+	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }
 
 // enable all compiler warnings; individual projects may customize further
@@ -186,6 +188,6 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.11'
+	gradleVersion = '1.12'
 	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }

@@ -23,7 +23,8 @@ import org.springframework.messaging.MessageChannel;
 /**
  * @author Artem Bilan
  */
-public class AbstractRouterSpec<S extends AbstractRouterSpec<S, R>, R extends AbstractMessageRouter> extends IntegrationComponentSpec<S, R> {
+public class AbstractRouterSpec<S extends AbstractRouterSpec<S, R>, R extends AbstractMessageRouter>
+		extends IntegrationComponentSpec<S, R> {
 
 	AbstractRouterSpec(R router) {
 		this.target = router;

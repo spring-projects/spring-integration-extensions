@@ -23,7 +23,8 @@ import org.springframework.integration.dispatcher.RoundRobinLoadBalancingStrateg
 /**
  * @author Artem Bilan
  */
-public abstract class LoadBalancingChannelSpec<S extends MessageChannelSpec<S, C>, C extends AbstractMessageChannel> extends MessageChannelSpec<S, C> {
+public abstract class LoadBalancingChannelSpec<S extends MessageChannelSpec<S, C>, C extends AbstractMessageChannel>
+		extends MessageChannelSpec<S, C> {
 
 	protected LoadBalancingStrategy loadBalancingStrategy = new RoundRobinLoadBalancingStrategy();
 

@@ -24,7 +24,8 @@ import org.springframework.integration.aggregator.ResequencingMessageHandler;
  */
 public class ResequencerSpec extends CorrelationHandlerSpec<ResequencerSpec, ResequencingMessageHandler> {
 
-	private final ResequencingMessageHandler resequencingMessageHandler = new ResequencingMessageHandler(new ResequencingMessageGroupProcessor());
+	private final ResequencingMessageHandler resequencingMessageHandler =
+			new ResequencingMessageHandler(new ResequencingMessageGroupProcessor());
 
 	ResequencerSpec() {
 	}

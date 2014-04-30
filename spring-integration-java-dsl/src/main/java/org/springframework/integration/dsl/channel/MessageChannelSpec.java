@@ -30,7 +30,8 @@ import org.springframework.util.Assert;
 /**
  * @author Artem Bilan
  */
-public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C extends AbstractMessageChannel> extends IntegrationComponentSpec<S, C> {
+public abstract class MessageChannelSpec<S extends MessageChannelSpec<S, C>, C extends AbstractMessageChannel>
+		extends IntegrationComponentSpec<S, C> {
 
 	protected C channel;
 

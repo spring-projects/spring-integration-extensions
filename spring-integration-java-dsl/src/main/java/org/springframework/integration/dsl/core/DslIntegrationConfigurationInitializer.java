@@ -54,23 +54,26 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 	@Override
 	public void initialize(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
 		Assert.isInstanceOf(BeanDefinitionRegistry.class, configurableListableBeanFactory,
-				"To use Spring Integration Java DSL the 'beanFactory' has to be an instance of 'BeanDefinitionRegistry'." +
-						"Consider using 'GenericApplicationContext' implementation."
+				"To use Spring Integration Java DSL the 'beanFactory' has to be an instance of " +
+						"'BeanDefinitionRegistry'. Consider using 'GenericApplicationContext' implementation."
 		);
 		this.checkSpecBeans(configurableListableBeanFactory);
 		this.initializeIntegrationFlows(configurableListableBeanFactory);
 	}
 
 	private void checkSpecBeans(ConfigurableListableBeanFactory beanFactory) {
-		List<String> specBeanNames = Arrays.asList(beanFactory.getBeanNamesForType(IntegrationComponentSpec.class, true, false));
+		List<String> specBeanNames = Arrays.asList(beanFactory.getBeanNamesForType(IntegrationComponentSpec.class,
+				true, false));
 		if (!specBeanNames.isEmpty()) {
-			throw new BeanCreationException("'IntegrationComponentSpec' beans: '" + specBeanNames + "' must be populated " +
-					"to target objects via 'get()' method call. It is important for @Autowired injections.");
+			throw new BeanCreationException("'IntegrationComponentSpec' beans: '" + specBeanNames +
+					"' must be populated to target objects via 'get()' method call. It is important for " +
+					"@Autowired injections.");
 		}
 	}
 
 	private void initializeIntegrationFlows(ConfigurableListableBeanFactory beanFactory) {
-		AutowiredAnnotationBeanPostProcessor autowiredAnnotationBeanPostProcessor = beanFactory.getBean(AutowiredAnnotationBeanPostProcessor.class);
+		AutowiredAnnotationBeanPostProcessor autowiredAnnotationBeanPostProcessor =
+				beanFactory.getBean(AutowiredAnnotationBeanPostProcessor.class);
 		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 		String[] integrationFlowBeanNames = beanFactory.getBeanNamesForType(IntegrationFlow.class, false, false);
 		Set<String> processedConfigurations = new HashSet<String>();
@@ -91,7 +94,8 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 						if (instance instanceof AbstractMessageChannel) {
 							String channelBeanName = ((AbstractMessageChannel) instance).getComponentName();
 							if (channelBeanName == null) {
-								channelBeanName = flowNamePrefix + "channel" + BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
+								channelBeanName = flowNamePrefix + "channel" +
+										BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
 							}
 							registry.registerBeanDefinition(channelBeanName, component);
 						}
@@ -101,12 +105,16 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 							ConsumerEndpointFactoryBean endpoint = endpointSpec.get().getT1();
 							String id = endpointSpec.getId();
 
-							Collection<?> messageHandlers = beanFactory.getBeansOfType(messageHandler.getClass(), false, false).values();
+							Collection<?> messageHandlers =
+									beanFactory.getBeansOfType(messageHandler.getClass(), false, false).values();
 
 							if (!messageHandlers.contains(messageHandler)) {
 								String handlerBeanName = generateInstanceBeanDefinitionName(registry, messageHandler);
-								String[] handlerAlias = id != null ? new String[]{id + IntegrationConfigUtils.HANDLER_ALIAS_SUFFIX} : null;
-								BeanComponentDefinition definitionHolder = new BeanComponentDefinition(new InstanceBeanDefinition(messageHandler),
+								String[] handlerAlias = id != null
+										? new String[]{id + IntegrationConfigUtils.HANDLER_ALIAS_SUFFIX}
+										: null;
+								BeanComponentDefinition definitionHolder =
+										new BeanComponentDefinition(new InstanceBeanDefinition(messageHandler),
 										handlerBeanName, handlerAlias);
 								BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
 							}
@@ -127,7 +135,8 @@ public class DslIntegrationConfigurationInitializer implements IntegrationConfig
 							FixedSubscriberChannel fixedSubscriberChannel = (FixedSubscriberChannel) instance;
 							String channelBeanName = fixedSubscriberChannel.getComponentName();
 							if ("Unnamed fixed subscriber channel".equals(channelBeanName)) {
-								channelBeanName = flowNamePrefix + "channel" + BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
+								channelBeanName = flowNamePrefix + "channel" +
+										BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
 							}
 							registry.registerBeanDefinition(channelBeanName, component);
 						}

@@ -126,7 +126,8 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public IntegrationFlowBuilder controlBus() {
-		return this.handle(new ServiceActivatingHandler(new ExpressionCommandMessageProcessor(new ControlBusMethodFilter())), null);
+		return this.handle(new ServiceActivatingHandler(new ExpressionCommandMessageProcessor(
+				new ControlBusMethodFilter())), null);
 	}
 
 	public IntegrationFlowBuilder transform(String expression) {
@@ -155,7 +156,8 @@ public final class IntegrationFlowBuilder {
 		return this.filter(genericSelector, null);
 	}
 
-	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector, EndpointConfigurer<FilterEndpointSpec> endpointConfigurer) {
+	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector,
+			EndpointConfigurer<FilterEndpointSpec> endpointConfigurer) {
 		Assert.notNull(genericSelector);
 		MessageSelector selector = genericSelector instanceof MessageSelector
 				? (MessageSelector) genericSelector : new MethodInvokingSelector(genericSelector);
@@ -172,7 +174,8 @@ public final class IntegrationFlowBuilder {
 
 	public IntegrationFlowBuilder handle(String beanName, String methodName,
 										 EndpointConfigurer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
-		return this.handle(new ServiceActivatingHandler(new BeanNameMessageProcessor<Object>(beanName, methodName)), endpointConfigurer);
+		return this.handle(new ServiceActivatingHandler(new BeanNameMessageProcessor<Object>(beanName, methodName)),
+				endpointConfigurer);
 	}
 
 	public <H extends MessageHandler> IntegrationFlowBuilder handle(H messageHandler,
@@ -189,7 +192,8 @@ public final class IntegrationFlowBuilder {
 		return this.delay(groupId, expression, null);
 	}
 
-	public IntegrationFlowBuilder delay(String groupId, String expression, EndpointConfigurer<GenericEndpointSpec<DelayHandler>> endpointConfigurer) {
+	public IntegrationFlowBuilder delay(String groupId, String expression,
+			EndpointConfigurer<GenericEndpointSpec<DelayHandler>> endpointConfigurer) {
 		DelayHandler delayHandler = new DelayHandler(groupId);
 		if (StringUtils.hasText(expression)) {
 			delayHandler.setDelayExpression(PARSER.parseExpression(expression));
@@ -213,7 +217,8 @@ public final class IntegrationFlowBuilder {
 		return this.enrich(contentEnricher, null);
 	}
 
-	public IntegrationFlowBuilder enrich(ContentEnricher contentEnricher, EndpointConfigurer<GenericEndpointSpec<ContentEnricher>> endpointConfigurer) {
+	public IntegrationFlowBuilder enrich(ContentEnricher contentEnricher,
+			EndpointConfigurer<GenericEndpointSpec<ContentEnricher>> endpointConfigurer) {
 		return this.handle(contentEnricher, endpointConfigurer);
 	}
 
@@ -250,7 +255,8 @@ public final class IntegrationFlowBuilder {
 		return this.split(expression, (EndpointConfigurer<SplitterEndpointSpec<ExpressionEvaluatingSplitter>>) null);
 	}
 
-	public IntegrationFlowBuilder split(String expression, EndpointConfigurer<SplitterEndpointSpec<ExpressionEvaluatingSplitter>> endpointConfigurer) {
+	public IntegrationFlowBuilder split(String expression,
+			EndpointConfigurer<SplitterEndpointSpec<ExpressionEvaluatingSplitter>> endpointConfigurer) {
 		return this.split(new ExpressionEvaluatingSplitter(PARSER.parseExpression(expression)), endpointConfigurer);
 	}
 
@@ -277,14 +283,14 @@ public final class IntegrationFlowBuilder {
 		return this.split(new MethodInvokingSplitter(splitter, "split"), endpointConfigurer);
 	}
 
-	public <S extends AbstractMessageSplitter> IntegrationFlowBuilder split(S splitter, EndpointConfigurer<SplitterEndpointSpec<S>> endpointConfigurer) {
+	public <S extends AbstractMessageSplitter> IntegrationFlowBuilder split(S splitter,
+			EndpointConfigurer<SplitterEndpointSpec<S>> endpointConfigurer) {
 		Assert.notNull(splitter);
 		return this.register(new SplitterEndpointSpec<S>(splitter), endpointConfigurer);
 	}
 
 	/**
 	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlow}.
-	 *
 	 * @param headersToRemove the array of headers (or patterns) to remove from {@link org.springframework.messaging.MessageHeaders}.
 	 * @return the {@link IntegrationFlowBuilder}.
 	 */
@@ -294,9 +300,10 @@ public final class IntegrationFlowBuilder {
 
 	/**
 	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlow}.
-	 *
-	 * @param headersToRemove the comma separated headers (or patterns) to remove from {@link org.springframework.messaging.MessageHeaders}.
-	 * @param patternMatch    the {@code boolean} flag to indicate if {@code headersToRemove} should be interpreted as patterns or direct header names.
+	 * @param headersToRemove the comma separated headers (or patterns) to remove from
+	 * {@link org.springframework.messaging.MessageHeaders}.
+	 * @param patternMatch    the {@code boolean} flag to indicate if {@code headersToRemove}
+	 * should be interpreted as patterns or direct header names.
 	 * @return the {@link IntegrationFlowBuilder}.
 	 */
 
@@ -315,7 +322,8 @@ public final class IntegrationFlowBuilder {
 		return this.claimCheckIn(messageStore, null);
 	}
 
-	public IntegrationFlowBuilder claimCheckIn(MessageStore messageStore, EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+	public IntegrationFlowBuilder claimCheckIn(MessageStore messageStore,
+			EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
 		return this.transform(new ClaimCheckInTransformer(messageStore), endpointConfigurer);
 	}
 
@@ -368,7 +376,8 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public IntegrationFlowBuilder aggregate(EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
-		return this.aggregate(new AggregatingMessageHandler(new DefaultAggregatingMessageGroupProcessor()), endpointConfigurer);
+		return this.aggregate(new AggregatingMessageHandler(new DefaultAggregatingMessageGroupProcessor()),
+				endpointConfigurer);
 	}
 
 	public IntegrationFlowBuilder aggregate(ComponentConfigurer<AggregatorSpec> aggregatorConfigurer) {
@@ -405,7 +414,8 @@ public final class IntegrationFlowBuilder {
 	public IntegrationFlowBuilder route(String beanName, String method,
 										ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
 										EndpointConfigurer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
-		return this.route(new MethodInvokingRouter(new BeanNameMessageProcessor<Object>(beanName, method)), routerConfigurer, endpointConfigurer);
+		return this.route(new MethodInvokingRouter(new BeanNameMessageProcessor<Object>(beanName, method)),
+				routerConfigurer, endpointConfigurer);
 	}
 
 
@@ -413,21 +423,24 @@ public final class IntegrationFlowBuilder {
 		return this.route(expression, (ComponentConfigurer<RouterSpec<ExpressionEvaluatingRouter>>) null);
 	}
 
-	public IntegrationFlowBuilder route(String expression, ComponentConfigurer<RouterSpec<ExpressionEvaluatingRouter>> routerConfigurer) {
+	public IntegrationFlowBuilder route(String expression,
+			ComponentConfigurer<RouterSpec<ExpressionEvaluatingRouter>> routerConfigurer) {
 		return this.route(expression, routerConfigurer, null);
 	}
 
 	public IntegrationFlowBuilder route(String expression,
 										ComponentConfigurer<RouterSpec<ExpressionEvaluatingRouter>> routerConfigurer,
 										EndpointConfigurer<GenericEndpointSpec<ExpressionEvaluatingRouter>> endpointConfigurer) {
-		return this.route(new ExpressionEvaluatingRouter(PARSER.parseExpression(expression)), routerConfigurer, endpointConfigurer);
+		return this.route(new ExpressionEvaluatingRouter(PARSER.parseExpression(expression)), routerConfigurer,
+				endpointConfigurer);
 	}
 
 	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router) {
 		return this.route(router, (ComponentConfigurer<RouterSpec<MethodInvokingRouter>>) null);
 	}
 
-	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router, ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
+	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router,
+			ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
 		return this.route(router, routerConfigurer, null);
 	}
 
@@ -437,7 +450,8 @@ public final class IntegrationFlowBuilder {
 		return this.route(new MethodInvokingRouter(router), routerConfigurer, endpointConfigurer);
 	}
 
-	public <R extends AbstractMappingMessageRouter> IntegrationFlowBuilder route(R router, ComponentConfigurer<RouterSpec<R>> routerConfigurer) {
+	public <R extends AbstractMappingMessageRouter> IntegrationFlowBuilder route(R router,
+			ComponentConfigurer<RouterSpec<R>> routerConfigurer) {
 		return this.route(router, routerConfigurer, null);
 	}
 
@@ -475,7 +489,8 @@ public final class IntegrationFlowBuilder {
 	}
 
 
-	private <S extends ConsumerEndpointSpec<S, ?>> IntegrationFlowBuilder register(S endpointSpec, EndpointConfigurer<S> endpointConfigurer) {
+	private <S extends ConsumerEndpointSpec<S, ?>> IntegrationFlowBuilder register(S endpointSpec,
+			EndpointConfigurer<S> endpointConfigurer) {
 		if (endpointConfigurer != null) {
 			endpointConfigurer.configure(endpointSpec);
 		}
@@ -513,7 +528,8 @@ public final class IntegrationFlowBuilder {
 					channelName = ((MessageChannelReference) outputChannel).getName();
 				}
 				if (this.currentComponent instanceof AbstractReplyProducingMessageHandler) {
-					AbstractReplyProducingMessageHandler messageProducer = (AbstractReplyProducingMessageHandler) this.currentComponent;
+					AbstractReplyProducingMessageHandler messageProducer =
+							(AbstractReplyProducingMessageHandler) this.currentComponent;
 					if (channelName != null) {
 						messageProducer.setOutputChannelName(channelName);
 					}
@@ -522,7 +538,8 @@ public final class IntegrationFlowBuilder {
 					}
 				}
 				else if (this.currentComponent instanceof SourcePollingChannelAdapterFactoryBean) {
-					SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean = (SourcePollingChannelAdapterFactoryBean) this.currentComponent;
+					SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean =
+							(SourcePollingChannelAdapterFactoryBean) this.currentComponent;
 					if (channelName != null) {
 						pollingChannelAdapterFactoryBean.setOutputChannelName(channelName);
 					}
@@ -531,7 +548,8 @@ public final class IntegrationFlowBuilder {
 					}
 				}
 				else if (this.currentComponent instanceof AbstractCorrelatingMessageHandler) {
-					AbstractCorrelatingMessageHandler messageProducer = (AbstractCorrelatingMessageHandler) this.currentComponent;
+					AbstractCorrelatingMessageHandler messageProducer =
+							(AbstractCorrelatingMessageHandler) this.currentComponent;
 					if (channelName != null) {
 						messageProducer.setOutputChannelName(channelName);
 					}
@@ -540,8 +558,9 @@ public final class IntegrationFlowBuilder {
 					}
 				}
 				else {
-					throw new BeanCreationException("The 'currentComponent' (" + this.currentComponent + ") is a one-way 'MessageHandler'" +
-							" and it isn't appropriate to configure 'outputChannel'. This is the end of the integration flow.");
+					throw new BeanCreationException("The 'currentComponent' (" + this.currentComponent +
+							") is a one-way 'MessageHandler' and it isn't appropriate to configure 'outputChannel'. " +
+							"This is the end of the integration flow.");
 				}
 				this.currentComponent = null;
 			}
@@ -551,9 +570,10 @@ public final class IntegrationFlowBuilder {
 
 	public IntegrationFlow get() {
 		if (this.currentMessageChannel instanceof FixedSubscriberChannelPrototype) {
-			throw new BeanCreationException("The 'currentMessageChannel' (" + this.currentMessageChannel + ") is a prototype" +
-					" for FixedSubscriberChannel which can't be created without MessageHandler constructor argument. " +
-					"That means that '.fixedSubscriberChannel()' can't be the last EIP-method in the IntegrationFlow definition.");
+			throw new BeanCreationException("The 'currentMessageChannel' (" + this.currentMessageChannel +
+					") is a prototype for FixedSubscriberChannel which can't be created without MessageHandler " +
+					"constructor argument. That means that '.fixedSubscriberChannel()' can't be the last EIP-method " +
+					"in the IntegrationFlow definition.");
 		}
 
 		if (this.flow.getIntegrationComponents().size() == 1) {

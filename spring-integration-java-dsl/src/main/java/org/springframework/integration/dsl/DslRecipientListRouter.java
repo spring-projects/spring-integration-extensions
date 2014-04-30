@@ -47,7 +47,8 @@ class DslRecipientListRouter extends RecipientListRouter {
 	}
 
 	Map<String, Object> getRecipients() {
-		Map<String, Object> recipients = new HashMap<String, Object>(this.expressionRecipientMap.size() + this.selectorRecipientMap.size());
+		Map<String, Object> recipients =
+				new HashMap<String, Object>(this.expressionRecipientMap.size() + this.selectorRecipientMap.size());
 		recipients.putAll(this.expressionRecipientMap);
 		recipients.putAll(this.selectorRecipientMap);
 		return recipients;
