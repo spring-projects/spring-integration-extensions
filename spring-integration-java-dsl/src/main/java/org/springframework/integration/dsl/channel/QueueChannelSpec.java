@@ -93,7 +93,8 @@ public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, Queue
 		protected QueueChannel doGet() {
 			if (this.capacity != null) {
 				if (this.storeLock != null) {
-					this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId, this.capacity, this.storeLock);
+					this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId, this.capacity,
+							this.storeLock);
 				}
 				else {
 					this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId, this.capacity);

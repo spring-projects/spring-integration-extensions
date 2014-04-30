@@ -64,7 +64,8 @@ public final class MessageChannels {
 		return new QueueChannelSpec.MessageStoreSpec(messageGroupStore, groupId);
 	}
 
-	public static QueueChannelSpec.MessageStoreSpec queue(String id, ChannelMessageStore messageGroupStore, Object groupId) {
+	public static QueueChannelSpec.MessageStoreSpec queue(String id, ChannelMessageStore messageGroupStore,
+			Object groupId) {
 		return queue(messageGroupStore, groupId).id(id);
 	}
 
@@ -97,8 +98,8 @@ public final class MessageChannels {
 		return new QueueChannelSpec.MessageStoreSpec(messageGroupStore, groupId);
 	}
 
-	public static QueueChannelSpec.MessageStoreSpec priority(String id, PriorityCapableChannelMessageStore messageGroupStore,
-			Object groupId) {
+	public static QueueChannelSpec.MessageStoreSpec priority(String id,
+			PriorityCapableChannelMessageStore messageGroupStore, Object groupId) {
 		return queue(messageGroupStore, groupId).id(id);
 	}
 

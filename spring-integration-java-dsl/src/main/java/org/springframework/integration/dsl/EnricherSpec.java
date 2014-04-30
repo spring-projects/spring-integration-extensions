@@ -103,7 +103,8 @@ public class EnricherSpec extends IntegrationComponentSpec<EnricherSpec, Content
 	}
 
 	public <V> EnricherSpec header(String name, V value, Boolean overwrite) {
-		AbstractHeaderValueMessageProcessor<V> headerValueMessageProcessor = new StaticHeaderValueMessageProcessor<V>(value);
+		AbstractHeaderValueMessageProcessor<V> headerValueMessageProcessor =
+				new StaticHeaderValueMessageProcessor<V>(value);
 		headerValueMessageProcessor.setOverwrite(overwrite);
 		return this.header(name, headerValueMessageProcessor);
 	}

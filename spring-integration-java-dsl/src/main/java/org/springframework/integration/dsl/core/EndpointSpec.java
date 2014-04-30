@@ -27,7 +27,8 @@ import org.springframework.integration.scheduling.PollerMetadata;
  * @author Artem Bilan
 
  */
-public abstract class EndpointSpec<S extends EndpointSpec<S, F, H>, F extends BeanNameAware, H> extends IntegrationComponentSpec<S, Tuple2<F, H>> {
+public abstract class EndpointSpec<S extends EndpointSpec<S, F, H>, F extends BeanNameAware, H>
+		extends IntegrationComponentSpec<S, Tuple2<F, H>> {
 
 	@SuppressWarnings("unchecked")
 	protected EndpointSpec(H handler) {
