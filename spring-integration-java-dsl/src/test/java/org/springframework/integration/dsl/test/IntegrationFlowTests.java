@@ -77,6 +77,7 @@ import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.core.MessageSource;
+import org.springframework.integration.dsl.AggregatorSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.ResequencerSpec;
@@ -272,6 +273,10 @@ public class IntegrationFlowTests {
 	@Qualifier("priorityReplyChannel")
 	private PollableChannel priorityReplyChannel;
 
+	@Autowired
+	@Qualifier("lamdasInput")
+	private MessageChannel lamdasInput;
+
 	@BeforeClass
 	public static void setup() throws IOException {
 		mongodExe = MongodStarter.getDefaultInstance()
@@ -438,6 +443,26 @@ public class IntegrationFlowTests {
 		Message<?> receive = replyChannel.receive(5000);
 		assertNotNull(receive);
 		assertEquals("Hello, world", receive.getPayload());
+	}
+
+	@Test
+	public void testLamdas() {
+		QueueChannel replyChannel = new QueueChannel();
+		Message<?> message = MessageBuilder.withPayload("World")
+				.setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel)
+				.build();
+		this.lamdasInput.send(message);
+		Message<?> receive = replyChannel.receive(5000);
+		assertNotNull(receive);
+		assertEquals("Hello World", receive.getPayload());
+
+		message = MessageBuilder.withPayload("Spring")
+				.setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel)
+				.build();
+
+		this.lamdasInput.send(message);
+		assertNull(replyChannel.receive(10));
+
 	}
 
 	@Test
@@ -826,7 +851,7 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
-		@Bean(name = PollerMetadata.DEFAULT_POLLER_METADATA_BEAN_NAME)
+		@Bean(name = PollerMetadata.DEFAULT_POLLER)
 		public PollerMetadata poller() {
 			return Pollers.fixedRate(500).get();
 		}
@@ -895,7 +920,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
 			return IntegrationFlows.from(MessageChannels.priority("priorityChannel",
-					mongoDbChannelMessageStore,	"priorityGroup"))
+					mongoDbChannelMessageStore,	"priorityGroup").interceptor())
 					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 2000)))
 					.channel(MessageChannels.queue("priorityReplyChannel"))
 					.get();
@@ -1047,6 +1072,14 @@ public class IntegrationFlowTests {
 		public IntegrationFlow methodInvokingFlow() {
 			return IntegrationFlows.from("methodInvokingInput")
 					.handle("greetingService", null)
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow lamdasFlow() {
+			return IntegrationFlows.from("lamdasInput")
+					.filter("World"::equals)
+					.transform("Hello "::concat)
 					.get();
 		}
 
