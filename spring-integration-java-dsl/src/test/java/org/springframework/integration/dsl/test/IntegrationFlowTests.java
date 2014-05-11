@@ -19,6 +19,7 @@ package org.springframework.integration.dsl.test;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +78,6 @@ import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.dsl.AggregatorSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.ResequencerSpec;
@@ -92,6 +92,7 @@ import org.springframework.integration.event.outbound.ApplicationEventPublishing
 import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.FileWritingMessageHandler;
+import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessageProducer;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
 import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
 import org.springframework.integration.router.MethodInvokingRouter;
@@ -129,6 +130,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class IntegrationFlowTests {
 
 	private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+
+	private static int mongoPort;
 
 	private static MongodExecutable mongodExe;
 
@@ -277,12 +280,17 @@ public class IntegrationFlowTests {
 	@Qualifier("lamdasInput")
 	private MessageChannel lamdasInput;
 
+	@Autowired
+	@Qualifier("tailChannel")
+	private PollableChannel tailChannel;
+
 	@BeforeClass
 	public static void setup() throws IOException {
+		mongoPort = Network.getFreeServerPort();
 		mongodExe = MongodStarter.getDefaultInstance()
 				.prepare(new MongodConfigBuilder()
 						.version(Version.Main.PRODUCTION)
-						.net(new Net(12345, Network.localhostIsIPv6()))
+						.net(new Net(mongoPort, Network.localhostIsIPv6()))
 						.build());
 		mongod = mongodExe.start();
 	}
@@ -817,6 +825,23 @@ public class IntegrationFlowTests {
 		assertEquals("none", receive.getPayload());
 	}
 
+	@Test
+	public void testMessageProducerFlow() throws Exception {
+		FileOutputStream file = new FileOutputStream(new File(tmpDir, "TailTest"));
+		for (int i = 0; i < 50; i++) {
+			file.write((i + "\n").getBytes());
+		}
+		file.flush();
+		file.close();
+
+		for (int i = 0; i < 50; i++) {
+			Message<?> message = this.tailChannel.receive(5000);
+			assertNotNull(message);
+			assertEquals("hello " + i, message.getPayload());
+		}
+		assertNull(this.tailChannel.receive(10));
+	}
+
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
@@ -907,7 +932,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public MongoDbFactory mongoDbFactory() throws Exception {
-			return new SimpleMongoDbFactory(new MongoClient("localhost",12345), "local");
+			return new SimpleMongoDbFactory(new MongoClient("localhost",mongoPort), "local");
 		}
 
 		@Bean
@@ -1216,9 +1241,20 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow routeMultiMethodInvocationFlow() {
 			return IntegrationFlows.from("routerMultiInput")
-					.<String, String[]>route(p -> p.equals("foo") || p.equals("bar") ? new String[]{"foo", "bar"} : null,
+					.<String, String[]>route(p -> p.equals("foo") || p.equals("bar") ? new String[] {"foo", "bar"} : null,
 							s -> s.suffix("-channel")
 					)
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow tailFlow() {
+			ApacheCommonsFileTailingMessageProducer adapter = new ApacheCommonsFileTailingMessageProducer();
+			adapter.setFile(new File(tmpDir, "TailTest"));
+
+			return IntegrationFlows.from(adapter)
+					.transform("hello "::concat)
+					.channel(MessageChannels.queue("tailChannel"))
 					.get();
 		}
 

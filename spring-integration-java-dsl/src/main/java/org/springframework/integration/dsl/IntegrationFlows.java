@@ -16,12 +16,15 @@
 
 package org.springframework.integration.dsl;
 
+import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
+import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
 import org.springframework.integration.dsl.support.MessageChannelReference;
-import org.springframework.integration.dsl.support.EndpointConfigurer;
+import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.messaging.MessageChannel;
 
 /**
@@ -72,6 +75,16 @@ public final class IntegrationFlows {
 		return new IntegrationFlowBuilder()
 				.addComponent(sourcePollingChannelAdapterFactoryBean)
 				.currentComponent(sourcePollingChannelAdapterFactoryBean);
+	}
+
+	public static IntegrationFlowBuilder from(MessageProducerSupport messageProducer) {
+		DirectFieldAccessor dfa = new DirectFieldAccessor(messageProducer);
+		MessageChannel outputChannel = (MessageChannel) dfa.getPropertyValue("outputChannel");
+		if (outputChannel == null) {
+			outputChannel = new DirectChannel();
+			messageProducer.setOutputChannel(outputChannel);
+		}
+		return from(outputChannel).addComponent(messageProducer);
 	}
 
 	/*public static IntegrationFlowBuilder from(AbstractEndpoint endpoint) {
