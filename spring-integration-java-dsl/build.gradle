@@ -48,12 +48,33 @@ configurations {
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 
+	['spring-integration-amqp'
+	 , 'spring-integration-event'
+	 , 'spring-integration-feed'
+	 , 'spring-integration-ftp'
+	 , 'spring-integration-gemfire'
+	 , 'spring-integration-http'
+	 , 'spring-integration-jdbc'
+	 , 'spring-integration-jms'
+	 , 'spring-integration-jmx'
+	 , 'spring-integration-jpa'
+	 , 'spring-integration-mail'
+	 , 'spring-integration-mongodb'
+	 , 'spring-integration-mqtt'
+	 , 'spring-integration-redis'
+	 , 'spring-integration-rmi'
+	 , 'spring-integration-sftp'
+	 , 'spring-integration-stream'
+	 , 'spring-integration-syslog'
+	 , 'spring-integration-twitter'
+	 , 'spring-integration-ws'
+	 , 'spring-integration-xml'
+	 , 'spring-integration-xmpp'].each {
+		compile("org.springframework.integration:$it:$springIntegrationVersion", optional)
+	}
+
 	testCompile "log4j:log4j:$log4jVersion"
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-	testCompile "org.springframework.integration:spring-integration-event:$springIntegrationVersion"
-	testCompile "org.springframework.integration:spring-integration-file:$springIntegrationVersion"
-	testCompile "org.springframework.integration:spring-integration-xml:$springIntegrationVersion"
-	testCompile "org.springframework.integration:spring-integration-mongodb:$springIntegrationVersion"
 	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embedMongoVersion"
 
 	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
