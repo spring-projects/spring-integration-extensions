@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.integration.splunk.core.ServiceFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -44,12 +45,8 @@ public class SplunkServiceFactory implements ServiceFactory {
 		this.splunkServers = Arrays.asList(splunkServer);
 	}
 
-    /*public SplunkServiceFactory(SplunkServer[] splunkServers) {
-        this.splunkServers = Arrays.asList( splunkServers );
-    }*/
-
     public SplunkServiceFactory(List<SplunkServer> splunkServers) {
-        this.splunkServers = splunkServers;
+        this.splunkServers = new ArrayList<SplunkServer>( splunkServers );
     }
 
     @Override
@@ -63,15 +60,15 @@ public class SplunkServiceFactory implements ServiceFactory {
         {
             Service service = servicePerServer.get( splunkServer );
             // service already exist and no test on borrow it so simply use it
-            if ( service != null && !splunkServer.isTestOnBorrow() )
-            {
-                return service;
-            }
 
-            if (service!=null && splunkServer.isTestOnBorrow()){
-                if (pingService( service )){
+            if ( service != null )
+            {
+                if ( !splunkServer.isCheckServiceOnBorrow() || pingService( service ) )
+                {
                     return service;
-                } else {
+                }
+                else
+                {
                     // fail so try next server
                     continue;
                 }

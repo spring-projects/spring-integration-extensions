@@ -123,7 +123,7 @@ Indicates the connection timeout in ms.
 					</xsd:appinfo>
 				</xsd:annotation>
 			</xsd:attribute>
-      <xsd:attribute name="testOnBorrow" type="xsd:boolean" use="optional">
+      <xsd:attribute name="checkServiceOnBorrow" use="optional">
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 To test or not the connection when reusing it.

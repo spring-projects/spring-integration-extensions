@@ -17,8 +17,6 @@ package org.springframework.integration.splunk.config.xml;
 
 import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.ListFactoryBean;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -28,13 +26,9 @@ import org.springframework.integration.config.xml.AbstractPollingInboundChannelA
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.splunk.inbound.SplunkPollingChannelAdapter;
 import org.springframework.integration.splunk.support.SplunkDataReader;
-import org.springframework.integration.splunk.support.SplunkServer;
 import org.springframework.integration.splunk.support.SplunkServiceFactory;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The Splunk Inbound Channel adapter parser
@@ -79,7 +73,7 @@ public class SplunkInboundChannelAdapterParser extends AbstractPollingInboundCha
 
                 ManagedList<RuntimeBeanReference> splunkServersList = new ManagedList<RuntimeBeanReference>( );
 
-                for(String splunkServerBeanName : StringUtils.delimitedListToStringArray( splunkServerBeanNames, ";" ))
+                for(String splunkServerBeanName : StringUtils.delimitedListToStringArray( splunkServerBeanNames, "," ))
                 {
                     splunkServersList.add( new RuntimeBeanReference( splunkServerBeanName ) );
                 }
