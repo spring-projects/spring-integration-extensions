@@ -37,7 +37,7 @@ public class SplunkServer {
     /**
      * if <code> will test i
      */
-    private boolean testOnBorrow = false;
+    private boolean checkServiceOnBorrow = false;
 
 	/**
 	 * @return the host
@@ -158,14 +158,14 @@ public class SplunkServer {
 		this.timeout = timeout;
 	}
 
-    public boolean isTestOnBorrow()
+    public boolean isCheckServiceOnBorrow()
     {
-        return testOnBorrow;
+        return checkServiceOnBorrow;
     }
 
-    public void setTestOnBorrow( boolean testOnBorrow )
+    public void setCheckServiceOnBorrow( boolean checkServiceOnBorrow )
     {
-        this.testOnBorrow = testOnBorrow;
+        this.checkServiceOnBorrow = checkServiceOnBorrow;
     }
 
     @Override

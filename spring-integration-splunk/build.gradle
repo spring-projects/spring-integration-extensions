@@ -255,7 +255,8 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.10'
+	gradleVersion = '1.12'
+    distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
 defaultTasks 'build'
