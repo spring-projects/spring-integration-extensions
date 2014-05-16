@@ -43,7 +43,7 @@ public class SplunkInboundChannelAdapterParser extends AbstractPollingInboundCha
 	protected BeanMetadataElement parseSource(Element element, ParserContext parserContext) {
 
 		BeanDefinitionBuilder splunkPollingChannelAdapterBuilder =
-            BeanDefinitionBuilder.genericBeanDefinition(SplunkPollingChannelAdapter.class);
+				BeanDefinitionBuilder.genericBeanDefinition(SplunkPollingChannelAdapter.class);
 
 		BeanDefinitionBuilder splunkExecutorBuilder = SplunkParserUtils.getSplunkExecutorBuilder(element, parserContext);
 
