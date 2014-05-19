@@ -25,6 +25,7 @@ import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
 import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.endpoint.MessageProducerSupport;
+import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.MessageChannel;
 
 /**
@@ -87,9 +88,15 @@ public final class IntegrationFlows {
 		return from(outputChannel).addComponent(messageProducer);
 	}
 
-	/*public static IntegrationFlowBuilder from(AbstractEndpoint endpoint) {
-		return new IntegrationFlowBuilder();
-	}*/
+	public static IntegrationFlowBuilder from(MessagingGatewaySupport inboundGateway) {
+		DirectFieldAccessor dfa = new DirectFieldAccessor(inboundGateway);
+		MessageChannel outputChannel = (MessageChannel) dfa.getPropertyValue("requestChannel");
+		if (outputChannel == null) {
+			outputChannel = new DirectChannel();
+			inboundGateway.setRequestChannel(outputChannel);
+		}
+		return from(outputChannel).addComponent(inboundGateway);
+	}
 
 	private IntegrationFlows() {
 	}

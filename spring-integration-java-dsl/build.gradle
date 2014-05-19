@@ -27,7 +27,8 @@ ext {
 	embedMongoVersion = '1.45'
 	jacocoVersion = '0.7.0.201403182114'
 	log4jVersion = '1.2.17'
-	springIntegrationVersion = '4.0.0.RELEASE'
+	springIntegrationVersion = '4.0.1.BUILD-SNAPSHOT'
+	springBootVersion = '1.1.0.BUILD-SNAPSHOT'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
 	linkCi = 'https://build.spring.io/browse/INTEXT'
@@ -76,6 +77,7 @@ dependencies {
 	testCompile "log4j:log4j:$log4jVersion"
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embedMongoVersion"
+	testCompile "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
 
 	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }
