@@ -27,17 +27,25 @@ import com.splunk.Service;
 public class SplunkServer {
 
 	private String host = Service.DEFAULT_HOST;
+
 	private int port = Service.DEFAULT_PORT;
+
 	private String scheme = Service.DEFAULT_SCHEME;
+
 	private String app;
+
 	private String owner;
+
 	private String username;
+
 	private String password;
+
 	private int timeout;
-    /**
-     * if <code> will test i
-     */
-    private boolean checkServiceOnBorrow = false;
+
+	/**
+	 * if <code>true</code> the framework will test the connectivity before give back the connection.
+	 */
+	private boolean checkServiceOnBorrow = false;
 
 	/**
 	 * @return the host
@@ -68,7 +76,7 @@ public class SplunkServer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
 	public String getScheme() {
@@ -76,7 +84,7 @@ public class SplunkServer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param scheme
 	 */
 	public void setScheme(String scheme) {
@@ -84,7 +92,7 @@ public class SplunkServer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
 	public String getApp() {
@@ -92,7 +100,7 @@ public class SplunkServer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param app
 	 */
 	public void setApp(String app) {
@@ -100,7 +108,7 @@ public class SplunkServer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
 	public String getOwner() {
@@ -108,7 +116,7 @@ public class SplunkServer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param owner
 	 */
 	public void setOwner(String owner) {
@@ -149,7 +157,7 @@ public class SplunkServer {
 	public int getTimeout() {
 		return timeout;
 	}
-	
+
 	/**
 	 * set the timeout in ms.
 	 * @param timeout
@@ -158,58 +166,49 @@ public class SplunkServer {
 		this.timeout = timeout;
 	}
 
-    public boolean isCheckServiceOnBorrow()
-    {
-        return checkServiceOnBorrow;
-    }
+	public boolean isCheckServiceOnBorrow() {
+		return checkServiceOnBorrow;
+	}
 
-    public void setCheckServiceOnBorrow( boolean checkServiceOnBorrow )
-    {
-        this.checkServiceOnBorrow = checkServiceOnBorrow;
-    }
+	public void setCheckServiceOnBorrow(boolean checkServiceOnBorrow) {
+		this.checkServiceOnBorrow = checkServiceOnBorrow;
+	}
 
-    @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o )
-        {
-            return true;
-        }
-        if ( o == null || getClass() != o.getClass() )
-        {
-            return false;
-        }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 
-        SplunkServer that = (SplunkServer) o;
+		SplunkServer that = SplunkServer.class.cast(o);
 
-        if ( port != that.port )
-        {
-            return false;
-        }
-        if ( !host.equals( that.host ) )
-        {
-            return false;
-        }
+		if (port != that.port) {
+			return false;
+		}
+		if (!host.equals(that.host)) {
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public int hashCode()
-    {
-        int result = host.hashCode();
-        result = 31 * result + port;
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		int result = host.hashCode();
+		result = 31 * result + port;
+		return result;
+	}
 
-    @Override
-    public String toString()
-    {
-        return "SplunkServer{" +
-            "host='" + host + '\'' +
-            ", port=" + port +
-            ", scheme='" + scheme + '\'' +
-            ", app='" + app + '\'' +
-            '}';
-    }
+	@Override
+	public String toString() {
+		return "SplunkServer{" +
+				"host='" + host + '\'' +
+				", port=" + port +
+				", scheme='" + scheme + '\'' +
+				", app='" + app + '\'' +
+				'}';
+	}
 }

@@ -63,24 +63,22 @@ public class SplunkInboundChannelAdapterParser extends AbstractPollingInboundCha
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "earliest-time");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(splunkDataReaderBuilder, element, "latest-time");
 
-        // initialize splunk servers references
-        {
-            BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
+		// initialize splunk servers references
+		{
+			BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
 
-            String splunkServerBeanNames = element.getAttribute( "splunk-server-ref" );
-            if ( StringUtils.hasText( splunkServerBeanNames ) )
-            {
+			String splunkServerBeanNames = element.getAttribute("splunk-server-ref");
+			if (StringUtils.hasText(splunkServerBeanNames)) {
 
-                ManagedList<RuntimeBeanReference> splunkServersList = new ManagedList<RuntimeBeanReference>( );
+				ManagedList<RuntimeBeanReference> splunkServersList = new ManagedList<RuntimeBeanReference>();
 
-                for(String splunkServerBeanName : StringUtils.delimitedListToStringArray( splunkServerBeanNames, "," ))
-                {
-                    splunkServersList.add( new RuntimeBeanReference( splunkServerBeanName ) );
-                }
-                serviceFactoryBuilder.addConstructorArgValue( splunkServersList );
-                splunkDataReaderBuilder.addConstructorArgValue( serviceFactoryBuilder.getBeanDefinition() );
-            }
-        }
+				for (String splunkServerBeanName : StringUtils.commaDelimitedListToStringArray(splunkServerBeanNames)) {
+					splunkServersList.add(new RuntimeBeanReference(splunkServerBeanName));
+				}
+				serviceFactoryBuilder.addConstructorArgValue(splunkServersList);
+				splunkDataReaderBuilder.addConstructorArgValue(serviceFactoryBuilder.getBeanDefinition());
+			}
+		}
 
 		String channelAdapterId = this.resolveId(element, splunkPollingChannelAdapterBuilder.getRawBeanDefinition(),
 				parserContext);
