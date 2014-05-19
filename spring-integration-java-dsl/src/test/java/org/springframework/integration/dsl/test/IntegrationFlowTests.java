@@ -51,10 +51,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.core.AnonymousQueue;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -82,6 +87,7 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.ResequencerSpec;
 import org.springframework.integration.dsl.SplitterEndpointSpec;
+import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.support.GenericSplitter;
@@ -283,6 +289,13 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("tailChannel")
 	private PollableChannel tailChannel;
+
+	@Autowired
+	private AmqpTemplate amqpTemplate;
+
+	@Autowired
+	private Queue amqpQueue;
+
 
 	@BeforeClass
 	public static void setup() throws IOException {
@@ -843,6 +856,12 @@ public class IntegrationFlowTests {
 	}
 
 
+	@Test
+	public void testAmqpInboundGatewayFlow() throws Exception {
+		Object result = this.amqpTemplate.convertSendAndReceive(this.amqpQueue.getName(), "world");
+		assertEquals("HELLO WORLD", result);
+	}
+
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
 
@@ -850,7 +869,7 @@ public class IntegrationFlowTests {
 	}
 
 	@Configuration
-	@EnableIntegration
+	@EnableAutoConfiguration
 	@IntegrationComponentScan
 	public static class ContextConfiguration {
 
@@ -1258,6 +1277,21 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
+		@Autowired
+		private ConnectionFactory rabbitConnectionFactory;
+
+		@Bean
+		public Queue queue() {
+			return new AnonymousQueue();
+		}
+
+		@Bean
+		public IntegrationFlow amqpFlow() {
+			return IntegrationFlows.from(Amqp.inboundGateway(this.rabbitConnectionFactory, queue()).get())
+					.transform("hello "::concat)
+					.transform((String p) -> p.toUpperCase())
+					.get();
+		}
 	}
 
 	private static class RoutingTestBean {
