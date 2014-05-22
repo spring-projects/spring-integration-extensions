@@ -28,8 +28,11 @@ import org.springframework.core.serializer.Serializer;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.dsl.tuple.Tuple2;
+import org.springframework.integration.file.transformer.FileToByteArrayTransformer;
+import org.springframework.integration.file.transformer.FileToStringTransformer;
 import org.springframework.integration.json.JsonToObjectTransformer;
 import org.springframework.integration.json.ObjectToJsonTransformer;
+import org.springframework.integration.mail.transformer.MailToStringTransformer;
 import org.springframework.integration.support.json.JsonObjectMapper;
 import org.springframework.integration.transformer.MapToObjectTransformer;
 import org.springframework.integration.transformer.ObjectToMapTransformer;
@@ -38,8 +41,19 @@ import org.springframework.integration.transformer.PayloadDeserializingTransform
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
 import org.springframework.integration.transformer.PayloadTypeConvertingTransformer;
 import org.springframework.integration.transformer.SyslogToMapTransformer;
-import org.springframework.integration.transformer.Transformer;
+import org.springframework.integration.xml.result.ResultFactory;
+import org.springframework.integration.xml.source.SourceFactory;
+import org.springframework.integration.xml.transformer.MarshallingTransformer;
+import org.springframework.integration.xml.transformer.ResultTransformer;
+import org.springframework.integration.xml.transformer.SourceCreatingTransformer;
+import org.springframework.integration.xml.transformer.UnmarshallingTransformer;
+import org.springframework.integration.xml.transformer.XPathTransformer;
+import org.springframework.integration.xml.transformer.XsltPayloadTransformer;
+import org.springframework.integration.xml.xpath.XPathEvaluationType;
+import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.util.Assert;
+import org.springframework.xml.xpath.NodeMapper;
 
 /**
  * @author Artem Bilan
@@ -48,58 +62,58 @@ public abstract class Transformers {
 
 	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	public static Transformer objectToString() {
+	public static ObjectToStringTransformer objectToString() {
 		return objectToString(null);
 	}
 
-	public static Transformer objectToString(String charset) {
+	public static ObjectToStringTransformer objectToString(String charset) {
 		return charset != null ? new ObjectToStringTransformer(charset) : new ObjectToStringTransformer();
 	}
 
-	public static Transformer toMap() {
+	public static ObjectToMapTransformer toMap() {
 		return new ObjectToMapTransformer();
 	}
 
-	public static Transformer toMap(boolean shouldFlattenKeys) {
+	public static ObjectToMapTransformer toMap(boolean shouldFlattenKeys) {
 		ObjectToMapTransformer transformer = new ObjectToMapTransformer();
 		transformer.setShouldFlattenKeys(shouldFlattenKeys);
 		return transformer;
 	}
 
-	public static Transformer fromMap(Class<?> targetClass) {
+	public static MapToObjectTransformer fromMap(Class<?> targetClass) {
 		return new MapToObjectTransformer(targetClass);
 	}
 
-	public static Transformer fromMap(String beanName) {
+	public static MapToObjectTransformer fromMap(String beanName) {
 		return new MapToObjectTransformer(beanName);
 	}
 
-	public static Transformer toJson() {
+	public static ObjectToJsonTransformer toJson() {
 		return toJson(null, null, null);
 	}
 
-	public static Transformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper) {
+	public static ObjectToJsonTransformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper) {
 		return toJson(jsonObjectMapper, null, null);
 	}
 
-	public static Transformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper,
+	public static ObjectToJsonTransformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper,
 			ObjectToJsonTransformer.ResultType resultType) {
 		return toJson(jsonObjectMapper, resultType, null);
 	}
 
-	public static Transformer toJson(String contentType) {
+	public static ObjectToJsonTransformer toJson(String contentType) {
 		return toJson(null, null, contentType);
 	}
 
-	public static Transformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper, String contentType) {
+	public static ObjectToJsonTransformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper, String contentType) {
 		return toJson(jsonObjectMapper, null, contentType);
 	}
 
-	public static Transformer toJson(ObjectToJsonTransformer.ResultType resultType, String contentType) {
+	public static ObjectToJsonTransformer toJson(ObjectToJsonTransformer.ResultType resultType, String contentType) {
 		return toJson(null, resultType, contentType);
 	}
 
-	public static Transformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper,
+	public static ObjectToJsonTransformer toJson(JsonObjectMapper<?, ?> jsonObjectMapper,
 			ObjectToJsonTransformer.ResultType resultType, String contentType) {
 		ObjectToJsonTransformer transformer;
 		if (jsonObjectMapper != null) {
@@ -122,27 +136,27 @@ public abstract class Transformers {
 		return transformer;
 	}
 
-	public static Transformer fromJson() {
+	public static JsonToObjectTransformer fromJson() {
 		return fromJson(null, null);
 	}
 
-	public static Transformer fromJson(Class<?> targetClass) {
+	public static JsonToObjectTransformer fromJson(Class<?> targetClass) {
 		return fromJson(targetClass, null);
 	}
 
-	public static Transformer fromJson(JsonObjectMapper<?, ?> jsonObjectMapper) {
+	public static JsonToObjectTransformer fromJson(JsonObjectMapper<?, ?> jsonObjectMapper) {
 		return fromJson(null, jsonObjectMapper);
 	}
 
-	public static Transformer fromJson(Class<?> targetClass, JsonObjectMapper<?, ?> jsonObjectMapper) {
+	public static JsonToObjectTransformer fromJson(Class<?> targetClass, JsonObjectMapper<?, ?> jsonObjectMapper) {
 		return new JsonToObjectTransformer(targetClass, jsonObjectMapper);
 	}
 
-	public static Transformer serializer() {
+	public static PayloadSerializingTransformer serializer() {
 		return serializer(null);
 	}
 
-	public static Transformer serializer(Serializer<Object> serializer) {
+	public static PayloadSerializingTransformer serializer(Serializer<Object> serializer) {
 		PayloadSerializingTransformer transformer = new PayloadSerializingTransformer();
 		if (serializer != null) {
 			transformer.setSerializer(serializer);
@@ -150,11 +164,11 @@ public abstract class Transformers {
 		return transformer;
 	}
 
-	public static Transformer deserializer() {
+	public static PayloadDeserializingTransformer deserializer() {
 		return deserializer(null);
 	}
 
-	public static Transformer deserializer(Deserializer<Object> deserializer) {
+	public static PayloadDeserializingTransformer deserializer(Deserializer<Object> deserializer) {
 		PayloadDeserializingTransformer transformer = new PayloadDeserializingTransformer();
 		if (deserializer != null) {
 			transformer.setDeserializer(deserializer);
@@ -162,98 +176,86 @@ public abstract class Transformers {
 		return transformer;
 	}
 
-	public static <T, U> Transformer converter(Converter<T, U> converter) {
+	public static <T, U> PayloadTypeConvertingTransformer<T, U> converter(Converter<T, U> converter) {
 		Assert.notNull(converter, "The Converter<?, ?> is required for the PayloadTypeConvertingTransformer");
 		PayloadTypeConvertingTransformer<T, U> transformer = new PayloadTypeConvertingTransformer<T, U>();
 		transformer.setConverter(converter);
 		return transformer;
 	}
 
-	public static Transformer syslogToMap() {
+	public static SyslogToMapTransformer syslogToMap() {
 		return new SyslogToMapTransformer();
 	}
 
-	public static Transformer fromMail() {
+	public static MailToStringTransformer fromMail() {
 		return fromMail(null);
 	}
 
-	public static Transformer fromMail(String charset) {
-		org.springframework.integration.mail.transformer.MailToStringTransformer transformer =
-				new org.springframework.integration.mail.transformer.MailToStringTransformer();
+	public static MailToStringTransformer fromMail(String charset) {
+		MailToStringTransformer transformer = new MailToStringTransformer();
 		if (charset != null) {
 			transformer.setCharset(charset);
 		}
 		return transformer;
 	}
 
-	public static Transformer fileToString() {
+	public static FileToStringTransformer fileToString() {
 		return fileToString(null);
 	}
 
-	public static Transformer fileToString(String charset) {
-		org.springframework.integration.file.transformer.FileToStringTransformer transformer =
-				new org.springframework.integration.file.transformer.FileToStringTransformer();
+	public static FileToStringTransformer fileToString(String charset) {
+		FileToStringTransformer transformer = new FileToStringTransformer();
 		if (charset != null) {
 			transformer.setCharset(charset);
 		}
 		return transformer;
 	}
 
-	public static Transformer fileToByteArray() {
-		return new org.springframework.integration.file.transformer.FileToByteArrayTransformer();
+	public static FileToByteArrayTransformer fileToByteArray() {
+		return new FileToByteArrayTransformer();
 	}
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller) {
+	public static MarshallingTransformer marshaller(Marshaller marshaller) {
 		return marshaller(marshaller, null, null, null);
 	}
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller,
-			org.springframework.integration.xml.transformer.ResultTransformer resultTransformer) {
+	public static MarshallingTransformer marshaller(Marshaller marshaller, ResultTransformer resultTransformer) {
 		return marshaller(marshaller, resultTransformer, null);
 	}
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller,
-			org.springframework.integration.xml.result.ResultFactory resultFactory) {
+	public static MarshallingTransformer marshaller(Marshaller marshaller, ResultFactory resultFactory) {
 		return marshaller(marshaller, null, resultFactory);
 	}
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller, boolean extractPayload) {
+	public static MarshallingTransformer marshaller(Marshaller marshaller, boolean extractPayload) {
 		return marshaller(marshaller, null, null, extractPayload);
 	}
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller,
-			org.springframework.integration.xml.result.ResultFactory resultFactory,
+	public static MarshallingTransformer marshaller(Marshaller marshaller,ResultFactory resultFactory,
 			boolean extractPayload) {
 		return marshaller(marshaller, null, resultFactory, extractPayload);
 	}
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller,
-			org.springframework.integration.xml.transformer.ResultTransformer resultTransformer,
+	public static MarshallingTransformer marshaller(Marshaller marshaller, ResultTransformer resultTransformer,
 			boolean extractPayload) {
 		return marshaller(marshaller, resultTransformer, null, extractPayload);
 	}
 
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller,
-			org.springframework.integration.xml.transformer.ResultTransformer resultTransformer,
-			org.springframework.integration.xml.result.ResultFactory resultFactory) {
+	public static MarshallingTransformer marshaller(Marshaller marshaller, ResultTransformer resultTransformer,
+			ResultFactory resultFactory) {
 		return marshaller(marshaller, resultTransformer, resultFactory, null);
 	}
 
-	public static Transformer marshaller(org.springframework.oxm.Marshaller marshaller,
-			org.springframework.integration.xml.transformer.ResultTransformer resultTransformer,
-			org.springframework.integration.xml.result.ResultFactory resultFactory,
-			boolean extractPayload) {
+	public static MarshallingTransformer marshaller(Marshaller marshaller, ResultTransformer resultTransformer,
+			ResultFactory resultFactory, boolean extractPayload) {
 		return marshaller(marshaller, resultTransformer, resultFactory, Boolean.valueOf(extractPayload));
 	}
 
-	private static Transformer marshaller(org.springframework.oxm.Marshaller marshaller,
-			org.springframework.integration.xml.transformer.ResultTransformer resultTransformer,
-			org.springframework.integration.xml.result.ResultFactory resultFactory,
-			Boolean extractPayload) {
+	private static MarshallingTransformer marshaller(Marshaller marshaller, ResultTransformer resultTransformer,
+			ResultFactory resultFactory, Boolean extractPayload) {
 		try {
-			org.springframework.integration.xml.transformer.MarshallingTransformer transformer =
-					new org.springframework.integration.xml.transformer.MarshallingTransformer(marshaller, resultTransformer);
+			MarshallingTransformer transformer = new MarshallingTransformer(marshaller, resultTransformer);
 			if (resultFactory != null) {
 				transformer.setResultFactory(resultFactory);
 			}
@@ -267,25 +269,22 @@ public abstract class Transformers {
 		}
 	}
 
-	public static Transformer unmarshaller(org.springframework.oxm.Unmarshaller unmarshaller) {
+	public static UnmarshallingTransformer unmarshaller(Unmarshaller unmarshaller) {
 		return unmarshaller(unmarshaller, null);
 	}
 
-	public static Transformer unmarshaller(org.springframework.oxm.Unmarshaller unmarshaller,
-			org.springframework.integration.xml.source.SourceFactory sourceFactory) {
+	public static UnmarshallingTransformer unmarshaller(Unmarshaller unmarshaller, SourceFactory sourceFactory) {
 		return unmarshaller(unmarshaller, sourceFactory, false);
 	}
 
-	public static Transformer unmarshaller(org.springframework.oxm.Unmarshaller unmarshaller,
+	public static UnmarshallingTransformer unmarshaller(Unmarshaller unmarshaller,
 			boolean alwaysUseSourceFactory) {
 		return unmarshaller(unmarshaller, null, alwaysUseSourceFactory);
 	}
 
-	public static Transformer unmarshaller(org.springframework.oxm.Unmarshaller unmarshaller,
-			org.springframework.integration.xml.source.SourceFactory sourceFactory,
+	public static UnmarshallingTransformer unmarshaller(Unmarshaller unmarshaller, SourceFactory sourceFactory,
 			boolean alwaysUseSourceFactory) {
-		org.springframework.integration.xml.transformer.UnmarshallingTransformer transformer =
-				new org.springframework.integration.xml.transformer.UnmarshallingTransformer(unmarshaller);
+		UnmarshallingTransformer transformer = new UnmarshallingTransformer(unmarshaller);
 		if(sourceFactory != null) {
 			transformer.setSourceFactory(sourceFactory);
 		}
@@ -294,37 +293,29 @@ public abstract class Transformers {
 		return transformer;
 	}
 
-	public static Transformer xmlSource() {
+	public static SourceCreatingTransformer xmlSource() {
 		return xmlSource(null);
 	}
 
-	public static Transformer xmlSource(org.springframework.integration.xml.source.SourceFactory sourceFactory) {
-		if (sourceFactory != null) {
-			return new org.springframework.integration.xml.transformer.SourceCreatingTransformer(sourceFactory);
-		}
-		else {
-			return new org.springframework.integration.xml.transformer.SourceCreatingTransformer();
-		}
+	public static SourceCreatingTransformer xmlSource(SourceFactory sourceFactory) {
+		return sourceFactory != null ? new SourceCreatingTransformer(sourceFactory) : new SourceCreatingTransformer();
 	}
 
-	public static Transformer xpath(String xpathExpression) {
+	public static XPathTransformer xpath(String xpathExpression) {
 		return xpath(xpathExpression, null, null);
 	}
 
-	public static Transformer xpath(String xpathExpression,
-			org.springframework.integration.xml.xpath.XPathEvaluationType xpathEvaluationType) {
+	public static XPathTransformer xpath(String xpathExpression, XPathEvaluationType xpathEvaluationType) {
 		return xpath(xpathExpression, xpathEvaluationType, null);
 	}
 
-	public static Transformer xpath(String xpathExpression,	org.springframework.xml.xpath.NodeMapper<?> nodeMapper) {
+	public static XPathTransformer xpath(String xpathExpression, NodeMapper<?> nodeMapper) {
 		return xpath(xpathExpression, null, nodeMapper);
 	}
 
-	public static Transformer xpath(String xpathExpression,
-			org.springframework.integration.xml.xpath.XPathEvaluationType xpathEvaluationType,
-			org.springframework.xml.xpath.NodeMapper<?> nodeMapper) {
-		org.springframework.integration.xml.transformer.XPathTransformer transformer =
-				new org.springframework.integration.xml.transformer.XPathTransformer(xpathExpression);
+	public static XPathTransformer xpath(String xpathExpression, XPathEvaluationType xpathEvaluationType,
+			NodeMapper<?> nodeMapper) {
+		XPathTransformer transformer = new XPathTransformer(xpathExpression);
 		if (xpathEvaluationType != null) {
 			transformer.setEvaluationType(xpathEvaluationType);
 		}
@@ -334,9 +325,8 @@ public abstract class Transformers {
 		return transformer;
 	}
 
-	public static Transformer xslt(Resource xsltTemplate, Tuple2<String, String>... xslParameterMappings) {
-		org.springframework.integration.xml.transformer.XsltPayloadTransformer transformer =
-				new org.springframework.integration.xml.transformer.XsltPayloadTransformer(xsltTemplate);
+	public static XsltPayloadTransformer xslt(Resource xsltTemplate, Tuple2<String, String>... xslParameterMappings) {
+		XsltPayloadTransformer transformer = new XsltPayloadTransformer(xsltTemplate);
 		if (xslParameterMappings != null) {
 			Map<String, Expression> params = new HashMap<String, Expression>(xslParameterMappings.length);
 			for (Tuple2<String, String> mapping : xslParameterMappings) {

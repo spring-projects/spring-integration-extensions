@@ -70,6 +70,7 @@ import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.MessageDispatchingException;
+import org.springframework.integration.MessageRejectedException;
 import org.springframework.integration.annotation.Header;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -121,6 +122,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.core.DestinationResolutionException;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
+import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
@@ -296,6 +298,13 @@ public class IntegrationFlowTests {
 	@Autowired
 	private Queue amqpQueue;
 
+	@Autowired
+	@Qualifier("gatewayInput")
+	private MessageChannel gatewayInput;
+
+	@Autowired
+	@Qualifier("gatewayError")
+	private PollableChannel gatewayError;
 
 	@BeforeClass
 	public static void setup() throws IOException {
@@ -852,7 +861,7 @@ public class IntegrationFlowTests {
 			assertNotNull(message);
 			assertEquals("hello " + i, message.getPayload());
 		}
-		assertNull(this.tailChannel.receive(10));
+		assertNull(this.tailChannel.receive(1));
 	}
 
 
@@ -860,6 +869,32 @@ public class IntegrationFlowTests {
 	public void testAmqpInboundGatewayFlow() throws Exception {
 		Object result = this.amqpTemplate.convertSendAndReceive(this.amqpQueue.getName(), "world");
 		assertEquals("HELLO WORLD", result);
+	}
+
+	@Test
+	public void testGatewayFlow() throws Exception {
+		PollableChannel replyChannel = new QueueChannel();
+		Message<String> message = MessageBuilder.withPayload("foo").setReplyChannel(replyChannel).build();
+
+		this.gatewayInput.send(message);
+
+		Message<?> receive = replyChannel.receive(2000);
+		assertNotNull(receive);
+		assertEquals("FOO", receive.getPayload());
+		assertNull(this.gatewayError.receive(1));
+
+		message = MessageBuilder.withPayload("bar").setReplyChannel(replyChannel).build();
+
+		this.gatewayInput.send(message);
+
+		receive = replyChannel.receive(1);
+		assertNull(receive);
+
+		receive = this.gatewayError.receive(2000);
+		assertNotNull(receive);
+		assertThat(receive, Matchers.instanceOf(ErrorMessage.class));
+		assertThat(receive.getPayload(), Matchers.instanceOf(MessageRejectedException.class));
+		assertThat(((Exception) receive.getPayload()).getMessage(), Matchers.containsString("' rejected Message"));
 	}
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
@@ -1292,6 +1327,27 @@ public class IntegrationFlowTests {
 					.transform((String p) -> p.toUpperCase())
 					.get();
 		}
+
+		@Bean
+		public IntegrationFlow gatewayFlow() {
+			return IntegrationFlows.from("gatewayInput")
+					.gateway("gatewayRequest", g -> g.errorChannel("gatewayError").replyTimeout(10L))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow gatewayRequestFlow() {
+			return IntegrationFlows.from("gatewayRequest")
+					.filter("foo"::equals, f -> f.throwExceptionOnRejection(true))
+					.<String, String>transform(String::toUpperCase)
+					.get();
+		}
+
+		@Bean
+		public MessageChannel gatewayError() {
+			return MessageChannels.queue().get();
+		}
+
 	}
 
 	private static class RoutingTestBean {

@@ -24,7 +24,6 @@ import org.springframework.integration.dsl.core.MessagingGatewaySpec;
 
 /**
  * @author Artem Bilan
- * @since 4.0
  */
 public abstract class Amqp {
 
