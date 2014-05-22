@@ -27,7 +27,7 @@ ext {
 	embedMongoVersion = '1.45'
 	jacocoVersion = '0.7.0.201403182114'
 	log4jVersion = '1.2.17'
-	springIntegrationVersion = '4.0.1.BUILD-SNAPSHOT'
+	springIntegrationVersion = '4.0.1.RELEASE'
 	springBootVersion = '1.1.0.BUILD-SNAPSHOT'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
