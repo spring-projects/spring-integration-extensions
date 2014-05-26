@@ -36,6 +36,7 @@ import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
 import org.springframework.integration.dsl.support.ComponentConfigurer;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
+import org.springframework.integration.dsl.support.GenericHandler;
 import org.springframework.integration.dsl.support.GenericRouter;
 import org.springframework.integration.dsl.support.GenericSplitter;
 import org.springframework.integration.dsl.support.MessageChannelReference;
@@ -136,14 +137,25 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public <S, T> IntegrationFlowBuilder transform(GenericTransformer<S, T> genericTransformer) {
-		return this.transform(genericTransformer, null);
+		return this.transform(null, genericTransformer);
+	}
+
+	public <P, T> IntegrationFlowBuilder transform(Class<P> payloadType, GenericTransformer<P, T> genericTransformer) {
+		return this.transform(payloadType, genericTransformer, null);
 	}
 
 	public <S, T> IntegrationFlowBuilder transform(GenericTransformer<S, T> genericTransformer,
 			EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		return this.transform(null, genericTransformer, endpointConfigurer);
+	}
+
+	public <P, T> IntegrationFlowBuilder transform(Class<P> payloadType, GenericTransformer<P, T> genericTransformer,
+			EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
 		Assert.notNull(genericTransformer);
-		Transformer transformer = genericTransformer instanceof Transformer
-				? (Transformer) genericTransformer : new MethodInvokingTransformer(genericTransformer);
+		Transformer transformer = genericTransformer instanceof Transformer ? (Transformer) genericTransformer :
+				(isLambda(genericTransformer)
+						? new MethodInvokingTransformer(new LambdaMessageProcessor(genericTransformer, payloadType))
+						: new MethodInvokingTransformer(genericTransformer));
 		return this.handle(new MessageTransformingHandler(transformer), endpointConfigurer);
 	}
 
@@ -153,14 +165,25 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector) {
-		return this.filter(genericSelector, null);
+		return this.filter(null, genericSelector);
 	}
 
-	public <S> IntegrationFlowBuilder filter(GenericSelector<S> genericSelector,
+	public <P> IntegrationFlowBuilder filter(Class<P> payloadType, GenericSelector<P> genericSelector) {
+		return this.filter(payloadType, genericSelector, null);
+	}
+
+	public <P> IntegrationFlowBuilder filter(GenericSelector<P> genericSelector,
+			EndpointConfigurer<FilterEndpointSpec> endpointConfigurer) {
+		return filter(null, genericSelector, endpointConfigurer);
+	}
+
+	public <P> IntegrationFlowBuilder filter(Class<P> payloadType, GenericSelector<P> genericSelector,
 			EndpointConfigurer<FilterEndpointSpec> endpointConfigurer) {
 		Assert.notNull(genericSelector);
-		MessageSelector selector = genericSelector instanceof MessageSelector
-				? (MessageSelector) genericSelector : new MethodInvokingSelector(genericSelector);
+		MessageSelector selector = genericSelector instanceof MessageSelector ? (MessageSelector) genericSelector :
+				(isLambda(genericSelector)
+						? new MethodInvokingSelector(new LambdaMessageProcessor(genericSelector, payloadType))
+						: new MethodInvokingSelector(genericSelector));
 		return this.register(new FilterEndpointSpec(new MessageFilter(selector)), endpointConfigurer);
 	}
 
@@ -176,6 +199,32 @@ public final class IntegrationFlowBuilder {
 			EndpointConfigurer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
 		return this.handle(new ServiceActivatingHandler(new BeanNameMessageProcessor<Object>(beanName, methodName)),
 				endpointConfigurer);
+	}
+
+	public <P> IntegrationFlowBuilder handle(GenericHandler<P> handler) {
+		return this.handle(null, handler);
+	}
+
+	public <P> IntegrationFlowBuilder handle(GenericHandler<P> handler,
+			EndpointConfigurer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
+		return this.handle(null, handler, endpointConfigurer);
+	}
+
+
+	public <P> IntegrationFlowBuilder handle(Class<P> payloadType, GenericHandler<P> handler) {
+		return this.handle(payloadType, handler, null);
+	}
+
+	public <P> IntegrationFlowBuilder handle(Class<P> payloadType, GenericHandler<P> handler,
+			EndpointConfigurer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
+		ServiceActivatingHandler serviceActivatingHandler = null;
+		if (isLambda(handler)) {
+			serviceActivatingHandler = new ServiceActivatingHandler(new LambdaMessageProcessor(handler, payloadType));
+		}
+		else {
+			serviceActivatingHandler = new ServiceActivatingHandler(handler);
+		}
+		return this.handle(serviceActivatingHandler, endpointConfigurer);
 	}
 
 	public <H extends MessageHandler> IntegrationFlowBuilder handle(H messageHandler,
@@ -243,17 +292,8 @@ public final class IntegrationFlowBuilder {
 		return this.addComponent(headerEnricher).transform(headerEnricher, endpointConfigurer);
 	}
 
-	public IntegrationFlowBuilder split() {
-		return this.split((EndpointConfigurer<SplitterEndpointSpec<DefaultMessageSplitter>>) null);
-	}
-
-	public
-	IntegrationFlowBuilder split(EndpointConfigurer<SplitterEndpointSpec<DefaultMessageSplitter>> endpointConfigurer) {
+	public IntegrationFlowBuilder split(EndpointConfigurer<SplitterEndpointSpec<DefaultMessageSplitter>> endpointConfigurer) {
 		return this.split(new DefaultMessageSplitter(), endpointConfigurer);
-	}
-
-	public IntegrationFlowBuilder split(String expression) {
-		return this.split(expression, (EndpointConfigurer<SplitterEndpointSpec<ExpressionEvaluatingSplitter>>) null);
 	}
 
 	public IntegrationFlowBuilder split(String expression,
@@ -271,17 +311,21 @@ public final class IntegrationFlowBuilder {
 				endpointConfigurer);
 	}
 
-	public IntegrationFlowBuilder split(AbstractMessageSplitter splitter) {
-		return this.split(splitter, null);
-	}
-
-	public <T> IntegrationFlowBuilder split(GenericSplitter<T> splitter) {
-		return this.split(splitter, null);
+	public <P> IntegrationFlowBuilder split(Class<P> payloadType, GenericSplitter<P> splitter) {
+		return this.split(payloadType, splitter, null);
 	}
 
 	public <T> IntegrationFlowBuilder split(GenericSplitter<T> splitter,
 			EndpointConfigurer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
-		return this.split(new MethodInvokingSplitter(splitter, "split"), endpointConfigurer);
+		return split(null, splitter, endpointConfigurer);
+	}
+
+	public <P> IntegrationFlowBuilder split(Class<P> payloadType, GenericSplitter<P> splitter,
+			EndpointConfigurer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
+		MethodInvokingSplitter split = isLambda(splitter)
+				? new MethodInvokingSplitter(new LambdaMessageProcessor(splitter, payloadType))
+				: new MethodInvokingSplitter(splitter, "split");
+		return this.split(split, endpointConfigurer);
 	}
 
 	public <S extends AbstractMessageSplitter> IntegrationFlowBuilder split(S splitter,
@@ -348,8 +392,7 @@ public final class IntegrationFlowBuilder {
 		return this.resequence((EndpointConfigurer<GenericEndpointSpec<ResequencingMessageHandler>>) null);
 	}
 
-	public
-	IntegrationFlowBuilder resequence(EndpointConfigurer<GenericEndpointSpec<ResequencingMessageHandler>> endpointConfigurer) {
+	public IntegrationFlowBuilder resequence(EndpointConfigurer<GenericEndpointSpec<ResequencingMessageHandler>> endpointConfigurer) {
 		return this.resequence(new ResequencingMessageHandler(new ResequencingMessageGroupProcessor()),
 				endpointConfigurer);
 	}
@@ -375,18 +418,9 @@ public final class IntegrationFlowBuilder {
 		return this.handle(resequencer, endpointConfigurer);
 	}
 
-	public IntegrationFlowBuilder aggregate() {
-		return this.aggregate((EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>>) null);
-	}
-
-	public
-	IntegrationFlowBuilder aggregate(EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
+	public IntegrationFlowBuilder aggregate(EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
 		return this.aggregate(new AggregatingMessageHandler(new DefaultAggregatingMessageGroupProcessor()),
 				endpointConfigurer);
-	}
-
-	public IntegrationFlowBuilder aggregate(ComponentConfigurer<AggregatorSpec> aggregatorConfigurer) {
-		return this.aggregate(aggregatorConfigurer, null);
 	}
 
 	public IntegrationFlowBuilder aggregate(ComponentConfigurer<AggregatorSpec> aggregatorConfigurer,
@@ -395,10 +429,6 @@ public final class IntegrationFlowBuilder {
 		AggregatorSpec spec = new AggregatorSpec();
 		aggregatorConfigurer.configure(spec);
 		return this.aggregate(spec.get(), endpointConfigurer);
-	}
-
-	public IntegrationFlowBuilder aggregate(AggregatingMessageHandler aggregator) {
-		return this.aggregate(aggregator, null);
 	}
 
 	public IntegrationFlowBuilder aggregate(AggregatingMessageHandler aggregator,
@@ -441,23 +471,36 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router) {
-		return this.route(router, (ComponentConfigurer<RouterSpec<MethodInvokingRouter>>) null);
+		return this.route(null, router);
 	}
 
 	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router,
 			ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
-		return this.route(router, routerConfigurer, null);
+		return this.route(null, router, routerConfigurer);
+	}
+
+	public <P, T> IntegrationFlowBuilder route(Class<P> payloadType, GenericRouter<P, T> router) {
+		return this.route(payloadType, router, null, null);
+	}
+
+	public <P, T> IntegrationFlowBuilder route(Class<P> payloadType, GenericRouter<P, T> router,
+			ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
+		return this.route(payloadType, router, routerConfigurer, null);
 	}
 
 	public <S, T> IntegrationFlowBuilder route(GenericRouter<S, T> router,
 			ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
 			EndpointConfigurer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
-		return this.route(new MethodInvokingRouter(router), routerConfigurer, endpointConfigurer);
+		return route(null, router, routerConfigurer, endpointConfigurer);
 	}
 
-	public <R extends AbstractMappingMessageRouter> IntegrationFlowBuilder route(R router,
-			ComponentConfigurer<RouterSpec<R>> routerConfigurer) {
-		return this.route(router, routerConfigurer, null);
+	public <P, T> IntegrationFlowBuilder route(Class<P> payloadType, GenericRouter<P, T> router,
+			ComponentConfigurer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
+			EndpointConfigurer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
+		MethodInvokingRouter methodInvokingRouter = isLambda(router)
+				? new MethodInvokingRouter(new LambdaMessageProcessor(router, payloadType))
+				: new MethodInvokingRouter(router);
+		return this.route(methodInvokingRouter, routerConfigurer, endpointConfigurer);
 	}
 
 	public <R extends AbstractMappingMessageRouter> IntegrationFlowBuilder route(R router,
@@ -611,6 +654,11 @@ public final class IntegrationFlowBuilder {
 			}
 		}
 		return this.flow;
+	}
+
+	private static boolean isLambda(Object o) {
+		Class<?> aClass = o.getClass();
+		return aClass.isSynthetic() && !aClass.isAnonymousClass() && aClass.getDeclaredMethods().length == 1;
 	}
 
 }
