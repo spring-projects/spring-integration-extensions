@@ -82,6 +82,7 @@ import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
+import org.springframework.integration.config.EnableMessageHistory;
 import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
@@ -91,6 +92,7 @@ import org.springframework.integration.dsl.SplitterEndpointSpec;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
+import org.springframework.integration.dsl.support.GenericHandler;
 import org.springframework.integration.dsl.support.GenericSplitter;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
@@ -372,9 +374,9 @@ public class IntegrationFlowTests {
 	@Test
 	public void testHandle() {
 		assertNull(this.eventHolder.get());
-		this.flow3Input.send(new GenericMessage<>("foo"));
+		this.flow3Input.send(new GenericMessage<>("2"));
 		assertNotNull(this.eventHolder.get());
-		assertEquals("foo", this.eventHolder.get());
+		assertEquals(4, this.eventHolder.get());
 	}
 
 	@Test
@@ -548,7 +550,7 @@ public class IntegrationFlowTests {
 			assertFalse(receive.getHeaders().containsKey("foo"));
 			assertTrue(receive.getHeaders().containsKey("FOO"));
 			assertEquals("BAR", receive.getHeaders().get("FOO"));
-			assertEquals(new Integer(i + 1), receive.getPayload());
+			assertEquals(i + 1, receive.getPayload());
 		}
 	}
 
@@ -603,29 +605,29 @@ public class IntegrationFlowTests {
 	@Test
 	public void testRouter() {
 
-		int[] payloads = new int[]{1, 2, 3, 4, 5, 6};
+		int[] payloads = new int[] {1, 2, 3, 4, 5, 6};
 
 		for (int payload : payloads) {
-			this.routerInput.send(new GenericMessage<Integer>(payload));
+			this.routerInput.send(new GenericMessage<>(payload));
 		}
 
 		for (int i = 0; i < 3; i++) {
 			Message<?> receive = this.oddChannel.receive(2000);
 			assertNotNull(receive);
-			assertEquals(new Integer(i * 2 + 1), receive.getPayload());
+			assertEquals(i * 2 + 1, receive.getPayload());
 
 			receive = this.evenChannel.receive(2000);
 			assertNotNull(receive);
-			assertEquals(new Integer(i * 2 + 2), receive.getPayload());
+			assertEquals(i * 2 + 2, receive.getPayload());
 		}
 
 	}
 
 	@Test
 	public void testMethodInvokingRouter() {
-		Message<String> fooMessage = new GenericMessage<String>("foo");
-		Message<String> barMessage = new GenericMessage<String>("bar");
-		Message<String> badMessage = new GenericMessage<String>("bad");
+		Message<String> fooMessage = new GenericMessage<>("foo");
+		Message<String> barMessage = new GenericMessage<>("bar");
+		Message<String> badMessage = new GenericMessage<>("bad");
 
 		this.routerMethodInput.send(fooMessage);
 
@@ -684,9 +686,9 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testMethodInvokingRouter3() {
-		Message<String> fooMessage = new GenericMessage<String>("foo");
-		Message<String> barMessage = new GenericMessage<String>("bar");
-		Message<String> badMessage = new GenericMessage<String>("bad");
+		Message<String> fooMessage = new GenericMessage<>("foo");
+		Message<String> barMessage = new GenericMessage<>("bar");
+		Message<String> badMessage = new GenericMessage<>("bad");
 
 		this.routerMethod3Input.send(fooMessage);
 
@@ -715,9 +717,9 @@ public class IntegrationFlowTests {
 	@Test
 	public void testMultiRouter() {
 
-		Message<String> fooMessage = new GenericMessage<String>("foo");
-		Message<String> barMessage = new GenericMessage<String>("bar");
-		Message<String> badMessage = new GenericMessage<String>("bad");
+		Message<String> fooMessage = new GenericMessage<>("foo");
+		Message<String> barMessage = new GenericMessage<>("bar");
+		Message<String> badMessage = new GenericMessage<>("bad");
 
 		this.routerMultiInput.send(fooMessage);
 		Message<?> result1a = this.fooChannel.receive(2000);
@@ -750,7 +752,7 @@ public class IntegrationFlowTests {
 
 		Message<String> fooMessage = MessageBuilder.withPayload("fooPayload").setHeader("recipient", true).build();
 		Message<String> barMessage = MessageBuilder.withPayload("barPayload").setHeader("recipient", true).build();
-		Message<String> badMessage = new GenericMessage<String>("badPayload");
+		Message<String> badMessage = new GenericMessage<>("badPayload");
 
 		this.recipientListInput.send(fooMessage);
 		Message<?> result1a = this.fooChannel.receive(2000);
@@ -986,7 +988,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public MongoDbFactory mongoDbFactory() throws Exception {
-			return new SimpleMongoDbFactory(new MongoClient("localhost",mongoPort), "local");
+			return new SimpleMongoDbFactory(new MongoClient("localhost", mongoPort), "local");
 		}
 
 		@Bean
@@ -999,7 +1001,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
 			return IntegrationFlows.from(MessageChannels.priority("priorityChannel",
-					mongoDbChannelMessageStore,	"priorityGroup").interceptor())
+					mongoDbChannelMessageStore, "priorityGroup").interceptor())
 					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 2000)))
 					.channel(MessageChannels.queue("priorityReplyChannel"))
 					.get();
@@ -1047,6 +1049,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow flow3() {
 			return IntegrationFlows.from("flow3Input")
+					.handle(Integer.class, (p, h) -> p * 2)
 					.handle(new ApplicationEventPublishingMessageHandler())
 					.get();
 		}
@@ -1206,16 +1209,9 @@ public class IntegrationFlowTests {
 					.enrichHeaders(s -> s.header("FOO", "BAR"))
 					.split("testSplitterData", "buildList", c -> c.applySequence(false))
 					.channel(MessageChannels.executor(this.taskExecutor()))
-					.split(new GenericSplitter<Message<List<?>>>() {
-
-						@Override
-						public Collection<?> split(Message<List<?>> target) {
-							return target.getPayload();
-						}
-					}, c -> c.applySequence(false))
+					.split(Message.class, target -> (List<?>) target.getPayload(), c -> c.applySequence(false))
 					.channel(MessageChannels.executor(this.taskExecutor()))
-					.split((SplitterEndpointSpec<DefaultMessageSplitter> s) ->
-							s.applySequence(false).get().getT2().setDelimiters(","))
+					.split(s -> s.applySequence(false).get().getT2().setDelimiters(","))
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.<String, Integer>transform(Integer::parseInt)
 					.enrichHeaders(s -> s.headerExpression(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, "payload"))
@@ -1227,10 +1223,10 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow splitAggregateFlow() {
 			return IntegrationFlows.fromFixedMessageChannel("splitAggregateInput")
-					.split()
+					.split(null)
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.resequence()
-					.aggregate()
+					.aggregate(null)
 					.get();
 		}
 
@@ -1261,8 +1257,7 @@ public class IntegrationFlowTests {
 					.<Integer, Boolean>route(p -> p % 2 == 0,
 							m -> m.suffix("Channel")
 									.channelMapping("true", "even")
-									.channelMapping("false", "odd")
-					)
+									.channelMapping("false", "odd"))
 					.get();
 		}
 
@@ -1295,9 +1290,8 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow routeMultiMethodInvocationFlow() {
 			return IntegrationFlows.from("routerMultiInput")
-					.<String, String[]>route(p -> p.equals("foo") || p.equals("bar") ? new String[] {"foo", "bar"} : null,
-							s -> s.suffix("-channel")
-					)
+					.route(String.class, p -> p.equals("foo") || p.equals("bar") ? new String[] {"foo", "bar"} : null,
+							s -> s.suffix("-channel"))
 					.get();
 		}
 
@@ -1324,7 +1318,7 @@ public class IntegrationFlowTests {
 		public IntegrationFlow amqpFlow() {
 			return IntegrationFlows.from(Amqp.inboundGateway(this.rabbitConnectionFactory, queue()).get())
 					.transform("hello "::concat)
-					.transform((String p) -> p.toUpperCase())
+					.transform(String.class, String::toUpperCase)
 					.get();
 		}
 
