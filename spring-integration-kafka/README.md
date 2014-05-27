@@ -95,12 +95,12 @@ Producer context is at the heart of the kafka outbound adapter. Here is an examp
 There are a few things going on here. So, lets go one by one. First of all, producer context is simply a holder of, as the name
 indicates, a context for the Kafa producer. It contains one ore more producer configurations. Each producer configuration
 is ultimately gets translated into a Kafka native producer. Each producer configuration is per topic based right now.
-If you go by the above example, there are two producers generated from this configuration - one for topic named
-test1 and another for test2. Each producer can take the following:
+If you go by the above example, there are three producers generated from this configuration - one for topic named
+'test1', another for topic named 'test2' and a third one for a topic matching the Java regex 'regextopic.*'. Each producer can take the following:
 
 	broker-list				List of comma separated brokers that this producer connects to
 	topic					Topic name or Java regex pattern of topic name
-	compression-codec		Compression method to be used. Default is no compression. Supported compression codec are gzip and snappy.
+	compression-codec		Compression method to be used. Default is no compression. Supported compression codecs are gzip and snappy.
 							Anything else would result in no compression
 	value-encoder			Serializer to be used for encoding messages.
 	key-encoder				Serializer to be used for encoding the partition key
@@ -123,17 +123,18 @@ Here is an example of configuring an encoder.
 	</bean>
 ```
 
-Spring Integration Kafaka adapter provides Apache Avro backed encoders out of the box, as this is a popular choice
+Spring Integration Kafka adapter provides Apache Avro backed encoders out of the box, as this is a popular choice
 for serialization in the big data spectrum. If no encoders are specified as beans, the default encoders provided
-by Kafka will be used. On that not, if the encoder is configured only for the message and not for the key, the same encoder
-will be used for both. These are standard Kafka behaviors. Spring Integration Kafka adapter does simply enforce those behaviours.
+by Kafka will be used. On that note, if the encoder is configured only for the message and not for the key, the same encoder
+will be used for both. These are standard Kafka behaviors. Spring Integration Kafka adapter simply enforces the same behavior.
 Kafka default encoder expects the data to come as byte arrays and it is a no-op encoder, i.e. it just takes the byte array as it is.
-When default encoders are used, there are two ways a message can be sent.
-Either, the sender of the message to the channel
-can simply put byte arrays as message key and payload. Or, the key and value can be sent as Java Serializable object.
-In the latter case, the Kafka adapter will automatically convert them to byte arrays before sending to Kafka broker.
-If the encoders are default and the objets sent are not serializalbe, then that would cause an error. By providing explicit encoders
-it is totally up to the developer to configure how the objects are serialized. In that case, the objects may or may not implement
+When default encoders are used, there are two ways a message can be sent:
+1- The sender of the message to the channel
+can simply put byte arrays as message key and payload. Or,
+2- the key and value can be sent as Java Serializable object.
+In the latter case, the Kafka adapter will automatically convert the objects to byte arrays before sending to Kafka broker.
+If the default encoders are used and the objects sent are not serializable, an error will occur. When providing explicit encoders,
+it is the responsibility of the developer to configure how the objects are serialized. In that case, the objects may or may not implement
 the Serializable interface.
 
 A bit more on the Avro support. There are two flavors of Avro encoders provided, one based on the Avro ReflectDatum and the other
@@ -148,22 +149,21 @@ along with the XML. Here is an example.
 
 Reflection based encoding may not be appropriate for large scale systems and Avro's SpecificDatum based encoders can be a better fit. In this case, you can
 generate a specific Avro object (a glorified POJO) from a schema definition. The generated object will store the schema as well. In order to
-do this, you need to generate the Avro object separately though. There are both maven and gradle plugins available to do code generation
+do this, you need to generate the Avro object separately. There are both maven and gradle plugins available to do code generation
 automatically. You have to provide the avdl or avsc files to specify your schema. Once you take care of these steps, you can simply configure
 a specific datum based Avro encoder (see the first example above) and pass along the fully qualified class name of the generated Avro object
-for which you want to encode instances. The samples project has examples of using both of these encoders.
+for which you want to encode object instances. The samples project has examples of using both of these encoders.
 
 Encoding String for key and value is a very common use case and Kafka provides a StringEncoder out of the box. It takes a Kafka specific VerifiableProperties object
- along with its
-constructor that wraps a regular Java.util.Properties object. The StringEncoder is great when writing a
- direct Java client that talks to Kafka.
+along with its constructor that wraps a regular Java.util.Properties object. The StringEncoder is great when writing a
+direct Java client that talks to Kafka.
 However, when using Spring Integration Kafka adapter, it introduces unnecessary steps to create these
-properties objects. Therefore, we provide a wrapper class for this same StringEncoder as part of the SI kafka support, which makes
-using it from Spring a bit easier. You can inject
-any properties to it in the Spring way. Kafka StringEncoder looks at a specific property for the type of encoding scheme used.
-In the wrapper bean provided, this property can simply be injected as a value without constructing any other objects. Spring Integration provided StringEncoder is available
-in the package org.springframework.integration.kafka.serializer.common.StringEncoder. The avro support for serialization is
-also available in a package called avro under serializer.
+properties objects. Therefore, we provide a wrapper class for this same StringEncoder as part of the SI Kafka support, which makes
+using the StringEncoder from Spring a bit easier. You can inject
+any properties into it in the same way you do it for any Spring bean. Kafka StringEncoder looks at a specific property for the type of encoding scheme used.
+In the Spring Integration provided version of StringEncoder, this property can simply be injected as a value without constructing any other objects.
+Spring Integration provided StringEncoder is available in the package org.springframework.integration.kafka.serializer.common.StringEncoder.
+The Avro support for serialization is also available in a package named "avro" under the "serializer" package.
 
 #### Tuning Producer Properties
 
@@ -211,7 +211,7 @@ currently supports only the High Level Consumer. Here are the details of configu
 	</int-kafka:inbound-channel-adapter>
 ```
 
-Since this inbound channel adapter uses a Polling Channel under the hood, it must be configured with a Poller. A notable difference
+Since this inbound channel adapter uses a Polling Channel under the hood, it must be configured with a poller. A notable difference
 between the poller configured with this inbound adapter and other pollers used in Spring Integration is that the receive-timeout specified on this poller
 does not have any effect. The reason for this is because of the way Kafka implements iterators on the consumer stream.
 It is using a BlockingQueue internally and thus it would wait indefinitely. Instead of interrupting the underlying thread,
@@ -256,24 +256,25 @@ Here is how a zookeeper-connect is configured.
 zk-connect attribute is where you would specify the zookeeper connection. All the other attributes get translated into their
 zookeeper counter-part attributes by the consumer.
 
-In the above consumer context, you can also specify a consumer-timeout value which would be used to
+In the above consumer context, you can also specify a `consumer-timeout` value which would be used to
 timeout the consumer in case of no messages to consume.
 This timeout would be applicable to all the streams (threads) in the consumer.
 The default value for this in Kafka is -1 which would make it wait
-indefinitely. However, Sping Integration overrides it to be 5 seconds by default in order to make sure that no
+indefinitely. However, Spring Integration overrides it to be 5 seconds by default in order to make sure that no
 threads are blocking indefinitely in the lifecycle of the application and thereby
 giving them a chance to free up any resources or locks that they hold. It is recommended to
 override this value so as to meet any specific use case requirements.
 By providing a reasonable consumer-timeout on the context and a fixed-delay value on the poller,
 this inbound adapter is capable of simulating a message driven behaviour.
 
-consumer context takes consumer-configurations which are at the core of the inbound adapter. It is a group of one or more
-consumer-configuration elements which consists of a consumer group dictated by the group-id. Each consumer-configuration
-can be configured with one or more kafka-topics.
+Consumer context takes `consumer-configurations` which are at the core of the inbound adapter. It is a group of one or more
+`consumer-configuration` elements which consists of a consumer group dictated by the `group-id`. Each `consumer-configuration`
+can be configured with one or more Kafka topics.
 
-In the above example provided, we have a single consumer-configuration that consumes messages from two topics each having 4 streams.
- These streams are fundamentally equivalent to the number of partitions that a topic is configured
- with in the producer. For instance, if you configure your topic with
+In the above example provided, we have one consumer-configuration that consumes messages from two topics each having 4 streams and another
+one that consumes messages from any topic matching the given Java regexp "regexptopic.*" with 4 streams each.
+These streams are fundamentally equivalent to the number of partitions that a topic is configured
+with in the producer. For instance, if you configure your topic with
 4 partitions, then the maximum number of streams that you may have in the consumer is also 4.
 Any more than this would be a no-op.
 If you have less number of streams than the available partitions, then messages from
@@ -288,7 +289,7 @@ Consumer configuration can also be configured with optional decoders for key and
 The default ones provided by Kafka are basically no-ops and would consume as byte arrays.
 If you provide an encoder for key/value in the producer, then it is recommended to provide
 corresponding decoders.
-As disussed already in the outbound adapter, Spring Integration Kafka adapter gives Apache Avro based data serialization components
+As discussed already in the outbound adapter, Spring Integration Kafka adapter gives Apache Avro based data serialization components
 out of the box. You can use any serialization component for this purpose as long as you implement the required encoder/decoder interfaces from Kafka.
 As with the Avro encoder support, decoders provided also
 implement Reflection and Specific datum based de-serialization. Here is how you would configure kafka decoder beans that is Avro backed.
@@ -309,17 +310,17 @@ Using Reflection support:
    </bean>
 ```
 
-Another important attribute for the consumer-configuration is the max-messages.
-Please note that this is different from the max-messages-per-poll configured on the inbound adapter
+Another important attribute for the `consumer-configuration` is the `max-messages`.
+Please note that this is different from the `max-messages-per-poll` configured on the inbound adapter
 element.
-There it means the number of times the receive method called on the adapter.
-The max-messages on consumer configuration is different. When you use Kafka for ingesting messages,
+In the inbound adapter, it means the number of times the receive method is called on the adapter.
+The `max-messages` on the consumer configuration is different. When you use Kafka for ingesting messages,
 it usually means an influx of large amount of data constantly. Because of this,
 each time a receive is invoked on the adapter, you would basically get a collection of messages.
 The maximum number of messages to retrieve for a topic in each execution of the
-receive is what configured through the max-messages attribute on the consumer-configuration.
+receive is what you configure through the `max-messages` attribute on the `consumer-configuration`.
 Basically, if the use case is to receive a constant stream of
-large number of data, simply specifying a consumer-timeout alone would not be enough.
+large sets of data, simply specifying a consumer-timeout alone would not be enough.
 You would also need to specify the max number of messages to receive.
 
 The type of the payload of the Message returned by the adapter is the following:
