@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -66,6 +65,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
@@ -82,18 +82,14 @@ import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
-import org.springframework.integration.config.EnableMessageHistory;
 import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.ResequencerSpec;
-import org.springframework.integration.dsl.SplitterEndpointSpec;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
-import org.springframework.integration.dsl.support.GenericHandler;
-import org.springframework.integration.dsl.support.GenericSplitter;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
@@ -106,7 +102,6 @@ import org.springframework.integration.handler.advice.ExpressionEvaluatingReques
 import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
 import org.springframework.integration.router.MethodInvokingRouter;
 import org.springframework.integration.scheduling.PollerMetadata;
-import org.springframework.integration.splitter.DefaultMessageSplitter;
 import org.springframework.integration.store.MessageStore;
 import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.integration.store.SimpleMessageStore;
@@ -127,6 +122,7 @@ import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -474,7 +470,7 @@ public class IntegrationFlowTests {
 		this.methodInvokingInput.send(message);
 		Message<?> receive = replyChannel.receive(5000);
 		assertNotNull(receive);
-		assertEquals("Hello, world", receive.getPayload());
+		assertEquals("Hello World and world", receive.getPayload());
 	}
 
 	@Test
@@ -1150,10 +1146,14 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
+		@Autowired
+		@Lazy
+		private GreetingService greetingService;
+
 		@Bean
 		public IntegrationFlow methodInvokingFlow() {
 			return IntegrationFlows.from("methodInvokingInput")
-					.handle("greetingService", null)
+					.transform(this.greetingService::greeting)
 					.get();
 		}
 
@@ -1368,8 +1368,19 @@ public class IntegrationFlowTests {
 	@Component("greetingService")
 	public static class GreetingService {
 
+		@Autowired
+		private WorldService worldService;
+
 		public String greeting(String payload) {
-			return "Hello, " + payload;
+			return "Hello " + this.worldService.world() + " and " + payload;
+		}
+	}
+
+	@Service
+	public static class WorldService {
+
+		public String world() {
+			return "World";
 		}
 	}
 
