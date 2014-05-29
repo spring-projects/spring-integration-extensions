@@ -98,6 +98,7 @@ import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessageProducer;
+import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
 import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
 import org.springframework.integration.router.MethodInvokingRouter;
@@ -814,7 +815,7 @@ public class IntegrationFlowTests {
 		message = MessageBuilder.withPayload("31").setPriority(3).build();
 		this.priorityChannel.send(message);
 
-		Thread.sleep(1000);
+		Thread.sleep(2000);
 
 		Message<?> receive = this.priorityReplyChannel.receive(1000);
 		assertNotNull(receive);
@@ -921,7 +922,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow flow1() {
-			return IntegrationFlows.from(this.integerMessageSource(), c -> c.poller(Pollers.fixedRate(100)))
+			return IntegrationFlows.from(this.integerMessageSource(), c -> c.poller(Pollers.fixedRate(100, 1000)))
 					.fixedSubscriberChannel("integerChannel")
 					.transform("payload.toString()")
 					.channel(MessageChannels.queue("flow1QueueChannel"))
@@ -996,9 +997,8 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
-			return IntegrationFlows.from(MessageChannels.priority("priorityChannel",
-					mongoDbChannelMessageStore, "priorityGroup").interceptor())
-					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 2000)))
+			return IntegrationFlows.from(MessageChannels.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
+					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 4000)))
 					.channel(MessageChannels.queue("priorityReplyChannel"))
 					.get();
 		}
@@ -1153,7 +1153,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow methodInvokingFlow() {
 			return IntegrationFlows.from("methodInvokingInput")
-					.transform(this.greetingService::greeting)
+					.handle(Message.class, (p, h) -> this.greetingService.handleRequestMessage(p))
 					.get();
 		}
 
@@ -1365,14 +1365,15 @@ public class IntegrationFlowTests {
 		}
 	}
 
-	@Component("greetingService")
-	public static class GreetingService {
+	@Service
+	public static class GreetingService extends AbstractReplyProducingMessageHandler {
 
 		@Autowired
 		private WorldService worldService;
 
-		public String greeting(String payload) {
-			return "Hello " + this.worldService.world() + " and " + payload;
+		@Override
+		protected Object handleRequestMessage(Message<?> requestMessage) {
+			return "Hello " + this.worldService.world() + " and " + requestMessage.getPayload();
 		}
 	}
 

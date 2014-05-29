@@ -17,7 +17,9 @@
 package org.springframework.integration.dsl;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -30,6 +32,7 @@ import org.springframework.integration.support.utils.IntegrationUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Artem Bilan
@@ -50,10 +53,24 @@ class LambdaMessageProcessor implements MessageProcessor<Object>, BeanFactoryAwa
 	public LambdaMessageProcessor(Object target, Class<?> payloadType) {
 		Assert.notNull(target);
 		this.target = target;
-		Method[] declaredMethods = target.getClass().getDeclaredMethods();
-		Assert.isTrue(declaredMethods.length == 1, "LambdaMessageProcessor is applicable for inline or lambda" +
+		final AtomicReference<Method> methodValue = new AtomicReference<Method>();
+		ReflectionUtils.doWithMethods(target.getClass(), new ReflectionUtils.MethodCallback() {
+			@Override
+			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+				methodValue.set(method);
+			}
+		}, new ReflectionUtils.MethodFilter() {
+			@Override
+			public boolean matches(Method method) {
+				return !method.isBridge() && method.getDeclaringClass() != Object.class &&
+						Modifier.isPublic(method.getModifiers()) && !Modifier.isStatic(method.getModifiers());
+			}
+		});
+
+		Assert.notNull(methodValue.get(), "LambdaMessageProcessor is applicable for inline or lambda " +
 				"classes with single method - functional interfaces implementations.");
-		this.method = declaredMethods[0];
+
+		this.method = methodValue.get();
 		this.method.setAccessible(true);
 		this.parameterTypes = this.method.getParameterTypes();
 		this.payloadType = TypeDescriptor.valueOf(payloadType);
