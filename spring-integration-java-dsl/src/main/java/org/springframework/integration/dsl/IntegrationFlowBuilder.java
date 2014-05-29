@@ -658,7 +658,7 @@ public final class IntegrationFlowBuilder {
 
 	private static boolean isLambda(Object o) {
 		Class<?> aClass = o.getClass();
-		return aClass.isSynthetic() && !aClass.isAnonymousClass() && aClass.getDeclaredMethods().length == 1;
+		return aClass.isSynthetic() && !aClass.isAnonymousClass() && !aClass.isLocalClass();
 	}
 
 }
