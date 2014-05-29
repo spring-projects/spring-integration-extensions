@@ -22,7 +22,7 @@ Simply download it, cd into the folder and execute `./startsmppsim.(sh|bat)`. Ma
 
 Another option is **smsssim** and smsctest from http://opensmpp.logica.com/CommonPart/Download/download2.html
 
-Alternatively, the JSMPP project itself has an SMPP simulator as well. It is also possible to use a full-blow SMPP servers like *Kanell*.
+Alternatively, the JSMPP project itself has an SMPP simulator as well. It is also possible to use a full-blow SMPP servers like *Kannel*.
 
 # Building
 
