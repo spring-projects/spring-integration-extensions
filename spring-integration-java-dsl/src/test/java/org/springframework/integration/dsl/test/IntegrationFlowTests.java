@@ -86,7 +86,6 @@ import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.ResequencerSpec;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
@@ -1215,7 +1214,7 @@ public class IntegrationFlowTests {
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.<String, Integer>transform(Integer::parseInt)
 					.enrichHeaders(s -> s.headerExpression(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, "payload"))
-					.resequence((ResequencerSpec r) -> r.releasePartialSequences(true).correlationExpression("'foo'"))
+					.resequence(r -> r.releasePartialSequences(true).correlationExpression("'foo'"), null)
 					.headerFilter("foo", false)
 					.get();
 		}
@@ -1226,7 +1225,7 @@ public class IntegrationFlowTests {
 					.split(null)
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.resequence()
-					.aggregate(null)
+					.aggregate()
 					.get();
 		}
 
@@ -1316,7 +1315,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow amqpFlow() {
-			return IntegrationFlows.from(Amqp.inboundGateway(this.rabbitConnectionFactory, queue()).get())
+			return IntegrationFlows.from(Amqp.inboundGateway(this.rabbitConnectionFactory, queue()))
 					.transform("hello "::concat)
 					.transform(String.class, String::toUpperCase)
 					.get();

@@ -21,6 +21,7 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
+import org.springframework.integration.dsl.core.MessagingGatewaySpec;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
 import org.springframework.integration.dsl.support.MessageChannelReference;
@@ -86,6 +87,10 @@ public final class IntegrationFlows {
 			messageProducer.setOutputChannel(outputChannel);
 		}
 		return from(outputChannel).addComponent(messageProducer);
+	}
+
+	public static IntegrationFlowBuilder from(MessagingGatewaySpec<?, ?> inboundGatewaySpec) {
+		return from(inboundGatewaySpec.get());
 	}
 
 	public static IntegrationFlowBuilder from(MessagingGatewaySupport inboundGateway) {
