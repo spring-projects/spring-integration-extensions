@@ -8,7 +8,6 @@ apply plugin: 'idea'
 group = 'org.springframework.integration'
 
 repositories {
-//	mavenLocal()
 	if (version.endsWith('BUILD-SNAPSHOT')) {
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 	}
@@ -27,7 +26,7 @@ ext {
 	embedMongoVersion = '1.45'
 	jacocoVersion = '0.7.0.201403182114'
 	log4jVersion = '1.2.17'
-	springIntegrationVersion = '4.0.1.RELEASE'
+	springIntegrationVersion = '4.0.2.RELEASE'
 	springBootVersion = '1.1.0.BUILD-SNAPSHOT'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
