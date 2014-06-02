@@ -142,7 +142,6 @@ Alternatively, you can configure a Splunk Server failover mechanism
   <bean id="splunkServiceFactory" class="org.springframework.integration.splunk.support.SplunkServiceFactory">
     <constructor-arg ref="splunkServersList"/>
   </bean>
-
 ```
 
 Additional server properties include (see [splunk](http://docs.splunk.com/Documentation/Splunk/latest) documentation for details):
