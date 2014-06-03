@@ -69,22 +69,22 @@ public class SplunkOutboundChannelAdapterParser extends AbstractOutboundChannelA
         BeanDefinitionBuilder dataWriterBuilder = parseDataWriter(element, parserContext);
 
 		// initialize splunk servers references
-		{
-			BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
 
-			String splunkServerBeanNames = element.getAttribute("splunk-server-ref");
-			if (StringUtils.hasText(splunkServerBeanNames)) {
+		BeanDefinitionBuilder serviceFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(SplunkServiceFactory.class);
 
-				ManagedList<RuntimeBeanReference> splunkServersList = new ManagedList<RuntimeBeanReference>();
+		String splunkServerBeanNames = element.getAttribute("splunk-server-ref");
+		if (StringUtils.hasText(splunkServerBeanNames)) {
 
-				for (String splunkServerBeanName : StringUtils.delimitedListToStringArray(splunkServerBeanNames, ";")) {
-					splunkServersList.add(new RuntimeBeanReference(splunkServerBeanName));
-				}
-				serviceFactoryBuilder.addConstructorArgValue(splunkServersList);
+			ManagedList<RuntimeBeanReference> splunkServersList = new ManagedList<RuntimeBeanReference>();
+
+			for (String splunkServerBeanName : StringUtils.delimitedListToStringArray(splunkServerBeanNames, ";")) {
+				splunkServersList.add(new RuntimeBeanReference(splunkServerBeanName));
 			}
-
-			dataWriterBuilder.addConstructorArgValue(serviceFactoryBuilder.getBeanDefinition());
+			serviceFactoryBuilder.addConstructorArgValue(splunkServersList);
 		}
+
+		dataWriterBuilder.addConstructorArgValue(serviceFactoryBuilder.getBeanDefinition());
+
 
 		dataWriterBuilder.addConstructorArgValue(argsBuilder.getBeanDefinition());
 
