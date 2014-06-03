@@ -38,7 +38,7 @@ public class SplunkIndexWriter extends AbstractSplunkDataWriter {
 	private String indexName;
 	/**
 	 *  
-	 * @param connectionFactory
+	 * @param serviceFactory
 	 * @param args
 	 */
 	public SplunkIndexWriter(ServiceFactory serviceFactory, Args args) {

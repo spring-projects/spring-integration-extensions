@@ -24,7 +24,7 @@ import com.splunk.Service;
 
 /**
  * 
- * A {@link SplunkStreamWriter} that creates a socket on a given port
+ * A {@link org.springframework.integration.splunk.core.DataWriter} that creates a socket on a given port
  * @author David Turanski
  *
  */
@@ -32,7 +32,7 @@ public class SplunkTcpWriter extends AbstractSplunkDataWriter {
 	private int port;
 
 	/**
-	 * @param connectionFactory
+	 * @param serviceFactory
 	 * @param args
 	 */
 	public SplunkTcpWriter(ServiceFactory serviceFactory, Args args) {
