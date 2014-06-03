@@ -77,7 +77,7 @@ public class SplunkServer {
 
 	/**
 	 *
-	 * @return
+	 * @return the used scheme
 	 */
 	public String getScheme() {
 		return scheme;
@@ -93,7 +93,7 @@ public class SplunkServer {
 
 	/**
 	 *
-	 * @return
+	 * @return the application
 	 */
 	public String getApp() {
 		return app;
@@ -109,7 +109,7 @@ public class SplunkServer {
 
 	/**
 	 *
-	 * @return
+	 * @return the owner
 	 */
 	public String getOwner() {
 		return owner;
