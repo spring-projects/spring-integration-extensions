@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/integration/splunk"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	targetNamespace="http://www.springframework.org/schema/integration/splunk"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+	<xsd:import namespace="http://www.springframework.org/schema/integration"
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd" />
+
+	<xsd:annotation>
+		<xsd:documentation><![CDATA[
+			Defines the configuration elements for the Spring Integration
+			Splunk Adapter.
+		]]></xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="server">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Defines a Splunk server information.
+				]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attribute name="host" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the Splunk server name or IP address
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.String" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="port" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the Splunk server port
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.Integer" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="scheme" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the Splunk server scheme
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.String" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="app" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the Splunk server application name
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.String" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="owner" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the Splunk server owner name
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.String" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="username" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the userName to login Splunk server
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.String" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="password" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the password to login Splunk server
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.String" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="scope" type="xsd:string" use="optional" />
+			<xsd:attribute name="id" type="xsd:string" use="required" />
+			<xsd:attribute name="timeout" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Indicates the connection timeout in ms.
+			]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.Integer" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="checkServiceOnBorrow" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+						To test or not the connection when reusing it.
+					]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:annotation kind="direct">
+							<tool:expected-type type="java.lang.Boolean" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="inbound-channel-adapter">
+		<xsd:annotation>
+			<xsd:documentation>
+				The definition for the Spring Integration Splunk
+				Inbound Channel Adapter.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="integration:poller" minOccurs="0"
+					maxOccurs="1" />
+			</xsd:sequence>
+			<xsd:attributeGroup ref="coreSplunkComponentAttributes" />
+			<xsd:attribute name="channel" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type
+								type="org.springframework.integration.core.MessageChannel" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="send-timeout" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+						Allows you to specify how long this inbound-channel-adapter
+						will wait for the message (containing the retrieved entities)
+						to be sent successfully to the message channel, before throwing
+						an exception.
+
+						Keep in mind that when sending to a DirectChannel, the
+						invocation will occur in the sender's thread so the failing
+						of the send operation may be caused by other components
+						further downstream. By default the Inbound Channel Adapter
+						will wait indefinitely. The value is specified in milliseconds.
+					]]>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="mode" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Search mode: normal, blocking, realtime, export, saved
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="count" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						The maximum number of event record to be return
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="field-list" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						A comma-separated list of the fields to return
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="search" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Search String following Splunk syntax.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="earliest-time" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Time modifier for the start of the time window.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="latest-time" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Time modifier for the  end of the time window.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+						<xsd:attribute name="init-earliest-time" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation>
+						Time modifier for the start of the time window for the first search.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="saved-search" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Saved search.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="owner" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Owner of the saved search.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="app" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						App of the saved search.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:complexType name="indexWriterType">
+		<xsd:attribute name="index" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						Index to write to.
+					</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	
+	<xsd:complexType name="tcpWriterType">
+		<xsd:attribute name="port" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation>
+						The port corresponding to a tcp Input
+					</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:element name="outbound-channel-adapter">
+		<xsd:annotation>
+			<xsd:documentation>
+				Defines an outbound Channel Adapter.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="integration:poller" minOccurs="0"
+					maxOccurs="1" />
+				<xsd:choice>
+					<xsd:element name="index-writer" type="indexWriterType">
+						<xsd:annotation>
+							<xsd:documentation>
+								Defines a Data Writer for streaming data to an index, or the default index if not specified.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="tcp-writer" type="tcpWriterType">
+						<xsd:annotation>
+							<xsd:documentation>
+								Defines a Data Writer for streaming data to a tcp input port.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="submit-writer" type="indexWriterType">
+						<xsd:annotation>
+							<xsd:documentation>
+								Defines a Data Writer to submit data, using the REST interface, to an index, or the default index if not specified.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:sequence>
+			<xsd:attributeGroup ref="coreSplunkComponentAttributes" />
+			<xsd:attribute name="channel" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<xsd:documentation>
+							Channel from which messages will be output.
+							When a message is sent to this channel it will
+							cause the query
+							to
+							be executed.
+						</xsd:documentation>
+						<tool:annotation kind="ref">
+							<tool:expected-type
+								type="org.springframework.integration.MessageChannel" />
+						</tool:annotation>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="order">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the order for invocation when this
+						endpoint is connected as a
+						subscriber to a SubscribableChannel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="source" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Splunk event source
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="source-type" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Splunk event source type
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			 
+			<xsd:attribute name="host" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Host where the event occurred
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			
+			<xsd:attribute name="host-regex" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>
+						Host regex can be provided so Splunk can dynamically extract the host value from the log event
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:attributeGroup name="coreSplunkComponentAttributes">
+		<xsd:attribute name="id" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Identifies the underlying Spring bean definition,
+					which is an
+					instance of either 'EventDrivenConsumer' or
+					'PollingConsumer',
+					depending on whether the component's input
+					channel is a
+					'SubscribableChannel' or 'PollableChannel'.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="auto-startup" default="true" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Flag to indicate that the component should start
+					automatically
+					on startup (default true).
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="xsd:boolean xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="splunk-server-ref" use="required"
+			type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					Splunk Server Bean Name
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
+</xsd:schema>

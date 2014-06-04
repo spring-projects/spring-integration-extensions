@@ -125,6 +125,25 @@ The outbound channel adapter requires a child *-writer element which defines rel
 	<int-splunk:server id="splunkServer" username="admin" password="password" timeout="5000" host="somehost.someplace.com" port="9000" />
 ```
 
+Alternatively, you can configure a Splunk Server failover mechanism
+
+```xml
+  <int-splunk:server id="splunkServer" username="admin" password="password" timeout="5000" 
+  					 host="somehost.someplace.com" port="9000" />
+
+  <int-splunk:server id="splunkServerBackup" username="admin" password="password" timeout="5000" 
+   					 host="somehost.someotherplace.com" port="9000" />
+
+  <util:list id="splunkServersList">
+    <ref bean="splunkServer" />
+    <ref bean="splunkServerBackup" />
+  </util:list>
+
+  <bean id="splunkServiceFactory" class="org.springframework.integration.splunk.support.SplunkServiceFactory">
+    <constructor-arg ref="splunkServersList"/>
+  </bean>
+```
+
 Additional server properties include (see [splunk](http://docs.splunk.com/Documentation/Splunk/latest) documentation for details):
 
 * app
