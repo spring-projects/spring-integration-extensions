@@ -356,15 +356,15 @@ public class SmesMessageSpecification {
 	 * <p/>
 	 * todo can we do something smart here or through an adapter to handle the situation where we have asked for a message receipt? what about if we're using a message receipt <em>and</eM> we're only a receiver or a sender connection and not a transceiver? We need gateway semantics across two unidirectional SMPPSessions, then
 	 *
-	 * @return the messageId (required if you want to then track it or correllate it with message receipt confirmations)
+	 * @return the messageId(s) (required if you want to then track it or correlate it with message receipt confirmations)
 	 * @throws Exception the {@link SMPPSession#submitShortMessage(String, org.jsmpp.bean.TypeOfNumber, org.jsmpp.bean.NumberingPlanIndicator, String, org.jsmpp.bean.TypeOfNumber, org.jsmpp.bean.NumberingPlanIndicator, String, org.jsmpp.bean.ESMClass, byte, byte, String, String, org.jsmpp.bean.RegisteredDelivery, byte, org.jsmpp.bean.DataCoding, byte, byte[], org.jsmpp.bean.OptionalParameter...)} method throws lots of Exceptions, including {@link java.io.IOException}
 	 */
-	public String send() throws Exception {
+	public String[] send() throws Exception {
 		validate();
-		String msgId = null;
+		String[] msgId = new String[this.shortMessageParts.isEmpty() ? 1 : this.shortMessageParts.size()];
 		if (messagePayloadParameter == null) {
 			if (this.shortMessageParts.isEmpty()) {
-				msgId = this.smppSession.submitShortMessage(
+				msgId[0] = this.smppSession.submitShortMessage(
 					this.serviceType,
 					this.sourceAddressTypeOfNumber,
 					this.sourceAddressNumberingPlanIndicator,
@@ -393,7 +393,7 @@ public class SmesMessageSpecification {
 				String charsetName = DataCodingSpecification.getCharsetName(dataCoding.toByte());
 				for (int i = 0; i < shortMessageParts.size(); i++) {
 					byte[] shortMessagePart = shortMessageParts.get(i);
-					msgId = this.smppSession.submitShortMessage(
+					msgId[i] = this.smppSession.submitShortMessage(
 							this.serviceType,
 							this.sourceAddressTypeOfNumber,
 							this.sourceAddressNumberingPlanIndicator,
@@ -418,14 +418,14 @@ public class SmesMessageSpecification {
 							sarTotalSegments);
 					if (log.isDebugEnabled()) {
 						log.debug("sent message : " + new String(shortMessagePart, charsetName));
-						log.debug("message ID for the sent message is: " + msgId);
+						log.debug("message ID for the sent message is: " + msgId[i]);
 					}
 				}
 			}
 		} else {
 			// SPEC 3.2.3
 			log.debug("Sending message using message_payload");
-			msgId = this.smppSession.submitShortMessage(
+			msgId[0] = this.smppSession.submitShortMessage(
 					this.serviceType,
 					this.sourceAddressTypeOfNumber,
 					this.sourceAddressNumberingPlanIndicator,

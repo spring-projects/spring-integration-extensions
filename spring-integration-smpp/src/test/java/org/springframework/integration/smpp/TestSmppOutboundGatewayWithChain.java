@@ -72,6 +72,6 @@ public class TestSmppOutboundGatewayWithChain {
         Thread.sleep(500);
         Message<?> exception = messagingTemplate.receive("replyChannel");
         Assert.assertNotNull(exception);
-        Assert.assertTrue(exception.getPayload() instanceof String);
+        Assert.assertTrue(exception.getPayload() instanceof String[]);
     }
 }
