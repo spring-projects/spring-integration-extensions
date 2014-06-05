@@ -15,6 +15,7 @@
  */
 package org.springframework.integration.smpp.core;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jsmpp.bean.*;
@@ -27,7 +28,9 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.springframework.integration.smpp.core.SmppConstants.*;
 
@@ -60,6 +63,7 @@ public class SmesMessageSpecification {
 	private DataCoding dataCoding;
 	private byte smDefaultMsgId;
 	private byte[] shortMessage;
+	private List<byte[]> shortMessageParts;
 	private ClientSession smppSession;
 	private OptionalParameter messagePayloadParameter;
 
@@ -357,30 +361,68 @@ public class SmesMessageSpecification {
 	 */
 	public String send() throws Exception {
 		validate();
-		final String msgId;
+		String msgId = null;
 		if (messagePayloadParameter == null) {
-			msgId = this.smppSession.submitShortMessage(
-				this.serviceType,
-				this.sourceAddressTypeOfNumber,
-				this.sourceAddressNumberingPlanIndicator,
-				this.sourceAddress,
+			if (this.shortMessageParts.isEmpty()) {
+				msgId = this.smppSession.submitShortMessage(
+					this.serviceType,
+					this.sourceAddressTypeOfNumber,
+					this.sourceAddressNumberingPlanIndicator,
+					this.sourceAddress,
 
-				this.destinationAddressTypeOfNumber,
-				this.destinationAddressNumberingPlanIndicator,
-				this.destinationAddress,
+					this.destinationAddressTypeOfNumber,
+					this.destinationAddressNumberingPlanIndicator,
+					this.destinationAddress,
 
-				this.esmClass,
-				this.protocolId,
-				this.priorityFlag,
-				this.scheduleDeliveryTime,
-				this.validityPeriod,
-				this.registeredDelivery,
-				this.replaceIfPresentFlag,
-				this.dataCoding,
-				this.smDefaultMsgId,
-				this.shortMessage);
-		}
-		else {
+					this.esmClass,
+					this.protocolId,
+					this.priorityFlag,
+					this.scheduleDeliveryTime,
+					this.validityPeriod,
+					this.registeredDelivery,
+					this.replaceIfPresentFlag,
+					this.dataCoding,
+					this.smDefaultMsgId,
+					this.shortMessage);
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Sending message using sar_msg_ref_num, sar_segment_seqnum and sar_total_segments");
+				}
+				OptionalParameter sarMsgRefNum = OptionalParameters.newSarMsgRefNum(RandomUtils.nextInt(0x10000));
+				OptionalParameter sarTotalSegments = OptionalParameters.newSarTotalSegments(shortMessageParts.size());
+				String charsetName = DataCodingSpecification.getCharsetName(dataCoding.toByte());
+				for (int i = 0; i < shortMessageParts.size(); i++) {
+					byte[] shortMessagePart = shortMessageParts.get(i);
+					msgId = this.smppSession.submitShortMessage(
+							this.serviceType,
+							this.sourceAddressTypeOfNumber,
+							this.sourceAddressNumberingPlanIndicator,
+							this.sourceAddress,
+
+							this.destinationAddressTypeOfNumber,
+							this.destinationAddressNumberingPlanIndicator,
+							this.destinationAddress,
+
+							this.esmClass,
+							this.protocolId,
+							this.priorityFlag,
+							this.scheduleDeliveryTime,
+							this.validityPeriod,
+							this.registeredDelivery,
+							this.replaceIfPresentFlag,
+							this.dataCoding,
+							this.smDefaultMsgId,
+							shortMessagePart,
+							sarMsgRefNum,
+							OptionalParameters.newSarSegmentSeqnum(i + 1),
+							sarTotalSegments);
+					if (log.isDebugEnabled()) {
+						log.debug("sent message : " + new String(shortMessagePart, charsetName));
+						log.debug("message ID for the sent message is: " + msgId);
+					}
+				}
+			}
+		} else {
 			// SPEC 3.2.3
 			log.debug("Sending message using message_payload");
 			msgId = this.smppSession.submitShortMessage(
@@ -413,7 +455,7 @@ public class SmesMessageSpecification {
 	protected void validate() {
 		Assert.notNull(this.sourceAddress, "the source address must not be null");
 		Assert.notNull(this.destinationAddress, "the destination address must not be null");
-		final boolean shortMessageSet = this.shortMessage != null && this.shortMessage.length > 0;
+		final boolean shortMessageSet = this.shortMessage != null && this.shortMessage.length > 0 || !shortMessageParts.isEmpty();
 		Assert.isTrue(messagePayloadParameter != null ^ shortMessageSet,
 				"message can only be set in payload or short message. cannot be both");
 		if (messagePayloadParameter == null) {
@@ -590,9 +632,15 @@ public class SmesMessageSpecification {
 			this.shortMessage = UdhUtil.getMessageWithUdhInBytes(s, dataCoding.toByte());
 		}
 		else {
-			Assert.isTrue(s.length() <= this.maxLengthSmsMessages,
-					"the SMS message payload must be " + maxLengthSmsMessages + " characters or less.");
-			this.shortMessage = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+//			Assert.isTrue(s.length() <= this.maxLengthSmsMessages,
+//					"the SMS message payload must be " + maxLengthSmsMessages + " characters or less.");
+			if (s.length() > this.maxLengthSmsMessages) {
+				for (String split : s.split("(?<=\\G.{" + String.valueOf(this.maxLengthSmsMessages - 5) + "})")) {
+					this.shortMessageParts.add(DataCodingSpecification.getMessageInBytes(split, dataCoding.toByte()));
+				}
+			} else {
+				this.shortMessage = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+			}
 		}
 		return this;
 	}
@@ -652,6 +700,7 @@ public class SmesMessageSpecification {
 		dataCoding = new GeneralDataCoding(Alphabet.ALPHA_DEFAULT, MessageClass.CLASS1, false);
 		smDefaultMsgId = 0;
 		shortMessage = null; // the bytes to the 140 character text message
+		shortMessageParts = new ArrayList<byte[]>();
 		smppSession = null;
 		messagePayloadParameter = null;
 		return this;
