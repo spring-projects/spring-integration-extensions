@@ -19,27 +19,22 @@ package org.springframework.integration.dsl;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.integration.dsl.config.InstanceBeanDefinition;
-
 /**
  * @author Artem Bilan
  */
 public final class IntegrationFlow {
 
-	private final Set<AbstractBeanDefinition> integrationComponents = new LinkedHashSet<AbstractBeanDefinition>();
+	private final Set<Object> integrationComponents = new LinkedHashSet<Object>();
 
 	IntegrationFlow() {
 	}
 
-	public Set<AbstractBeanDefinition> getIntegrationComponents() {
+	public Set<Object> getIntegrationComponents() {
 		return integrationComponents;
 	}
 
 	IntegrationFlow addComponent(Object component) {
-		AbstractBeanDefinition beanDefinition = component instanceof AbstractBeanDefinition
-				? (AbstractBeanDefinition) component : new InstanceBeanDefinition(component);
-		this.integrationComponents.add(beanDefinition);
+		this.integrationComponents.add(component);
 		return this;
 	}
 

@@ -65,7 +65,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
@@ -294,6 +294,7 @@ public class IntegrationFlowTests {
 	private AmqpTemplate amqpTemplate;
 
 	@Autowired
+	@Qualifier("queue")
 	private Queue amqpQueue;
 
 	@Autowired
@@ -331,7 +332,7 @@ public class IntegrationFlowTests {
 		}
 
 		assertTrue(this.outputChannel.getChannelInterceptors().contains(this.testChannelInterceptor));
-		assertEquals(new Integer(10), this.testChannelInterceptor.getInvoked());
+		assertThat(this.testChannelInterceptor.getInvoked(), Matchers.greaterThanOrEqualTo(10));
 	}
 
 	@Test
@@ -895,6 +896,26 @@ public class IntegrationFlowTests {
 		assertThat(((Exception) receive.getPayload()).getMessage(), Matchers.containsString("' rejected Message"));
 	}
 
+	@Autowired
+	@Qualifier("amqpOutboundInput")
+	private MessageChannel amqpOutboundInput;
+
+	@Autowired
+	@Qualifier("amqpReplyChannel")
+	private PollableChannel amqpReplyChannel;
+
+	@Test
+	public void testAmqpOutboundFlow() throws Exception {
+		this.amqpOutboundInput.send(MessageBuilder.withPayload("hello through the amqp")
+				.setHeader("routingKey", "foo")
+				.build());
+		Message<?> receive = this.amqpReplyChannel.receive(5000);
+		assertNotNull(receive);
+		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
+	}
+
+
+
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
 
@@ -977,9 +998,14 @@ public class IntegrationFlowTests {
 							c -> c.autoStartup(false).id("payloadSerializingTransformer"))
 					.channel(MessageChannels.queue(new SimpleMessageStore(), "fooQueue"))
 					.transform(new PayloadDeserializingTransformer())
-					.channel(MessageChannels.publishSubscribe("publishSubscribeChannel"))
+					.channel(publishSubscribeChannel())
 					.transform((Integer p) -> p * 2, c -> c.advice(this.expressionAdvice()))
 					.get();
+		}
+
+		@Bean
+		public MessageChannel publishSubscribeChannel() {
+			return MessageChannels.publishSubscribe().get();
 		}
 
 		@Bean
@@ -1146,7 +1172,6 @@ public class IntegrationFlowTests {
 		}
 
 		@Autowired
-		@Lazy
 		private GreetingService greetingService;
 
 		@Bean
@@ -1165,6 +1190,7 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
+		@DependsOn("enrichFlow")
 		public IntegrationFlow enricherFlow() {
 			return IntegrationFlows.fromFixedMessageChannel("enricherInput")
 					.enrich(e -> e.requestChannel("enrichChannel")
@@ -1308,6 +1334,9 @@ public class IntegrationFlowTests {
 		@Autowired
 		private ConnectionFactory rabbitConnectionFactory;
 
+		@Autowired
+		private AmqpTemplate amqpTemplate;
+
 		@Bean
 		public Queue queue() {
 			return new AnonymousQueue();
@@ -1322,6 +1351,27 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
+		public IntegrationFlow amqpOutboundFlow() {
+			return IntegrationFlows.from("amqpOutboundInput")
+					.handle(Amqp.outboundAdapter(this.amqpTemplate).routingKeyExpression("headers.routingKey").get())
+					.get();
+		}
+
+		@Bean
+		public Queue fooQueue() {
+			return new Queue("foo");
+		}
+
+		@Bean
+		public IntegrationFlow amqpInboundFlow() {
+			return IntegrationFlows.from(Amqp.inboundAdapter(this.rabbitConnectionFactory, fooQueue()))
+					.transform(String.class, String::toUpperCase)
+					.channel(MessageChannels.queue("amqpReplyChannel"))
+					.get();
+		}
+
+		@Bean
+		@DependsOn("gatewayRequestFlow")
 		public IntegrationFlow gatewayFlow() {
 			return IntegrationFlows.from("gatewayInput")
 					.gateway("gatewayRequest", g -> g.errorChannel("gatewayError").replyTimeout(10L))
