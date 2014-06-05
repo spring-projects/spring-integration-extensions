@@ -27,6 +27,8 @@ import org.springframework.integration.smpp.session.ExtendedSmppSession;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+
 /**
  * Sends messages to an SMS gateway using SMPP. Most of the work in terms of converting inbound message headers
  * (whose keys, by the way, live in {@link org.springframework.integration.smpp.core.SmppConstants}) is done by {@link org.springframework.integration.smpp.core.SmesMessageSpecification}, which
@@ -103,9 +105,9 @@ public class SmppOutboundChannelAdapter extends IntegrationObjectSupport impleme
 					SmesMessageSpecification.fromMessage(this.smppSession, message)
 							.setTimeFormatter(this.timeFormatter));
 
-			String smsMessageId = specification.send();
+			String[] smsMessageId = specification.send();
 			logger.debug( "sent message : "+message.getPayload());
-			logger.debug("message ID for the sent message is: " + smsMessageId);
+			logger.debug("message ID(s) for the sent message: " + Arrays.toString(smsMessageId));
 		} catch (Exception e) {
 			throw new RuntimeException("Exception in trying to process the inbound SMPP message", e);
 		}

@@ -26,6 +26,8 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+
 /**
  * Support for request/reply exchanges over SMPP to a SMSC.
  * <p/>
@@ -62,9 +64,9 @@ public class SmppOutboundGateway extends AbstractReplyProducingMessageHandler {
 					SmesMessageSpecification.fromMessage(this.smppSession, requestMessage)
 							.setTimeFormatter(this.timeFormatter));
 
-			String smsMessageId = specification.send();
+			String[] smsMessageId = specification.send();
 
-			logger.debug("message ID for the sent message is: " + smsMessageId);
+			logger.debug("message ID(s) for the sent message: " + Arrays.toString(smsMessageId));
 
 			return MessageBuilder.withPayload(smsMessageId).build();
 		} catch (Exception e) {
