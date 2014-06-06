@@ -33,7 +33,8 @@ public class SplunkSubmitWriter extends AbstractSplunkDataWriter {
 	private String index;
 
 	/**
-	 * @param connectionFactory
+	 * @param serviceFactory
+	 * @param args
 	 */
 	public SplunkSubmitWriter(ServiceFactory serviceFactory, Args args) {
 		super(serviceFactory, args);
