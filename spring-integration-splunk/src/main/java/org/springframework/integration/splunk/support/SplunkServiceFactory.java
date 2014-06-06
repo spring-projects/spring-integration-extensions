@@ -25,6 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.bind.DatatypeConverter;
+
 import com.splunk.Service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -103,7 +105,7 @@ public class SplunkServiceFactory implements ServiceFactory {
 			catch (Exception e) {
 				if (LOGGER.isInfoEnabled()) {
 					LOGGER.info(String.format("could not connect to Splunk Server @ %s:%d - %s, try next one",
-							splunkServer.getHost(),	splunkServer.getPort(), e.getMessage()));
+							splunkServer.getHost(), splunkServer.getPort(), e.getMessage()));
 				}
 			}
 		}
@@ -132,6 +134,10 @@ public class SplunkServiceFactory implements ServiceFactory {
 
 		args.put("username", splunkServer.getUsername());
 		args.put("password", splunkServer.getPassword());
+
+		String auth = splunkServer.getUsername() + ":" + splunkServer.getPassword();
+		String authToken = "Basic " + DatatypeConverter.printBase64Binary(auth.getBytes());
+		args.put("token", authToken);
 
 		return new Callable<Service>() {
 			public Service call()
