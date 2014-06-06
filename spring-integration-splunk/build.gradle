@@ -2,10 +2,10 @@ description = 'Spring Integration Splunk Adapter'
 
 buildscript {
 	repositories {
-		maven { url 'http://repo.springsource.org/plugins-snapshot' }
+		maven { url 'http://repo.spring.io/plugins-release' }
 	}
 	dependencies {
-		classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.1.5'
+		classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.2.8'
 	}
 }
 
@@ -17,21 +17,20 @@ apply plugin: 'idea'
 group = 'org.springframework.integration'
 
 repositories {
-	maven { url 'http://repo.springsource.org/libs-milestone' }
-	maven { url 'http://repo.springsource.org/plugins-release' } // for bundlor
+	maven { url 'http://repo.spring.io/libs-milestone' }
 }
 
 sourceCompatibility=1.6
 targetCompatibility=1.6
 
 ext {
-	linkHomepage = 'https://github.com/SpringSource/spring-integration-extensions'
-	linkCi       = 'https://build.springsource.org/browse/INTEXT'
-	linkIssue    = 'https://jira.springsource.org/browse/INTEXT'
-	linkScmUrl           = 'https://github.com/SpringSource/spring-integration-extensions'
-	linkScmConnection    = 'https://github.com/SpringSource/spring-integration-extensions.git'
-	linkScmDevConnection = 'git@github.com:SpringSource/spring-integration-extensions.git'
-	
+	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkCi       = 'https://build.spring.io/browse/INTEXT'
+	linkIssue    = 'https://jira.spring.io/browse/INTEXT'
+	linkScmUrl           = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkScmConnection    = 'https://github.com/spring-projects/spring-integration-extensions.git'
+	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
+
 	shortName = 'splunk'
 }
 
@@ -42,17 +41,13 @@ configurations {
 }
 
 dependencies {
-	compile("com.splunk:splunk:$splunkVersion")
-	compile "org.springframework:spring-beans:$springVersion"
-	compile "org.springframework:spring-context:$springVersion"
-	compile "org.springframework:spring-expression:$springVersion"
+	compile "com.splunk:splunk:$splunkVersion"
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "joda-time:joda-time:$jodaTimeVersion"
 	compile "commons-pool:commons-pool:$commonsPoolVersion"
 
 	testCompile "org.mockito:mockito-all:$mockitoVersion"
-	testCompile "org.springframework:spring-test:$springVersion"
-	testCompile "cglib:cglib-nodep:$cglibVersion"
+	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "junit:junit-dep:$junitVersion"
 	testCompile "log4j:log4j:$log4jVersion"
 	testCompile "org.springframework.integration:spring-integration-stream:$springIntegrationVersion"
@@ -77,7 +72,7 @@ sourceSets {
 
 
 // enable all compiler warnings; individual projects may customize further
-ext.xLintArg = '-Xlint:all'
+ext.xLintArg = '-Xlint:all,-options'
 [compileJava, compileTestJava]*.options*.compilerArgs = [xLintArg]
 
 test {
@@ -255,7 +250,8 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.6'
+	gradleVersion = '1.12'
+    distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
 defaultTasks 'build'

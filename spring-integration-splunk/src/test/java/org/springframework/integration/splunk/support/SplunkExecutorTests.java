@@ -15,17 +15,15 @@
  */
 package org.springframework.integration.splunk.support;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.integration.splunk.core.DataReader;
 import org.springframework.integration.splunk.core.DataWriter;
 import org.springframework.integration.splunk.event.SplunkEvent;
