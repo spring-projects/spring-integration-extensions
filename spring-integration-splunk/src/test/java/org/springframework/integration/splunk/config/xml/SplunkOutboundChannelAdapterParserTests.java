@@ -15,13 +15,12 @@
  */
 package org.springframework.integration.splunk.config.xml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.splunk.support.AbstractSplunkDataWriter;
@@ -52,11 +51,11 @@ public class SplunkOutboundChannelAdapterParserTests {
 		AbstractSplunkDataWriter writer = appContext.getBean("splunkOutboundChannelAdapter.splunkExecutor.writer",
 				AbstractSplunkDataWriter.class);
 		 assertNotNull(writer);
-		
+
 		 assertTrue(writer instanceof SplunkSubmitWriter);
 		 assertEquals(false,writer.isAutoStartup());
 		 assertEquals(false,writer.isRunning());
-		
+
 		String sourceType = "spring-integration";
 		 assertEquals(sourceType, writer.getArgs().get("sourcetype"));
 

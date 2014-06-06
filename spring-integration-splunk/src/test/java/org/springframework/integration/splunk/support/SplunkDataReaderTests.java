@@ -15,24 +15,24 @@
  */
 package org.springframework.integration.splunk.support;
 
+import static org.mockito.Mockito.*;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
-import org.junit.Before;
-import org.junit.Test;
-import static org.mockito.Mockito.*;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.integration.splunk.core.ServiceFactory;
-import org.springframework.integration.splunk.event.SplunkEvent;
-
 import com.splunk.Job;
 import com.splunk.JobCollection;
 import com.splunk.Service;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.integration.splunk.core.ServiceFactory;
+import org.springframework.integration.splunk.event.SplunkEvent;
 
 /**
  * @author Jarred Li

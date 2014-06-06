@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.splunk.config.xml;
+
+import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
@@ -21,19 +24,20 @@ import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.splunk.support.SplunkServer;
-import org.w3c.dom.Element;
 
 /**
  * Splunk server element parser.
  *
  * The XML element is like this:
- * <pre>
+ * <pre class="code">
  * {@code
  * <splunk:server id="splunkServer" host="host" port="8089" username="admin" password="password"
  *                scheme="https" owner="admin" app="search"/>
  * }
+ * </pre>
  *
  * @author Jarred Li
+ * @author Olivier Lamy
  * @since 1.0
  *
  */
@@ -57,8 +61,8 @@ public class SplunkServerParser extends AbstractSimpleBeanDefinitionParser {
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "username");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "password");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "timeout");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "checkServiceOnBorrow");
 
 	}
-
 
 }

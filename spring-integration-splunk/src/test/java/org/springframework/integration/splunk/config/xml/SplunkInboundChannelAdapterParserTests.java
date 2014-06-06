@@ -15,10 +15,10 @@
  */
 package org.springframework.integration.splunk.config.xml;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
