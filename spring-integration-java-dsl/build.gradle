@@ -26,6 +26,7 @@ ext {
 	embedMongoVersion = '1.45'
 	jacocoVersion = '0.7.0.201403182114'
 	log4jVersion = '1.2.17'
+	slf4jVersion = '1.7.6'
 	springIntegrationVersion = '4.0.2.RELEASE'
 	springBootVersion = '1.1.0.BUILD-SNAPSHOT'
 
@@ -54,10 +55,10 @@ dependencies {
 	 , 'spring-integration-ftp'
 	 , 'spring-integration-gemfire'
 	 , 'spring-integration-http'
-//	 , 'spring-integration-jdbc'
+	 , 'spring-integration-jdbc'
 	 , 'spring-integration-jms'
 	 , 'spring-integration-jmx'
-//	 , 'spring-integration-jpa'
+	 , 'spring-integration-jpa'
 	 , 'spring-integration-mail'
 	 , 'spring-integration-mongodb'
 	 , 'spring-integration-mqtt'
@@ -73,10 +74,13 @@ dependencies {
 		compile("org.springframework.integration:$it:$springIntegrationVersion", optional)
 	}
 
-	testCompile "log4j:log4j:$log4jVersion"
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embedMongoVersion"
 	testCompile "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
+
+	testRuntime "log4j:log4j:$log4jVersion"
+	testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
 
 	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }

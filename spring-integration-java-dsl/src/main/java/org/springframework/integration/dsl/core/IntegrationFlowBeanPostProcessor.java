@@ -18,6 +18,7 @@ package org.springframework.integration.dsl.core;
 
 import java.util.Collection;
 
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -31,6 +32,7 @@ import org.springframework.integration.config.ConsumerEndpointFactoryBean;
 import org.springframework.integration.config.IntegrationConfigUtils;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.support.MessageChannelReference;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
 
@@ -60,7 +62,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof IntegrationFlow) {
 			IntegrationFlow flow = (IntegrationFlow) bean;
-			String flowNamePrefix = beanName + ":";
+			String flowNamePrefix = beanName + ".";
 			int channelNameIndex = 0;
 			for (Object component : flow.getIntegrationComponents()) {
 				if (component instanceof ConsumerEndpointSpec) {
@@ -69,8 +71,8 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 					ConsumerEndpointFactoryBean endpoint = endpointSpec.get().getT1();
 					String id = endpointSpec.getId();
 
-					Collection<?> messageHandlers =
-							this.beanFactory.getBeansOfType(messageHandler.getClass(), false, false).values();
+					Collection<?> messageHandlers = this.beanFactory.getBeansOfType(MessageHandler.class, false,
+							false).values();
 
 					if (!messageHandlers.contains(messageHandler)) {
 						String handlerBeanName = generateBeanName(messageHandler);
@@ -93,35 +95,42 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 					registerComponent(endpoint, endpointBeanName);
 				}
 				else {
-					Collection<?> values = this.beanFactory.getBeansOfType(component.getClass(), false, false).values();
-					if (!values.contains(component)) {
-						if (component instanceof AbstractMessageChannel) {
-							String channelBeanName = ((AbstractMessageChannel) component).getComponentName();
-							if (channelBeanName == null) {
-								channelBeanName = flowNamePrefix + "channel" +
-										BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
+					//TODO workaround until SF will fix 'TypeDescriptor.forObject'
+					if (component instanceof MessageChannel) {
+						Collection<?> messageChannels =
+								this.beanFactory.getBeansOfType(MessageChannel.class, false, false).values();
+						if (!messageChannels.contains(component)) {
+							if (component instanceof AbstractMessageChannel) {
+								String channelBeanName = ((AbstractMessageChannel) component).getComponentName();
+								if (channelBeanName == null) {
+									channelBeanName = flowNamePrefix + "channel" +
+											BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
+								}
+								registerComponent(component, channelBeanName);
 							}
-							registerComponent(component, channelBeanName);
-						}
-						else if (component instanceof MessageChannelReference) {
-							String channelBeanName = ((MessageChannelReference) component).getName();
-							if (!this.beanFactory.containsBean(channelBeanName)) {
-								DirectChannel directChannel = new DirectChannel();
-								registerComponent(directChannel, channelBeanName);
+							else if (component instanceof MessageChannelReference) {
+								String channelBeanName = ((MessageChannelReference) component).getName();
+								if (!this.beanFactory.containsBean(channelBeanName)) {
+									DirectChannel directChannel = new DirectChannel();
+									registerComponent(directChannel, channelBeanName);
+								}
+							}
+							else if (component instanceof FixedSubscriberChannel) {
+								FixedSubscriberChannel fixedSubscriberChannel = (FixedSubscriberChannel) component;
+								String channelBeanName = fixedSubscriberChannel.getComponentName();
+								if ("Unnamed fixed subscriber channel".equals(channelBeanName)) {
+									channelBeanName = flowNamePrefix + "channel" +
+											BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
+								}
+								registerComponent(component, channelBeanName);
 							}
 						}
-						else if (component instanceof FixedSubscriberChannel) {
-							FixedSubscriberChannel fixedSubscriberChannel = (FixedSubscriberChannel) component;
-							String channelBeanName = fixedSubscriberChannel.getComponentName();
-							if ("Unnamed fixed subscriber channel".equals(channelBeanName)) {
-								channelBeanName = flowNamePrefix + "channel" +
-										BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + channelNameIndex++;
-							}
-							registerComponent(component, channelBeanName);
-						}
-						else {
-							registerComponent(component, generateBeanName(component));
-						}
+					}
+					else if (!this.beanFactory
+							.getBeansOfType(AopUtils.getTargetClass(component), false, false)
+							.values()
+							.contains(component)) {
+						registerComponent(component, generateBeanName(component));
 					}
 				}
 			}

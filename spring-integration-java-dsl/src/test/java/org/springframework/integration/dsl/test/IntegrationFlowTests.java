@@ -54,11 +54,16 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.ConfigFileApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -79,7 +84,6 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.AbstractPollableChannel;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.FixedSubscriberChannel;
-import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.config.GlobalChannelInterceptor;
@@ -113,10 +117,12 @@ import org.springframework.integration.xml.transformer.support.XPathExpressionEv
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
+import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.core.DestinationResolutionException;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.ErrorMessage;
@@ -130,7 +136,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  * @author Artem Bilan
  */
-@ContextConfiguration
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext
 public class IntegrationFlowTests {
@@ -158,11 +164,11 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("inputChannel")
-	private DirectChannel inputChannel;
+	private MessageChannel inputChannel;
 
 	@Autowired
 	@Qualifier("foo")
-	private PublishSubscribeChannel foo;
+	private SubscribableChannel foo;
 
 	@Autowired
 	@Qualifier("successChannel")
@@ -170,7 +176,7 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("flow3Input")
-	private DirectChannel flow3Input;
+	private MessageChannel flow3Input;
 
 	@Autowired
 	private AtomicReference<Object> eventHolder;
@@ -185,7 +191,7 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("bridgeFlow2Input")
-	private DirectChannel bridgeFlow2Input;
+	private MessageChannel bridgeFlow2Input;
 
 	@Autowired
 	@Qualifier("bridgeFlow2Output")
@@ -193,15 +199,15 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("fileFlow1Input")
-	private DirectChannel fileFlow1Input;
+	private MessageChannel fileFlow1Input;
 
 	@Autowired
 	@Qualifier("fileWritingMessageHandler")
-	private FileWritingMessageHandler fileWritingMessageHandler;
+	private MessageHandler fileWritingMessageHandler;
 
 	@Autowired
 	@Qualifier("methodInvokingInput")
-	private DirectChannel methodInvokingInput;
+	private MessageChannel methodInvokingInput;
 
 	@Autowired
 	@Qualifier("delayedAdvice")
@@ -213,11 +219,11 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("splitInput")
-	private DirectChannel splitInput;
+	private MessageChannel splitInput;
 
 	@Autowired
 	@Qualifier("xpathHeaderEnricherInput")
-	private DirectChannel xpathHeaderEnricherInput;
+	private MessageChannel xpathHeaderEnricherInput;
 
 	@Autowired
 	@Qualifier("splitAggregateInput")
@@ -265,7 +271,7 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("defaultOutputChannel")
-	private QueueChannel defaultOutputChannel;
+	private PollableChannel defaultOutputChannel;
 
 	@Autowired
 	private MessageStore messageStore;
@@ -384,8 +390,9 @@ public class IntegrationFlowTests {
 		assertNotNull(reply);
 		assertEquals("test", reply.getPayload());
 
-		assertTrue(this.beanFactory.containsBean("bridgeFlow2:channel#0"));
-		assertThat(this.beanFactory.getBean("bridgeFlow2:channel#0"), Matchers.instanceOf(FixedSubscriberChannel.class));
+		assertTrue(this.beanFactory.containsBean("bridgeFlow2.channel#0"));
+		assertThat(this.beanFactory.getBean("bridgeFlow2.channel#0"), Matchers.instanceOf(FixedSubscriberChannel
+				.class));
 
 		try {
 			this.bridgeFlow2Input.send(message);
@@ -443,8 +450,7 @@ public class IntegrationFlowTests {
 
 
 	@Test
-	public void testFileHandler() {
-		assertEquals(1, this.beanFactory.getBeansOfType(FileWritingMessageHandler.class).size());
+	public void testFileHandler() throws Exception {
 		Message<?> message = MessageBuilder.withPayload("foo").setHeader(FileHeaders.FILENAME, "foo").build();
 		try {
 			this.fileFlow1Input.send(message);
@@ -456,7 +462,15 @@ public class IntegrationFlowTests {
 		}
 		DefaultFileNameGenerator fileNameGenerator = new DefaultFileNameGenerator();
 		fileNameGenerator.setBeanFactory(this.beanFactory);
-		this.fileWritingMessageHandler.setFileNameGenerator(fileNameGenerator);
+		Object targetFileWritingMessageHandler = this.fileWritingMessageHandler;
+		if (this.fileWritingMessageHandler instanceof Advised) {
+			TargetSource targetSource = ((Advised) this.fileWritingMessageHandler).getTargetSource();
+			if (targetSource != null) {
+				targetFileWritingMessageHandler = targetSource.getTarget();
+			}
+		}
+		DirectFieldAccessor dfa = new DirectFieldAccessor(targetFileWritingMessageHandler);
+		dfa.setPropertyValue("fileNameGenerator", fileNameGenerator);
 		this.fileFlow1Input.send(message);
 
 		assertTrue(new File(tmpDir, "foo").exists());
@@ -901,7 +915,7 @@ public class IntegrationFlowTests {
 	private MessageChannel amqpOutboundInput;
 
 	@Autowired
-	@Qualifier("amqpReplyChannel")
+	@Qualifier("amqpReplyChannel.channel")
 	private PollableChannel amqpReplyChannel;
 
 	@Test
@@ -909,11 +923,20 @@ public class IntegrationFlowTests {
 		this.amqpOutboundInput.send(MessageBuilder.withPayload("hello through the amqp")
 				.setHeader("routingKey", "foo")
 				.build());
-		Message<?> receive = this.amqpReplyChannel.receive(5000);
+		Message<?> receive = null;
+		int i = 0;
+		do {
+			receive = this.amqpReplyChannel.receive();
+			if (receive != null) {
+				break;
+			}
+			Thread.sleep(100);
+			i++;
+		} while (i < 10);
+
 		assertNotNull(receive);
 		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
 	}
-
 
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
@@ -955,12 +978,12 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
-		public DirectChannel inputChannel() {
+		public MessageChannel inputChannel() {
 			return MessageChannels.direct().get();
 		}
 
 		@Bean
-		public PublishSubscribeChannel foo() {
+		public MessageChannel foo() {
 			return MessageChannels.publishSubscribe().get();
 		}
 
@@ -1106,17 +1129,17 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean(name = "foo-channel")
-		public QueueChannel fooChannel() {
+		public MessageChannel fooChannel() {
 			return new QueueChannel();
 		}
 
 		@Bean(name = "bar-channel")
-		public QueueChannel barChannel() {
+		public MessageChannel barChannel() {
 			return new QueueChannel();
 		}
 
 		@Bean
-		public QueueChannel defaultOutputChannel() {
+		public MessageChannel defaultOutputChannel() {
 			return new QueueChannel();
 		}
 
@@ -1125,7 +1148,7 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from("recipientListInput")
 					.<String, String>transform(p -> p.replaceFirst("Payload", ""))
 					.recipientListRoute(r ->
-									r.defaultOutputChannel(defaultOutputChannel())
+									r.defaultOutputChannel(this.defaultOutputChannel())
 											.recipient("foo-channel", "'foo' == payload")
 											.recipient("bar-channel", m ->
 													m.getHeaders().containsKey("recipient")
@@ -1156,28 +1179,28 @@ public class IntegrationFlowTests {
 	public static class ContextConfiguration4 {
 
 		@Bean
-		public FileWritingMessageHandler fileWritingMessageHandler() {
-			return new FileWritingMessageHandler(tmpDir);
+		public MessageHandler fileWritingMessageHandler() {
+			FileWritingMessageHandler fileWritingMessageHandler = new FileWritingMessageHandler(tmpDir);
+			fileWritingMessageHandler.setFileNameGenerator(message -> null);
+			fileWritingMessageHandler.setExpectReply(false);
+			return fileWritingMessageHandler;
 		}
 
 		@Bean
 		public IntegrationFlow fileFlow1() {
 			return IntegrationFlows.from("fileFlow1Input")
-					.handle(this.fileWritingMessageHandler(), c -> {
-						FileWritingMessageHandler handler = c.get().getT2();
-						handler.setFileNameGenerator(message -> null);
-						handler.setExpectReply(false);
-					})
+					.handle(this.fileWritingMessageHandler())
 					.get();
 		}
 
 		@Autowired
-		private GreetingService greetingService;
+		@Qualifier("integrationFlowTests.GreetingService")
+		private MessageHandler greetingService;
 
 		@Bean
 		public IntegrationFlow methodInvokingFlow() {
 			return IntegrationFlows.from("methodInvokingInput")
-					.handle(Message.class, (p, h) -> this.greetingService.handleRequestMessage(p))
+					.handle(this.greetingService)
 					.get();
 		}
 
@@ -1352,7 +1375,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow amqpOutboundFlow() {
-			return IntegrationFlows.from("amqpOutboundInput")
+			return IntegrationFlows.from(Amqp.channel("amqpOutboundInput", this.rabbitConnectionFactory))
 					.handle(Amqp.outboundAdapter(this.amqpTemplate).routingKeyExpression("headers.routingKey").get())
 					.get();
 		}
@@ -1363,10 +1386,17 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
+		public Queue amqpReplyChannel() {
+			return new Queue("amqpReplyChannel");
+		}
+
+		@Bean
 		public IntegrationFlow amqpInboundFlow() {
 			return IntegrationFlows.from(Amqp.inboundAdapter(this.rabbitConnectionFactory, fooQueue()))
 					.transform(String.class, String::toUpperCase)
-					.channel(MessageChannels.queue("amqpReplyChannel"))
+					.channel(Amqp.pollableChannel(this.rabbitConnectionFactory)
+							.queueName("amqpReplyChannel")
+							.channelTransacted(true))
 					.get();
 		}
 
