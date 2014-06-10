@@ -23,8 +23,10 @@ compileTestJava {
 }
 
 ext {
+	activeMqVersion = '5.9.0'
 	embedMongoVersion = '1.45'
 	jacocoVersion = '0.7.0.201403182114'
+	jmsApiVersion = '1.1-rev-1'
 	log4jVersion = '1.2.17'
 	slf4jVersion = '1.7.6'
 	springIntegrationVersion = '4.0.2.RELEASE'
@@ -73,6 +75,7 @@ dependencies {
 	 , 'spring-integration-xmpp'].each {
 		compile("org.springframework.integration:$it:$springIntegrationVersion", optional)
 	}
+	compile ("javax.jms:jms-api:$jmsApiVersion", provided)
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embedMongoVersion"
@@ -81,6 +84,10 @@ dependencies {
 	testRuntime "log4j:log4j:$log4jVersion"
 	testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+	testRuntime("org.apache.activemq:activemq-broker:$activeMqVersion")
+	testRuntime("org.apache.activemq:activemq-kahadb-store:$activeMqVersion") {
+		exclude group: "org.springframework"
+	}
 
 	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }

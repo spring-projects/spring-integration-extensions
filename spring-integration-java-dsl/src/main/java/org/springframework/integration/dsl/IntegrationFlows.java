@@ -18,7 +18,6 @@ package org.springframework.integration.dsl;
 
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.dsl.core.MessagingGatewaySpec;
@@ -74,10 +73,9 @@ public final class IntegrationFlows {
 		if (endpointConfigurer != null) {
 			endpointConfigurer.configure(spec);
 		}
-		SourcePollingChannelAdapterFactoryBean sourcePollingChannelAdapterFactoryBean = spec.get().getT1();
 		return new IntegrationFlowBuilder()
-				.addComponent(sourcePollingChannelAdapterFactoryBean)
-				.currentComponent(sourcePollingChannelAdapterFactoryBean);
+				.addComponent(spec)
+				.currentComponent(spec);
 	}
 
 	public static IntegrationFlowBuilder from(MessagingProducerSpec<?, ?> messagingProducerSpec) {
