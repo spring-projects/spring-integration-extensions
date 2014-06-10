@@ -56,7 +56,6 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -81,18 +80,19 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.channel.AbstractPollableChannel;
-import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.ChannelInterceptorAware;
 import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.config.GlobalChannelInterceptor;
+import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
+import org.springframework.integration.dsl.jms.Jms;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
@@ -127,6 +127,8 @@ import org.springframework.messaging.core.DestinationResolutionException;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
@@ -157,7 +159,7 @@ public class IntegrationFlowTests {
 
 	@Autowired
 	@Qualifier("flow1QueueChannel")
-	private AbstractPollableChannel outputChannel;
+	private PollableChannel outputChannel;
 
 	@Autowired
 	private TestChannelInterceptor testChannelInterceptor;
@@ -330,15 +332,18 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testPollingFlow() {
+		this.controlBus.send("@integerEndpoint.start()");
 		assertThat(this.beanFactory.getBean("integerChannel"), Matchers.instanceOf(FixedSubscriberChannel.class));
-		for (int i = 0; i < 10; i++) {
-			Message<?> message = this.outputChannel.receive(5000);
+		for (int i = 0; i < 5; i++) {
+			Message<?> message = this.outputChannel.receive(20000);
 			assertNotNull(message);
 			assertEquals("" + i, message.getPayload());
 		}
 
-		assertTrue(this.outputChannel.getChannelInterceptors().contains(this.testChannelInterceptor));
-		assertThat(this.testChannelInterceptor.getInvoked(), Matchers.greaterThanOrEqualTo(10));
+		assertTrue(((ChannelInterceptorAware) this.outputChannel).getChannelInterceptors()
+				.contains(this.testChannelInterceptor));
+		assertThat(this.testChannelInterceptor.getInvoked(), Matchers.greaterThanOrEqualTo(5));
+		this.controlBus.send("@integerEndpoint.stop()");
 	}
 
 	@Test
@@ -807,7 +812,6 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testPriority() throws InterruptedException {
-
 		Message<String> message = MessageBuilder.withPayload("1").setPriority(1).build();
 		this.priorityChannel.send(message);
 
@@ -831,31 +835,31 @@ public class IntegrationFlowTests {
 
 		Thread.sleep(2000);
 
-		Message<?> receive = this.priorityReplyChannel.receive(1000);
+		Message<?> receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("3", receive.getPayload());
 
-		receive = this.priorityReplyChannel.receive(1000);
+		receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("31", receive.getPayload());
 
-		receive = this.priorityReplyChannel.receive(1000);
+		receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("2", receive.getPayload());
 
-		receive = this.priorityReplyChannel.receive(1000);
+		receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("1", receive.getPayload());
 
-		receive = this.priorityReplyChannel.receive(1000);
+		receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("0", receive.getPayload());
 
-		receive = this.priorityReplyChannel.receive(1000);
+		receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("-1", receive.getPayload());
 
-		receive = this.priorityReplyChannel.receive(1000);
+		receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("none", receive.getPayload());
 	}
@@ -963,18 +967,32 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from("controlBus").controlBus().get();
 		}
 
+		@Autowired
+		private javax.jms.ConnectionFactory jmsConnectionFactory;
+
 		@Bean
 		public IntegrationFlow flow1() {
-			return IntegrationFlows.from(this.integerMessageSource(), c -> c.poller(Pollers.fixedRate(100, 1000)))
+			return IntegrationFlows.from(this.integerMessageSource(),
+					c -> c.poller(Pollers.fixedRate(1000, 2000))
+							.id("integerEndpoint")
+							.autoStartup(false))
 					.fixedSubscriberChannel("integerChannel")
 					.transform("payload.toString()")
-					.channel(MessageChannels.queue("flow1QueueChannel"))
+					.channel(Jms.pollableChannel("flow1QueueChannel", this.jmsConnectionFactory)
+							.destination("flow1QueueChannel"))
 					.get();
 		}
 
 		@Bean(name = PollerMetadata.DEFAULT_POLLER)
 		public PollerMetadata poller() {
 			return Pollers.fixedRate(500).get();
+		}
+
+		@Bean(name = IntegrationContextUtils.TASK_SCHEDULER_BEAN_NAME)
+		public TaskScheduler taskScheduler() {
+			ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+			threadPoolTaskScheduler.setPoolSize(100);
+			return threadPoolTaskScheduler;
 		}
 
 		@Bean
@@ -1046,7 +1064,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
 			return IntegrationFlows.from(MessageChannels.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
-					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 4000)))
+					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 5000)))
 					.channel(MessageChannels.queue("priorityReplyChannel"))
 					.get();
 		}

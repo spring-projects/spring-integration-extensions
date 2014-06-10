@@ -30,11 +30,14 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.config.ConsumerEndpointFactoryBean;
 import org.springframework.integration.config.IntegrationConfigUtils;
+import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
 import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec;
 import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Artem Bilan
@@ -125,6 +128,15 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 								registerComponent(component, channelBeanName);
 							}
 						}
+					}
+					else if (component instanceof SourcePollingChannelAdapterSpec) {
+						SourcePollingChannelAdapterSpec spec = (SourcePollingChannelAdapterSpec) component;
+						String id = ((IntegrationComponentSpec) spec).getId();
+						SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean = spec.get().getT1();
+						if (!StringUtils.hasText(id)) {
+							id = generateBeanName(pollingChannelAdapterFactoryBean);
+						}
+						registerComponent(pollingChannelAdapterFactoryBean, id);
 					}
 					else if (!this.beanFactory
 							.getBeansOfType(AopUtils.getTargetClass(component), false, false)

@@ -570,9 +570,9 @@ public final class IntegrationFlowBuilder {
 						messageProducer.setOutputChannel(outputChannel);
 					}
 				}
-				else if (this.currentComponent instanceof SourcePollingChannelAdapterFactoryBean) {
+				else if (this.currentComponent instanceof SourcePollingChannelAdapterSpec) {
 					SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean =
-							(SourcePollingChannelAdapterFactoryBean) this.currentComponent;
+							((SourcePollingChannelAdapterSpec) this.currentComponent).get().getT1();
 					if (channelName != null) {
 						pollingChannelAdapterFactoryBean.setOutputChannelName(channelName);
 					}
@@ -611,7 +611,7 @@ public final class IntegrationFlowBuilder {
 
 		if (this.flow.getIntegrationComponents().size() == 1) {
 			if (this.currentComponent != null) {
-				if (this.currentComponent instanceof SourcePollingChannelAdapterFactoryBean) {
+				if (this.currentComponent instanceof SourcePollingChannelAdapterSpec) {
 					throw new BeanCreationException("The 'SourcePollingChannelAdapter' (" + this.currentComponent + ") " +
 							"must be configured with at least one 'MessageChanel' or 'MessageHandler'.");
 				}

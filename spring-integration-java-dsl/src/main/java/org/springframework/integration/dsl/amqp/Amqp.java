@@ -77,18 +77,16 @@ public abstract class Amqp {
 		return new AmqpOutboundEndpointSpec(endpoint, expectReply);
 	}
 
-	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S>
-	pollableChannel(ConnectionFactory connectionFactory) {
+	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S>pollableChannel(ConnectionFactory connectionFactory) {
 		return pollableChannel(null, connectionFactory);
 	}
 
-	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S>
-	pollableChannel(String id, ConnectionFactory connectionFactory) {
+	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S> pollableChannel(String id,
+			ConnectionFactory connectionFactory) {
 		return new AmqpPollableMessageChannelSpec<S>(connectionFactory).id(id);
 	}
 
-	public static
-	<S extends AmqpMessageChannelSpec<S>> AmqpMessageChannelSpec<S> channel(ConnectionFactory connectionFactory) {
+	public static <S extends AmqpMessageChannelSpec<S>> AmqpMessageChannelSpec<S> channel(ConnectionFactory connectionFactory) {
 		return channel(null, connectionFactory);
 	}
 
