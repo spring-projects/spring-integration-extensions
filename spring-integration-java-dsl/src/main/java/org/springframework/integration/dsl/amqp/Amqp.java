@@ -22,7 +22,6 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.integration.amqp.inbound.AmqpInboundChannelAdapter;
 import org.springframework.integration.amqp.inbound.AmqpInboundGateway;
-import org.springframework.integration.amqp.outbound.AmqpOutboundEndpoint;
 import org.springframework.integration.dsl.core.MessagingGatewaySpec;
 import org.springframework.integration.dsl.core.MessagingProducerSpec;
 
@@ -66,18 +65,15 @@ public abstract class Amqp {
 	}
 
 	public static AmqpOutboundEndpointSpec outboundAdapter(AmqpTemplate amqpTemplate) {
-		return outboundEndpoint(new AmqpOutboundEndpoint(amqpTemplate), false);
+		return new AmqpOutboundEndpointSpec(amqpTemplate, false);
 	}
 
 	public static AmqpOutboundEndpointSpec outboundGateway(AmqpTemplate amqpTemplate) {
-		return outboundEndpoint(new AmqpOutboundEndpoint(amqpTemplate), true);
+		return new AmqpOutboundEndpointSpec(amqpTemplate, true);
 	}
 
-	private static AmqpOutboundEndpointSpec outboundEndpoint(AmqpOutboundEndpoint endpoint, boolean expectReply) {
-		return new AmqpOutboundEndpointSpec(endpoint, expectReply);
-	}
-
-	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S>pollableChannel(ConnectionFactory connectionFactory) {
+	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S>
+	pollableChannel(ConnectionFactory connectionFactory) {
 		return pollableChannel(null, connectionFactory);
 	}
 

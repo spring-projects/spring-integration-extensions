@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.transformer.ContentEnricher;
 import org.springframework.integration.transformer.support.AbstractHeaderValueMessageProcessor;
@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
 /**
  * @author Artem Bilan
  */
-public class EnricherSpec extends IntegrationComponentSpec<EnricherSpec, ContentEnricher> {
+public class EnricherSpec extends MessageHandlerSpec<EnricherSpec, ContentEnricher> {
 
 	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 

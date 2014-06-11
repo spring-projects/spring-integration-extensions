@@ -942,6 +942,24 @@ public class IntegrationFlowTests {
 		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
 	}
 
+	@Autowired
+	@Qualifier("jmsOutboundInboundChannel")
+	private MessageChannel jmsOutboundInboundChannel;
+
+	@Autowired
+	@Qualifier("jmsOutboundInboundReplyChannel")
+	private PollableChannel jmsOutboundInboundReplyChannel;
+
+	@Test
+	public void testJmsOutboundInboundFlow() throws Exception {
+		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello through the amqp").build());
+
+		Message<?> receive = this.jmsOutboundInboundReplyChannel.receive(5000);
+
+		assertNotNull(receive);
+		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
+	}
+
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
@@ -1003,6 +1021,22 @@ public class IntegrationFlowTests {
 		@Bean
 		public MessageChannel foo() {
 			return MessageChannels.publishSubscribe().get();
+		}
+
+
+		@Bean
+		public IntegrationFlow jmsOutboundFlow() {
+			return IntegrationFlows.from("jmsOutboundInboundChannel")
+					.handle(Jms.outboundAdapter(this.jmsConnectionFactory).destination("jmsOutboundInboundChannel"))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow jmsInboundFlow() {
+			return IntegrationFlows.from(Jms.inboundAdapter(this.jmsConnectionFactory).destination("jmsOutboundInboundChannel"))
+					.<String, String>transform(String::toUpperCase)
+					.channel(MessageChannels.queue("jmsOutboundInboundReplyChannel"))
+					.get();
 		}
 
 	}
@@ -1394,7 +1428,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow amqpOutboundFlow() {
 			return IntegrationFlows.from(Amqp.channel("amqpOutboundInput", this.rabbitConnectionFactory))
-					.handle(Amqp.outboundAdapter(this.amqpTemplate).routingKeyExpression("headers.routingKey").get())
+					.handle(Amqp.outboundAdapter(this.amqpTemplate).routingKeyExpression("headers.routingKey"))
 					.get();
 		}
 

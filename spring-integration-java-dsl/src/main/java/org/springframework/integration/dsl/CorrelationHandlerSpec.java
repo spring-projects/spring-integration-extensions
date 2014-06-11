@@ -17,7 +17,6 @@
 package org.springframework.integration.dsl;
 
 import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
 import org.springframework.integration.aggregator.CorrelationStrategy;
 import org.springframework.integration.aggregator.ExpressionEvaluatingCorrelationStrategy;
@@ -25,7 +24,7 @@ import org.springframework.integration.aggregator.ExpressionEvaluatingReleaseStr
 import org.springframework.integration.aggregator.ReleaseStrategy;
 import org.springframework.integration.config.CorrelationStrategyFactoryBean;
 import org.springframework.integration.config.ReleaseStrategyFactoryBean;
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.store.MessageGroupStore;
 import org.springframework.messaging.MessageChannel;
@@ -35,9 +34,7 @@ import org.springframework.scheduling.TaskScheduler;
  * @author Artem Bilan
  */
 public abstract class CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S, H>, H extends AbstractCorrelatingMessageHandler>
-		extends IntegrationComponentSpec<S, H> {
-
-	protected final static SpelExpressionParser PARSER = new SpelExpressionParser();
+		extends MessageHandlerSpec<S, H> {
 
 	protected MessageGroupStore messageStore;
 

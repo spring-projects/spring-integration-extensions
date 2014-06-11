@@ -16,18 +16,19 @@
 
 package org.springframework.integration.dsl.amqp;
 
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.integration.amqp.outbound.AmqpOutboundEndpoint;
 import org.springframework.integration.amqp.support.AmqpHeaderMapper;
 import org.springframework.integration.amqp.support.DefaultAmqpHeaderMapper;
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
  */
-public class AmqpOutboundEndpointSpec extends IntegrationComponentSpec<AmqpOutboundEndpointSpec, AmqpOutboundEndpoint> {
+public class AmqpOutboundEndpointSpec extends MessageHandlerSpec<AmqpOutboundEndpointSpec, AmqpOutboundEndpoint> {
 
 	private final AmqpOutboundEndpoint endpoint;
 
@@ -35,8 +36,8 @@ public class AmqpOutboundEndpointSpec extends IntegrationComponentSpec<AmqpOutbo
 
 	private final DefaultAmqpHeaderMapper headerMapper = new DefaultAmqpHeaderMapper();
 
-	AmqpOutboundEndpointSpec(AmqpOutboundEndpoint endpoint, boolean expectReply) {
-		this.endpoint = endpoint;
+	AmqpOutboundEndpointSpec(AmqpTemplate amqpTemplate, boolean expectReply) {
+		this.endpoint = new AmqpOutboundEndpoint(amqpTemplate);
 		this.expectReply = expectReply;
 		this.endpoint.setExpectReply(expectReply);
 		this.endpoint.setHeaderMapper(this.headerMapper);

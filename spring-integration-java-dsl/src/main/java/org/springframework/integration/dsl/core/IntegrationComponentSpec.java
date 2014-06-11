@@ -16,12 +16,21 @@
 
 package org.springframework.integration.dsl.core;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+
 /**
  * The common Builder abstraction.
  *
  * @author Artem Bilan
  */
 public abstract class IntegrationComponentSpec<S extends IntegrationComponentSpec<S, T>, T> {
+
+	protected final static SpelExpressionParser PARSER = new SpelExpressionParser();
+
+	protected final Log logger = LogFactory.getLog(getClass());
 
 	protected volatile T target;
 
