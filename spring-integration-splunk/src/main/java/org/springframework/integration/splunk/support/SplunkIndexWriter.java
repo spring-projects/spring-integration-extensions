@@ -35,7 +35,7 @@ import com.splunk.Service;
  */
 
 public class SplunkIndexWriter extends AbstractSplunkDataWriter {
-	private String indexName;
+	private String index;
 	/**
 	 *  
 	 * @param serviceFactory
@@ -54,9 +54,9 @@ public class SplunkIndexWriter extends AbstractSplunkDataWriter {
 		Receiver receiver = null;
 		Socket socket = null;
 
-		if (indexName != null) {
-			indexObject = service.getIndexes().get(indexName);
-			Assert.notNull(indexObject,String.format("cannot find index [%s]",indexName));
+		if (index != null) {
+			indexObject = service.getIndexes().get(index);
+			Assert.notNull(indexObject,String.format("cannot find index [%s]", index));
 			socket = indexObject.attach(args);
 			
 			
@@ -69,6 +69,13 @@ public class SplunkIndexWriter extends AbstractSplunkDataWriter {
 		}
 		return socket;
 	}
-	
 
+
+	public String getIndex() {
+		return index;
+	}
+
+	public void setIndex(String index) {
+		this.index = index;
+	}
 }
