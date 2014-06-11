@@ -24,6 +24,7 @@ import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.jms.AbstractJmsChannel;
 import org.springframework.integration.jms.config.JmsChannelFactoryBean;
 import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.jms.support.destination.DestinationResolver;
 
 /**
  * @author Artem Bilan
@@ -54,6 +55,11 @@ public class JmsPollableMessageChannelSpec<S extends JmsPollableMessageChannelSp
 		return _this();
 	}
 
+	public S destinationResolver(DestinationResolver destinationResolver) {
+		this.jmsChannelFactoryBean.setDestinationResolver(destinationResolver);
+		return _this();
+	}
+
 	public S destination(Destination destination) {
 		this.jmsChannelFactoryBean.setDestination(destination);
 		return _this();
@@ -64,7 +70,7 @@ public class JmsPollableMessageChannelSpec<S extends JmsPollableMessageChannelSp
 		return _this();
 	}
 
-	public S amqpMessageConverter(MessageConverter messageConverter) {
+	public S jmsMessageConverter(MessageConverter messageConverter) {
 		this.jmsChannelFactoryBean.setMessageConverter(messageConverter);
 		return _this();
 	}

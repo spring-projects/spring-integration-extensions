@@ -67,10 +67,24 @@ public abstract class ConsumerEndpointSpec<S extends ConsumerEndpointSpec<S, H>,
 		return _this();
 	}
 
+	public S requiresReply(boolean requiresReply) {
+		H handler = this.target.getT2();
+		if (handler instanceof AbstractReplyProducingMessageHandler) {
+			((AbstractReplyProducingMessageHandler) handler).setRequiresReply(requiresReply);
+		}
+		else {
+			logger.warn("'requiresReply' can be applied only for AbstractReplyProducingMessageHandler");
+		}
+		return _this();
+	}
+
 	public S sendTimeout(long sendTimeout) {
 		H handler = this.target.getT2();
 		if (handler instanceof AbstractReplyProducingMessageHandler) {
 			((AbstractReplyProducingMessageHandler) handler).setSendTimeout(sendTimeout);
+		}
+		else {
+			logger.warn("'sendTimeout' can be applied only for AbstractReplyProducingMessageHandler");
 		}
 		return _this();
 	}

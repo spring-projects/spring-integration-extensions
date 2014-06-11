@@ -16,7 +16,7 @@
 
 package org.springframework.integration.dsl;
 
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.router.AbstractMessageRouter;
 import org.springframework.messaging.MessageChannel;
 
@@ -24,7 +24,7 @@ import org.springframework.messaging.MessageChannel;
  * @author Artem Bilan
  */
 public class AbstractRouterSpec<S extends AbstractRouterSpec<S, R>, R extends AbstractMessageRouter>
-		extends IntegrationComponentSpec<S, R> {
+		extends MessageHandlerSpec<S, R> {
 
 	AbstractRouterSpec(R router) {
 		this.target = router;

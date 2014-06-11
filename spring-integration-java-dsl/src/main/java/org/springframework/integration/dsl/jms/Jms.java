@@ -18,6 +18,8 @@ package org.springframework.integration.dsl.jms;
 
 import javax.jms.ConnectionFactory;
 
+import org.springframework.jms.core.JmsTemplate;
+
 /**
  * @author Artem Bilan
  */
@@ -49,4 +51,25 @@ public abstract class Jms {
 			ConnectionFactory connectionFactory) {
 		return new JmsPublishSubscribeMessageChannelSpec(connectionFactory).id(id);
 	}
+
+	public static <S extends JmsOutboundChannelAdapterSpec<S>> JmsOutboundChannelAdapterSpec<S> outboundAdapter(JmsTemplate jmsTemplate) {
+		return new JmsOutboundChannelAdapterSpec<S>(jmsTemplate);
+	}
+
+	public static JmsOutboundChannelAdapterSpec.JmsOutboundChannelSpecTemplateAware outboundAdapter(ConnectionFactory connectionFactory) {
+		return new JmsOutboundChannelAdapterSpec.JmsOutboundChannelSpecTemplateAware(connectionFactory);
+	}
+
+	public static <S extends JmsInboundChannelAdapterSpec<S>> JmsInboundChannelAdapterSpec<S> inboundAdapter(JmsTemplate jmsTemplate) {
+		return new JmsInboundChannelAdapterSpec<S>(jmsTemplate);
+	}
+
+	public static JmsInboundChannelAdapterSpec.JmsInboundChannelSpecTemplateAware inboundAdapter(ConnectionFactory connectionFactory) {
+		return new JmsInboundChannelAdapterSpec.JmsInboundChannelSpecTemplateAware(connectionFactory);
+	}
+
+	public static JmsOutboundGatewaySpec outboundGateway(ConnectionFactory connectionFactory) {
+		return new JmsOutboundGatewaySpec(connectionFactory);
+	}
+
 }

@@ -31,6 +31,7 @@ import org.springframework.integration.core.GenericSelector;
 import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
+import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
 import org.springframework.integration.dsl.support.ComponentConfigurer;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
@@ -188,6 +189,11 @@ public final class IntegrationFlowBuilder {
 		return this.register(new FilterEndpointSpec(new MessageFilter(selector)), endpointConfigurer);
 	}
 
+	public <S extends MessageHandlerSpec<S, ? extends MessageHandler>> IntegrationFlowBuilder handle(S messageHandlerSpec) {
+		Assert.notNull(messageHandlerSpec);
+		return handle(messageHandlerSpec.get());
+	}
+
 	public IntegrationFlowBuilder handle(MessageHandler messageHandler) {
 		return this.handle(messageHandler, null);
 	}
@@ -226,6 +232,12 @@ public final class IntegrationFlowBuilder {
 			serviceActivatingHandler = new ServiceActivatingHandler(handler);
 		}
 		return this.handle(serviceActivatingHandler, endpointConfigurer);
+	}
+
+	public <H extends MessageHandler, S extends MessageHandlerSpec<S, H>>
+	IntegrationFlowBuilder handle(S messageHandlerSpec, EndpointConfigurer<GenericEndpointSpec<H>> endpointConfigurer) {
+		Assert.notNull(messageHandlerSpec);
+		return handle(messageHandlerSpec.get(), endpointConfigurer);
 	}
 
 	public <H extends MessageHandler> IntegrationFlowBuilder handle(H messageHandler,
