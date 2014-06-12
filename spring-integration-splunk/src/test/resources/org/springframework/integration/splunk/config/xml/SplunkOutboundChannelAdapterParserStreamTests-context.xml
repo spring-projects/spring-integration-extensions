@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
-	xmlns:stream="http://www.springframework.org/schema/integration/stream"
-	xmlns:int-splunk="http://www.springframework.org/schema/integration/splunk"
-	xsi:schemaLocation="
-	http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:int="http://www.springframework.org/schema/integration"
+	   xmlns:int-splunk="http://www.springframework.org/schema/integration/splunk"
+	   xsi:schemaLocation="
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/integration/splunk http://www.springframework.org/schema/integration/splunk/spring-integration-splunk.xsd">
 
-	<import resource="../../SplunkCommon-context.xml" />
+	<import resource="../../SplunkCommon-context.xml"/>
 
 	<int:channel id="outputToSplunk"/>
-	 
+
 	<int-splunk:outbound-channel-adapter
-		id="splunkOutboundChannelAdapter" auto-startup="false" order="1"
-		channel="outputToSplunk" splunk-server-ref="splunkServer"
-		source-type="spring-integration" source="example5"
-		host="test.host" host-regex="test.host.*">
-		<int-splunk:index-writer/>
+			id="splunkOutboundChannelAdapter" auto-startup="false" order="1"
+			channel="outputToSplunk" splunk-server-ref="splunkServer"
+			source-type="spring-integration" source="example5"
+			host="test.host" host-regex="test.host.*">
+		<int-splunk:index-writer index="foo"/>
 	</int-splunk:outbound-channel-adapter>
 
 </beans>

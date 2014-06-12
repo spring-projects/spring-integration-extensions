@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.splunk.config.xml;
 
 import static org.junit.Assert.*;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,6 +30,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Jarred Li
+ * @author Artem Bilan
  * @since 1.0
  *
  */
@@ -40,18 +41,16 @@ public class SplunkOutboundChannelAdapterParserStreamTests {
 	@Autowired
 	private ApplicationContext appContext;
 
-	/**
-	 * Test method for {@link org.springframework.integration.splunk.config.xml.SplunkOutboundChannelAdapterParser#parseConsumer(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext)}.
-	 */
 	@Test
 	public void testParseConsumerElementParserContext() {
 		Object adapter = appContext.getBean("splunkOutboundChannelAdapter");
-		Assert.assertNotNull(adapter);
+		assertNotNull(adapter);
 
 		AbstractSplunkDataWriter writer = appContext.getBean("splunkOutboundChannelAdapter.splunkExecutor.writer",
 				AbstractSplunkDataWriter.class);
-		Assert.assertNotNull(writer);
-		 assertTrue(writer instanceof SplunkIndexWriter);
+		assertNotNull(writer);
+		assertTrue(writer instanceof SplunkIndexWriter);
+		assertEquals("foo", ((SplunkIndexWriter) writer).getIndex());
 	}
 
 }
