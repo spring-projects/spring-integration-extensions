@@ -149,8 +149,6 @@ public class IntegrationFlowTests {
 
 	private static MongodExecutable mongodExe;
 
-	private static MongodProcess mongod;
-
 	@Autowired
 	private ListableBeanFactory beanFactory;
 
@@ -321,12 +319,11 @@ public class IntegrationFlowTests {
 						.version(Version.Main.PRODUCTION)
 						.net(new Net(mongoPort, Network.localhostIsIPv6()))
 						.build());
-		mongod = mongodExe.start();
+		mongodExe.start();
 	}
 
 	@AfterClass
 	public static void tearDown() {
-		mongod.stop();
 		mongodExe.stop();
 	}
 
@@ -862,6 +859,8 @@ public class IntegrationFlowTests {
 		receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
 		assertEquals("none", receive.getPayload());
+
+		this.controlBus.send("@priorityChannelBridge.stop()");
 	}
 
 	@Test
@@ -951,15 +950,32 @@ public class IntegrationFlowTests {
 	private PollableChannel jmsOutboundInboundReplyChannel;
 
 	@Test
-	public void testJmsOutboundInboundFlow() throws Exception {
-		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello through the amqp").build());
+	public void testJmsOutboundInboundFlow() {
+		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello through the jms").build());
 
 		Message<?> receive = this.jmsOutboundInboundReplyChannel.receive(5000);
 
 		assertNotNull(receive);
-		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
+		assertEquals("HELLO THROUGH THE JMS", receive.getPayload());
 	}
 
+	@Autowired
+	@Qualifier("jmsOutboundGatewayChannel")
+	private MessageChannel jmsOutboundGatewayChannel;
+
+	@Test
+	public void testJmsPipelineFlow() {
+		PollableChannel replyChannel = new QueueChannel();
+		Message<String> message = MessageBuilder.withPayload("hello through the jms pipeline")
+				.setReplyChannel(replyChannel)
+				.build();
+		this.jmsOutboundGatewayChannel.send(message);
+
+		Message<?> receive = replyChannel.receive(5000);
+
+		assertNotNull(receive);
+		assertEquals("HELLO THROUGH THE JMS PIPELINE", receive.getPayload());
+	}
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
@@ -1039,6 +1055,22 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
+		@Bean
+		public IntegrationFlow jmsOutboundGatewayFlow() {
+			return IntegrationFlows.from("jmsOutboundGatewayChannel")
+					.handle(Jms.outboundGateway(this.jmsConnectionFactory)
+							.replyContainer()
+							.requestDestination("jmsPipelineTest"))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow jmsInboundGatewayFlow() {
+			return IntegrationFlows.from(Jms.inboundGateway(this.jmsConnectionFactory)
+					.destination("jmsPipelineTest"))
+					.<String, String>transform(String::toUpperCase)
+					.get();
+		}
 	}
 
 	@Configuration
@@ -1098,7 +1130,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
 			return IntegrationFlows.from(MessageChannels.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
-					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 5000)))
+					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 5000)).id("priorityChannelBridge"))
 					.channel(MessageChannels.queue("priorityReplyChannel"))
 					.get();
 		}

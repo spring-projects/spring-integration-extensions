@@ -19,6 +19,8 @@ package org.springframework.integration.dsl.jms;
 import javax.jms.ConnectionFactory;
 
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.listener.AbstractMessageListenerContainer;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 /**
  * @author Artem Bilan
@@ -70,6 +72,27 @@ public abstract class Jms {
 
 	public static JmsOutboundGatewaySpec outboundGateway(ConnectionFactory connectionFactory) {
 		return new JmsOutboundGatewaySpec(connectionFactory);
+	}
+
+	public static <S extends JmsInboundGatewaySpec<S>> JmsInboundGatewaySpec<S> inboundGateway(AbstractMessageListenerContainer listenerContainer) {
+		return new JmsInboundGatewaySpec<S>(listenerContainer);
+	}
+
+	public static JmsInboundGatewaySpec.JmsInboundGatewayListenerContainerSpec<DefaultMessageListenerContainer> inboundGateway(ConnectionFactory connectionFactory) {
+		return inboundGateway(connectionFactory, DefaultMessageListenerContainer.class);
+	}
+
+	public static <C extends AbstractMessageListenerContainer>
+	JmsInboundGatewaySpec.JmsInboundGatewayListenerContainerSpec<C> inboundGateway(ConnectionFactory connectionFactory,
+			Class<C> containerClass) {
+		try {
+			JmsListenerContainerSpec<C> spec = new JmsListenerContainerSpec<C>(containerClass)
+					.connectionFactory(connectionFactory);
+			return new JmsInboundGatewaySpec.JmsInboundGatewayListenerContainerSpec<C>(spec);
+		}
+		catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 }
