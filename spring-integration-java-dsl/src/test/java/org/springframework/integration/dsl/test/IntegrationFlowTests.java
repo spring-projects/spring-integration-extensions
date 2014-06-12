@@ -830,7 +830,7 @@ public class IntegrationFlowTests {
 		message = MessageBuilder.withPayload("31").setPriority(3).build();
 		this.priorityChannel.send(message);
 
-		Thread.sleep(2000);
+		this.controlBus.send("@priorityChannelBridge.start()");
 
 		Message<?> receive = this.priorityReplyChannel.receive(2000);
 		assertNotNull(receive);
@@ -1130,7 +1130,9 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
 			return IntegrationFlows.from(MessageChannels.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
-					.bridge(s -> s.poller(Pollers.fixedDelay(1000, 5000)).id("priorityChannelBridge"))
+					.bridge(s -> s.poller(Pollers.fixedDelay(100))
+							.autoStartup(false)
+							.id("priorityChannelBridge"))
 					.channel(MessageChannels.queue("priorityReplyChannel"))
 					.get();
 		}
