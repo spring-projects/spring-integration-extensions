@@ -16,35 +16,16 @@
 
 package org.springframework.integration.dsl.jms;
 
-import javax.jms.ConnectionFactory;
-
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.jms.DynamicJmsTemplate;
 import org.springframework.jms.support.converter.MessageConverter;
-import org.springframework.jms.support.destination.DestinationResolver;
 
 /**
  * @author Artem Bilan
  */
-public class JmsTemplateSpec extends IntegrationComponentSpec<JmsTemplateSpec, DynamicJmsTemplate> {
+public class JmsTemplateSpec extends JmsDestinationAccessorSpec<JmsTemplateSpec, DynamicJmsTemplate> {
 
-	public JmsTemplateSpec() {
-		this.target = new DynamicJmsTemplate();
-	}
-
-	JmsTemplateSpec connectionFactory(ConnectionFactory connectionFactory) {
-		this.target.setConnectionFactory(connectionFactory);
-		return _this();
-	}
-
-	public JmsTemplateSpec destinationResolver(DestinationResolver destinationResolver) {
-		this.target.setDestinationResolver(destinationResolver);
-		return _this();
-	}
-
-	public JmsTemplateSpec pubSubDomain(boolean pubSubDomain) {
-		this.target.setPubSubDomain(pubSubDomain);
-		return _this();
+	JmsTemplateSpec() {
+		super(new DynamicJmsTemplate());
 	}
 
 	public JmsTemplateSpec jmsMessageConverter(MessageConverter messageConverter) {
@@ -75,26 +56,6 @@ public class JmsTemplateSpec extends IntegrationComponentSpec<JmsTemplateSpec, D
 	public JmsTemplateSpec receiveTimeout(long receiveTimeout) {
 		this.target.setReceiveTimeout(receiveTimeout);
 		return _this();
-	}
-
-	/**
-	 * @param sessionAcknowledgeMode the acknowledgement mode constant
-	 * @return the current {@link org.springframework.integration.dsl.channel.MessageChannelSpec}
-	 * @see javax.jms.Session#AUTO_ACKNOWLEDGE etc.
-	 */
-	public JmsTemplateSpec sessionAcknowledgeMode(int sessionAcknowledgeMode) {
-		this.target.setSessionAcknowledgeMode(sessionAcknowledgeMode);
-		return _this();
-	}
-
-	public JmsTemplateSpec sessionTransacted(boolean sessionTransacted) {
-		this.target.setSessionTransacted(sessionTransacted);
-		return _this();
-	}
-
-	@Override
-	protected DynamicJmsTemplate doGet() {
-		throw new UnsupportedOperationException();
 	}
 
 }

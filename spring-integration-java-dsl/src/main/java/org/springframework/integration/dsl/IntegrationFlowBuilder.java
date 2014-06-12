@@ -158,7 +158,8 @@ public final class IntegrationFlowBuilder {
 				(isLambda(genericTransformer)
 						? new MethodInvokingTransformer(new LambdaMessageProcessor(genericTransformer, payloadType))
 						: new MethodInvokingTransformer(genericTransformer));
-		return this.handle(new MessageTransformingHandler(transformer), endpointConfigurer);
+		return addComponent(transformer)
+				.handle(new MessageTransformingHandler(transformer), endpointConfigurer);
 	}
 
 	public IntegrationFlowBuilder filter(String expression) {
