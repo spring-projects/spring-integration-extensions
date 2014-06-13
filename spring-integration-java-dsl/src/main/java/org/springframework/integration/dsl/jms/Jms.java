@@ -27,16 +27,19 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
  */
 public abstract class Jms {
 
-	public static <S extends JmsPollableMessageChannelSpec<S>> JmsPollableMessageChannelSpec<S>	pollableChannel(ConnectionFactory connectionFactory) {
+	public static <S extends JmsPollableMessageChannelSpec<S>> JmsPollableMessageChannelSpec<S>
+	pollableChannel(ConnectionFactory connectionFactory) {
 		return pollableChannel(null, connectionFactory);
 	}
 
-	public static <S extends JmsPollableMessageChannelSpec<S>> JmsPollableMessageChannelSpec<S> pollableChannel(String id,
+	public static
+	<S extends JmsPollableMessageChannelSpec<S>> JmsPollableMessageChannelSpec<S> pollableChannel(String id,
 			ConnectionFactory connectionFactory) {
 		return new JmsPollableMessageChannelSpec<S>(connectionFactory).id(id);
 	}
 
-	public static <S extends JmsMessageChannelSpec<S>> JmsMessageChannelSpec<S> channel(ConnectionFactory connectionFactory) {
+	public static
+	<S extends JmsMessageChannelSpec<S>> JmsMessageChannelSpec<S> channel(ConnectionFactory connectionFactory) {
 		return channel(null, connectionFactory);
 	}
 
@@ -54,19 +57,23 @@ public abstract class Jms {
 		return new JmsPublishSubscribeMessageChannelSpec(connectionFactory).id(id);
 	}
 
-	public static <S extends JmsOutboundChannelAdapterSpec<S>> JmsOutboundChannelAdapterSpec<S> outboundAdapter(JmsTemplate jmsTemplate) {
+	public static <S extends JmsOutboundChannelAdapterSpec<S>> JmsOutboundChannelAdapterSpec<S>
+	outboundAdapter(JmsTemplate jmsTemplate) {
 		return new JmsOutboundChannelAdapterSpec<S>(jmsTemplate);
 	}
 
-	public static JmsOutboundChannelAdapterSpec.JmsOutboundChannelSpecTemplateAware outboundAdapter(ConnectionFactory connectionFactory) {
+	public static JmsOutboundChannelAdapterSpec.JmsOutboundChannelSpecTemplateAware
+	outboundAdapter(ConnectionFactory connectionFactory) {
 		return new JmsOutboundChannelAdapterSpec.JmsOutboundChannelSpecTemplateAware(connectionFactory);
 	}
 
-	public static <S extends JmsInboundChannelAdapterSpec<S>> JmsInboundChannelAdapterSpec<S> inboundAdapter(JmsTemplate jmsTemplate) {
+	public static <S extends JmsInboundChannelAdapterSpec<S>> JmsInboundChannelAdapterSpec<S>
+	inboundAdapter(JmsTemplate jmsTemplate) {
 		return new JmsInboundChannelAdapterSpec<S>(jmsTemplate);
 	}
 
-	public static JmsInboundChannelAdapterSpec.JmsInboundChannelSpecTemplateAware inboundAdapter(ConnectionFactory connectionFactory) {
+	public static JmsInboundChannelAdapterSpec.JmsInboundChannelSpecTemplateAware
+	inboundAdapter(ConnectionFactory connectionFactory) {
 		return new JmsInboundChannelAdapterSpec.JmsInboundChannelSpecTemplateAware(connectionFactory);
 	}
 
@@ -74,11 +81,13 @@ public abstract class Jms {
 		return new JmsOutboundGatewaySpec(connectionFactory);
 	}
 
-	public static <S extends JmsInboundGatewaySpec<S>> JmsInboundGatewaySpec<S> inboundGateway(AbstractMessageListenerContainer listenerContainer) {
+	public static <S extends JmsInboundGatewaySpec<S>> JmsInboundGatewaySpec<S>
+	inboundGateway(AbstractMessageListenerContainer listenerContainer) {
 		return new JmsInboundGatewaySpec<S>(listenerContainer);
 	}
 
-	public static JmsInboundGatewaySpec.JmsInboundGatewayListenerContainerSpec<DefaultMessageListenerContainer> inboundGateway(ConnectionFactory connectionFactory) {
+	public static JmsInboundGatewaySpec.JmsInboundGatewayListenerContainerSpec<DefaultMessageListenerContainer>
+	inboundGateway(ConnectionFactory connectionFactory) {
 		return inboundGateway(connectionFactory, DefaultMessageListenerContainer.class);
 	}
 
@@ -89,6 +98,30 @@ public abstract class Jms {
 			JmsListenerContainerSpec<C> spec = new JmsListenerContainerSpec<C>(containerClass)
 					.connectionFactory(connectionFactory);
 			return new JmsInboundGatewaySpec.JmsInboundGatewayListenerContainerSpec<C>(spec);
+		}
+		catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	public static <S extends JmsMessageDrivenChannelAdapterSpec<S>> JmsMessageDrivenChannelAdapterSpec<S>
+	messageDriverChannelAdapter(AbstractMessageListenerContainer listenerContainer) {
+		return new JmsMessageDrivenChannelAdapterSpec<S>(listenerContainer);
+	}
+
+	public static
+	JmsMessageDrivenChannelAdapterSpec.JmsMessageDrivenChannelAdapterListenerContainerSpec<DefaultMessageListenerContainer>
+	messageDriverAdapter(ConnectionFactory connectionFactory) {
+		return messageDriverAdapter(connectionFactory, DefaultMessageListenerContainer.class);
+	}
+
+	public static <C extends AbstractMessageListenerContainer>
+	JmsMessageDrivenChannelAdapterSpec.JmsMessageDrivenChannelAdapterListenerContainerSpec<C>
+	messageDriverAdapter(ConnectionFactory connectionFactory, Class<C> containerClass) {
+		try {
+			JmsListenerContainerSpec<C> spec = new JmsListenerContainerSpec<C>(containerClass)
+					.connectionFactory(connectionFactory);
+			return new JmsMessageDrivenChannelAdapterSpec.JmsMessageDrivenChannelAdapterListenerContainerSpec<C>(spec);
 		}
 		catch (Exception e) {
 			throw new IllegalStateException(e);
