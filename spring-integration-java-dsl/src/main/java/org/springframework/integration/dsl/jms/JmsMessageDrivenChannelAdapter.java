@@ -20,7 +20,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.context.OrderlyShutdownCapable;
-import org.springframework.integration.gateway.MessagingGatewaySupport;
+import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.jms.ChannelPublishingJmsMessageListener;
 import org.springframework.integration.jms.JmsMessageDrivenEndpoint;
 import org.springframework.jms.listener.AbstractMessageListenerContainer;
@@ -29,27 +29,22 @@ import org.springframework.messaging.MessageChannel;
 /**
  * @author Artem Bilan
  */
-public class JmsInboundGateway extends MessagingGatewaySupport implements
+public class JmsMessageDrivenChannelAdapter extends MessageProducerSupport implements
 		DisposableBean, OrderlyShutdownCapable {
 
 	private final JmsMessageDrivenEndpoint endpoint;
 
 	private final ChannelPublishingJmsMessageListener listener;
 
-	public JmsInboundGateway(AbstractMessageListenerContainer listenerContainer,
+	public JmsMessageDrivenChannelAdapter(AbstractMessageListenerContainer listenerContainer,
 			ChannelPublishingJmsMessageListener listener) {
 		this.endpoint = new JmsMessageDrivenEndpoint(listenerContainer, listener);
 		this.listener = listener;
 	}
 
 	@Override
-	public void setRequestChannel(MessageChannel requestChannel) {
+	public void setOutputChannel(MessageChannel requestChannel) {
 		this.listener.setRequestChannel(requestChannel);
-	}
-
-	@Override
-	public void setReplyChannel(MessageChannel replyChannel) {
-		this.listener.setReplyChannel(replyChannel);
 	}
 
 	@Override
@@ -58,13 +53,8 @@ public class JmsInboundGateway extends MessagingGatewaySupport implements
 	}
 
 	@Override
-	public void setRequestTimeout(long requestTimeout) {
+	public void setSendTimeout(long requestTimeout) {
 		this.listener.setRequestTimeout(requestTimeout);
-	}
-
-	@Override
-	public void setReplyTimeout(long replyTimeout) {
-		this.listener.setReplyTimeout(replyTimeout);
 	}
 
 	@Override
@@ -74,7 +64,7 @@ public class JmsInboundGateway extends MessagingGatewaySupport implements
 
 	@Override
 	public String getComponentType() {
-		return "jms:inbound-gateway";
+		return "jms:message-driven-channel-adapter";
 	}
 
 	@Override
@@ -91,7 +81,7 @@ public class JmsInboundGateway extends MessagingGatewaySupport implements
 	}
 
 	@Override
-	protected void onInit() throws Exception {
+	protected void onInit() {
 		this.endpoint.afterPropertiesSet();
 	}
 

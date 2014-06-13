@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.mongodb.MongoClient;
 import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.Net;
@@ -124,6 +123,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.core.DestinationResolutionException;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.GenericMessage;
@@ -951,12 +951,23 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testJmsOutboundInboundFlow() {
-		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello through the jms").build());
+		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello THROUGH the JMS")
+				.setHeader(SimpMessageHeaderAccessor.DESTINATION_HEADER, "jmsInbound")
+				.build());
 
 		Message<?> receive = this.jmsOutboundInboundReplyChannel.receive(5000);
 
 		assertNotNull(receive);
 		assertEquals("HELLO THROUGH THE JMS", receive.getPayload());
+
+		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello THROUGH the JMS")
+				.setHeader(SimpMessageHeaderAccessor.DESTINATION_HEADER, "jmsMessageDriver")
+				.build());
+
+		receive = this.jmsOutboundInboundReplyChannel.receive(5000);
+
+		assertNotNull(receive);
+		assertEquals("hello through the jms", receive.getPayload());
 	}
 
 	@Autowired
@@ -968,6 +979,7 @@ public class IntegrationFlowTests {
 		PollableChannel replyChannel = new QueueChannel();
 		Message<String> message = MessageBuilder.withPayload("hello through the jms pipeline")
 				.setReplyChannel(replyChannel)
+				.setHeader("destination", "jmsPipelineTest")
 				.build();
 		this.jmsOutboundGatewayChannel.send(message);
 
@@ -1043,15 +1055,33 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow jmsOutboundFlow() {
 			return IntegrationFlows.from("jmsOutboundInboundChannel")
-					.handle(Jms.outboundAdapter(this.jmsConnectionFactory).destination("jmsOutboundInboundChannel"))
+					.handle(Jms.outboundAdapter(this.jmsConnectionFactory)
+							.destinationExpression("headers." + SimpMessageHeaderAccessor.DESTINATION_HEADER))
 					.get();
 		}
 
 		@Bean
+		public MessageChannel jmsOutboundInboundReplyChannel() {
+			return MessageChannels.queue().get();
+		}
+
+		@Bean
 		public IntegrationFlow jmsInboundFlow() {
-			return IntegrationFlows.from(Jms.inboundAdapter(this.jmsConnectionFactory).destination("jmsOutboundInboundChannel"))
+			return IntegrationFlows
+					.from(Jms.inboundAdapter(this.jmsConnectionFactory)
+							.destination("jmsInbound"))
 					.<String, String>transform(String::toUpperCase)
-					.channel(MessageChannels.queue("jmsOutboundInboundReplyChannel"))
+					.channel(this.jmsOutboundInboundReplyChannel())
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow jmsMessageDriverFlow() {
+			return IntegrationFlows
+					.from(Jms.messageDriverAdapter(this.jmsConnectionFactory)
+							.destination("jmsMessageDriver"))
+					.<String, String>transform(String::toLowerCase)
+					.channel(this.jmsOutboundInboundReplyChannel())
 					.get();
 		}
 
