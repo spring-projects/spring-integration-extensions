@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 the original author or authors.
+/* Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,34 @@
  */
 package org.springframework.integration.smpp.outbound;
 
+import java.util.List;
+
 import org.jsmpp.bean.BindType;
 import org.jsmpp.bean.TypeOfNumber;
 import org.jsmpp.util.AbsoluteTimeFormatter;
 import org.jsmpp.util.TimeFormatter;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessagingException;
+
 import org.springframework.integration.context.IntegrationObjectSupport;
-import org.springframework.messaging.MessageHandler;
 import org.springframework.integration.smpp.core.SmesMessageSpecification;
 import org.springframework.integration.smpp.session.ExtendedSmppSession;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Sends messages to an SMS gateway using SMPP. Most of the work in terms of converting inbound message headers
- * (whose keys, by the way, live in {@link org.springframework.integration.smpp.core.SmppConstants}) is done by {@link org.springframework.integration.smpp.core.SmesMessageSpecification}, which
+ * Sends messages to an SMS gateway using SMPP. Most of the work in terms
+ * of converting inbound message headers (whose keys, by the way, live in
+ * {@link org.springframework.integration.smpp.core.SmppConstants}) is done by
+ * {@link org.springframework.integration.smpp.core.SmesMessageSpecification}, which
  * handles <em>all</em> the tedium of converting and validating the configuration.
  * <p/>
- * This adapter supports  <em>mobile terminated (MT)</em> messaging, where the recipient is a directory phone number.
+ * This adapter supports  <em>mobile terminated (MT)</em> messaging, where the recipient
+ * is a directory phone number.
  *
  * @author Josh Long
+ * @author Edge Dalmacio
  * @since 1.0
  */
 public class SmppOutboundChannelAdapter extends IntegrationObjectSupport implements MessageHandler {
@@ -94,8 +101,8 @@ public class SmppOutboundChannelAdapter extends IntegrationObjectSupport impleme
 
 		try {
 			// todo support a gateway and have that gateway also handle message delivery receipt notifications
-			// that will correlate this smsMessageId with the ID that comes back asynchronously from the SMSC indicating that
-			// the message has been delivered.
+			// that will correlate this smsMessageId with the ID that comes back asynchronously
+			// from the SMSC indicating that the message has been delivered.
 			// this could require that we keep a correlation map since its possible upstream SMSC
 			// unused return value -- see gateway
 
@@ -103,9 +110,9 @@ public class SmppOutboundChannelAdapter extends IntegrationObjectSupport impleme
 					SmesMessageSpecification.fromMessage(this.smppSession, message)
 							.setTimeFormatter(this.timeFormatter));
 
-			String smsMessageId = specification.send();
+			List<String> smsMessageId = specification.send();
 			logger.debug( "sent message : "+message.getPayload());
-			logger.debug("message ID for the sent message is: " + smsMessageId);
+			logger.debug("message ID(s) for the sent message: " + smsMessageId);
 		} catch (Exception e) {
 			throw new RuntimeException("Exception in trying to process the inbound SMPP message", e);
 		}
@@ -115,4 +122,5 @@ public class SmppOutboundChannelAdapter extends IntegrationObjectSupport impleme
 	public String getComponentType() {
 		return "smpp:outbound-channel-adapter";
 	}
+
 }

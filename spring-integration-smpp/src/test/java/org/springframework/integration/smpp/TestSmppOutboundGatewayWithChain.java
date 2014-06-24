@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 the original author or authors.
+/* Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,11 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smpp;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -27,24 +29,27 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
+
 /**
- * Simple tests to make sure that gateway will perform retry and route MessagingException to exception channel when
- * advice chain is defined with a retry advice and error callback.
+ * Simple tests to make sure that gateway will perform retry and route MessagingException
+ * to exception channel when advice chain is defined with a retry advice and error callback.
  *
  * @author Johanes Soetanto
+ * @author Edge Dalmacio
  * @since 1.0
  */
 @ContextConfiguration("classpath:TestSmppOutboundGatewayWithChain-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class TestSmppOutboundGatewayWithChain {
 
-    @Autowired
-    private MessagingTemplate messagingTemplate;
+	@Autowired
+	private MessagingTemplate messagingTemplate;
 
 	@Autowired
 	private MessageChannel outChannel;
 
-    private String smsMessageToSend = "jSMPP is truly a convenient, and powerful API for SMPP " +
+	private String smsMessageToSend = "jSMPP is truly a convenient, and powerful API for SMPP " +
 			"on the Java and Spring Integration platforms (sent " + System.currentTimeMillis() + ")";
 
 	@Test
@@ -53,25 +58,25 @@ public class TestSmppOutboundGatewayWithChain {
 				.setHeader(SmppConstants.SRC_ADDR, "1616")
 				.setHeader(SmppConstants.DST_ADDR, "NoRouteDestination")
 				.build();
-        outChannel.send(smsMsg);
+		outChannel.send(smsMsg);
 
-        Thread.sleep(500);
-        Message<?> exception = messagingTemplate.receive("exceptionChannel");
-        Assert.assertNotNull(exception);
-        Assert.assertTrue(exception.getPayload() instanceof MessagingException);
+		Thread.sleep(500);
+		Message<?> exception = messagingTemplate.receive("exceptionChannel");
+		Assert.assertNotNull(exception);
+		Assert.assertTrue(exception.getPayload() instanceof MessagingException);
 	}
 
-    @Test
-    public void testSendingGoesToReplyChannel() throws Throwable {
-        Message<String> smsMsg = MessageBuilder.withPayload(this.smsMessageToSend)
-                .setHeader(SmppConstants.SRC_ADDR, "1616")
-                .setHeader(SmppConstants.DST_ADDR, "1616")
-                .build();
-        outChannel.send(smsMsg);
+	@Test
+	public void testSendingGoesToReplyChannel() throws Throwable {
+		Message<String> smsMsg = MessageBuilder.withPayload(this.smsMessageToSend)
+				.setHeader(SmppConstants.SRC_ADDR, "1616")
+				.setHeader(SmppConstants.DST_ADDR, "1616")
+				.build();
+		outChannel.send(smsMsg);
 
-        Thread.sleep(500);
-        Message<?> exception = messagingTemplate.receive("replyChannel");
-        Assert.assertNotNull(exception);
-        Assert.assertTrue(exception.getPayload() instanceof String);
-    }
+		Thread.sleep(500);
+		Message<?> exception = messagingTemplate.receive("replyChannel");
+		Assert.assertNotNull(exception);
+		Assert.assertTrue(exception.getPayload() instanceof List);
+	}
 }
