@@ -27,6 +27,8 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
+
 /**
  * Simple tests to make sure that gateway will perform retry and route MessagingException to exception channel when
  * advice chain is defined with a retry advice and error callback.
@@ -72,6 +74,6 @@ public class TestSmppOutboundGatewayWithChain {
         Thread.sleep(500);
         Message<?> exception = messagingTemplate.receive("replyChannel");
         Assert.assertNotNull(exception);
-        Assert.assertTrue(exception.getPayload() instanceof String[]);
+		Assert.assertTrue(exception.getPayload() instanceof List);
     }
 }
