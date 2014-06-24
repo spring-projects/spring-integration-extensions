@@ -17,8 +17,8 @@
 	<int:channel id="in" />
 	<int:channel id="out" />
 
-	<bean id="timeFormatter" class="org.easymock.EasyMock"
-		factory-method="createNiceMock">
+	<bean id="timeFormatter" class="org.mockito.Mockito"
+		factory-method="mock">
 		<constructor-arg value="org.jsmpp.util.TimeFormatter" />
 	</bean>
 

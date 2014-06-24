@@ -14,25 +14,26 @@
  */
 package org.springframework.integration.smpp;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.integration.Message;
-import org.springframework.integration.MessagingException;
-import org.springframework.integration.core.MessageHandler;
-import org.springframework.integration.core.SubscribableChannel;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.smpp.core.SmesMessageSpecification;
 import org.springframework.integration.smpp.session.ExtendedSmppSession;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.SubscribableChannel;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 @ContextConfiguration("classpath:TestSmppInboundGateway-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -105,7 +106,7 @@ public class TestSmppInboundGateway {
 		this.in2.subscribe(replyHandler);
 
 		// outbound gateway send
-		logger.debug("Sending message from: {} to: {} message: '{}'", new String[] {fromPhone, toPhone, smsRequest});
+		logger.debug("Sending message from: {} to: {} message: '{}'", fromPhone, toPhone, smsRequest);
 		SmesMessageSpecification.newSmesMessageSpecification(outSession, this.fromPhone, this.toPhone, this.smsRequest).send();
 		/*Message<String> smsMsg = MessageBuilder.withPayload(smsRequest)
 				.setHeader(SmppConstants.SRC_ADDR, fromPhone)

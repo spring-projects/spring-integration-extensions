@@ -15,11 +15,9 @@
 package org.springframework.integration.smpp.config.xml;
 
 import org.jsmpp.bean.BindType;
-import org.springframework.integration.smpp.session.ExtendedSmppSession;
+import org.mockito.Mockito;
 
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
+import org.springframework.integration.smpp.session.ExtendedSmppSession;
 
 /**
  * Mock smpp session factory for testing.
@@ -29,16 +27,14 @@ import static org.easymock.EasyMock.replay;
 public class MockSmppSessionFactory {
 
 	public static ExtendedSmppSession getOutSmppSession() {
-		ExtendedSmppSession mock = createNiceMock(ExtendedSmppSession.class);
-		expect(mock.getBindType()).andReturn(BindType.BIND_TX).anyTimes();
-		replay(mock);
+		ExtendedSmppSession mock = Mockito.mock(ExtendedSmppSession.class);
+		Mockito.when(mock.getBindType()).thenReturn(BindType.BIND_TRX);
 		return mock;
 	}
 
 	public static ExtendedSmppSession getInSmppSession() {
-		ExtendedSmppSession mock = createNiceMock(ExtendedSmppSession.class);
-		expect(mock.getBindType()).andReturn(BindType.BIND_RX).anyTimes();
-		replay(mock);
+		ExtendedSmppSession mock = Mockito.mock(ExtendedSmppSession.class);
+		Mockito.when(mock.getBindType()).thenReturn(BindType.BIND_TRX);
 		return mock;
 	}
 }

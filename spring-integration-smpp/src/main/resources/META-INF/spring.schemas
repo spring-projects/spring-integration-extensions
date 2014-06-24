@@ -1,2 +1,2 @@
-http\://www.springframework.org/schema/integration/smpp/spring-integration-smpp-2.2.xsd=org/springframework/integration/smpp/config/xml/spring-integration-smpp-2.2.xsd
-http\://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd=org/springframework/integration/smpp/config/xml/spring-integration-smpp-2.2.xsd
+http\://www.springframework.org/schema/integration/smpp/spring-integration-smpp-1.0.xsd=org/springframework/integration/smpp/config/xml/spring-integration-smpp-1.0.xsd
+http\://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd=org/springframework/integration/smpp/config/xml/spring-integration-smpp-1.0.xsd

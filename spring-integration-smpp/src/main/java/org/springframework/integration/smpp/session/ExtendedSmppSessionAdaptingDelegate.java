@@ -14,19 +14,34 @@
  */
 package org.springframework.integration.smpp.session;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jsmpp.InvalidResponseException;
 import org.jsmpp.PDUException;
-import org.jsmpp.bean.*;
+import org.jsmpp.bean.Address;
+import org.jsmpp.bean.BindType;
+import org.jsmpp.bean.DataCoding;
+import org.jsmpp.bean.ESMClass;
+import org.jsmpp.bean.NumberingPlanIndicator;
+import org.jsmpp.bean.OptionalParameter;
+import org.jsmpp.bean.RegisteredDelivery;
+import org.jsmpp.bean.ReplaceIfPresentFlag;
+import org.jsmpp.bean.SubmitMultiResult;
+import org.jsmpp.bean.TypeOfNumber;
 import org.jsmpp.extra.NegativeResponseException;
 import org.jsmpp.extra.ResponseTimeoutException;
 import org.jsmpp.extra.SessionState;
-import org.jsmpp.session.*;
+import org.jsmpp.session.ClientSession;
+import org.jsmpp.session.DataSmResult;
+import org.jsmpp.session.MessageReceiverListener;
+import org.jsmpp.session.QuerySmResult;
+import org.jsmpp.session.SMPPSession;
+import org.jsmpp.session.SessionStateListener;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.Lifecycle;
-
-import java.io.IOException;
 
 /**
  * Adapts to the {@link ClientSession} API, while also providing the callbacks for the Spring container
@@ -120,7 +135,23 @@ public class ExtendedSmppSessionAdaptingDelegate implements /*Lifecycle,*/ Exten
 		return session.submitShortMessage(serviceType, sourceAddrTon, sourceAddrNpi, sourceAddr, destAddrTon, destAddrNpi, destinationAddr, esmClass, protocolId, priorityFlag, scheduleDeliveryTime, validityPeriod, registeredDelivery, replaceIfPresentFlag, dataCoding, smDefaultMsgId, shortMessage, optionalParameters);
 	}
 
-	public SubmitMultiResult submitMultiple(String serviceType, TypeOfNumber sourceAddrTon, NumberingPlanIndicator sourceAddrNpi, String sourceAddr, Address[] destinationAddresses, ESMClass esmClass, byte protocolId, byte priorityFlag, String scheduleDeliveryTime, String validityPeriod, RegisteredDelivery registeredDelivery, ReplaceIfPresentFlag replaceIfPresentFlag, DataCoding dataCoding, byte smDefaultMsgId, byte[] shortMessage, OptionalParameter[] optionalParameters) throws PDUException, ResponseTimeoutException, InvalidResponseException, NegativeResponseException, IOException {
+	public SubmitMultiResult submitMultiple(String serviceType,
+			TypeOfNumber sourceAddrTon,
+			NumberingPlanIndicator sourceAddrNpi,
+			String sourceAddr,
+			Address[] destinationAddresses,
+			ESMClass esmClass,
+			byte protocolId,
+			byte priorityFlag,
+			String scheduleDeliveryTime,
+			String validityPeriod,
+			RegisteredDelivery registeredDelivery,
+			ReplaceIfPresentFlag replaceIfPresentFlag,
+			DataCoding dataCoding,
+			byte smDefaultMsgId,
+			byte[] shortMessage,
+			OptionalParameter... optionalParameters) throws PDUException, ResponseTimeoutException,
+			InvalidResponseException, NegativeResponseException, IOException {
 		return session.submitMultiple(
 				serviceType, sourceAddrTon, sourceAddrNpi, sourceAddr, destinationAddresses, esmClass, protocolId, priorityFlag, scheduleDeliveryTime, validityPeriod, registeredDelivery, replaceIfPresentFlag, dataCoding, smDefaultMsgId, shortMessage, optionalParameters
 		);

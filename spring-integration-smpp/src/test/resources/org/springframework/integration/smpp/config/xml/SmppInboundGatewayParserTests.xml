@@ -18,14 +18,14 @@
 	<int:channel id="replyChannel" />
 	<int:channel id="errorChannel" />
 
-	<bean id="inboundMapper" class="org.easymock.EasyMock"
-		factory-method="createNiceMock">
+	<bean id="inboundMapper" class="org.mockito.Mockito"
+		factory-method="mock">
 		<constructor-arg
 			value="org.springframework.integration.mapping.InboundMessageMapper" />
 	</bean>
 
-	<bean id="outboundMapper" class="org.easymock.EasyMock"
-		factory-method="createNiceMock">
+	<bean id="outboundMapper" class="org.mockito.Mockito"
+		factory-method="mock">
 		<constructor-arg
 			value="org.springframework.integration.mapping.OutboundMessageMapper" />
 	</bean>
