@@ -30,7 +30,7 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Simple tests for the gateway which differs from the outbound adapter only in that it supports
@@ -73,8 +73,8 @@ public class TestSmppOutboundGateway {
 		Message<?> response = this.messagingTemplate.sendAndReceive(this.messageChannel,smsMsg);
 
 		Assert.assertNotNull(response);
-		Assert.assertTrue(response.getPayload() instanceof String[]);
-		log.info("received the SMS Message ID: " + Arrays.toString((String[]) response.getPayload()));
+		Assert.assertTrue(response.getPayload() instanceof List);
+		log.info("received the SMS Message ID: " + response.getPayload());
 	}
 
     @Test
@@ -89,9 +89,9 @@ public class TestSmppOutboundGateway {
         Message<?> response = this.messagingTemplate.sendAndReceive(this.messageChannel,smsMsg);
 
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.getPayload() instanceof String[]);
-        Assert.assertEquals(2, ((String[]) response.getPayload()).length);
-        log.info("received the SMS Message ID: " + Arrays.toString((String[]) response.getPayload()));
+        Assert.assertTrue(response.getPayload() instanceof List);
+        Assert.assertEquals(2, ((List<String>) response.getPayload()).size());
+        log.info("received the SMS Message ID: " + response.getPayload());
     }
 
 }
