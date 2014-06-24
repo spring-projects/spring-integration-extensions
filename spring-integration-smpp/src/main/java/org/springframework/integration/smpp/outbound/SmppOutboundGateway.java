@@ -18,7 +18,7 @@ import org.jsmpp.bean.BindType;
 import org.jsmpp.bean.TypeOfNumber;
 import org.jsmpp.util.AbsoluteTimeFormatter;
 import org.jsmpp.util.TimeFormatter;
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.smpp.core.SmesMessageSpecification;
 import org.springframework.integration.smpp.session.ExtendedSmppSession;
@@ -44,8 +44,8 @@ import org.springframework.util.StringUtils;
  */
 public class SmppOutboundGateway extends AbstractReplyProducingMessageHandler {
 	@Override
-	protected void onInit() {
-        super.onInit();
+	protected void doInit() {
+        super.doInit();
 		Assert.isTrue(
 				this.smppSession.getBindType().equals(BindType.BIND_TX) ||
 						this.smppSession.getBindType().equals(BindType.BIND_TRX),
