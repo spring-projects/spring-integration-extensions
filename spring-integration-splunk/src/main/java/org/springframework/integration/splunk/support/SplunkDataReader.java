@@ -413,6 +413,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		if (count == 0 || total < count) {
 			InputStream stream = null;
 			Args outputArgs = new Args();
+			outputArgs.put("count", count);
 			outputArgs.put("output_mode", "xml");
 			stream = job.getResults(outputArgs);
 
