@@ -19,7 +19,7 @@ import org.jsmpp.bean.BindType;
 import org.jsmpp.bean.DeliverSm;
 import org.jsmpp.bean.DeliveryReceipt;
 import org.jsmpp.bean.TypeOfNumber;
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.integration.smpp.core.AbstractReceivingMessageListener;
 import org.springframework.integration.smpp.core.SmesMessageSpecification;
