@@ -15,6 +15,7 @@
  */
 package org.springframework.integration.smpp.core;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jsmpp.bean.*;
@@ -27,7 +28,11 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.springframework.integration.smpp.core.SmppConstants.*;
 
@@ -60,6 +65,7 @@ public class SmesMessageSpecification {
 	private DataCoding dataCoding;
 	private byte smDefaultMsgId;
 	private byte[] shortMessage;
+	private List<byte[]> shortMessageParts;
 	private ClientSession smppSession;
 	private OptionalParameter messagePayloadParameter;
 
@@ -352,38 +358,78 @@ public class SmesMessageSpecification {
 	 * <p/>
 	 * todo can we do something smart here or through an adapter to handle the situation where we have asked for a message receipt? what about if we're using a message receipt <em>and</eM> we're only a receiver or a sender connection and not a transceiver? We need gateway semantics across two unidirectional SMPPSessions, then
 	 *
-	 * @return the messageId (required if you want to then track it or correllate it with message receipt confirmations)
+	 * @return the messageId(s) (required if you want to then track it or correlate it with message receipt confirmations)
 	 * @throws Exception the {@link SMPPSession#submitShortMessage(String, org.jsmpp.bean.TypeOfNumber, org.jsmpp.bean.NumberingPlanIndicator, String, org.jsmpp.bean.TypeOfNumber, org.jsmpp.bean.NumberingPlanIndicator, String, org.jsmpp.bean.ESMClass, byte, byte, String, String, org.jsmpp.bean.RegisteredDelivery, byte, org.jsmpp.bean.DataCoding, byte, byte[], org.jsmpp.bean.OptionalParameter...)} method throws lots of Exceptions, including {@link java.io.IOException}
 	 */
-	public String send() throws Exception {
+	public List<String> send() throws Exception {
 		validate();
-		final String msgId;
+		List<String> msgIds = new LinkedList<String>();
 		if (messagePayloadParameter == null) {
-			msgId = this.smppSession.submitShortMessage(
-				this.serviceType,
-				this.sourceAddressTypeOfNumber,
-				this.sourceAddressNumberingPlanIndicator,
-				this.sourceAddress,
+			if (this.shortMessageParts.isEmpty()) {
+				String msgId = this.smppSession.submitShortMessage(
+					this.serviceType,
+					this.sourceAddressTypeOfNumber,
+					this.sourceAddressNumberingPlanIndicator,
+					this.sourceAddress,
 
-				this.destinationAddressTypeOfNumber,
-				this.destinationAddressNumberingPlanIndicator,
-				this.destinationAddress,
+					this.destinationAddressTypeOfNumber,
+					this.destinationAddressNumberingPlanIndicator,
+					this.destinationAddress,
 
-				this.esmClass,
-				this.protocolId,
-				this.priorityFlag,
-				this.scheduleDeliveryTime,
-				this.validityPeriod,
-				this.registeredDelivery,
-				this.replaceIfPresentFlag,
-				this.dataCoding,
-				this.smDefaultMsgId,
-				this.shortMessage);
-		}
-		else {
+					this.esmClass,
+					this.protocolId,
+					this.priorityFlag,
+					this.scheduleDeliveryTime,
+					this.validityPeriod,
+					this.registeredDelivery,
+					this.replaceIfPresentFlag,
+					this.dataCoding,
+					this.smDefaultMsgId,
+					this.shortMessage);
+				msgIds.add(msgId);
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Sending message using sar_msg_ref_num, sar_segment_seqnum and sar_total_segments");
+				}
+				OptionalParameter sarMsgRefNum = OptionalParameters.newSarMsgRefNum(RandomUtils.nextInt(0x10000));
+				OptionalParameter sarTotalSegments = OptionalParameters.newSarTotalSegments(shortMessageParts.size());
+				String charsetName = DataCodingSpecification.getCharsetName(dataCoding.toByte());
+				for (int i = 0; i < shortMessageParts.size(); i++) {
+					byte[] shortMessagePart = shortMessageParts.get(i);
+					String msgId = this.smppSession.submitShortMessage(
+							this.serviceType,
+							this.sourceAddressTypeOfNumber,
+							this.sourceAddressNumberingPlanIndicator,
+							this.sourceAddress,
+
+							this.destinationAddressTypeOfNumber,
+							this.destinationAddressNumberingPlanIndicator,
+							this.destinationAddress,
+
+							this.esmClass,
+							this.protocolId,
+							this.priorityFlag,
+							this.scheduleDeliveryTime,
+							this.validityPeriod,
+							this.registeredDelivery,
+							this.replaceIfPresentFlag,
+							this.dataCoding,
+							this.smDefaultMsgId,
+							shortMessagePart,
+							sarMsgRefNum,
+							OptionalParameters.newSarSegmentSeqnum(i + 1),
+							sarTotalSegments);
+					if (log.isDebugEnabled()) {
+						log.debug("sent message : " + new String(shortMessagePart, charsetName));
+						log.debug("message ID for the sent message is: " + msgId);
+					}
+					msgIds.add(msgId);
+				}
+			}
+		} else {
 			// SPEC 3.2.3
 			log.debug("Sending message using message_payload");
-			msgId = this.smppSession.submitShortMessage(
+			String msgId = this.smppSession.submitShortMessage(
 					this.serviceType,
 					this.sourceAddressTypeOfNumber,
 					this.sourceAddressNumberingPlanIndicator,
@@ -405,15 +451,16 @@ public class SmesMessageSpecification {
 					new byte[0],
 					this.messagePayloadParameter
 			);
+			msgIds.add(msgId);
 		}
 
-		return msgId;
+		return Collections.unmodifiableList(msgIds);
 	}
 
 	protected void validate() {
 		Assert.notNull(this.sourceAddress, "the source address must not be null");
 		Assert.notNull(this.destinationAddress, "the destination address must not be null");
-		final boolean shortMessageSet = this.shortMessage != null && this.shortMessage.length > 0;
+		final boolean shortMessageSet = this.shortMessage != null && this.shortMessage.length > 0 || !shortMessageParts.isEmpty();
 		Assert.isTrue(messagePayloadParameter != null ^ shortMessageSet,
 				"message can only be set in payload or short message. cannot be both");
 		if (messagePayloadParameter == null) {
@@ -590,9 +637,13 @@ public class SmesMessageSpecification {
 			this.shortMessage = UdhUtil.getMessageWithUdhInBytes(s, dataCoding.toByte());
 		}
 		else {
-			Assert.isTrue(s.length() <= this.maxLengthSmsMessages,
-					"the SMS message payload must be " + maxLengthSmsMessages + " characters or less.");
-			this.shortMessage = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+			if (s.length() > this.maxLengthSmsMessages) {
+				for (String split : s.split("(?<=\\G.{" + String.valueOf(this.maxLengthSmsMessages - 5) + "})")) {
+					this.shortMessageParts.add(DataCodingSpecification.getMessageInBytes(split, dataCoding.toByte()));
+				}
+			} else {
+				this.shortMessage = DataCodingSpecification.getMessageInBytes(s, dataCoding.toByte());
+			}
 		}
 		return this;
 	}
@@ -652,6 +703,7 @@ public class SmesMessageSpecification {
 		dataCoding = new GeneralDataCoding(Alphabet.ALPHA_DEFAULT, MessageClass.CLASS1, false);
 		smDefaultMsgId = 0;
 		shortMessage = null; // the bytes to the 140 character text message
+		shortMessageParts = new ArrayList<byte[]>();
 		smppSession = null;
 		messagePayloadParameter = null;
 		return this;

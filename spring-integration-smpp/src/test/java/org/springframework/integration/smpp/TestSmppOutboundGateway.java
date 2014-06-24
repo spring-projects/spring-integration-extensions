@@ -30,6 +30,8 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
+
 /**
  * Simple tests for the gateway which differs from the outbound adapter only in that it supports
  * sending the message ID back
@@ -55,6 +57,10 @@ public class TestSmppOutboundGateway {
 	private String smsMessageToSend = "jSMPP is truly a convenient, and powerful API for SMPP " +
 			"on the Java and Spring Integration platforms (sent " + System.currentTimeMillis() + ")";
 
+    private String longSmsMessageToSend = "SMS messages can have no more than 160 characters. " +
+            "On some wireless carriers, due to a programming convention called percent-encoding, " +
+            "certain symbols require more than one character when used.";
+
 	@Test
 	public void testSendingAndReceivingASmppMessageUsingRawApi() throws Throwable {
 
@@ -67,7 +73,25 @@ public class TestSmppOutboundGateway {
 		Message<?> response = this.messagingTemplate.sendAndReceive(this.messageChannel,smsMsg);
 
 		Assert.assertNotNull(response);
-		Assert.assertTrue(response.getPayload() instanceof String);
+		Assert.assertTrue(response.getPayload() instanceof List);
 		log.info("received the SMS Message ID: " + response.getPayload());
 	}
+
+    @Test
+    public void testSendingAndReceivingAMultipartSmppMessageUsingRawApi() throws Throwable {
+
+        Message<String> smsMsg = MessageBuilder.withPayload(this.longSmsMessageToSend)
+                .setHeader(SmppConstants.SRC_ADDR, "1616")
+                .setHeader(SmppConstants.DST_ADDR, "628176504657")
+                .setHeader(SmppConstants.REGISTERED_DELIVERY_MODE, SMSCDeliveryReceipt.SUCCESS)
+                .build();
+
+        Message<?> response = this.messagingTemplate.sendAndReceive(this.messageChannel,smsMsg);
+
+        Assert.assertNotNull(response);
+        Assert.assertTrue(response.getPayload() instanceof List);
+        Assert.assertEquals(2, ((List<String>) response.getPayload()).size());
+        log.info("received the SMS Message ID: " + response.getPayload());
+    }
+
 }
