@@ -31,7 +31,7 @@
 	<beans profile="poll-s3">
 		<int-aws:s3-inbound-channel-adapter credentials-ref="credentials" local-directory="s3-local-storage"
 			temporary-suffix=".transferring"
-			bucket="${bucket}" channel="s3channel" remote-directory="${remoteDirectory}">
+			bucket="${bucket}" channel="s3channel" remote-directory="${remoteDirectory}"/>
 		<int-file:outbound-channel-adapter channel="s3channel" directory="target/s3-out"/>
 
 		<int:poller default="true" fixed-rate="5000"/>
