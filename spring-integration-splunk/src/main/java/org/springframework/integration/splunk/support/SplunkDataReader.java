@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.splunk.support;
 
 import java.io.InputStream;
@@ -24,15 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.integration.splunk.core.DataReader;
-import org.springframework.integration.splunk.core.ServiceFactory;
-import org.springframework.integration.splunk.event.SplunkEvent;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 import com.splunk.Args;
 import com.splunk.Job;
 import com.splunk.ResultsReader;
@@ -40,6 +32,15 @@ import com.splunk.ResultsReaderXml;
 import com.splunk.SavedSearch;
 import com.splunk.SavedSearchCollection;
 import com.splunk.Service;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.integration.splunk.core.DataReader;
+import org.springframework.integration.splunk.core.ServiceFactory;
+import org.springframework.integration.splunk.event.SplunkEvent;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Data reader to search data from Splunk.
@@ -53,6 +54,7 @@ import com.splunk.Service;
  * earliestTime is the time that last polling is run.
  *
  * @author  Jarred Li
+ * @author Olivier Lamy
  * @since 1.0
  *
  */
@@ -136,48 +138,48 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 	}
 
 	public SearchMode getMode() {
-		return mode;
+		return this.mode;
 	}
 
 	public int getCount() {
-		return count;
+		return this.count;
 	}
 
 	public String getFieldList() {
-		return fieldList;
+		return this.fieldList;
 	}
 
 	public String getSearch() {
-		return search;
+		return this.search;
 	}
 
 	public String getEarliestTime() {
-		return earliestTime;
+		return this.earliestTime;
 	}
 
 	public String getLatestTime() {
-		return latestTime;
+		return this.latestTime;
 	}
 
 	public String getSavedSearch() {
-		return savedSearch;
+		return this.savedSearch;
 	}
 
 	public String getOwner() {
-		return owner;
+		return this.owner;
 	}
 
 	public String getInitEarliestTime() {
-		return initEarliestTime;
+		return this.initEarliestTime;
 	}
 
 	public String getApp() {
-		return app;
+		return this.app;
 	}
 
 	public List<SplunkEvent> read() throws Exception {
-		logger.debug("mode:" + mode);
-		switch (mode) {
+		logger.debug("mode:" + this.mode);
+		switch (this.mode) {
 		case SAVEDSEARCH: {
 			return savedSearch();
 		}
@@ -212,7 +214,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 			result = calculateEarliestTimeForRealTime(startTime);
 		}
 		DateFormat df = new SimpleDateFormat(DATE_FORMAT);
-		result = df.format(lastSuccessfulReadTime.getTime());
+		result = df.format(this.lastSuccessfulReadTime.getTime());
 		return result;
 	}
 
@@ -224,7 +226,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 	 */
 	private String calculateEarliestTimeForRealTime(Calendar startTime) {
 		String result = null;
-		long diff = startTime.getTimeInMillis() - lastSuccessfulReadTime.getTimeInMillis();
+		long diff = startTime.getTimeInMillis() - this.lastSuccessfulReadTime.getTimeInMillis();
 		result = "-" + diff / 1000 + "s";
 		return result;
 	}
@@ -242,15 +244,15 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 
 		queryArgs.put("time_format", SPLUNK_TIME_FORMAT);
 
-		if (StringUtils.hasText(fieldList)) {
-			queryArgs.put("field_list", fieldList);
+		if (StringUtils.hasText(this.fieldList)) {
+			queryArgs.put("field_list", this.fieldList);
 		}
 	}
 
 	private String getLatestTime(Calendar startTime, boolean realtime) {
 		String lTime = null;
-		if (StringUtils.hasText(latestTime)) {
-			lTime = latestTime;
+		if (StringUtils.hasText(this.latestTime)) {
+			lTime = this.latestTime;
 		} else {
 			if (realtime) {
 				lTime = "rt";
@@ -265,11 +267,11 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 	private String getEarliestTime(Calendar startTime, boolean realtime) {
 		String eTime = null;
 
-		if (lastSuccessfulReadTime == null) {
-			eTime = initEarliestTime;
+		if (this.lastSuccessfulReadTime == null) {
+			eTime = this.initEarliestTime;
 		} else {
 			if (StringUtils.hasText(earliestTime)) {
-				eTime = earliestTime;
+				eTime = this.earliestTime;
 			} else {
 				String calculatedEarliestTime = calculateEarliestTime(startTime, realtime);
 				if (calculatedEarliestTime != null) {
@@ -285,8 +287,8 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 	}
 
 	private List<SplunkEvent> runQuery(Args queryArgs) throws Exception {
-		Service service = serviceFactory.getService();
-		Job job = service.getJobs().create(search, queryArgs);
+		Service service = this.serviceFactory.getService();
+		Job job = service.getJobs().create(this.search, queryArgs);
 		while (!job.isDone()) {
 			Thread.sleep(2000);
 		}
@@ -302,7 +304,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		Calendar startTime = Calendar.getInstance();
 		populateArgs(queryArgs, startTime, false);
 		List<SplunkEvent> data = runQuery(queryArgs);
-		lastSuccessfulReadTime = startTime;
+		this.lastSuccessfulReadTime = startTime;
 		return data;
 	}
 
@@ -315,7 +317,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		populateArgs(queryArgs, startTime, false);
 
 		List<SplunkEvent> data = runQuery(queryArgs);
-		lastSuccessfulReadTime = startTime;
+		this.lastSuccessfulReadTime = startTime;
 		return data;
 	}
 
@@ -332,7 +334,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		populateArgs(queryArgs, startTime, true);
 
 		List<SplunkEvent> data = runQuery(queryArgs);
-		lastSuccessfulReadTime = startTime;
+		this.lastSuccessfulReadTime = startTime;
 		return data;
 	}
 
@@ -351,8 +353,8 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		populateArgs(queryArgs, startTime, false);
 		queryArgs.put("output_mode", "xml");
 
-		Service service = serviceFactory.getService();
-		InputStream os = service.export(search, queryArgs);
+		Service service = this.serviceFactory.getService();
+		InputStream os = service.export(this.search, queryArgs);
 		ResultsReaderXml resultsReader = new ResultsReaderXml(os);
 		while ((data = resultsReader.getNextEvent()) != null) {
 			splunkData = new SplunkEvent(data);
@@ -366,11 +368,11 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 
 		Args queryArgs = new Args();
 		queryArgs.put("app", "search");
-		if (owner != null && owner.length() > 0) {
-			queryArgs.put("owner", owner);
+		if (this.owner != null && this.owner.length() > 0) {
+			queryArgs.put("owner", this.owner);
 		}
-		if (app != null && app.length() > 0) {
-			queryArgs.put("app", app);
+		if (this.app != null && this.app.length() > 0) {
+			queryArgs.put("app", this.app);
 		}
 
 		Calendar startTime = Calendar.getInstance();
@@ -380,10 +382,10 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 			String latestTime = getLatestTime(startTime, false);
 			String earliestTime = getEarliestTime(startTime, false);
 
-			Service service = serviceFactory.getService();
+			Service service = this.serviceFactory.getService();
 			SavedSearchCollection savedSearches = service.getSavedSearches(queryArgs);
 			for (SavedSearch s : savedSearches.values()) {
-				if (s.getName().equals(savedSearch)) {
+				if (s.getName().equals(this.savedSearch)) {
 					search = s;
 				}
 			}
@@ -410,9 +412,10 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 		ResultsReader resultsReader;
 		int total = job.getResultCount();
 
-		if (count == 0 || total < count) {
+		if (this.count == 0 || total < this.count) {
 			InputStream stream = null;
 			Args outputArgs = new Args();
+			outputArgs.put("count", this.count);
 			outputArgs.put("output_mode", "xml");
 			stream = job.getResults(outputArgs);
 
@@ -427,7 +430,7 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 				InputStream stream = null;
 				Args outputArgs = new Args();
 				outputArgs.put("output_mode", "xml");
-				outputArgs.put("count", count);
+				outputArgs.put("count", this.count);
 				outputArgs.put("offset", offset);
 				stream = job.getResults(outputArgs);
 				resultsReader = new ResultsReaderXml(stream);
@@ -435,14 +438,14 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 					splunkData = new SplunkEvent(data);
 					result.add(splunkData);
 				}
-				offset += count;
+				offset += this.count;
 			}
 		}
 		return result;
 	}
 
 	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(initEarliestTime, "initial earliest time can not be null");
+		Assert.notNull(this.initEarliestTime, "initial earliest time can not be null");
 	}
 
 }
