@@ -256,12 +256,12 @@ public final class IntegrationFlowBuilder {
 	}
 
 	public IntegrationFlowBuilder delay(String groupId, String expression,
-			EndpointConfigurer<GenericEndpointSpec<DelayHandler>> endpointConfigurer) {
+			EndpointConfigurer<DelayerEndpointSpec> endpointConfigurer) {
 		DelayHandler delayHandler = new DelayHandler(groupId);
 		if (StringUtils.hasText(expression)) {
 			delayHandler.setDelayExpression(PARSER.parseExpression(expression));
 		}
-		return this.register(new GenericEndpointSpec<DelayHandler>(delayHandler), endpointConfigurer);
+		return this.register(new DelayerEndpointSpec(delayHandler), endpointConfigurer);
 	}
 
 	public IntegrationFlowBuilder enrich(ComponentConfigurer<EnricherSpec> enricherConfigurer) {

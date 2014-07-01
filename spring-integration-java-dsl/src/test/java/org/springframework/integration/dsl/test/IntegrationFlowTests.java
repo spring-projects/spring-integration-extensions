@@ -1226,13 +1226,13 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from("bridgeFlow2Input")
 					.bridge(c -> c.autoStartup(false).id("bridge"))
 					.fixedSubscriberChannel()
-					.delay("delayer", "200", c -> c.advice(this.delayedAdvice))
+					.delay("delayer", "200", c -> c.advice(this.delayedAdvice).messageStore(this.messageStore()))
 					.channel(MessageChannels.queue("bridgeFlow2Output"))
 					.get();
 		}
 
 		@Bean
-		public MessageStore messageStore() {
+		public SimpleMessageStore messageStore() {
 			return new SimpleMessageStore();
 		}
 
