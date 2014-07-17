@@ -20,6 +20,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.jms.AbstractJmsChannel;
 import org.springframework.integration.jms.config.JmsChannelFactoryBean;
@@ -42,6 +43,7 @@ public class JmsPollableMessageChannelSpec<S extends JmsPollableMessageChannelSp
 		this.jmsChannelFactoryBean = jmsChannelFactoryBean;
 		this.jmsChannelFactoryBean.setConnectionFactory(connectionFactory);
 		this.jmsChannelFactoryBean.setSingleton(false);
+		this.jmsChannelFactoryBean.setBeanFactory(new DefaultListableBeanFactory());
 	}
 
 	@Override

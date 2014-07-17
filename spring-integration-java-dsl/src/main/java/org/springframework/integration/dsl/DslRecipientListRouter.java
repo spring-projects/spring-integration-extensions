@@ -55,7 +55,7 @@ class DslRecipientListRouter extends RecipientListRouter {
 	}
 
 	@Override
-	public void onInit() {
+	public void onInit() throws Exception {
 		for (Map.Entry<String, String> recipient : this.expressionRecipientMap.entrySet()) {
 			ExpressionEvaluatingSelector selector = null;
 			String expression = recipient.getValue();

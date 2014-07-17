@@ -87,6 +87,7 @@ public class JmsInboundGateway extends MessagingGatewaySupport implements
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		super.setApplicationContext(applicationContext);
 		this.endpoint.setApplicationContext(applicationContext);
+		this.endpoint.setBeanFactory(applicationContext);
 		this.listener.setBeanFactory(applicationContext);
 	}
 

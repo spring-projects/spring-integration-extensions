@@ -77,6 +77,7 @@ public class JmsMessageDrivenChannelAdapter extends MessageProducerSupport imple
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		super.setApplicationContext(applicationContext);
 		this.endpoint.setApplicationContext(applicationContext);
+		this.endpoint.setBeanFactory(applicationContext);
 		this.listener.setBeanFactory(applicationContext);
 	}
 

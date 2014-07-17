@@ -16,6 +16,7 @@
 
 package org.springframework.integration.dsl.test;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -330,7 +331,7 @@ public class IntegrationFlowTests {
 	@Test
 	public void testPollingFlow() {
 		this.controlBus.send("@integerEndpoint.start()");
-		assertThat(this.beanFactory.getBean("integerChannel"), Matchers.instanceOf(FixedSubscriberChannel.class));
+		assertThat(this.beanFactory.getBean("integerChannel"), instanceOf(FixedSubscriberChannel.class));
 		for (int i = 0; i < 5; i++) {
 			Message<?> message = this.outputChannel.receive(20000);
 			assertNotNull(message);
@@ -354,9 +355,9 @@ public class IntegrationFlowTests {
 			fail("Expected MessageDispatchingException");
 		}
 		catch (Exception e) {
-			assertThat(e, Matchers.instanceOf(MessageDeliveryException.class));
-			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
-			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
+			assertThat(e, instanceOf(MessageDeliveryException.class));
+			assertThat(e.getCause(), instanceOf(MessageDispatchingException.class));
+			assertThat(e.getMessage(), containsString("Dispatcher has no subscribers"));
 		}
 		this.controlBus.send("@payloadSerializingTransformer.start()");
 
@@ -393,7 +394,7 @@ public class IntegrationFlowTests {
 		assertEquals("test", reply.getPayload());
 
 		assertTrue(this.beanFactory.containsBean("bridgeFlow2.channel#0"));
-		assertThat(this.beanFactory.getBean("bridgeFlow2.channel#0"), Matchers.instanceOf(FixedSubscriberChannel
+		assertThat(this.beanFactory.getBean("bridgeFlow2.channel#0"), instanceOf(FixedSubscriberChannel
 				.class));
 
 		try {
@@ -401,9 +402,9 @@ public class IntegrationFlowTests {
 			fail("Expected MessageDispatchingException");
 		}
 		catch (Exception e) {
-			assertThat(e, Matchers.instanceOf(MessageDeliveryException.class));
-			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
-			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
+			assertThat(e, instanceOf(MessageDeliveryException.class));
+			assertThat(e.getCause(), instanceOf(MessageDispatchingException.class));
+			assertThat(e.getMessage(), containsString("Dispatcher has no subscribers"));
 		}
 		this.controlBus.send("@bridge.start()");
 		this.bridgeFlow2Input.send(message);
@@ -421,8 +422,8 @@ public class IntegrationFlowTests {
 			fail("BeanCreationException expected");
 		}
 		catch (Exception e) {
-			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
-			assertThat(e.getMessage(), Matchers.containsString("is a one-way 'MessageHandler'"));
+			assertThat(e, instanceOf(BeanCreationException.class));
+			assertThat(e.getMessage(), containsString("is a one-way 'MessageHandler'"));
 		}
 		finally {
 			if (context != null) {
@@ -439,8 +440,8 @@ public class IntegrationFlowTests {
 			fail("BeanCreationException expected");
 		}
 		catch (Exception e) {
-			assertThat(e, Matchers.instanceOf(BeanCreationException.class));
-			assertThat(e.getMessage(), Matchers.containsString("'.fixedSubscriberChannel()' " +
+			assertThat(e, instanceOf(BeanCreationException.class));
+			assertThat(e.getMessage(), containsString("'.fixedSubscriberChannel()' " +
 					"can't be the last EIP-method in the IntegrationFlow definition"));
 		}
 		finally {
@@ -459,8 +460,8 @@ public class IntegrationFlowTests {
 			fail("NullPointerException expected");
 		}
 		catch (Exception e) {
-			assertThat(e, Matchers.instanceOf(MessageHandlingException.class));
-			assertThat(e.getCause(), Matchers.instanceOf(NullPointerException.class));
+			assertThat(e, instanceOf(MessageHandlingException.class));
+			assertThat(e.getCause(), instanceOf(NullPointerException.class));
 		}
 		DefaultFileNameGenerator fileNameGenerator = new DefaultFileNameGenerator();
 		fileNameGenerator.setBeanFactory(this.beanFactory);
@@ -518,10 +519,10 @@ public class IntegrationFlowTests {
 			fail("BeanCreationException expected");
 		}
 		catch (Exception e) {
-			assertThat(e, Matchers.instanceOf(IllegalArgumentException.class));
-			assertThat(e.getCause(), Matchers.instanceOf(BeanCreationException.class));
+			assertThat(e, instanceOf(IllegalArgumentException.class));
+			assertThat(e.getCause(), instanceOf(BeanCreationException.class));
 			assertThat(e.getCause().getMessage(),
-					Matchers.containsString("must be populated to target objects via 'get()' method call"));
+					containsString("must be populated to target objects via 'get()' method call"));
 		}
 		finally {
 			if (context != null) {
@@ -541,7 +542,7 @@ public class IntegrationFlowTests {
 		assertNotNull(receive);
 		assertEquals("Bar Bar", receive.getHeaders().get("foo"));
 		Object payload = receive.getPayload();
-		assertThat(payload, Matchers.instanceOf(TestPojo.class));
+		assertThat(payload, instanceOf(TestPojo.class));
 		TestPojo result = (TestPojo) payload;
 		assertEquals("Bar Bar", result.getName());
 		assertNotNull(result.getDate());
@@ -578,7 +579,7 @@ public class IntegrationFlowTests {
 
 		Message<?> receive = replyChannel.receive(2000);
 		assertNotNull(receive);
-		assertThat(receive.getPayload(), Matchers.instanceOf(List.class));
+		assertThat(receive.getPayload(), instanceOf(List.class));
 		@SuppressWarnings("unchecked")
 		List<Object> result = (List<Object>) receive.getPayload();
 		for (int i = 0; i < payload.size(); i++) {
@@ -600,9 +601,9 @@ public class IntegrationFlowTests {
 			fail("Expected MessageDispatchingException");
 		}
 		catch (Exception e) {
-			assertThat(e, Matchers.instanceOf(MessageDeliveryException.class));
-			assertThat(e.getCause(), Matchers.instanceOf(MessageDispatchingException.class));
-			assertThat(e.getMessage(), Matchers.containsString("Dispatcher has no subscribers"));
+			assertThat(e, instanceOf(MessageDeliveryException.class));
+			assertThat(e.getCause(), instanceOf(MessageDispatchingException.class));
+			assertThat(e.getMessage(), containsString("Dispatcher has no subscribers"));
 		}
 
 		this.controlBus.send("@xpathHeaderEnricher.start()");
@@ -613,6 +614,7 @@ public class IntegrationFlowTests {
 		MessageHeaders headers = result.getHeaders();
 		assertEquals("1", headers.get("one"));
 		assertEquals("2", headers.get("two"));
+		assertThat(headers.getReplyChannel(), instanceOf(String.class));
 	}
 
 	@Test
@@ -661,7 +663,7 @@ public class IntegrationFlowTests {
 		}
 		catch (MessageDeliveryException e) {
 			assertThat(e.getMessage(),
-					Matchers.containsString("no channel resolved by router and no default output channel defined"));
+					containsString("no channel resolved by router and no default output channel defined"));
 		}
 
 	}
@@ -690,9 +692,9 @@ public class IntegrationFlowTests {
 			fail("DestinationResolutionException expected.");
 		}
 		catch (MessagingException e) {
-			assertThat(e.getCause(), Matchers.instanceOf(DestinationResolutionException.class));
+			assertThat(e.getCause(), instanceOf(DestinationResolutionException.class));
 			assertThat(e.getCause().getMessage(),
-					Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
+					containsString("failed to look up MessageChannel with name 'bad-channel'"));
 		}
 
 	}
@@ -721,9 +723,9 @@ public class IntegrationFlowTests {
 			fail("DestinationResolutionException expected.");
 		}
 		catch (MessagingException e) {
-			assertThat(e.getCause(), Matchers.instanceOf(DestinationResolutionException.class));
+			assertThat(e.getCause(), instanceOf(DestinationResolutionException.class));
 			assertThat(e.getCause().getMessage(),
-					Matchers.containsString("failed to look up MessageChannel with name 'bad-channel'"));
+					containsString("failed to look up MessageChannel with name 'bad-channel'"));
 		}
 	}
 
@@ -756,7 +758,7 @@ public class IntegrationFlowTests {
 		}
 		catch (MessageDeliveryException e) {
 			assertThat(e.getMessage(),
-					Matchers.containsString("no channel resolved by router and no default output channel defined"));
+					containsString("no channel resolved by router and no default output channel defined"));
 		}
 	}
 
@@ -908,9 +910,9 @@ public class IntegrationFlowTests {
 
 		receive = this.gatewayError.receive(2000);
 		assertNotNull(receive);
-		assertThat(receive, Matchers.instanceOf(ErrorMessage.class));
-		assertThat(receive.getPayload(), Matchers.instanceOf(MessageRejectedException.class));
-		assertThat(((Exception) receive.getPayload()).getMessage(), Matchers.containsString("' rejected Message"));
+		assertThat(receive, instanceOf(ErrorMessage.class));
+		assertThat(receive.getPayload(), instanceOf(MessageRejectedException.class));
+		assertThat(((Exception) receive.getPayload()).getMessage(), containsString("' rejected Message"));
 	}
 
 	@Autowired
@@ -1399,7 +1401,8 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from("xpathHeaderEnricherInput")
 					.enrichHeaders(
 							s -> s.header("one", new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementOne"))
-									.header("two", new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementTwo")),
+									.header("two", new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementTwo"))
+									.headerChannelsToString(),
 							c -> c.autoStartup(false).id("xpathHeaderEnricher")
 					)
 					.get();

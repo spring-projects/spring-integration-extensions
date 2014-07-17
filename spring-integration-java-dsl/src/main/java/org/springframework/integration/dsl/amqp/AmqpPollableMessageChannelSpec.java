@@ -20,6 +20,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.support.MessagePropertiesConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.integration.amqp.channel.AbstractAmqpChannel;
 import org.springframework.integration.amqp.config.AmqpChannelFactoryBean;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
@@ -42,6 +43,7 @@ public class AmqpPollableMessageChannelSpec<S extends AmqpPollableMessageChannel
 		this.amqpChannelFactoryBean.setConnectionFactory(connectionFactory);
 		this.amqpChannelFactoryBean.setSingleton(false);
 		this.amqpChannelFactoryBean.setPubSub(false);
+		this.amqpChannelFactoryBean.setBeanFactory(new DefaultListableBeanFactory());
 	}
 
 	@Override

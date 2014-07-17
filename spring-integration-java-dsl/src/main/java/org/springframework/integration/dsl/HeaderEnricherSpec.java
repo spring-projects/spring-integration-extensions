@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
@@ -95,6 +96,17 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 		Assert.notNull(name);
 		this.headerToAdd.put(name, headerValueMessageProcessor);
 		return _this();
+	}
+
+	public <V> HeaderEnricherSpec headerChannelsToString() {
+		return headerExpression("replyChannel",
+				"@" + IntegrationContextUtils.INTEGRATION_HEADER_CHANNEL_REGISTRY_BEAN_NAME
+						+ ".channelToChannelName(headers.replyChannel)",
+				true)
+				.headerExpression("errorChannel",
+						"@" + IntegrationContextUtils.INTEGRATION_HEADER_CHANNEL_REGISTRY_BEAN_NAME
+								+ ".channelToChannelName(headers.errorChannel)",
+						true);
 	}
 
 	@Override

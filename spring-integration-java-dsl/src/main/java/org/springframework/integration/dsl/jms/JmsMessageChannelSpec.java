@@ -128,6 +128,7 @@ public class JmsMessageChannelSpec<S extends JmsMessageChannelSpec<S>> extends J
 	protected AbstractJmsChannel doGet() {
 		AbstractJmsChannel jmsChannel = super.doGet();
 		if (this.cacheLevel != null) {
+			//TODO till INT-3435
 			DirectFieldAccessor dfa = new DirectFieldAccessor(jmsChannel);
 			Object container = dfa.getPropertyValue("container");
 			if (container instanceof DefaultMessageListenerContainer) {
