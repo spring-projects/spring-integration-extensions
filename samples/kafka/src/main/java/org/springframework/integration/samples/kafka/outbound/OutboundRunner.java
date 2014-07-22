@@ -18,9 +18,9 @@ package org.springframework.integration.samples.kafka.outbound;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.MessageChannel;
 import org.springframework.integration.samples.kafka.user.User;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.MessageChannel;
 
 public class OutboundRunner {
 	private static final String CONFIG = "kafkaOutboundAdapterParserTests-context.xml";
