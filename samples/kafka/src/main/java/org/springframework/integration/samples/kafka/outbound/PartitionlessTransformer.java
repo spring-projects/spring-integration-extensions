@@ -15,9 +15,9 @@
  */
 package org.springframework.integration.samples.kafka.outbound;
 
-import org.springframework.integration.Message;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.transformer.Transformer;
+import org.springframework.messaging.Message;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,13 +36,13 @@ public class PartitionlessTransformer implements Transformer {
 		final Map<String, Map<Integer, List<Object>>> origData =
 				(Map<String, Map<Integer, List<Object>>>) message.getPayload();
 
-		final Map<String, List<Object>> nonPartitionedData = new HashMap<String, List<Object>>();
+		final Map<String, List<Object>> nonPartitionedData = new HashMap<>();
 
 		for(final String topic : origData.keySet()) {
 			final Map<Integer, List<Object>> partitionedData = origData.get(topic);
 			final Collection<List<Object>> nonPartitionedDataFromTopic = partitionedData.values();
 
-			final List<Object> mergedList = new ArrayList<Object>();
+			final List<Object> mergedList = new ArrayList<>();
 
 			for (final List<Object> l : nonPartitionedDataFromTopic){
 				mergedList.addAll(l);
