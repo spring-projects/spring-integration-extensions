@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:int="http://www.springframework.org/schema/integration"
-	xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
-	xmlns:task="http://www.springframework.org/schema/task"
-	xsi:schemaLocation="http://www.springframework.org/schema/integration/kafka http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-kafka="http://www.springframework.org/schema/integration/kafka"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+       xsi:schemaLocation="http://www.springframework.org/schema/integration/kafka http://www.springframework.org/schema/integration/kafka/spring-integration-kafka.xsd
 	http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+	http://www.springframework.org/schema/integration/stream
+      http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
 
-	<int:channel id="inputToKafka">
-		<int:queue/>
-	</int:channel>
+	<int:publish-subscribe-channel id="inputToKafka"/>
 
 	<int-kafka:outbound-channel-adapter kafka-producer-context-ref="kafkaProducerContext"
 			auto-startup="false"
-			channel="inputToKafka">
-		<int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
+			channel="inputToKafka"
+            order="1">
 	</int-kafka:outbound-channel-adapter>
+
+    <int-stream:stdout-channel-adapter id="stdout" append-newline="true"/>
+
+    <int:transformer order="0" ref="userTransformer" input-channel="inputToKafka" output-channel="stdout"/>
+
+    <bean id="userTransformer" class="org.springframework.integration.samples.kafka.outbound.UserTransformer"/>
 
 	<task:executor id="taskExecutor" pool-size="5" keep-alive="120" queue-capacity="500"/>
 

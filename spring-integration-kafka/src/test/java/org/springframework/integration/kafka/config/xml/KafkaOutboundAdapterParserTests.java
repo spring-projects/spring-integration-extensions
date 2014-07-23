@@ -44,6 +44,7 @@ public class KafkaOutboundAdapterParserTests<K,V> {
 		final KafkaProducerMessageHandler<K,V> messageHandler = appContext.getBean(KafkaProducerMessageHandler.class);
 		Assert.assertNotNull(pollingConsumer);
 		Assert.assertNotNull(messageHandler);
+        Assert.assertEquals(messageHandler.getOrder(), 3);
 		final KafkaProducerContext<K,V> producerContext = messageHandler.getKafkaProducerContext();
 		Assert.assertNotNull(producerContext);
 		Assert.assertEquals(producerContext.getTopicsConfiguration().size(), 2);
