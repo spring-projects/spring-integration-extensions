@@ -193,7 +193,9 @@ public class SplunkDataReader implements DataReader, InitializingBean {
 			return exportSearch();
 		}
 		case REALTIME: {
-			return realtimeSearch();
+			throw new UnsupportedOperationException("The 'real-time' search isn't supported " +
+					"because of the infinite Splunk Job nature.");
+//			return realtimeSearch();
 		}
 		}
 		return null;

@@ -181,7 +181,7 @@ Indicates the connection timeout in ms.
 			<xsd:attribute name="mode" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
-						Search mode: normal, blocking, realtime, export, saved
+						Search mode: normal, blocking, export, saved
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -250,7 +250,7 @@ Indicates the connection timeout in ms.
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:complexType name="indexWriterType">
 		<xsd:attribute name="index" type="xsd:string" use="optional">
 				<xsd:annotation>
@@ -260,7 +260,7 @@ Indicates the connection timeout in ms.
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="tcpWriterType">
 		<xsd:attribute name="port" type="xsd:string" use="required">
 				<xsd:annotation>
@@ -346,7 +346,7 @@ Indicates the connection timeout in ms.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			 
+
 			<xsd:attribute name="host" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -354,7 +354,7 @@ Indicates the connection timeout in ms.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="host-regex" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>

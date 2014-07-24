@@ -28,6 +28,7 @@ import com.splunk.JobCollection;
 import com.splunk.Service;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.core.io.ClassPathResource;
@@ -72,6 +73,7 @@ public class SplunkDataReaderTests {
 	}
 
 
+	@Ignore
 	@Test
 	public void testRealtimeSearch() throws Exception {
 		reader.setMode(SearchMode.REALTIME);
