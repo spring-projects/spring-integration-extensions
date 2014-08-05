@@ -23,7 +23,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.s3.core.AbstractAmazonS3Operations;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;

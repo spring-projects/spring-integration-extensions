@@ -15,7 +15,7 @@
  */
 package org.springframework.integration.aws.s3;
 
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 
 /**
  * The Common interface used to generate the file name for the file to be uploaded to S3

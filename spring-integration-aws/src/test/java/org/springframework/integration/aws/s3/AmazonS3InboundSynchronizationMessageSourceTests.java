@@ -33,13 +33,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.expression.common.LiteralExpression;
-import org.springframework.integration.Message;
 import org.springframework.integration.aws.core.BasicAWSCredentials;
 import org.springframework.integration.aws.s3.core.AbstractAmazonS3Operations;
 import org.springframework.integration.aws.s3.core.AmazonS3Object;
 import org.springframework.integration.aws.s3.core.AmazonS3ObjectACL;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
 import org.springframework.integration.aws.s3.core.PaginatedObjectsView;
+import org.springframework.messaging.Message;
 
 /**
  * The test class for {@link AmazonS3InboundSynchronizationMessageSource}

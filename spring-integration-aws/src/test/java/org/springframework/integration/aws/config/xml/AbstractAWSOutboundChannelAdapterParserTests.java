@@ -23,9 +23,9 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.aws.core.AWSCredentials;
-import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.endpoint.AbstractEndpoint;
 import org.springframework.integration.test.util.TestUtils;
+import org.springframework.messaging.MessageHandler;
 
 /**
  * The Abstract test class for the AWS outbound adapter parsers

@@ -18,7 +18,7 @@ package org.springframework.integration.aws.ses.config.xml;
 
 import org.springframework.integration.aws.config.xml.AbstractAWSOutboundChannelAdapterParser;
 import org.springframework.integration.aws.ses.AmazonSESMessageHandler;
-import org.springframework.integration.core.MessageHandler;
+import org.springframework.messaging.MessageHandler;
 
 /**
  * parse the &lt;ses-outbound-channel-adapter/&gt; of the "int-aws" namespace

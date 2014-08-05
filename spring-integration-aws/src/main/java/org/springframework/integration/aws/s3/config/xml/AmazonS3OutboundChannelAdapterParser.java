@@ -27,7 +27,7 @@ import org.springframework.integration.aws.s3.DefaultFileNameGenerationStrategy;
 import org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations;
 import org.springframework.integration.config.ExpressionFactoryBean;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.core.MessageHandler;
+import org.springframework.messaging.MessageHandler;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 

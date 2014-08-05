@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.expression.Expression;
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.s3.core.AmazonS3Object;
 import org.springframework.integration.aws.s3.core.AmazonS3OperationException;
