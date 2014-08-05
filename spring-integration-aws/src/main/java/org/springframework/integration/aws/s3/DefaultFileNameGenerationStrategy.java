@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
  * 2. Else, if the provided payload is of type {@link File}, then the name of the file is used.
  * if the file name ends with the temporary file suffix, the suffix is removed and the
  * remainder of the file is used as the name.
- * 3. If none of the above two are provided, the file name is the <Message Id>.ext
+ * 3. If none of the above two are provided, the file name is the &lt;Message Id&gt;.ext
  *
  * @author Amol Nayak
  *
@@ -50,7 +50,7 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 	private volatile String fileNameExpression = "headers['" + AmazonS3MessageHeaders.FILE_NAME + "']" ;
 
 	/* (non-Javadoc)
-	 * @see org.springframework.integration.aws.s3.FileNameGenerationStrategy#generateFileName(org.springframework.integration.Message)
+	 * @see org.springframework.integration.aws.s3.FileNameGenerationStrategy#generateFileName(org.springframework.messaging.Message)
 	 */
 	public String generateFileName(Message<?> message) {
 		String generatedFileName;

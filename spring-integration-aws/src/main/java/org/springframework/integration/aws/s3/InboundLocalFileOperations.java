@@ -62,7 +62,7 @@ public interface InboundLocalFileOperations {
 	 * The method will write to the file with the specified name in the specified directory
 	 * from the given {@link InputStream}. Upon completion of the writing the appropriate
 	 * {@link FileEventHandler} instance(s) will be notified with the {@link FileOperationType}
-	 * <i>WRITE<i> and {@link File} instance for the created file.
+	 * <i>WRITE</i> and {@link File} instance for the created file.
 	 * @param directory
 	 * @param fileName
 	 * @param in
