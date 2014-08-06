@@ -33,6 +33,7 @@ ext {
 	awsSdkVersion='1.3.32'
 	commonsCodecVersion='1.9'
 	commonsIoVersion='2.0.1'
+    hamcrestVersion='1.3'
 	javaMailVersion='1.5.2'
 	jacksonVersion='1.9.11'
 	junitVersion='4.11'
@@ -72,7 +73,7 @@ dependencies {
 	compile ("javax.mail:javax.mail-api:$javaMailVersion", optional)
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-	testCompile "org.hamcrest:hamcrest-all:1.1"
+	testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
 	testCompile "junit:junit-dep:$junitVersion"
 	testCompile "org.mockito:mockito-all:$mockitoVersion"
 	testCompile "org.springframework:spring-test:$springVersion"
