@@ -15,9 +15,11 @@
  */
 package org.springframework.integration.kafka.config.xml;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +31,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * @author Soby Chacko
- * @since 0.5
+ * @author jaroslaw.palka@symentis.pl
+ * @since 1.0.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -43,14 +45,14 @@ public class KafkaProducerContextParserPropertyTopicTests<K, V, T> {
 	@SuppressWarnings("unchecked")
 	public void testProducerContextConfiguration() {
 		final KafkaProducerContext<K, V> producerContext = appContext.getBean("producerContext", KafkaProducerContext.class);
-		Assert.assertNotNull(producerContext);
+		assertNotNull(producerContext);
 
 		final Map<String, ProducerConfiguration<K, V>> topicConfigurations = producerContext.getTopicsConfiguration();
-		Assert.assertEquals(topicConfigurations.size(), 1);
+		assertEquals(topicConfigurations.size(), 1);
 
 		final ProducerConfiguration<K, V> producerConfigurationTest1 = topicConfigurations.get("producerConfiguration___topic.name_");
-		Assert.assertNotNull(producerConfigurationTest1);
+		assertNotNull(producerConfigurationTest1);
 		final ProducerMetadata<K, V> producerMetadataTest1 = producerConfigurationTest1.getProducerMetadata();
-		Assert.assertEquals(producerMetadataTest1.getTopic(), "test1");
+		assertEquals(producerMetadataTest1.getTopic(), "test1");
 	}
 }
