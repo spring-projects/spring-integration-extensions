@@ -17,6 +17,7 @@
 package org.springframework.integration.dsl;
 
 import org.springframework.integration.aggregator.AggregatingMessageHandler;
+import org.springframework.integration.aggregator.DefaultAggregatingMessageGroupProcessor;
 import org.springframework.integration.aggregator.ExpressionEvaluatingMessageGroupProcessor;
 import org.springframework.integration.aggregator.MessageGroupProcessor;
 import org.springframework.integration.aggregator.MethodInvokingMessageGroupProcessor;
@@ -26,7 +27,7 @@ import org.springframework.integration.aggregator.MethodInvokingMessageGroupProc
  */
 public class AggregatorSpec extends CorrelationHandlerSpec<AggregatorSpec, AggregatingMessageHandler> {
 
-	private MessageGroupProcessor outputProcessor;
+	private MessageGroupProcessor outputProcessor = new DefaultAggregatingMessageGroupProcessor();
 
 	private boolean expireGroupsUponCompletion;
 

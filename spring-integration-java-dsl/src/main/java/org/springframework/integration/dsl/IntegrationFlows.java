@@ -20,6 +20,7 @@ import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
+import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
 import org.springframework.integration.dsl.core.MessagingGatewaySpec;
 import org.springframework.integration.dsl.core.MessagingProducerSpec;
@@ -56,22 +57,22 @@ public final class IntegrationFlows {
 		return from(new FixedSubscriberChannelPrototype(messageChannelName));
 	}
 
-	public static IntegrationFlowBuilder from(MessageChannel messageChannel) {
-		return new IntegrationFlowBuilder().channel(messageChannel);
-	}
-
 	public static IntegrationFlowBuilder from(MessageChannelSpec<?, ?> messageChannelSpec) {
 		return from(messageChannelSpec.get());
 	}
 
-	public static <S extends MessageSourceSpec<S, ? extends MessageSource<?>>> IntegrationFlowBuilder from(S
-			messageSourceSpec) {
-		return from(messageSourceSpec.get());
+	public static IntegrationFlowBuilder from(MessageChannel messageChannel) {
+		return new IntegrationFlowBuilder().channel(messageChannel);
 	}
 
-	public static <S extends MessageSourceSpec<S, ? extends MessageSource<?>>> IntegrationFlowBuilder from(S messageSource,
-			EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
-		return from(messageSource.get(), endpointConfigurer);
+	public static <S extends MessageSourceSpec<S, ? extends MessageSource<?>>> IntegrationFlowBuilder
+	from(S messageSourceSpec) {
+		return from(messageSourceSpec, null);
+	}
+
+	public static <S extends MessageSourceSpec<S, ? extends MessageSource<?>>> IntegrationFlowBuilder
+	from(S messageSourceSpec, EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+		return from(messageSourceSpec.get(), endpointConfigurer, registerComponents(messageSourceSpec));
 	}
 
 	public static IntegrationFlowBuilder from(MessageSource<?> messageSource) {
@@ -80,31 +81,50 @@ public final class IntegrationFlows {
 
 	public static IntegrationFlowBuilder from(MessageSource<?> messageSource,
 			EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+		return from(messageSource, endpointConfigurer, null);
+	}
+
+	private static IntegrationFlowBuilder from(MessageSource<?> messageSource,
+			EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer,
+			IntegrationFlowBuilder integrationFlowBuilder) {
 		SourcePollingChannelAdapterSpec spec = new SourcePollingChannelAdapterSpec(messageSource);
 		if (endpointConfigurer != null) {
 			endpointConfigurer.configure(spec);
 		}
-		return new IntegrationFlowBuilder()
-				.addComponent(spec)
+		if (integrationFlowBuilder == null) {
+			integrationFlowBuilder = new IntegrationFlowBuilder();
+		}
+		return integrationFlowBuilder.addComponent(spec)
 				.currentComponent(spec);
 	}
 
 	public static IntegrationFlowBuilder from(MessagingProducerSpec<?, ?> messagingProducerSpec) {
-		return from(messagingProducerSpec.get());
+		return from(messagingProducerSpec.get(), registerComponents(messagingProducerSpec));
 	}
 
 	public static IntegrationFlowBuilder from(MessageProducerSupport messageProducer) {
+		return from(messageProducer, null);
+	}
+
+	private static IntegrationFlowBuilder from(MessageProducerSupport messageProducer,
+			IntegrationFlowBuilder integrationFlowBuilder) {
 		DirectFieldAccessor dfa = new DirectFieldAccessor(messageProducer);
 		MessageChannel outputChannel = (MessageChannel) dfa.getPropertyValue("outputChannel");
 		if (outputChannel == null) {
 			outputChannel = new DirectChannel();
 			messageProducer.setOutputChannel(outputChannel);
 		}
-		return from(outputChannel).addComponent(messageProducer);
+		if (integrationFlowBuilder == null) {
+			integrationFlowBuilder = from(outputChannel);
+		}
+		else {
+			integrationFlowBuilder.channel(outputChannel);
+		}
+		return integrationFlowBuilder.addComponent(messageProducer);
 	}
 
 	public static IntegrationFlowBuilder from(MessagingGatewaySpec<?, ?> inboundGatewaySpec) {
-		return from(inboundGatewaySpec.get());
+		return from(inboundGatewaySpec.get(), registerComponents(inboundGatewaySpec));
 	}
 
 	public static IntegrationFlowBuilder from(MessagingGatewaySupport inboundGateway) {
@@ -115,6 +135,31 @@ public final class IntegrationFlows {
 			inboundGateway.setRequestChannel(outputChannel);
 		}
 		return from(outputChannel).addComponent(inboundGateway);
+	}
+
+	private static IntegrationFlowBuilder from(MessagingGatewaySupport inboundGateway,
+			IntegrationFlowBuilder integrationFlowBuilder) {
+		DirectFieldAccessor dfa = new DirectFieldAccessor(inboundGateway);
+		MessageChannel outputChannel = (MessageChannel) dfa.getPropertyValue("requestChannel");
+		if (outputChannel == null) {
+			outputChannel = new DirectChannel();
+			inboundGateway.setRequestChannel(outputChannel);
+		}
+		if (integrationFlowBuilder == null) {
+			integrationFlowBuilder = from(outputChannel);
+		}
+		else {
+			integrationFlowBuilder.channel(outputChannel);
+		}
+		return integrationFlowBuilder.addComponent(inboundGateway);
+	}
+
+	private static IntegrationFlowBuilder registerComponents(Object spec) {
+		if (spec instanceof ComponentsRegistration) {
+			return new IntegrationFlowBuilder()
+					.addComponents(((ComponentsRegistration) spec).getComponentsToRegister());
+		}
+		return null;
 	}
 
 	private IntegrationFlows() {

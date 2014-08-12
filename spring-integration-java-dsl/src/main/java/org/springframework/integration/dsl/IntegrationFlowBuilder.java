@@ -22,7 +22,6 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
 import org.springframework.integration.aggregator.AggregatingMessageHandler;
-import org.springframework.integration.aggregator.DefaultAggregatingMessageGroupProcessor;
 import org.springframework.integration.aggregator.ResequencingMessageHandler;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.FixedSubscriberChannel;
@@ -91,6 +90,13 @@ public final class IntegrationFlowBuilder {
 
 	IntegrationFlowBuilder addComponent(Object component) {
 		this.flow.addComponent(component);
+		return this;
+	}
+
+	IntegrationFlowBuilder addComponents(Collection<Object> components) {
+		for (Object component : components) {
+			this.flow.addComponent(component);
+		}
 		return this;
 	}
 
@@ -406,8 +412,7 @@ public final class IntegrationFlowBuilder {
 
 	public IntegrationFlowBuilder
 	aggregate(EndpointConfigurer<GenericEndpointSpec<AggregatingMessageHandler>> endpointConfigurer) {
-		return handle(new AggregatorSpec().outputProcessor(new DefaultAggregatingMessageGroupProcessor()).get(),
-				endpointConfigurer);
+		return handle(new AggregatorSpec().get(), endpointConfigurer);
 	}
 
 	public IntegrationFlowBuilder aggregate(ComponentConfigurer<AggregatorSpec> aggregatorConfigurer,

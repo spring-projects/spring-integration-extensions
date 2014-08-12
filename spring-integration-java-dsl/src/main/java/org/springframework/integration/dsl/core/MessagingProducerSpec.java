@@ -55,7 +55,7 @@ public abstract class MessagingProducerSpec<S extends MessagingProducerSpec<S, P
 	}
 
 	@Override
-	protected final P doGet() {
+	protected P doGet() {
 		throw new UnsupportedOperationException();
 	}
 

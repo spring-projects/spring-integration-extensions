@@ -17,11 +17,20 @@
 package org.springframework.integration.dsl.test;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,13 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.mongodb.MongoClient;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -92,15 +94,15 @@ import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
+import org.springframework.integration.dsl.file.File;
 import org.springframework.integration.dsl.jms.Jms;
 import org.springframework.integration.dsl.support.Pollers;
+import org.springframework.integration.dsl.support.Transformers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
-import org.springframework.integration.file.FileWritingMessageHandler;
-import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessageProducer;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
 import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
@@ -111,6 +113,7 @@ import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.support.MutableMessageBuilder;
+import org.springframework.integration.test.util.TestUtils;
 import org.springframework.integration.transformer.PayloadDeserializingTransformer;
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
 import org.springframework.integration.xml.transformer.support.XPathExpressionEvaluatingHeaderValueMessageProcessor;
@@ -135,6 +138,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.StreamUtils;
+
+import com.mongodb.MongoClient;
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
 
 /**
  * @author Artem Bilan
@@ -144,7 +156,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @DirtiesContext
 public class IntegrationFlowTests {
 
-	private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+	private static final java.io.File tmpDir = new java.io.File(System.getProperty("java.io.tmpdir"));
 
 	private static int mongoPort;
 
@@ -203,7 +215,7 @@ public class IntegrationFlowTests {
 	private MessageChannel fileFlow1Input;
 
 	@Autowired
-	@Qualifier("fileWritingMessageHandler")
+	@Qualifier("fileWriting.handler")
 	private MessageHandler fileWritingMessageHandler;
 
 	@Autowired
@@ -337,11 +349,12 @@ public class IntegrationFlowTests {
 			assertNotNull(message);
 			assertEquals("" + i, message.getPayload());
 		}
+		this.controlBus.send("@integerEndpoint.stop()");
 
 		assertTrue(((ChannelInterceptorAware) this.outputChannel).getChannelInterceptors()
 				.contains(this.testChannelInterceptor));
 		assertThat(this.testChannelInterceptor.getInvoked(), Matchers.greaterThanOrEqualTo(5));
-		this.controlBus.send("@integerEndpoint.stop()");
+
 	}
 
 	@Test
@@ -476,7 +489,7 @@ public class IntegrationFlowTests {
 		dfa.setPropertyValue("fileNameGenerator", fileNameGenerator);
 		this.fileFlow1Input.send(message);
 
-		assertTrue(new File(tmpDir, "foo").exists());
+		assertTrue(new java.io.File(tmpDir, "foo").exists());
 	}
 
 	@Test
@@ -492,7 +505,7 @@ public class IntegrationFlowTests {
 	}
 
 	@Test
-	public void testLamdas() {
+	public void testLambdas() {
 		QueueChannel replyChannel = new QueueChannel();
 		Message<?> message = MessageBuilder.withPayload("World")
 				.setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel)
@@ -867,11 +880,10 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testMessageProducerFlow() throws Exception {
-		FileOutputStream file = new FileOutputStream(new File(tmpDir, "TailTest"));
+		FileOutputStream file = new FileOutputStream(new java.io.File(tmpDir, "TailTest"));
 		for (int i = 0; i < 50; i++) {
 			file.write((i + "\n").getBytes());
 		}
-		file.flush();
 		file.close();
 
 		for (int i = 0; i < 50; i++) {
@@ -880,6 +892,8 @@ public class IntegrationFlowTests {
 			assertEquals("hello " + i, message.getPayload());
 		}
 		assertNull(this.tailChannel.receive(1));
+
+		this.controlBus.send("@tailer.stop()");
 	}
 
 
@@ -991,6 +1005,59 @@ public class IntegrationFlowTests {
 		assertEquals("HELLO THROUGH THE JMS PIPELINE", receive.getPayload());
 	}
 
+	@Autowired
+	@Qualifier("fileReadingResultChannel")
+	private PollableChannel fileReadingResultChannel;
+
+	@Test
+	public void testFileReadingFlow() throws Exception {
+		List<Integer> evens = new ArrayList<>(25);
+		for (int i = 0; i < 50; i++) {
+			boolean even = i % 2 == 0;
+			String extension = even ? ".sitest" : ".foofile";
+			if (even) {
+				evens.add(i);
+			}
+			FileOutputStream file = new FileOutputStream(new java.io.File(tmpDir, i + extension));
+			file.write(("" + i).getBytes());
+			file.flush();
+			file.close();
+		}
+
+		Message<?> message = fileReadingResultChannel.receive(10000);
+		assertNotNull(message);
+		Object payload = message.getPayload();
+		assertThat(payload, instanceOf(List.class));
+		@SuppressWarnings("unchecked")
+		List<String> result = (List<String>) payload;
+		assertEquals(25, result.size());
+		result.forEach(s -> assertTrue(evens.contains(Integer.parseInt(s))));
+	}
+
+
+	@Autowired
+	@Qualifier("fileWritingInput")
+	private MessageChannel fileWritingInput;
+
+	@Autowired
+	@Qualifier("fileWritingResultChannel")
+	private PollableChannel fileWritingResultChannel;
+
+	@Test
+	public void testFileWritingFlow() throws Exception {
+		String payload = "Spring Integration";
+		this.fileWritingInput.send(new GenericMessage<>(payload));
+		Message<?> receive = this.fileWritingResultChannel.receive(1000);
+		assertNotNull(receive);
+		assertThat(receive.getPayload(), instanceOf(java.io.File.class));
+		java.io.File resultFile = (java.io.File) receive.getPayload();
+		assertThat(resultFile.getAbsolutePath(),
+				endsWith(TestUtils.applySystemFileSeparator("fileWritingFlow/foo.sitest")));
+		String fileContent = StreamUtils.copyToString(new FileInputStream(resultFile), Charset.defaultCharset());
+		assertEquals(payload, fileContent);
+	}
+
+
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
 
@@ -1021,7 +1088,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow flow1() {
 			return IntegrationFlows.from(this.integerMessageSource(),
-					c -> c.poller(Pollers.fixedRate(1000, 2000))
+					c -> c.poller(Pollers.fixedRate(100))
 							.id("integerEndpoint")
 							.autoStartup(false))
 					.fixedSubscriberChannel("integerChannel")
@@ -1297,17 +1364,10 @@ public class IntegrationFlowTests {
 	public static class ContextConfiguration4 {
 
 		@Bean
-		public MessageHandler fileWritingMessageHandler() {
-			FileWritingMessageHandler fileWritingMessageHandler = new FileWritingMessageHandler(tmpDir);
-			fileWritingMessageHandler.setFileNameGenerator(message -> null);
-			fileWritingMessageHandler.setExpectReply(false);
-			return fileWritingMessageHandler;
-		}
-
-		@Bean
 		public IntegrationFlow fileFlow1() {
 			return IntegrationFlows.from("fileFlow1Input")
-					.handle(this.fileWritingMessageHandler())
+					.handle(File.outboundAdapter(tmpDir).fileNameGenerator(message -> null),
+							c -> c.id("fileWriting"))
 					.get();
 		}
 
@@ -1464,10 +1524,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow tailFlow() {
-			ApacheCommonsFileTailingMessageProducer adapter = new ApacheCommonsFileTailingMessageProducer();
-			adapter.setFile(new File(tmpDir, "TailTest"));
-
-			return IntegrationFlows.from(adapter)
+			return IntegrationFlows.from(File.tailAdapter(new java.io.File(tmpDir, "TailTest")).delay(500).id("tailer"))
 					.transform("hello "::concat)
 					.channel(MessageChannels.queue("tailChannel"))
 					.get();
@@ -1538,6 +1595,29 @@ public class IntegrationFlowTests {
 		@Bean
 		public MessageChannel gatewayError() {
 			return MessageChannels.queue().get();
+		}
+
+
+		@Bean
+		public IntegrationFlow fileReadingFlow() {
+			return IntegrationFlows
+					.from(File.inboundAdapter(tmpDir).patternFilter("*.sitest"),
+							e -> e.poller(Pollers.fixedDelay(100)))
+					.transform(Transformers.fileToString())
+					.aggregate(a -> a.correlationExpression("1")
+							.releaseExpression("size() == 25"), null)
+					.channel(MessageChannels.queue("fileReadingResultChannel"))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow fileWritingFlow() {
+			return IntegrationFlows.from("fileWritingInput")
+					.enrichHeaders(h -> h.header(FileHeaders.FILENAME, "foo.sitest")
+							.header("directory", new java.io.File(tmpDir, "fileWritingFlow")))
+					.handle(File.outboundGateway("headers[directory]"))
+					.channel(MessageChannels.queue("fileWritingResultChannel"))
+					.get();
 		}
 
 	}
