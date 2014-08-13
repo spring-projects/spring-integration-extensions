@@ -77,7 +77,7 @@ public class AmazonS3InboundSynchronizationMessageSourceTests {
 	@Test(expected=IllegalArgumentException.class)
 	public void withNullTempSuffix() {
 		AmazonS3InboundSynchronizationMessageSource src = new AmazonS3InboundSynchronizationMessageSource();
-		src.setTemporarySuffix(null);
+		src.setTemporaryFileSuffix(null);
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class AmazonS3InboundSynchronizationMessageSourceTests {
 	public void withDefaultS3Service() {
 		AmazonS3InboundSynchronizationMessageSource src = new AmazonS3InboundSynchronizationMessageSource();
 		BasicAWSCredentials credentials = new BasicAWSCredentials("dummy", "dummy");
-		src.setTemporarySuffix(".temp");
+		src.setTemporaryFileSuffix(".temp");
 		src.setCredentials(credentials);
 		src.setDirectory(new LiteralExpression(temp.getRoot().getAbsolutePath()));
 		src.afterPropertiesSet();
@@ -204,6 +204,11 @@ public class AmazonS3InboundSynchronizationMessageSourceTests {
 			protected AmazonS3Object doGetObject(String bucketName, String key) {
 				return null;
 			}
+
+			@Override
+			protected void doRemove(String bucket, String key) {
+
+			}
 		};
 
 		AmazonS3InboundSynchronizationMessageSource src = new AmazonS3InboundSynchronizationMessageSource();
@@ -213,7 +218,7 @@ public class AmazonS3InboundSynchronizationMessageSourceTests {
 		src.setFileNameRegex("[a-z]+\\.txt");
 		src.setRemoteDirectory("remotedirectory");
 		src.setMaxObjectsPerBatch(15);
-		src.setTemporarySuffix(".temp");
+		src.setTemporaryFileSuffix(".temp");
 		src.setAcceptSubFolders(true);
 		src.setDirectory(new LiteralExpression(temp.getRoot().getAbsolutePath()));
 		src.afterPropertiesSet();
@@ -246,7 +251,7 @@ public class AmazonS3InboundSynchronizationMessageSourceTests {
 		src.setFileNameRegex("[a-z]+\\.txt");
 		src.setRemoteDirectory("/sub1");
 		src.setMaxObjectsPerBatch(15);
-		src.setTemporarySuffix(".temp");
+		src.setTemporaryFileSuffix(".temp");
 		src.setAcceptSubFolders(true);
 		src.setDirectory(new LiteralExpression(temp.getRoot().getAbsolutePath()));
 		src.afterPropertiesSet();

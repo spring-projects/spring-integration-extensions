@@ -10,9 +10,10 @@
 
 	<integration:channel id="input"/>
 
-	<int-aws:s3-outbound-channel-adapter
+	<int-aws:s3-outbound-gateway
 			id="withCustomService"
-			channel="input"
+			request-channel="input"
+			remote-command="list"
 			bucket="TestBucket"
 			accessKey="dummy"
 			secretKey="dummy"
@@ -20,10 +21,13 @@
 			remote-directory="/"
 			auto-startup="false"/>
 
-	<int-aws:s3-outbound-channel-adapter
+	<int-aws:s3-outbound-gateway
 			id="withDefaultServices"
-			channel="input"
+			request-channel="input"
+            reply-timeout="1000"
+            reply-channel="replyChannel"
 			bucket="TestBucket"
+			remote-command-expression="headers['command']"
 			accessKey="dummy"
 			secretKey="dummy"
 			remote-directory-expression="headers['remoteDirectory']"
@@ -34,9 +38,10 @@
 			file-name-generation-expression="headers['name']"/>
 
 
-	<int-aws:s3-outbound-channel-adapter
+	<int-aws:s3-outbound-gateway
 			id="withCustomNameGenerator"
-			channel="input"
+			request-channel="input"
+			remote-command="list"
 			bucket="TestBucket"
 			accessKey="dummy"
 			secretKey="dummy"
@@ -44,15 +49,18 @@
 			file-name-generator="customFileNameGenerator"
 			auto-startup="false"/>
 
-	<int-aws:s3-outbound-channel-adapter
+	<int-aws:s3-outbound-gateway
 			id="withCustomEndpoint"
 			aws-endpoint="http://s3-eu-west-1.amazonaws.com"
-			channel="input"
+			request-channel="input"
+			remote-command="list"
 			bucket="TestBucket"
 			accessKey="dummy"
 			secretKey="dummy"
 			remote-directory="/"
 			auto-startup="false"/>
+
+    <integration:channel id="replyChannel"/>
 
 	<bean id="queue" class="java.util.concurrent.ArrayBlockingQueue">
 		<constructor-arg value="10"/>

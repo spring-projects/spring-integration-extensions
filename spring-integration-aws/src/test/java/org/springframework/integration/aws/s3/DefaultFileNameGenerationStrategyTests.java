@@ -16,13 +16,14 @@
 
 package org.springframework.integration.aws.s3;
 
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.FILE_NAME;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Rule;
-
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.integration.Message;
@@ -48,7 +49,7 @@ public class DefaultFileNameGenerationStrategyTests {
 	@Test
 	public void withNameInHeader() {
 		Message<String> message = MessageBuilder.withPayload("SomeString")
-							.setHeader(AmazonS3MessageHeaders.FILE_NAME, "FileName.txt")
+							.setHeader(FILE_NAME, "FileName.txt")
 							.build();
 		DefaultFileNameGenerationStrategy strategy = new DefaultFileNameGenerationStrategy();
 		Assert.assertEquals("FileName.txt", strategy.generateFileName(message));
@@ -98,7 +99,7 @@ public class DefaultFileNameGenerationStrategyTests {
 	 * Tests with the file name generation expression as a null value
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void withNullExprssion() {
+	public void withNullExpression() {
 		DefaultFileNameGenerationStrategy strategy = new DefaultFileNameGenerationStrategy();
 		strategy.setFileNameExpression(null);
 	}
@@ -109,6 +110,6 @@ public class DefaultFileNameGenerationStrategyTests {
 	@Test(expected=IllegalArgumentException.class)
 	public void withNullTemporarySuffix() {
 		DefaultFileNameGenerationStrategy strategy = new DefaultFileNameGenerationStrategy();
-		strategy.setTemporarySuffix(null);
+		strategy.setTemporaryFileSuffix(null);
 	}
 }

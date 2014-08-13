@@ -69,7 +69,7 @@ public interface AmazonS3Operations {
 	 * @param bucketName
 	 * @param folder
 	 * @param objectName
-	 * @return true if the object was successfully removed else false
+	 *
 	 */
-	boolean removeObject(String bucketName,String folder,String objectName);
+	void removeObject(String bucketName,String folder,String objectName);
 }

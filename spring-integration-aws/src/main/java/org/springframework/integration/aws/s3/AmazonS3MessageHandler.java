@@ -15,21 +15,15 @@
  */
 package org.springframework.integration.aws.s3;
 
-import static org.springframework.integration.aws.s3.AmazonS3MessageHeaders.METADATA;
-import static org.springframework.integration.aws.s3.AmazonS3MessageHeaders.OBJECT_ACLS;
-import static org.springframework.integration.aws.s3.AmazonS3MessageHeaders.USER_METADATA;
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.putObject;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Map;
 
 import org.springframework.expression.Expression;
 import org.springframework.integration.Message;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.s3.core.AmazonS3Object;
-import org.springframework.integration.aws.s3.core.AmazonS3OperationException;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
@@ -48,18 +42,11 @@ public class AmazonS3MessageHandler extends AbstractMessageHandler {
 
 
 	private final AWSCredentials credentials;
-
-	private final AmazonS3Operations operations;
-
-	private volatile String charset = "UTF-8";
-
-	private volatile String bucket;
-
 	private volatile ExpressionEvaluatingMessageProcessor<String> remoteDirectoryProcessor;
-
+	private final AmazonS3Operations s3Operations;
+	private volatile String bucket;
+	private volatile String charset = "UTF-8";
 	private volatile FileNameGenerationStrategy fileNameGenerator = new DefaultFileNameGenerationStrategy();
-
-
 
 
 	@Override
@@ -77,11 +64,11 @@ public class AmazonS3MessageHandler extends AbstractMessageHandler {
 	 * @param credentials
 	 * @param operations
 	 */
-	public AmazonS3MessageHandler(AWSCredentials credentials,AmazonS3Operations operations) {
-		Assert.notNull(operations,"s3 operations is null");
+	public AmazonS3MessageHandler(AWSCredentials credentials,AmazonS3Operations s3Operations) {
+		Assert.notNull(s3Operations,"s3 operations is null");
 		Assert.notNull(credentials,"AWS Credentials are null");
 		this.credentials = credentials;
-		this.operations = operations;
+		this.s3Operations = s3Operations;
 	}
 
 
@@ -95,90 +82,15 @@ public class AmazonS3MessageHandler extends AbstractMessageHandler {
 	 * @param message
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-
-		Object payload = message.getPayload();
-
-		//The payload can be only of type java.io.File, java.io.InputStream, byte[] or String
-		File file = null;
-		InputStream in = null;
-
-		//potentially unsafe operation if the types are not as those expected
-		Map<String, String> userMetaData =  getHeaderValue(message,USER_METADATA,Map.class);
-		Map<String, Object> metaData = getHeaderValue(message,METADATA,Map.class);
-		Map<String, Collection<String>> objectAcls = getHeaderValue(message,OBJECT_ACLS,Map.class);
-
-		AmazonS3ObjectBuilder builder = AmazonS3ObjectBuilder
-		.getInstance()
-		.withMetaData(metaData)
-		.withUserMetaData(userMetaData)
-		.withObjectACL(objectAcls);
-
-
-		String folder = this.remoteDirectoryProcessor.processMessage(message);
-
-		String objectName = this.fileNameGenerator.generateFileName(message);
-
-		if(payload instanceof File) {
-			file = (File)payload;
-		}
-		else if (payload instanceof InputStream) {
-			in = (InputStream)payload;
-		}
-		else if(payload instanceof byte[]) {
-			in = new ByteArrayInputStream((byte[])payload);
-		}
-		else if(payload instanceof String) {
-			in = new ByteArrayInputStream(((String)payload).getBytes(charset));
-		}
-		else {
-			throw new AmazonS3OperationException
-			(credentials.getAccessKey(),
-					bucket, objectName, "The Message payload is of unexpected type "
-					+ payload.getClass().getCanonicalName() + ", only supported types are"
-					+" java.io.File, java.io.InputStream, byte[] and java.lang.String");
-		}
-		if(file != null) {
-			builder.fromFile(file);
-		}
-		else  {
-			builder.fromInputStream(in);
-		}
-
-		AmazonS3Object object = builder.build();
-
-		if(logger.isDebugEnabled()) {
-			logger.debug("Uploading Object to bucket " + bucket + ", to folder " + folder + ", with object name " + objectName);
-		}
-
-		operations.putObject(bucket, folder, objectName, object);
+		putObject(s3Operations,
+					bucket,
+					credentials.getAccessKey(),
+					charset,
+					remoteDirectoryProcessor,
+					fileNameGenerator,
+					message);
 	}
-
-
-	/**
-	 * The common helper method that would read the message header and checks if it is of a particular type or not
-	 * @param <T>
-	 * @param message
-	 * @param headerName
-	 * @param expectedType
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T getHeaderValue(Message<?> message, String headerName, Class<T> expectedType) {
-		T header = null;
-		Object genericHeader = message.getHeaders().get(headerName);
-		if(genericHeader == null) {
-			return null;
-		}
-		if(expectedType.isAssignableFrom(genericHeader.getClass())) {
-			header = (T)genericHeader;
-		}
-		else {
-			logger.warn("Found header " + USER_METADATA + " in the message but was not of required type");
-		}
-		return header;
-	}
-
 
 	/**
 	 * Sets the charset for the String payload received

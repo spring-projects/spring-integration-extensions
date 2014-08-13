@@ -36,8 +36,8 @@ ext {
 	jacksonVersion='1.9.11'
 	junitVersion='4.11'
 	log4jVersion = '1.2.12'
-	mockitoVersion='1.9.0'
-	springIntegrationVersion = '2.2.2.RELEASE'
+	mockitoVersion='1.9.5'
+	springIntegrationVersion = '2.2.4.RELEASE'
 	springVersion = '3.1.4.RELEASE'
 
 	idPrefix = 'aws'
@@ -71,8 +71,7 @@ dependencies {
 	compile ("javax.mail:mail:$javaMailVersion", optional)
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-	testCompile "org.hamcrest:hamcrest-all:1.1"
-	testCompile "junit:junit-dep:$junitVersion"
+	testCompile "junit:junit:$junitVersion"
 	testCompile "org.mockito:mockito-all:$mockitoVersion"
 	testCompile "org.springframework:spring-test:$springVersion"
 	testCompile "log4j:log4j:$log4jVersion"

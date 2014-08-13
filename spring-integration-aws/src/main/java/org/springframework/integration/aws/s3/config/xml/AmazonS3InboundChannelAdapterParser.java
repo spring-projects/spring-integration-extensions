@@ -42,7 +42,7 @@ public class AmazonS3InboundChannelAdapterParser extends
 	AbstractPollingInboundChannelAdapterParser  {
 
 	private static final String S3_BUCKET 						= 	"bucket";
-	private static final String TEMPORARY_SUFFIX				=	"temporary-suffix";
+	private static final String TEMPORARY_FILE_SUFFIX			=	"temporary-file-suffix";
 	private static final String S3_OPERATIONS					=	"s3-operations";
 	private static final String AWS_ENDPOINT					=	"aws-endpoint";
 	private static final String REMOTE_DIRECTORY				=	"remote-directory";
@@ -66,7 +66,7 @@ public class AmazonS3InboundChannelAdapterParser extends
 		builder.addPropertyReference(AWS_CREDENTIAL, awsCredentials);
 		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, S3_OPERATIONS);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, S3_BUCKET);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, TEMPORARY_SUFFIX);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, TEMPORARY_FILE_SUFFIX);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, REMOTE_DIRECTORY);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, AWS_ENDPOINT);
 		String directory = element.getAttribute(LOCAL_DIRECTORY);

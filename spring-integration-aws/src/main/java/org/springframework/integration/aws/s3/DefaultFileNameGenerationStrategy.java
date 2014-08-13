@@ -15,6 +15,8 @@
  */
 package org.springframework.integration.aws.s3;
 
+import static org.springframework.integration.aws.s3.AmazonS3OperationUtils.FILE_NAME;
+
 import java.io.File;
 
 import org.apache.commons.logging.Log;
@@ -45,9 +47,9 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 
 	private final Log logger = LogFactory.getLog(DefaultFileNameGenerationStrategy.class);
 
-	private volatile String temporarySuffix = ".writing";
+	private volatile String temporaryFileSuffix = ".writing";
 
-	private volatile String fileNameExpression = "headers['" + AmazonS3MessageHeaders.FILE_NAME + "']" ;
+	private volatile String fileNameExpression = "headers['" + FILE_NAME + "']" ;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.integration.aws.s3.FileNameGenerationStrategy#generateFileName(org.springframework.integration.Message)
@@ -68,9 +70,9 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 		Object payload = message.getPayload();
 		if(payload instanceof File) {
 			String fileName = ((File)payload).getName();
-			if(fileName.endsWith(temporarySuffix)) {
+			if(fileName.endsWith(temporaryFileSuffix)) {
 				//chop off the temp suffix
-				generatedFileName =  fileName.substring(0, fileName.indexOf(temporarySuffix));
+				generatedFileName =  fileName.substring(0, fileName.indexOf(temporaryFileSuffix));
 			}
 			else {
 				generatedFileName =  fileName;
@@ -88,9 +90,9 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 
 	}
 
-	public void setTemporarySuffix(String temporarySuffix) {
-		Assert.hasText(temporarySuffix, "Temporary directory suffix should be non null, non empty");
-		this.temporarySuffix = temporarySuffix;
+	public void setTemporaryFileSuffix(String temporaryFileSuffix) {
+		Assert.hasText(temporaryFileSuffix, "Temporary file suffix should be non null, non empty");
+		this.temporaryFileSuffix= temporaryFileSuffix;
 	}
 
 	public void setFileNameExpression(String fileNameExpression) {

@@ -19,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.junit.Assert;
-
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,6 +48,7 @@ public class DefaultAmazonS3OperationsAWSTests extends AbstractAmazonS3Operation
 
 
 	private static DefaultAmazonS3Operations impl;
+	private static final String AWS_ENDPOINT = "s3-us-west-2.amazonaws.com";
 
 	@BeforeClass
 	public static void setupS3Operations() throws Exception {
@@ -56,6 +56,8 @@ public class DefaultAmazonS3OperationsAWSTests extends AbstractAmazonS3Operation
 			new PropertiesAWSCredentials("classpath:awscredentials.properties");
 		credentials.afterPropertiesSet();
 		impl = new DefaultAmazonS3Operations(credentials);
+		impl.setAwsEndpoint(AWS_ENDPOINT);
+		impl.afterPropertiesSet();
 	}
 	/**
 	 * Sets the thread pool executor to a non null value, execution should

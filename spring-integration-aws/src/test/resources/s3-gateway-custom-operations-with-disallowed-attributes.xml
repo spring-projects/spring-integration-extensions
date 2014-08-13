@@ -11,16 +11,15 @@
 	<integration:channel id="input"/>
 
 
-	<int-aws:s3-outbound-gateway
+	<int-aws:s3-outbound-channel-adapter
 			id="withCustomNameGenerator"
-			request-channel="input"
+			channel="input"
 			s3-operations="customOps"
 			bucket="TestBucket"
 			accessKey="dummy"
 			secretKey="dummy"
 			multipart-upload-threshold="5120"
 			remote-directory="/"
-			remote-command="put"
 			file-name-generation-expression="headers['name']"
 			auto-startup="false"/>
 

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
-
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -70,16 +69,18 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 
 	//To run the test, you will have to create one one bucket for yourself and
 	//set the name here
-	protected static final String BUCKET_NAME = "com.si.aws.test.bucket";
+	protected static final String BUCKET_NAME = "org.springframework.integration.aws.test.bucket";
 
 	private static AmazonS3Client client;
 	private static PropertiesAWSCredentials credentials;
+	private static final String AWS_ENDPOINT = "s3-us-west-2.amazonaws.com";
 
 	@BeforeClass
 	public static final void setup() throws Exception {
 		AWSCredentials credentials = getCredentials();
 		client = new AmazonS3Client(
 				new BasicAWSCredentials(credentials.getAccessKey(), credentials.getSecretKey()));
+		client.setEndpoint(AWS_ENDPOINT);
 	}
 
 
@@ -362,8 +363,8 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 		FileInputStream fin = new FileInputStream(file);
 
 		//Now put the object
-		AmazonS3Operations operations = getS3OperationsImplementation();
-
+		AbstractAmazonS3Operations operations = getS3OperationsImplementation();
+		operations.setTemporaryDirectory(temp.getRoot());
 		Map<String, String> userMetaData = Collections.singletonMap("TestKey", "TestValue");
 		AmazonS3ObjectACL acl = new AmazonS3ObjectACL();
 		ObjectGrant grant = new ObjectGrant(new Grantee(VALID_CANONICAL_ID, GranteeType.CANONICAL_GRANTEE_TYPE),
@@ -450,8 +451,10 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 	 * List with folder as a slash(/)
 	 */
 	@Test
-	public void listWithFolderAsSlash() {
+	public void listWithFolderAsSlash() throws Exception {
 		AmazonS3Operations impl = getS3OperationsImplementation();
+		impl.putObject(BUCKET_NAME, "/acl", "Temp.txt",
+				new AmazonS3Object(null, null, null, generateUploadFile()));
 		PaginatedObjectsView pov = impl.listObjects(BUCKET_NAME, "/acl", null, 100);
 		List<S3ObjectSummary> summary = pov.getObjectSummary();
 		Assert.assertNotNull(summary);
@@ -463,8 +466,10 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 	 * List with folder as a not beginning with slash(/)
 	 */
 	@Test
-	public void listWithFolderNotBeginningWithSlash() {
+	public void listWithFolderNotBeginningWithSlash() throws Exception {
 		AmazonS3Operations impl = getS3OperationsImplementation();
+		impl.putObject(BUCKET_NAME, "somedir/with", "Temp.txt",
+				new AmazonS3Object(null, null, null, generateUploadFile()));
 		PaginatedObjectsView pov = impl.listObjects(BUCKET_NAME, "somedir/with", null, 100);
 		List<S3ObjectSummary> summary = pov.getObjectSummary();
 		Assert.assertNotNull(summary);
@@ -543,10 +548,28 @@ public abstract class AbstractAmazonS3OperationsImplAWSTests {
 	 *
 	 */
 	@Test
-	public void getObjectFromFolderBeginningWithoutSlash() {
+	public void getObjectFromFolderBeginningWithoutSlash() throws Exception {
 		AmazonS3Operations impl = getS3OperationsImplementation();
-		AmazonS3Object object = impl.getObject(BUCKET_NAME, "acl/and/metadata/test", "TestObjectACLAndMetaData.txt");
+		impl.putObject(BUCKET_NAME, "acl/and/metadata/test", "TestFile.txt",
+				new AmazonS3Object(null, null, null, generateUploadFile()));
+		AmazonS3Object object = impl.getObject(BUCKET_NAME, "acl/and/metadata/test", "TestFile.txt");
 		Assert.assertNotNull("Expecting a non null object but got a null one", object);
+	}
+
+	/**
+	 *Removes an existing file, there is no return value
+	 */
+	@Test
+	public void removeExistingFile() throws Exception {
+		AmazonS3Operations impl = getS3OperationsImplementation();
+		String removeFileName = "RemoveFileTest.txt";
+		impl.putObject(BUCKET_NAME, "/", removeFileName,
+				new AmazonS3Object(null, null, null, generateUploadFile()));
+		Thread.sleep(2000);
+		impl.removeObject(BUCKET_NAME, "/", removeFileName);
+		Thread.sleep(2000);
+		AmazonS3Object obj = impl.getObject(BUCKET_NAME, "/", removeFileName);
+		Assert.assertNull(obj);
 	}
 
 

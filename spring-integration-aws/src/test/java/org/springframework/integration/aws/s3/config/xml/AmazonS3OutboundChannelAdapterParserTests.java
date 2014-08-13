@@ -20,7 +20,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.springframework.integration.test.util.TestUtils.getPropertyValue;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -33,6 +36,7 @@ import org.springframework.integration.aws.s3.AmazonS3MessageHandler;
 import org.springframework.integration.aws.s3.FileNameGenerationStrategy;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
 import org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations;
+import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
 
 /**
@@ -45,6 +49,18 @@ import org.springframework.integration.endpoint.EventDrivenConsumer;
  */
 public class AmazonS3OutboundChannelAdapterParserTests {
 
+	private static Map<String, String> adapterConfigMap = new HashMap<String, String>();
+
+	@BeforeClass
+	public static void init() {
+		adapterConfigMap.put("withCustomOperations", "s3-valid-outbound-cases.xml");
+		adapterConfigMap.put("withDefaultOperationsImplementation", "s3-valid-outbound-cases.xml");
+		adapterConfigMap.put("withCustomNameGenerator", "s3-valid-outbound-cases.xml");
+		adapterConfigMap.put("withCustomEndpoint", "s3-valid-outbound-cases.xml");
+		adapterConfigMap.put("withMultiUploadLessthan5120", "s3-multiupload-lessthan-5120.xml");
+		adapterConfigMap.put("withBothFileGeneratorAndExpression", "s3-both-customfilegenerator-and-expression.xml");
+		adapterConfigMap.put("withCustomOperationsAndDisallowedAttributes", "s3-custom-operations-with-disallowed-attributes.xml");
+	}
 
 	/**
 	 * Test case for the xml definition with a custom implementation of {@link AmazonS3Operations}
@@ -52,10 +68,10 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 	 */
 	@Test
 	public void withCustomOperations() {
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:s3-valid-outbound-cases.xml");
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(getConfigForIdentifier("withCustomOperations"));
 		EventDrivenConsumer consumer = ctx.getBean("withCustomService",EventDrivenConsumer.class);
-		AmazonS3MessageHandler handler = getPropertyValue(consumer, "handler", AmazonS3MessageHandler.class);
-		assertEquals(AmazonS3DummyOperations.class, getPropertyValue(handler, "operations").getClass());
+		MessageHandler handler = getPropertyValue(consumer, "handler", getMessageHandlerClass());
+		assertEquals(AmazonS3DummyOperations.class, getPropertyValue(handler, "s3Operations").getClass());
 		Expression expression =
 			getPropertyValue(handler, "remoteDirectoryProcessor.expression",Expression.class);
 		assertNotNull(expression);
@@ -69,10 +85,10 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 	 */
 	@Test
 	public void withDefaultOperationsImplementation() {
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:s3-valid-outbound-cases.xml");
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(getConfigForIdentifier("withDefaultOperationsImplementation"));
 		EventDrivenConsumer consumer = ctx.getBean("withDefaultServices",EventDrivenConsumer.class);
-		AmazonS3MessageHandler handler = getPropertyValue(consumer, "handler", AmazonS3MessageHandler.class);
-		assertEquals(DefaultAmazonS3Operations.class, getPropertyValue(handler, "operations").getClass());
+		MessageHandler handler = getPropertyValue(consumer, "handler", getMessageHandlerClass());
+		assertEquals(DefaultAmazonS3Operations.class, getPropertyValue(handler, "s3Operations").getClass());
 		Expression expression =
 			getPropertyValue(handler, "remoteDirectoryProcessor.expression",Expression.class);
 		assertNotNull(expression);
@@ -82,13 +98,13 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 		assertEquals("US-ASCII", getPropertyValue(handler, "charset", String.class));
 		assertEquals("dummy", getPropertyValue(handler, "credentials.accessKey", String.class));
 		assertEquals("dummy", getPropertyValue(handler, "credentials.secretKey", String.class));
-		assertEquals("dummy", getPropertyValue(handler, "operations.credentials.accessKey", String.class));
-		assertEquals("dummy", getPropertyValue(handler, "operations.credentials.secretKey", String.class));
-		assertEquals(5120, getPropertyValue(handler, "operations.multipartUploadThreshold", Long.class).longValue());
-		assertEquals(".write", getPropertyValue(handler, "operations.temporaryFileSuffix", String.class));
-		assertEquals(".write", getPropertyValue(handler, "fileNameGenerator.temporarySuffix", String.class));
+		assertEquals("dummy", getPropertyValue(handler, "s3Operations.credentials.accessKey", String.class));
+		assertEquals("dummy", getPropertyValue(handler, "s3Operations.credentials.secretKey", String.class));
+		assertEquals(5120, getPropertyValue(handler, "s3Operations.multipartUploadThreshold", Long.class).longValue());
+		assertEquals(".write", getPropertyValue(handler, "s3Operations.temporaryFileSuffix", String.class));
+		assertEquals(".write", getPropertyValue(handler, "fileNameGenerator.temporaryFileSuffix", String.class));
 		assertEquals("headers['name']", getPropertyValue(handler, "fileNameGenerator.fileNameExpression", String.class));
-		assertEquals(ctx.getBean("executor"), getPropertyValue(handler, "operations.threadPoolExecutor"));
+		assertEquals(ctx.getBean("executor"), getPropertyValue(handler, "s3Operations.threadPoolExecutor"));
 		ctx.destroy();
 	}
 
@@ -98,9 +114,9 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 	 */
 	@Test
 	public void withCustomNameGenerator() {
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("s3-valid-outbound-cases.xml");
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(getConfigForIdentifier("withCustomNameGenerator"));
 		EventDrivenConsumer consumer = ctx.getBean("withCustomNameGenerator",EventDrivenConsumer.class);
-		AmazonS3MessageHandler handler = getPropertyValue(consumer, "handler", AmazonS3MessageHandler.class);
+		MessageHandler handler = getPropertyValue(consumer, "handler", getMessageHandlerClass());
 		assertEquals(DummyFileNameGenerator.class, getPropertyValue(handler, "fileNameGenerator").getClass());
 		ctx.destroy();
 	}
@@ -111,11 +127,11 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 	 */
 	@Test
 	public void withCustomEndpoint() {
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("s3-valid-outbound-cases.xml");
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(getConfigForIdentifier("withCustomEndpoint"));
 		EventDrivenConsumer consumer = ctx.getBean("withCustomEndpoint",EventDrivenConsumer.class);
-		AmazonS3MessageHandler handler = getPropertyValue(consumer, "handler", AmazonS3MessageHandler.class);
+		MessageHandler handler = getPropertyValue(consumer, "handler", getMessageHandlerClass());
 		assertEquals("http://s3-eu-west-1.amazonaws.com",
-				getPropertyValue(handler, "operations.client.endpoint", URI.class).toString());
+				getPropertyValue(handler, "s3Operations.client.endpoint", URI.class).toString());
 		ctx.destroy();
 	}
 
@@ -125,7 +141,7 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 	 */
 	@Test(expected=BeanCreationException.class)
 	public void withMultiUploadLessthan5120() {
-		new ClassPathXmlApplicationContext("s3-multiupload-lessthan-5120.xml");
+		new ClassPathXmlApplicationContext(getConfigForIdentifier("withMultiUploadLessthan5120"));
 	}
 
 	/**
@@ -133,7 +149,7 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 	 */
 	@Test(expected=BeanDefinitionStoreException.class)
 	public void withBothFileGeneratorAndExpression() {
-		new ClassPathXmlApplicationContext("s3-both-customfilegenerator-and-expression.xml");
+		new ClassPathXmlApplicationContext(getConfigForIdentifier("withBothFileGeneratorAndExpression"));
 	}
 
 	/**
@@ -143,7 +159,7 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 	 */
 	@Test(expected=BeanDefinitionStoreException.class)
 	public void withCustomOperationsAndDisallowedAttributes() {
-		new ClassPathXmlApplicationContext("s3-custom-operations-with-disallowed-attributes.xml");
+		new ClassPathXmlApplicationContext(getConfigForIdentifier("withCustomOperationsAndDisallowedAttributes"));
 	}
 
 
@@ -153,5 +169,23 @@ public class AmazonS3OutboundChannelAdapterParserTests {
 		public String generateFileName(Message<?> message) {
 			return null;
 		}
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	protected Class<? extends MessageHandler> getMessageHandlerClass() {
+		return AmazonS3MessageHandler.class;
+	}
+
+
+	/**
+	 *
+	 * @param identifier
+	 * @return
+	 */
+	protected String getConfigForIdentifier(String identifier) {
+		return adapterConfigMap.get(identifier);
 	}
 }
