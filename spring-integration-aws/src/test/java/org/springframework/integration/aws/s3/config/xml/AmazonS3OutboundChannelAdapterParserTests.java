@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,18 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpression;
-import org.springframework.integration.Message;
 import org.springframework.integration.aws.s3.AmazonS3MessageHandler;
 import org.springframework.integration.aws.s3.FileNameGenerationStrategy;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
 import org.springframework.integration.aws.s3.core.DefaultAmazonS3Operations;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
+import org.springframework.messaging.Message;
 
 /**
  * The test case for the aws-s3 namespace's {@link AmazonS3OutboundChannelAdapterParser} class
  *
  * @author Amol Nayak
+ * @author Rob Harrop
  *
  * @since 0.5
  *

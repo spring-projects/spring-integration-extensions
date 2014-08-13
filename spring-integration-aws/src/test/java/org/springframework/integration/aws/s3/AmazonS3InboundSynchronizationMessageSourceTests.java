@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,18 +33,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.expression.common.LiteralExpression;
-import org.springframework.integration.Message;
 import org.springframework.integration.aws.core.BasicAWSCredentials;
 import org.springframework.integration.aws.s3.core.AbstractAmazonS3Operations;
 import org.springframework.integration.aws.s3.core.AmazonS3Object;
 import org.springframework.integration.aws.s3.core.AmazonS3ObjectACL;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
 import org.springframework.integration.aws.s3.core.PaginatedObjectsView;
+import org.springframework.messaging.Message;
 
 /**
  * The test class for {@link AmazonS3InboundSynchronizationMessageSource}
  *
  * @author Amol Nayak
+ * @author Rob Harrop
  *
  * @since 0.5
  *
