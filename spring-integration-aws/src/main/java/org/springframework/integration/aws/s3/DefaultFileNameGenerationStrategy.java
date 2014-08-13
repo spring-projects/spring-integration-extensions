@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
  * 3. If none of the above two are provided, the file name is the &lt;Message Id&gt;.ext
  *
  * @author Amol Nayak
+ * @author Rob Harrop
  *
  * @since 0.5
  *
