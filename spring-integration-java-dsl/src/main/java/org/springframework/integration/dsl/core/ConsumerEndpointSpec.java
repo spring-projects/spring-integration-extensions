@@ -23,13 +23,13 @@ import java.util.List;
 import org.aopalliance.aop.Advice;
 
 import org.springframework.integration.config.ConsumerEndpointFactoryBean;
+import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.messaging.MessageHandler;
 
 /**
  * @author Artem Bilan
-
  */
 public abstract class ConsumerEndpointSpec<S extends ConsumerEndpointSpec<S, H>, H extends MessageHandler>
 		extends EndpointSpec<S, ConsumerEndpointFactoryBean, H> {
@@ -85,6 +85,17 @@ public abstract class ConsumerEndpointSpec<S extends ConsumerEndpointSpec<S, H>,
 		}
 		else {
 			logger.warn("'sendTimeout' can be applied only for AbstractReplyProducingMessageHandler");
+		}
+		return _this();
+	}
+
+	public S order(int order) {
+		H handler = this.target.getT2();
+		if (handler instanceof AbstractMessageHandler) {
+			((AbstractMessageHandler) handler).setOrder(order);
+		}
+		else {
+			logger.warn("'order' can be applied only for AbstractMessageHandler");
 		}
 		return _this();
 	}

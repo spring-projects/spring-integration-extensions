@@ -34,6 +34,7 @@ import org.springframework.integration.config.SourcePollingChannelAdapterFactory
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec;
 import org.springframework.integration.dsl.support.MessageChannelReference;
+import org.springframework.integration.support.context.NamedComponent;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
@@ -156,6 +157,9 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 	}
 
 	private String generateBeanName(Object instance) {
+		if (instance instanceof NamedComponent && ((NamedComponent) instance).getComponentName() != null) {
+			return ((NamedComponent) instance).getComponentName();
+		}
 		String generatedBeanName = instance.getClass().getName();
 		String id = instance.getClass().getName();
 		int counter = -1;
