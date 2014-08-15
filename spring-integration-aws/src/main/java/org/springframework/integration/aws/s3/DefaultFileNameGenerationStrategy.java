@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.File;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 import org.springframework.integration.util.AbstractExpressionEvaluator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -33,9 +33,10 @@ import org.springframework.util.StringUtils;
  * 2. Else, if the provided payload is of type {@link File}, then the name of the file is used.
  * if the file name ends with the temporary file suffix, the suffix is removed and the
  * remainder of the file is used as the name.
- * 3. If none of the above two are provided, the file name is the <Message Id>.ext
+ * 3. If none of the above two are provided, the file name is the &lt;Message Id&gt;.ext
  *
  * @author Amol Nayak
+ * @author Rob Harrop
  *
  * @since 0.5
  *
@@ -50,7 +51,7 @@ public class DefaultFileNameGenerationStrategy extends AbstractExpressionEvaluat
 	private volatile String fileNameExpression = "headers['" + AmazonS3MessageHeaders.FILE_NAME + "']" ;
 
 	/* (non-Javadoc)
-	 * @see org.springframework.integration.aws.s3.FileNameGenerationStrategy#generateFileName(org.springframework.integration.Message)
+	 * @see org.springframework.integration.aws.s3.FileNameGenerationStrategy#generateFileName(org.springframework.messaging.Message)
 	 */
 	public String generateFileName(Message<?> message) {
 		String generatedFileName;

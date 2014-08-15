@@ -15,9 +15,6 @@
  */
 package org.springframework.integration.aws.s3.core;
 
-import static org.springframework.integration.aws.core.AWSCommonUtils.encodeHex;
-import static org.springframework.integration.aws.core.AWSCommonUtils.getContentsMD5AsBytes;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -32,7 +29,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.integration.aws.core.AWSCommonUtils;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.util.Assert;
 
@@ -46,13 +45,13 @@ import org.springframework.util.Assert;
  * @since 0.5
  *
  */
-public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,InitializingBean {
+public abstract class AbstractAmazonS3Operations implements AmazonS3Operations, InitializingBean {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private volatile long multipartUploadThreshold;
 
-	private volatile File temporaryDirectory = new  File(System.getProperty("java.io.tmpdir"));
+	private volatile File temporaryDirectory = new File(System.getProperty("java.io.tmpdir"));
 
 	private volatile String temporaryFileSuffix = ".writing";
 
@@ -63,13 +62,12 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	private String awsEndpoint;
 
 
-
 	/**
 	 * The constructor that accepts the {@link AWSCredentials}
 	 * @param credentials
 	 */
 	protected AbstractAmazonS3Operations(AWSCredentials credentials) {
-		Assert.notNull(credentials,"null 'credentials' provided");
+		Assert.notNull(credentials, "null 'credentials' provided");
 		this.credentials = credentials;
 	}
 
@@ -113,7 +111,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 */
 	public void setTemporaryDirectory(File temporaryDirectory) {
 		Assert.notNull(temporaryDirectory, "Provided temporaryDirectory is null");
-		Assert.isTrue(temporaryDirectory.exists(),"The given temporary directory does not exist");
+		Assert.isTrue(temporaryDirectory.exists(), "The given temporary directory does not exist");
 		Assert.isTrue(temporaryDirectory.isDirectory(), "The given temporary directory path has to be a directory");
 		this.temporaryDirectory = temporaryDirectory;
 	}
@@ -124,7 +122,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param temporaryDirectory
 	 */
 	public void setTemporaryDirectory(String temporaryDirectory) {
-		Assert.hasText(temporaryDirectory,"Provided temporary directory string is null or empty string");
+		Assert.hasText(temporaryDirectory, "Provided temporary directory string is null or empty string");
 		setTemporaryDirectory(new File(temporaryDirectory));
 	}
 
@@ -144,7 +142,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 */
 	public void setTemporaryFileSuffix(String temporaryFileSuffix) {
 		Assert.hasText(temporaryFileSuffix, "The temporary file suffix must not be null or empty");
-		if(!temporaryFileSuffix.startsWith(".")) {
+		if (!temporaryFileSuffix.startsWith(".")) {
 			temporaryFileSuffix = "." + temporaryFileSuffix;
 		}
 
@@ -194,16 +192,16 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param in the Stream from which the data of the Object is to be read
 	 * @param objectName the name of the object that would be used to upload the file
 	 */
-	private File getTempFile(InputStream in,String bucketName,String objectName) {
+	private File getTempFile(InputStream in, String bucketName, String objectName) {
 		InputStream inStream;
-		if(!(in instanceof BufferedInputStream) && !(in instanceof ByteArrayInputStream)) {
+		if (!(in instanceof BufferedInputStream) && !(in instanceof ByteArrayInputStream)) {
 			inStream = new BufferedInputStream(in);
 		}
 		else {
 			inStream = in;
 		}
 		String fileName;
-		if(objectName.contains(PATH_SEPARATOR)) {
+		if (objectName.contains(PATH_SEPARATOR)) {
 			String[] splits = objectName.split(PATH_SEPARATOR);
 			fileName = splits[splits.length - 1];
 		}
@@ -215,7 +213,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 
 		String filePath = temporaryDirectory.getAbsoluteFile() + File.separator + fileName + temporaryFileSuffix;
 
-		if(logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
 			logger.debug("Temporary file path is " + filePath);
 		}
 
@@ -226,35 +224,40 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 			fos = new FileOutputStream(tempFile);
 			byte[] bytes = new byte[1024];
 			int read = 0;
-			while(true) {
+			while (true) {
 				read = inStream.read(bytes);
-				if(read == -1) {
+				if (read == -1) {
 					break;
 				}
 				fos.write(bytes, 0, read);
 			}
-		} catch (FileNotFoundException e) {
+		}
+		catch (FileNotFoundException e) {
 			throw new AmazonS3OperationException(credentials.getAccessKey(),
-					 bucketName,
-					 objectName,
-					 "Exception caught while writing the temporary file from input stream", e);
-		} catch(IOException ioe) {
+					bucketName,
+					objectName,
+					"Exception caught while writing the temporary file from input stream", e);
+		}
+		catch (IOException ioe) {
 			throw new AmazonS3OperationException(credentials.getAccessKey(),
-					 bucketName,
-					 objectName,
-					 "Exception caught while reading from the provided input stream", ioe);
-		} finally {
-			if(fos != null) {
+					bucketName,
+					objectName,
+					"Exception caught while reading from the provided input stream", ioe);
+		}
+		finally {
+			if (fos != null) {
 				try {
 					fos.flush();
 					fos.close();
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					//just log
 					logger.error("Unable to close the stream to the temp file being created", e);
 				}
 				try {
 					in.close();
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					//just log
 					logger.error("Unable to close the input stream source", e);
 				}
@@ -278,8 +281,8 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	@Override
 	public final void putObject(String bucketName, String folder, String objectName,
 			AmazonS3Object s3Object) {
-		Assert.hasText(bucketName,"null or empty bucketName provided");
-		Assert.hasText(objectName,"null or empty object name provided");
+		Assert.hasText(bucketName, "null or empty bucketName provided");
+		Assert.hasText(objectName, "null or empty object name provided");
 		Assert.notNull(s3Object, "null s3 object provided for upload");
 
 
@@ -289,10 +292,10 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 				"Exactly one of file or inpuut stream needed in the provided s3 object");
 
 		boolean isTempFile = false;
-		if(in != null) {
+		if (in != null) {
 			//We don't know the source of the stream and hence we read the content
 			//and write to the temporary file.
-			file = getTempFile(in,bucketName,objectName);
+			file = getTempFile(in, bucketName, objectName);
 			isTempFile = true;
 		}
 
@@ -306,15 +309,17 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 		String stringContentMD5 = null;
 		try {
 			stringContentMD5 =
-				encodeHex(getContentsMD5AsBytes(file));
-		} catch (UnsupportedEncodingException e) {
+					AWSCommonUtils.encodeHex(AWSCommonUtils.getContentsMD5AsBytes(file));
+		}
+		catch (UnsupportedEncodingException e) {
 			logger.error("Exception while generating the content's MD5 of the file " + file.getAbsolutePath(), e);
 		}
 
 		try {
 			doPut(bucketName, key, file, s3Object.getObjectACL(),
 					s3Object.getUserMetaData(), stringContentMD5);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new AmazonS3OperationException(
 					credentials.getAccessKey(), bucketName,
 					key,
@@ -323,13 +328,13 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 
 		}
 
-		if(isTempFile) {
+		if (isTempFile) {
 			//Delete the temp file
-			if(logger.isDebugEnabled()) {
+			if (logger.isDebugEnabled()) {
 				logger.debug("Deleting temp file: " + file.getName());
 			}
 			boolean deleteSuccessful = file.delete();
-			if(!deleteSuccessful) {
+			if (!deleteSuccessful) {
 				logger.warn("Unable to delete file '" + file.getName() + "'");
 			}
 		}
@@ -344,14 +349,14 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param objectName
 	 */
 	private String getKeyFromFolder(String folder, String objectName) {
-		if(objectName.startsWith(PATH_SEPARATOR)) {
+		if (objectName.startsWith(PATH_SEPARATOR)) {
 			//remove the leading / of the object name
 			objectName = objectName.substring(1);
 		}
 		String key;
-		if(folder != null) {
-			key = folder.endsWith(PATH_SEPARATOR)?
-					folder + objectName:folder + PATH_SEPARATOR + objectName;
+		if (folder != null) {
+			key = folder.endsWith(PATH_SEPARATOR) ?
+					folder + objectName : folder + PATH_SEPARATOR + objectName;
 		}
 		else {
 			key = objectName;
@@ -360,7 +365,7 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 		//check if the foldername begins with a /, if yes, remove it as well as it created
 		//one directory with blank name
 
-		if(key.startsWith(PATH_SEPARATOR)) {
+		if (key.startsWith(PATH_SEPARATOR)) {
 			key = key.substring(1);
 		}
 		return key;
@@ -384,22 +389,22 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param pageSize The max number of records to be retrieved in one list object operation.
 	 *
 	 */
-	public final PaginatedObjectsView listObjects(String bucketName, String folder, String nextMarker,int pageSize) {
+	public final PaginatedObjectsView listObjects(String bucketName, String folder, String nextMarker, int pageSize) {
 		Assert.hasText(bucketName, "Bucket name should be non null and non empty");
 		Assert.isTrue(pageSize >= 0, "Page size should be a non negative number");
 
-		if(logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
 			logger.debug("Listing objects from bucket " + bucketName + " and folder " + folder);
-			logger.debug("Next marker is " + nextMarker  + " and pageSize is " + pageSize);
+			logger.debug("Next marker is " + nextMarker + " and pageSize is " + pageSize);
 		}
 
 
 		String prefix = null;
-		if(folder != null && !PATH_SEPARATOR.equals(folder)) {
+		if (folder != null && !PATH_SEPARATOR.equals(folder)) {
 			prefix = folder;
 		}
 		//check if the prefix begins with /
-		if(prefix != null && prefix.startsWith(PATH_SEPARATOR)) {
+		if (prefix != null && prefix.startsWith(PATH_SEPARATOR)) {
 			prefix = prefix.substring(1);
 		}
 
@@ -416,14 +421,15 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	public final AmazonS3Object getObject(String bucketName, String folder,
 			String objectName) {
 		Assert.hasText(bucketName, "Bucket name should be non null and non empty");
-		if(logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
 			logger.debug("Getting from bucket " + bucketName +
 					", from folder " + folder + " the  object name " + objectName);
 		}
 		String key = getKeyFromFolder(folder, objectName);
 		try {
 			return doGetObject(bucketName, key);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new AmazonS3OperationException(
 					credentials.getAccessKey(), bucketName,
 					key,
@@ -467,34 +473,37 @@ public abstract class AbstractAmazonS3Operations implements AmazonS3Operations,I
 	 * @param stringContentMD5 The MD5 sum of the contents of the file to be uploaded
 	 *
 	 */
-	protected abstract void doPut(String bucket,String key,File file,
-			AmazonS3ObjectACL objectACL, Map<String, String> userMetadata,String stringContentMD5);
+	protected abstract void doPut(String bucket, String key, File file,
+			AmazonS3ObjectACL objectACL, Map<String, String> userMetadata, String stringContentMD5);
 
-}
 
-class PagninatedObjectsViewImpl implements PaginatedObjectsView {
+	static class PagninatedObjectsViewImpl implements PaginatedObjectsView {
 
-	private final List<S3ObjectSummary> objectSummary;
-	private final String nextMarker;
+		private final List<S3ObjectSummary> objectSummary;
 
-	public PagninatedObjectsViewImpl(List<S3ObjectSummary> objectSummary,
-			String nextMarker) {
-		this.objectSummary = objectSummary;
-		this.nextMarker = nextMarker;
+		private final String nextMarker;
+
+		public PagninatedObjectsViewImpl(List<S3ObjectSummary> objectSummary,
+				String nextMarker) {
+			this.objectSummary = objectSummary;
+			this.nextMarker = nextMarker;
+		}
+
+
+		public List<S3ObjectSummary> getObjectSummary() {
+			return objectSummary != null ? objectSummary : new ArrayList<S3ObjectSummary>();
+		}
+
+
+		public boolean hasMoreResults() {
+			return nextMarker != null;
+		}
+
+
+		public String getNextMarker() {
+			return nextMarker;
+		}
+
 	}
 
-
-	public List<S3ObjectSummary> getObjectSummary() {
-		return objectSummary != null?objectSummary:new ArrayList<S3ObjectSummary>();
-	}
-
-
-	public boolean hasMoreResults() {
-		return nextMarker != null;
-	}
-
-
-	public String getNextMarker() {
-		return nextMarker;
-	}
 }

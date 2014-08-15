@@ -2,7 +2,7 @@ description = 'Spring Integration AWS Support'
 
 buildscript {
 	repositories {
-		maven { url 'https://repo.springsource.org/plugins-snapshot' }
+		maven { url 'http://repo.spring.io/plugins-snapshot' }
 	}
 }
 
@@ -14,8 +14,8 @@ apply plugin: 'idea'
 group = 'org.springframework.integration'
 
 repositories {
-	maven { url 'http://repo.springsource.org/libs-milestone' }
-	maven { url 'http://repo.springsource.org/plugins-release' }
+	maven { url 'http://repo.spring.io/libs-milestone' }
+	maven { url 'http://repo.spring.io/plugins-release' }
 }
 
 sourceCompatibility=1.6
@@ -28,26 +28,23 @@ configurations {
 }
 
 ext {
-	apacheHttpclientVersion='4.1.1'
-	awsSdkVersion='1.3.32'
-	commonsCodecVersion='1.5'
+	apacheHttpclientVersion='4.3.4'
+	apacheHttpCoreVersion='4.3.2'
+	awsSdkVersion='1.8.7'
+	commonsCodecVersion='1.9'
 	commonsIoVersion='2.0.1'
-	javaMailVersion='1.4.4'
+	javaMailVersion='1.5.2'
 	jacksonVersion='1.9.11'
-	junitVersion='4.11'
-	log4jVersion = '1.2.12'
-	mockitoVersion='1.9.0'
-	springIntegrationVersion = '2.2.2.RELEASE'
-	springVersion = '3.1.4.RELEASE'
+	springIntegrationVersion = '4.0.3.RELEASE'
 
 	idPrefix = 'aws'
 
-	linkHomepage = 'https://github.com/SpringSource/spring-integration-extensions'
-	linkCi       = 'https://build.springsource.org/browse/INTEXT'
-	linkIssue    = 'https://jira.springsource.org/browse/INTEXT'
-	linkScmUrl           = 'https://github.com/SpringSource/spring-integration-extensions'
-	linkScmConnection    = 'https://github.com/SpringSource/spring-integration-extensions.git'
-	linkScmDevConnection = 'git@github.com:SpringSource/spring-integration-extensions.git'
+	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkCi       = 'https://build.spring.io/browse/INTEXT'
+	linkIssue    = 'https://jira.spring.io/browse/INTEXT'
+	linkScmUrl           = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkScmConnection    = 'https://github.com/spring-projects/spring-integration-extensions.git'
+	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
 }
 
 ext.javadocLinks = [
@@ -64,20 +61,15 @@ dependencies {
 	compile "org.codehaus.jackson:jackson-core-asl:$jacksonVersion"
 	compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
 	compile "org.apache.httpcomponents:httpclient:$apacheHttpclientVersion"
-	compile "org.apache.httpcomponents:httpcore:$apacheHttpclientVersion"
+	compile "org.apache.httpcomponents:httpcore:$apacheHttpCoreVersion"
 
 	//Amazon SES Support
 	compile ("org.springframework.integration:spring-integration-mail:$springIntegrationVersion", optional)
-	compile ("javax.mail:mail:$javaMailVersion", optional)
+	compile ("javax.mail:javax.mail-api:$javaMailVersion", optional)
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-	testCompile "org.hamcrest:hamcrest-all:1.1"
-	testCompile "junit:junit-dep:$junitVersion"
-	testCompile "org.mockito:mockito-all:$mockitoVersion"
-	testCompile "org.springframework:spring-test:$springVersion"
-	testCompile "log4j:log4j:$log4jVersion"
 
-	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.6.2.201302030002", classifier: "runtime"
+	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.7.1.201405082137", classifier: "runtime"
 
 }
 
@@ -119,7 +111,7 @@ sourceSets {
 }
 
 // enable all compiler warnings; individual projects may customize further
-ext.xLintArg = '-Xlint:all'
+ext.xLintArg = '-Xlint:all,-options'
 [compileJava, compileTestJava]*.options*.compilerArgs = [xLintArg]
 
 test {
@@ -270,5 +262,6 @@ task dist(dependsOn: assemble) {
 
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.6'
+	gradleVersion = '1.12'
+	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }

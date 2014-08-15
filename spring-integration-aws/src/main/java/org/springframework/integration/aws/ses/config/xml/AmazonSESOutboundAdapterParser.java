@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package org.springframework.integration.aws.ses.config.xml;
 
 import org.springframework.integration.aws.config.xml.AbstractAWSOutboundChannelAdapterParser;
 import org.springframework.integration.aws.ses.AmazonSESMessageHandler;
-import org.springframework.integration.core.MessageHandler;
+import org.springframework.messaging.MessageHandler;
 
 /**
  * parse the &lt;ses-outbound-channel-adapter/&gt; of the "int-aws" namespace
  *
  * @author Amol Nayak
+ * @author Rob Harrop
  *
  * @since 0.5
  *

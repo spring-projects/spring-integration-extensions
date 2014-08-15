@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.integration.Message;
+import org.springframework.messaging.Message;
 import org.springframework.integration.aws.core.AWSCredentials;
 import org.springframework.integration.aws.s3.core.AbstractAmazonS3Operations;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  * synchronized from the S3
  *
  * @author Amol Nayak
+ * @author Rob Harrop
  *
  * @since 0.5
  *

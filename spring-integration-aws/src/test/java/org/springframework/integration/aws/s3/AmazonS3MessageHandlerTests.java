@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,20 +40,23 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.integration.Message;
-import org.springframework.integration.MessageHandlingException;
 import org.springframework.integration.aws.core.BasicAWSCredentials;
 import org.springframework.integration.aws.s3.core.AmazonS3Object;
 import org.springframework.integration.aws.s3.core.AmazonS3Operations;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 
 /**
  * The test class for {@link AmazonS3MessageHandler}, we rely on mock of {@link AmazonS3Operations}
  * to test the behavior.
  *
  * @author Amol Nayak
+ * @author Rob Harrop
  *
  * @since 0.5
  *
@@ -90,6 +93,7 @@ public class AmazonS3MessageHandlerTests {
 		//set the remote directory to root by default
 		handler.setRemoteDirectoryExpression(new LiteralExpression("/"));
 		handler.setBucket("TestBucket");
+		handler.setBeanFactory(Mockito.mock(BeanFactory.class));
 		handler.afterPropertiesSet();
 		return handler;
 	}
