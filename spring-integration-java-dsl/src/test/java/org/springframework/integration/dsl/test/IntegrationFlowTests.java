@@ -16,7 +16,10 @@
 
 package org.springframework.integration.dsl.test;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -27,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -42,12 +44,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
 
+import com.jcraft.jsch.ChannelSftp;
+import com.mongodb.MongoClient;
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.net.ftp.FTPFile;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -95,7 +109,9 @@ import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.file.File;
+import org.springframework.integration.dsl.ftp.Ftp;
 import org.springframework.integration.dsl.jms.Jms;
+import org.springframework.integration.dsl.sftp.Sftp;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.dsl.support.Transformers;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
@@ -103,11 +119,15 @@ import org.springframework.integration.event.core.MessagingEvent;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
+import org.springframework.integration.file.remote.RemoteFileTemplate;
+import org.springframework.integration.file.remote.gateway.AbstractRemoteFileOutboundGateway;
+import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
 import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
 import org.springframework.integration.router.MethodInvokingRouter;
 import org.springframework.integration.scheduling.PollerMetadata;
+import org.springframework.integration.sftp.session.DefaultSftpSessionFactory;
 import org.springframework.integration.store.MessageStore;
 import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.integration.store.SimpleMessageStore;
@@ -139,14 +159,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.StreamUtils;
-
-import com.mongodb.MongoClient;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 
 /**
  * @author Artem Bilan
@@ -1058,6 +1070,160 @@ public class IntegrationFlowTests {
 	}
 
 
+	@Autowired
+	private TestFtpServer ftpServer;
+
+	@Autowired
+	private DefaultFtpSessionFactory ftpSessionFactory;
+
+	@Autowired
+	private TestSftpServer sftpServer;
+
+	@Autowired
+	private DefaultSftpSessionFactory sftpSessionFactory;
+
+	@Before
+	@After
+	public void setupRemoteFileServers() {
+		this.ftpServer.recursiveDelete(this.ftpServer.getTargetLocalDirectory());
+		this.ftpServer.recursiveDelete(this.ftpServer.getTargetFtpDirectory());
+		this.sftpServer.recursiveDelete(this.sftpServer.getTargetLocalDirectory());
+		this.sftpServer.recursiveDelete(this.sftpServer.getTargetSftpDirectory());
+	}
+
+	@Autowired
+	@Qualifier("ftpInboundResultChannel")
+	private PollableChannel ftpInboundResultChannel;
+
+	@Test
+	public void testFtpInboundFlow() {
+		Message<?> message = this.ftpInboundResultChannel.receive(1000);
+		assertNotNull(message);
+		Object payload = message.getPayload();
+		assertThat(payload, instanceOf(java.io.File.class));
+		java.io.File file = (java.io.File) payload;
+		assertThat(file.getName(), isOneOf("FTPSOURCE1.TXT.a", "FTPSOURCE2.TXT.a"));
+		assertThat(file.getAbsolutePath(), containsString("ftpTest"));
+
+		message = this.ftpInboundResultChannel.receive(1000);
+		assertNotNull(message);
+		file = (java.io.File) message.getPayload();
+		assertThat(file.getName(), isOneOf("FTPSOURCE1.TXT.a", "FTPSOURCE2.TXT.a"));
+		assertThat(file.getAbsolutePath(), containsString("ftpTest"));
+
+		this.controlBus.send("@ftpInboundAdapter.stop()");
+	}
+
+	@Autowired
+	@Qualifier("sftpInboundResultChannel")
+	private PollableChannel sftpInboundResultChannel;
+
+	@Test
+	public void testSftpInboundFlow() {
+		Message<?> message = this.sftpInboundResultChannel.receive(1000);
+		assertNotNull(message);
+		Object payload = message.getPayload();
+		assertThat(payload, instanceOf(java.io.File.class));
+		java.io.File file = (java.io.File) payload;
+		assertThat(file.getName(), isOneOf("SFTPSOURCE1.TXT.a", "SFTPSOURCE2.TXT.a"));
+		assertThat(file.getAbsolutePath(), containsString("sftpTest"));
+
+		message = this.sftpInboundResultChannel.receive(1000);
+		assertNotNull(message);
+		file = (java.io.File) message.getPayload();
+		assertThat(file.getName(), isOneOf("SFTPSOURCE1.TXT.a", "SFTPSOURCE2.TXT.a"));
+		assertThat(file.getAbsolutePath(), containsString("sftpTest"));
+
+		this.controlBus.send("@sftpInboundAdapter.stop()");
+	}
+
+	@Autowired
+	@Qualifier("toFtpChannel")
+	private MessageChannel toFtpChannel;
+
+	@Test
+	public void testFtpOutboundFlow() {
+		String fileName = "foo.file";
+		this.toFtpChannel.send(MessageBuilder.withPayload("foo")
+				.setHeader(FileHeaders.FILENAME, fileName)
+				.build());
+
+		RemoteFileTemplate<FTPFile> template = new RemoteFileTemplate<>(this.ftpSessionFactory);
+		FTPFile[] files = template.execute(session ->
+				session.list(this.ftpServer.getTargetFtpDirectory().getName() + "/" + fileName));
+		assertEquals(1, files.length);
+		assertEquals(3, files[0].getSize());
+	}
+
+	@Autowired
+	@Qualifier("toSftpChannel")
+	private MessageChannel toSftpChannel;
+
+	@Test
+	public void testSftpOutboundFlow() {
+		String fileName = "foo.file";
+		this.toSftpChannel.send(MessageBuilder.withPayload("foo")
+				.setHeader(FileHeaders.FILENAME, fileName)
+				.build());
+
+		RemoteFileTemplate<ChannelSftp.LsEntry> template = new RemoteFileTemplate<>(this.sftpSessionFactory);
+		ChannelSftp.LsEntry[] files = template.execute(session ->
+				session.list(this.sftpServer.getTargetSftpDirectory().getName() + "/" + fileName));
+		assertEquals(1, files.length);
+		assertEquals(3, files[0].getAttrs().getSize());
+	}
+
+	@Autowired
+	@Qualifier("ftpMgetInputChannel")
+	private MessageChannel ftpMgetInputChannel;
+
+	@Autowired
+	@Qualifier("remoteFileOutputChannel")
+	private PollableChannel remoteFileOutputChannel;
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testFtpMgetFlow() {
+		String dir = "ftpSource/";
+		this.ftpMgetInputChannel.send(new GenericMessage<Object>(dir + "*"));
+		Message<?> result = this.remoteFileOutputChannel.receive(1000);
+		assertNotNull(result);
+		List<java.io.File> localFiles = (List<java.io.File>) result.getPayload();
+		// should have filtered ftpSource2.txt
+		assertEquals(2, localFiles.size());
+
+		for (java.io.File file : localFiles) {
+			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+					Matchers.containsString(dir));
+		}
+		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+				Matchers.containsString(dir + "subFtpSource"));
+	}
+
+
+	@Autowired
+	@Qualifier("sftpMgetInputChannel")
+	private MessageChannel sftpMgetInputChannel;
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testSftpMgetFlow() {
+		String dir = "sftpSource/";
+		this.sftpMgetInputChannel.send(new GenericMessage<Object>(dir + "*"));
+		Message<?> result = this.remoteFileOutputChannel.receive(1000);
+		assertNotNull(result);
+		List<java.io.File> localFiles = (List<java.io.File>) result.getPayload();
+		// should have filtered sftpSource2.txt
+		assertEquals(2, localFiles.size());
+
+		for (java.io.File file : localFiles) {
+			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+					Matchers.containsString(dir));
+		}
+		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+				Matchers.containsString(dir + "subSftpSource"));
+	}
+
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
 
@@ -1100,7 +1266,7 @@ public class IntegrationFlowTests {
 
 		@Bean(name = PollerMetadata.DEFAULT_POLLER)
 		public PollerMetadata poller() {
-			return Pollers.fixedRate(500).get();
+			return Pollers.fixedRate(500).maxMessagesPerPoll(1).get();
 		}
 
 		@Bean(name = IntegrationContextUtils.TASK_SCHEDULER_BEAN_NAME)
@@ -1170,6 +1336,96 @@ public class IntegrationFlowTests {
 					.<String, String>transform(String::toUpperCase)
 					.get();
 		}
+
+		@Autowired
+		private TestFtpServer ftpServer;
+
+		@Autowired
+		private DefaultFtpSessionFactory ftpSessionFactory;
+
+		@Autowired
+		private TestSftpServer sftpServer;
+
+		@Autowired
+		private DefaultSftpSessionFactory sftpSessionFactory;
+
+		@Bean
+		public IntegrationFlow ftpInboundFlow() {
+			return IntegrationFlows
+					.from(Ftp.inboundAdapter(this.ftpSessionFactory)
+									.preserveTimestamp(true)
+									.remoteDirectory("ftpSource")
+									.regexFilter(".*\\.txt$")
+									.localFilenameGeneratorExpression("#this.toUpperCase() + '.a'")
+									.localDirectory(this.ftpServer.getTargetLocalDirectory()),
+							e -> e.id("ftpInboundAdapter"))
+					.channel(MessageChannels.queue("ftpInboundResultChannel"))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow sftpInboundFlow() {
+			return IntegrationFlows
+					.from(Sftp.inboundAdapter(this.sftpSessionFactory)
+									.preserveTimestamp(true)
+									.remoteDirectory("sftpSource")
+									.regexFilter(".*\\.txt$")
+									.localFilenameGeneratorExpression("#this.toUpperCase() + '.a'")
+									.localDirectory(this.sftpServer.getTargetLocalDirectory()),
+							e -> e.id("sftpInboundAdapter"))
+					.channel(MessageChannels.queue("sftpInboundResultChannel"))
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow ftpOutboundFlow() {
+			return IntegrationFlows.from("toFtpChannel")
+					.handle(Ftp.outboundAdapter(this.ftpSessionFactory)
+									.useTemporaryFileName(false)
+									.remoteDirectory(this.ftpServer.getTargetFtpDirectory().getName())
+					).get();
+		}
+
+		@Bean
+		public IntegrationFlow sftpOutboundFlow() {
+			return IntegrationFlows.from("toSftpChannel")
+					.handle(Sftp.outboundAdapter(this.sftpSessionFactory)
+									.useTemporaryFileName(false)
+									.remoteDirectory(this.sftpServer.getTargetSftpDirectory().getName())
+					).get();
+		}
+
+		@Bean
+		public PollableChannel remoteFileOutputChannel() {
+			return new QueueChannel();
+		}
+
+		@Bean
+		public IntegrationFlow ftpMGetFlow() {
+			return IntegrationFlows.from("ftpMgetInputChannel")
+					.handle(Ftp.outboundGateway(this.ftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
+							"payload")
+							.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
+							.regexFileNameFilter("(subFtpSource|.*1.txt)")
+							.localDirectoryExpression("@ftpServer.targetLocalDirectoryName + #remoteDirectory")
+							.localFilenameGeneratorExpression("#remoteFileName.replaceFirst('ftpSource', 'localTarget')"))
+					.channel(remoteFileOutputChannel())
+					.get();
+		}
+
+		@Bean
+		public IntegrationFlow sftpMGetFlow() {
+			return IntegrationFlows.from("sftpMgetInputChannel")
+					.handle(Sftp.outboundGateway(this.sftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
+							"payload")
+							.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
+							.regexFileNameFilter("(subSftpSource|.*1.txt)")
+							.localDirectoryExpression("@sftpServer.targetLocalDirectoryName + #remoteDirectory")
+							.localFilenameGeneratorExpression("#remoteFileName.replaceFirst('sftpSource', 'localTarget')"))
+					.channel(remoteFileOutputChannel())
+					.get();
+		}
+
 	}
 
 	@Configuration

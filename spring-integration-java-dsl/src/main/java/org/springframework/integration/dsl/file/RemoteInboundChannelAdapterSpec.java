@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.springframework.expression.Expression;
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
 import org.springframework.integration.file.filters.FileListFilter;
@@ -63,8 +62,8 @@ public abstract class RemoteInboundChannelAdapterSpec<F, S extends RemoteInbound
 		return _this();
 	}
 
-	public S localFilenameGeneratorExpression(Expression localFilenameGeneratorExpression) {
-		this.synchronizer.setLocalFilenameGeneratorExpression(localFilenameGeneratorExpression);
+	public S localFilenameGeneratorExpression(String localFilenameGeneratorExpression) {
+		this.synchronizer.setLocalFilenameGeneratorExpression(PARSER.parseExpression(localFilenameGeneratorExpression));
 		return _this();
 	}
 

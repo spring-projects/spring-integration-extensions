@@ -21,3 +21,4 @@ out
 target
 spring-integration-aws/src/test/resources/awscredentials.properties
 *.orig
+/spring-integration-java-dsl/hostkey.ser

@@ -25,13 +25,14 @@ compileTestJava {
 
 ext {
 	activeMqVersion = '5.9.0'
-	embedMongoVersion = '1.45'
-	jacocoVersion = '0.7.0.201403182114'
+	apacheSshdVersion = '0.10.1'
+	embedMongoVersion = '1.46.0'
+	ftpServerVersion = '1.0.6'
+	jacocoVersion = '0.7.1.201405082137'
 	jmsApiVersion = '1.1-rev-1'
-	log4jVersion = '1.2.17'
-	slf4jVersion = '1.7.6'
+	slf4jVersion = '1.7.7'
 	springIntegrationVersion = '4.0.3.RELEASE'
-	springBootVersion = '1.1.4.RELEASE'
+	springBootVersion = '1.1.5.RELEASE'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
 	linkCi = 'https://build.spring.io/browse/INTEXT'
@@ -80,9 +81,10 @@ dependencies {
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embedMongoVersion"
+	testCompile "org.apache.ftpserver:ftpserver-core:$ftpServerVersion"
+	testCompile "org.apache.sshd:sshd-core:$apacheSshdVersion"
 	testCompile "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
 
-//	testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
 	testRuntime("org.apache.activemq:activemq-broker:$activeMqVersion")
 	testRuntime("org.apache.activemq:activemq-kahadb-store:$activeMqVersion") {
