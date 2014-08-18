@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,23 +26,24 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * @author Soby Chacko
- * @since 0.5
+ * @author Ilayaperumal Gopinathan
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class KafkaConsumerContextParserTests<K,V> {
+public class KafkaMultiConsumerContextsParserTests<K,V> {
 
 	@Autowired
 	private ApplicationContext appContext;
-
-	@Test
+	
 	@SuppressWarnings("unchecked")
-	public void testConsumerContextConfiguration() {
+	@Test
+	public void testConsumerContextConfigurations() {
 		final KafkaConsumerContext<K,V> consumerContext = appContext.getBean("consumerContext", KafkaConsumerContext.class);
 		Assert.assertNotNull(consumerContext);
 
-		final ConsumerMetadata<K,V> cm = appContext.getBean("consumerMetadata", ConsumerMetadata.class);
+		final ConsumerMetadata<K,V> cm = appContext.getBean("consumerMetadata_default1", ConsumerMetadata.class);
 		Assert.assertNotNull(cm);
+		final ConsumerMetadata<K,V> cm2 = appContext.getBean("consumerMetadata_default2", ConsumerMetadata.class);
+		Assert.assertNotNull(cm2);
 	}
 }
