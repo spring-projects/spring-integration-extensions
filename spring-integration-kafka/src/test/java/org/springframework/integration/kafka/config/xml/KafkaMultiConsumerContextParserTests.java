@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,45 +15,40 @@
  */
 package org.springframework.integration.kafka.config.xml;
 
-import static org.junit.Assert.*;
-
-import kafka.consumer.Blacklist;
-import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.integration.kafka.support.ConsumerConfiguration;
 import org.springframework.integration.kafka.support.ConsumerMetadata;
 import org.springframework.integration.kafka.support.KafkaConsumerContext;
-import org.springframework.integration.kafka.support.TopicFilterConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * @author Soby Chacko
- * @author Artem Bilan
- * @since 0.5
+ * @author Ilayaperumal Gopinathan
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class KafkaConsumerContextParserTests<K, V> {
+public class KafkaMultiConsumerContextParserTests<K,V> {
 
 	@Autowired
 	private ApplicationContext appContext;
-
-	@Test
+	
 	@SuppressWarnings("unchecked")
-	public void testConsumerContextConfiguration() {
-		final KafkaConsumerContext<K, V> consumerContext =
-				appContext.getBean("consumerContext", KafkaConsumerContext.class);
-		assertNotNull(consumerContext);
-
-		ConsumerMetadata<K, V> cm = appContext.getBean(ConsumerMetadata.class);
-		assertNotNull(cm);
-		TopicFilterConfiguration topicFilterConfiguration = cm.getTopicFilterConfiguration();
-		assertEquals("foo : 10", topicFilterConfiguration.toString());
-		assertThat(topicFilterConfiguration.getTopicFilter(), Matchers.instanceOf(Blacklist.class));
+	@Test
+	public void testConsumerContextConfigurations() {
+		final KafkaConsumerContext<K,V> consumerContext = appContext.getBean("consumerContext", KafkaConsumerContext.class);
+		Assert.assertNotNull(consumerContext);
+		final ConsumerConfiguration<K,V> cc = appContext.getBean("default1", ConsumerConfiguration.class);
+		final ConsumerMetadata<K,V> cm = cc.getConsumerMetadata();
+		Assert.assertTrue(cm.getTopicStreamMap().get("test1") == 3);
+		Assert.assertTrue(cm.getTopicStreamMap().get("test2") == 4);
+		Assert.assertNotNull(cm);
+		final ConsumerConfiguration<K,V> cc2 = appContext.getBean("default2", ConsumerConfiguration.class);
+		final ConsumerMetadata<K,V> cm2 = cc2.getConsumerMetadata();
+		Assert.assertTrue(cm2.getTopicStreamMap().get("test3") == 1);
+		Assert.assertNotNull(cm2);
 	}
-
 }
