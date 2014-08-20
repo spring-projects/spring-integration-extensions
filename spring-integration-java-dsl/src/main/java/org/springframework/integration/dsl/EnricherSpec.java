@@ -129,7 +129,9 @@ public class EnricherSpec extends MessageHandlerSpec<EnricherSpec, ContentEnrich
 	@Override
 	protected ContentEnricher doGet() {
 		this.enricher.setPropertyExpressions(this.propertyExpressions);
-		this.enricher.setHeaderExpressions(this.headerExpressions);
+		if(!this.headerExpressions.isEmpty()) {
+			this.enricher.setHeaderExpressions(this.headerExpressions);
+		}
 		return this.enricher;
 	}
 
