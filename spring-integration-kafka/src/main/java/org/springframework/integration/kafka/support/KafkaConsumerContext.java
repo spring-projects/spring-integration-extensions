@@ -15,16 +15,11 @@
  */
 package org.springframework.integration.kafka.support;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.integration.kafka.core.KafkaConsumerDefaults;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
@@ -35,26 +30,15 @@ import org.springframework.util.CollectionUtils;
  * @author Ilayaperumal Gopinathan
  * @since 0.5
  */
-public class KafkaConsumerContext<K,V>  implements BeanFactoryAware, DisposableBean {
+public class KafkaConsumerContext<K,V> implements DisposableBean {
 	private Map<String, ConsumerConfiguration<K,V>> consumerConfigurations;
 	private String consumerTimeout = KafkaConsumerDefaults.CONSUMER_TIMEOUT;
 	private ZookeeperConnect zookeeperConnect;
 
-	public Collection<ConsumerConfiguration<K,V>> getConsumerConfigurations() {
-		return consumerConfigurations.values();
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
-		consumerConfigurations = (Map<String, ConsumerConfiguration<K,V>>)
-				(Object) ((ListableBeanFactory) beanFactory).getBeansOfType(ConsumerConfiguration.class);
-	}
-
 	public Message<Map<String, Map<Integer, List<Object>>>> receive() {
 		final Map<String, Map<Integer, List<Object>>> consumedData = new HashMap<String, Map<Integer, List<Object>>>();
 
-		for (final ConsumerConfiguration<K,V> consumerConfiguration : getConsumerConfigurations()) {
+		for (final ConsumerConfiguration<K,V> consumerConfiguration : getConsumerConfigurations().values()) {
 			final Map<String, Map<Integer, List<Object>>> messages = consumerConfiguration.receive();
 
 			if (!CollectionUtils.isEmpty(messages)){
@@ -78,6 +62,18 @@ public class KafkaConsumerContext<K,V>  implements BeanFactoryAware, DisposableB
 
 	public void setZookeeperConnect(final ZookeeperConnect zookeeperConnect) {
 		this.zookeeperConnect = zookeeperConnect;
+	}
+
+	public Map<String, ConsumerConfiguration<K,V>> getConsumerConfigurations() {
+		return this.consumerConfigurations;
+	}
+
+	public ConsumerConfiguration<K,V> getConsumerConfiguration(String groupId) {
+		return (consumerConfigurations.get(groupId) != null) ? consumerConfigurations.get(groupId) : null;
+	}
+
+	public void setConsumerConfigurations(Map<String, ConsumerConfiguration<K,V>> consumerConfigurations) {
+		this.consumerConfigurations = consumerConfigurations;
 	}
 
 	@Override

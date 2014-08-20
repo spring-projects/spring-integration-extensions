@@ -44,9 +44,7 @@ public class KafkaConsumerContextTest<K,V> {
 		map.put("config1", consumerConfiguration1);
 		map.put("config2", consumerConfiguration2);
 
-		Mockito.when((Map<String, ConsumerConfiguration<K,V>>) (Object) beanFactory.getBeansOfType(ConsumerConfiguration.class)).thenReturn(
-				map);
-		kafkaConsumerContext.setBeanFactory(beanFactory);
+		kafkaConsumerContext.setConsumerConfigurations(map);
 
 		final Map<String, Map<Integer, List<Object>>> result1 = new HashMap<String, Map<Integer, List<Object>>>();
 		final List<Object> l1 = new ArrayList<Object>();
