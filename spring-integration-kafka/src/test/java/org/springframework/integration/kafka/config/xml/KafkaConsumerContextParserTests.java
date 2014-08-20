@@ -18,9 +18,6 @@ package org.springframework.integration.kafka.config.xml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-
-import java.util.Map;
-
 import kafka.consumer.Blacklist;
 
 import org.hamcrest.Matchers;
@@ -53,8 +50,7 @@ public class KafkaConsumerContextParserTests<K, V> {
 	public void testConsumerContextConfiguration() {
 		final KafkaConsumerContext<K,V> consumerContext = appContext.getBean("consumerContext", KafkaConsumerContext.class);
 		Assert.assertNotNull(consumerContext);
-		Map<String, ConsumerConfiguration<K,V>> consumerConfigurations = consumerContext.getConsumerConfigurations();
-		ConsumerConfiguration<K,V> cc = consumerConfigurations.get("default1");
+		ConsumerConfiguration<K,V> cc = consumerContext.getConsumerConfiguration("default1");
 		ConsumerMetadata<K, V> cm = cc.getConsumerMetadata();
 		assertNotNull(cm);
 		TopicFilterConfiguration topicFilterConfiguration = cm.getTopicFilterConfiguration();

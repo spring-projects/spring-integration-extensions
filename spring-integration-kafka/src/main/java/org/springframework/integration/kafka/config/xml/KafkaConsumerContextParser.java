@@ -22,10 +22,9 @@ import java.util.Map;
 
 import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.config.PlaceholderConfigurerSupport;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -138,12 +137,7 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 			consumerConfigurationBuilder.addConstructorArgValue(messageLeftOverBeanDefinition);
 
 			final AbstractBeanDefinition consumerConfigurationBeanDefinition = consumerConfigurationBuilder.getBeanDefinition();
-			String id = consumerConfiguration.getAttribute(ID_ATTRIBUTE);
-			String groupId = consumerConfiguration.getAttribute("group-id");
-			final String consumerConfigurationBeanName = (!StringUtils.hasText(id) && (StringUtils.hasText(groupId) &&
-					!groupId.startsWith(PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_PREFIX))) ?
-					groupId : resolveId(consumerConfiguration, consumerConfigurationBeanDefinition, parserContext);
-			consumerConfigurationsMap.put(consumerConfigurationBeanName, new BeanDefinitionHolder(consumerConfigurationBeanDefinition, consumerConfigurationBeanName));
+			consumerConfigurationsMap.put(consumerConfiguration.getAttribute("group-id"), new GenericBeanDefinition(consumerConfigurationBeanDefinition));
 		}
 		builder.addPropertyValue("consumerConfigurations", consumerConfigurationsMap);
 	}

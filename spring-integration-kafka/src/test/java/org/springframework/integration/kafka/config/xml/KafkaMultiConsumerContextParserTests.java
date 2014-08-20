@@ -15,8 +15,6 @@
  */
 package org.springframework.integration.kafka.config.xml;
 
-import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,21 +35,34 @@ public class KafkaMultiConsumerContextParserTests<K,V> {
 
 	@Autowired
 	private ApplicationContext appContext;
-	
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testMultiConsumerContexts() {
+		final KafkaConsumerContext<K,V> consumerContext1 = appContext.getBean("consumerContext1", KafkaConsumerContext.class);
+		Assert.assertNotNull(consumerContext1);
+		final KafkaConsumerContext<K,V> consumerContext2 = appContext.getBean("consumerContext2", KafkaConsumerContext.class);
+		Assert.assertNotNull(consumerContext2);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testConsumerContextConfigurations() {
-		final KafkaConsumerContext<K,V> consumerContext = appContext.getBean("consumerContext", KafkaConsumerContext.class);
+		final KafkaConsumerContext<K,V> consumerContext = appContext.getBean("consumerContext1", KafkaConsumerContext.class);
 		Assert.assertNotNull(consumerContext);
-		Map<String, ConsumerConfiguration<K,V>> consumerConfigurations = consumerContext.getConsumerConfigurations();
-		final ConsumerConfiguration<K,V> cc = consumerConfigurations.get("default1");
+		final ConsumerConfiguration<K,V> cc = consumerContext.getConsumerConfiguration("default1");
 		final ConsumerMetadata<K,V> cm = cc.getConsumerMetadata();
 		Assert.assertTrue(cm.getTopicStreamMap().get("test1") == 3);
 		Assert.assertTrue(cm.getTopicStreamMap().get("test2") == 4);
 		Assert.assertNotNull(cm);
-		final ConsumerConfiguration<K,V> cc2 = consumerConfigurations.get("default2");
+		final ConsumerConfiguration<K,V> cc2 =  consumerContext.getConsumerConfiguration("default2");
 		final ConsumerMetadata<K,V> cm2 = cc2.getConsumerMetadata();
 		Assert.assertTrue(cm2.getTopicStreamMap().get("test3") == 1);
 		Assert.assertNotNull(cm2);
+		final KafkaConsumerContext<K,V> consumerContext2 = appContext.getBean("consumerContext2", KafkaConsumerContext.class);
+		Assert.assertNotNull(consumerContext2);
+		final ConsumerConfiguration<K,V> otherCC = consumerContext2.getConsumerConfiguration("default1");
+		final ConsumerMetadata<K,V> otherCM = otherCC.getConsumerMetadata();
+		Assert.assertTrue(otherCM.getTopicStreamMap().get("test4") == 3);
 	}
 }
