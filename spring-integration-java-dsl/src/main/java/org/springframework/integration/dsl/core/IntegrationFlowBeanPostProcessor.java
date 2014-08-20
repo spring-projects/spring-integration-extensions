@@ -31,6 +31,7 @@ import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.config.ConsumerEndpointFactoryBean;
 import org.springframework.integration.config.IntegrationConfigUtils;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
+import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec;
 import org.springframework.integration.dsl.support.MessageChannelReference;
@@ -132,12 +133,25 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 					}
 					else if (component instanceof SourcePollingChannelAdapterSpec) {
 						SourcePollingChannelAdapterSpec spec = (SourcePollingChannelAdapterSpec) component;
-						String id = ((IntegrationComponentSpec) spec).getId();
 						SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean = spec.get().getT1();
+						String id = ((IntegrationComponentSpec) spec).getId();
 						if (!StringUtils.hasText(id)) {
 							id = generateBeanName(pollingChannelAdapterFactoryBean);
 						}
 						registerComponent(pollingChannelAdapterFactoryBean, id);
+
+						MessageSource<?> messageSource = spec.get().getT2();
+						if (!this.beanFactory
+								.getBeansOfType(MessageSource.class, false, false)
+								.values()
+								.contains(messageSource)) {
+							String messageSourceId = id + ".source";
+							if (messageSource instanceof NamedComponent
+									&& ((NamedComponent) messageSource).getComponentName() != null) {
+								messageSourceId = ((NamedComponent) messageSource).getComponentName();
+							}
+							registerComponent(messageSource, messageSourceId);
+						}
 					}
 					else if (!this.beanFactory
 							.getBeansOfType(AopUtils.getTargetClass(component), false, false)

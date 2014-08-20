@@ -77,7 +77,7 @@ public class FileWritingMessageHandlerSpec
 				"'fileNameGenerator' and 'fileNameGeneratorExpression' are mutually exclusive.");
 		this.defaultFileNameGenerator = new DefaultFileNameGenerator();
 		this.defaultFileNameGenerator.setExpression(fileNameGeneratorExpression);
-		return _this();
+		return fileNameGenerator(this.defaultFileNameGenerator);
 	}
 
 
