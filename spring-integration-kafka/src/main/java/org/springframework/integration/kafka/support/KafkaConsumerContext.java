@@ -69,13 +69,7 @@ public class KafkaConsumerContext<K,V> implements DisposableBean {
 	}
 
 	public ConsumerConfiguration<K,V> getConsumerConfiguration(String groupId) {
-		for (final ConsumerConfiguration<K,V> consumerConfiguration : getConsumerConfigurations().values()) {
-			if (consumerConfiguration.getConsumerMetadata() != null &&
-					consumerConfiguration.getConsumerMetadata().getGroupId().equals(groupId)) {
-				return consumerConfiguration;
-			}
-		}
-		return null;
+		return (consumerConfigurations.get(groupId) != null) ? consumerConfigurations.get(groupId) : null;
 	}
 
 	public void setConsumerConfigurations(Map<String, ConsumerConfiguration<K,V>> consumerConfigurations) {
