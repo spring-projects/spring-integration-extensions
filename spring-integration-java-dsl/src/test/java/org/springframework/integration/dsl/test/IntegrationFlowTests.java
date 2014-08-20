@@ -150,6 +150,7 @@ import de.flapdoodle.embed.process.runtime.Network;
 
 /**
  * @author Artem Bilan
+ * @author Tim Ysewyn
  */
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -229,6 +230,14 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("enricherInput")
 	private FixedSubscriberChannel enricherInput;
+
+	@Autowired
+	@Qualifier("enricherInput2")
+	private FixedSubscriberChannel enricherInput2;
+
+	@Autowired
+	@Qualifier("enricherInput3")
+	private FixedSubscriberChannel enricherInput3;
 
 	@Autowired
 	@Qualifier("splitInput")
@@ -560,6 +569,41 @@ public class IntegrationFlowTests {
 		assertEquals("Bar Bar", result.getName());
 		assertNotNull(result.getDate());
 		assertThat(new Date(), Matchers.greaterThanOrEqualTo(result.getDate()));
+	}
+
+	@Test
+	public void testContentEnricher2() {
+		QueueChannel replyChannel = new QueueChannel();
+		Message<?> message = MessageBuilder.withPayload(new TestPojo("Bar"))
+				.setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel)
+				.build();
+		this.enricherInput2.send(message);
+		Message<?> receive = replyChannel.receive(5000);
+		assertNotNull(receive);
+		assertNull(receive.getHeaders().get("foo"));
+		Object payload = receive.getPayload();
+		assertThat(payload, instanceOf(TestPojo.class));
+		TestPojo result = (TestPojo) payload;
+		assertEquals("Bar Bar", result.getName());
+		assertNotNull(result.getDate());
+		assertThat(new Date(), Matchers.greaterThanOrEqualTo(result.getDate()));
+	}
+
+	@Test
+	public void testContentEnricher3() {
+		QueueChannel replyChannel = new QueueChannel();
+		Message<?> message = MessageBuilder.withPayload(new TestPojo("Bar"))
+				.setHeader(MessageHeaders.REPLY_CHANNEL, replyChannel)
+				.build();
+		this.enricherInput3.send(message);
+		Message<?> receive = replyChannel.receive(5000);
+		assertNotNull(receive);
+		assertEquals("Bar Bar", receive.getHeaders().get("foo"));
+		Object payload = receive.getPayload();
+		assertThat(payload, instanceOf(TestPojo.class));
+		TestPojo result = (TestPojo) payload;
+		assertEquals("Bar", result.getName());
+		assertNull(result.getDate());
 	}
 
 	@Test
@@ -1399,6 +1443,31 @@ public class IntegrationFlowTests {
 									.shouldClonePayload(false)
 									.propertyExpression("name", "payload['name']")
 									.propertyExpression("date", "new java.util.Date()")
+									.headerExpression("foo", "payload['name']")
+					)
+					.get();
+		}
+
+		@Bean
+		@DependsOn("enrichFlow")
+		public IntegrationFlow enricherFlow2() {
+			return IntegrationFlows.fromFixedMessageChannel("enricherInput2")
+					.enrich(e -> e.requestChannel("enrichChannel")
+									.requestPayloadExpression("payload")
+									.shouldClonePayload(false)
+									.propertyExpression("name", "payload['name']")
+									.propertyExpression("date", "new java.util.Date()")
+					)
+					.get();
+		}
+
+		@Bean
+		@DependsOn("enrichFlow")
+		public IntegrationFlow enricherFlow3() {
+			return IntegrationFlows.fromFixedMessageChannel("enricherInput3")
+					.enrich(e -> e.requestChannel("enrichChannel")
+									.requestPayloadExpression("payload")
+									.shouldClonePayload(false)
 									.headerExpression("foo", "payload['name']")
 					)
 					.get();
