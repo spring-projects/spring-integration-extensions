@@ -20,11 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.PlaceholderConfigurerSupport;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
@@ -63,6 +65,7 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 
 	private void parseConsumerConfigurations(final Element consumerConfigurations, final ParserContext parserContext,
 			final BeanDefinitionBuilder builder, final Element parentElem) {
+		Map<String, BeanMetadataElement> consumerConfigurationsMap = new ManagedMap<String, BeanMetadataElement>();
 		for (final Element consumerConfiguration : DomUtils.getChildElementsByTagName(consumerConfigurations, "consumer-configuration")) {
 			final BeanDefinitionBuilder consumerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfiguration.class);
 			final BeanDefinitionBuilder consumerMetadataBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerMetadata.class);
@@ -101,9 +104,7 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 				consumerMetadataBuilder.addPropertyValue("topicFilterConfiguration", topicFilterConfigurationBeanDefinition);
 			}
 
-			final AbstractBeanDefinition consumerMetadataBeanDef = consumerMetadataBuilder.getBeanDefinition();
-			final String consumerMetadataBeanName = generateBeanName(parserContext, consumerMetadataBeanDef);
-			registerBeanDefinition(new BeanDefinitionHolder(consumerMetadataBeanDef, consumerMetadataBeanName), parserContext.getRegistry());
+			final AbstractBeanDefinition consumerMetadataBeanDefintiion = consumerMetadataBuilder.getBeanDefinition();
 
 			final String zookeeperConnectBean = parentElem.getAttribute("zookeeper-connect");
 			IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, parentElem, zookeeperConnectBean);
@@ -111,7 +112,7 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 			final String consumerPropertiesBean = parentElem.getAttribute("consumer-properties");
 
 			final BeanDefinitionBuilder consumerConfigFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConfigFactoryBean.class);
-			consumerConfigFactoryBuilder.addConstructorArgReference(consumerMetadataBeanName);
+			consumerConfigFactoryBuilder.addConstructorArgValue(consumerMetadataBeanDefintiion);
 
 			if (StringUtils.hasText(zookeeperConnectBean)) {
 				consumerConfigFactoryBuilder.addConstructorArgReference(zookeeperConnectBean);
@@ -122,44 +123,28 @@ public class KafkaConsumerContextParser extends AbstractSingleBeanDefinitionPars
 			}
 
 			final AbstractBeanDefinition consumerConfigFactoryBuilderBeanDefinition = consumerConfigFactoryBuilder.getBeanDefinition();
-			final String consumerConfigFactoryBeanName = generateBeanName(parserContext,consumerConfigFactoryBuilderBeanDefinition);
-			registerBeanDefinition(new BeanDefinitionHolder(consumerConfigFactoryBuilderBeanDefinition, consumerConfigFactoryBeanName), parserContext.getRegistry());
 
 			final BeanDefinitionBuilder consumerConnectionProviderBuilder = BeanDefinitionBuilder.genericBeanDefinition(ConsumerConnectionProvider.class);
-			consumerConnectionProviderBuilder.addConstructorArgReference(consumerConfigFactoryBeanName);
+			consumerConnectionProviderBuilder.addConstructorArgValue(consumerConfigFactoryBuilderBeanDefinition);
 
 			final AbstractBeanDefinition consumerConnectionProviderBuilderBeanDefinition = consumerConnectionProviderBuilder.getBeanDefinition();
-			final String consumerConnectionProviderBeanName = generateBeanName(parserContext, consumerConnectionProviderBuilderBeanDefinition);
-			registerBeanDefinition(new BeanDefinitionHolder(consumerConnectionProviderBuilderBeanDefinition, consumerConnectionProviderBeanName), parserContext.getRegistry());
 
 
 			final BeanDefinitionBuilder messageLeftOverBeanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(MessageLeftOverTracker.class);
 			final AbstractBeanDefinition messageLeftOverBeanDefinition = messageLeftOverBeanDefinitionBuilder.getBeanDefinition();
-			final String messageLeftOverBeanDefinitionBeanName = generateBeanName(parserContext, messageLeftOverBeanDefinition);
-			registerBeanDefinition(new BeanDefinitionHolder(messageLeftOverBeanDefinition, messageLeftOverBeanDefinitionBeanName),
-					parserContext.getRegistry());
 
-			consumerConfigurationBuilder.addConstructorArgReference(consumerMetadataBeanName);
-			consumerConfigurationBuilder.addConstructorArgReference(consumerConnectionProviderBeanName);
-			consumerConfigurationBuilder.addConstructorArgReference(messageLeftOverBeanDefinitionBeanName);
+			consumerConfigurationBuilder.addConstructorArgValue(consumerMetadataBeanDefintiion);
+			consumerConfigurationBuilder.addConstructorArgValue(consumerConnectionProviderBuilderBeanDefinition);
+			consumerConfigurationBuilder.addConstructorArgValue(messageLeftOverBeanDefinition);
 
 			final AbstractBeanDefinition consumerConfigurationBeanDefinition = consumerConfigurationBuilder.getBeanDefinition();
+			String id = consumerConfiguration.getAttribute(ID_ATTRIBUTE);
 			String groupId = consumerConfiguration.getAttribute("group-id");
-			final String consumerConfigurationBeanName = (StringUtils.hasText(groupId) && !groupId.startsWith(PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_PREFIX)) ?
-					groupId : generateBeanName(parserContext, consumerConfigurationBeanDefinition);
-			registerBeanDefinition(new BeanDefinitionHolder(consumerConfigurationBeanDefinition, consumerConfigurationBeanName),
-					parserContext.getRegistry());
+			final String consumerConfigurationBeanName = (!StringUtils.hasText(id) && (StringUtils.hasText(groupId) &&
+					!groupId.startsWith(PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_PREFIX))) ?
+					groupId : resolveId(consumerConfiguration, consumerConfigurationBeanDefinition, parserContext);
+			consumerConfigurationsMap.put(consumerConfigurationBeanName, new BeanDefinitionHolder(consumerConfigurationBeanDefinition, consumerConfigurationBeanName));
 		}
-	}
-
-	/**
-	 * Generate bean name for the given abstract bean definition.
-	 *
-	 * @param parserContext the parser context
-	 * @param beanDefinition the abstract bean definition
-	 * @return generated bean name
-	 */
-	private String generateBeanName(ParserContext parserContext, AbstractBeanDefinition beanDefinition) {
-		return parserContext.getReaderContext().generateBeanName(beanDefinition);
+		builder.addPropertyValue("consumerConfigurations", consumerConfigurationsMap);
 	}
 }
