@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.dsl.test;
+package org.springframework.integration.dsl.test.mail;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -37,7 +37,7 @@ import org.apache.sshd.common.util.Base64;
  */
 public class PoorMansMailServer {
 
-	public SmtpServer smtp(int port) {
+	public static SmtpServer smtp(int port) {
 		try {
 			return new SmtpServer(port);
 		}
@@ -46,7 +46,7 @@ public class PoorMansMailServer {
 		}
 	}
 
-	public class SmtpServer implements Runnable {
+	public static class SmtpServer implements Runnable {
 
 		private final ServerSocket socket;
 
@@ -112,7 +112,6 @@ public class PoorMansMailServer {
 					write("220 foo SMTP");
 					while (!socket.isClosed()) {
 						String line = reader.readLine();
-//						System.out.println(line);
 						if (line.contains("EHLO")) {
 							write("250-foo hello [0,0,0,0], foo");
 							write("250-AUTH LOGIN PLAIN");
@@ -170,6 +169,9 @@ public class PoorMansMailServer {
 
 		}
 
+	}
+
+	private PoorMansMailServer() {
 	}
 
 }

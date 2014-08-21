@@ -15,7 +15,7 @@
  */
 package org.springframework.integration.dsl.mail;
 
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.integration.dsl.support.PropertiesBuilder;
 
 /**
  * @author Gary Russell
@@ -23,16 +23,12 @@ import org.springframework.mail.javamail.JavaMailSender;
  */
 public class Mail {
 
-	public static JavaMailPropertiesBuilder properties() {
-		return new JavaMailPropertiesBuilder();
+	public static PropertiesBuilder properties() {
+		return new PropertiesBuilder();
 	}
 
-	public static JavaMailSenderBuilder mailsender() {
-		return new JavaMailSenderBuilder();
-	}
-
-	public static MailSendingMessageHandlerSpec outboundAdapter(JavaMailSender sender) {
-		return new MailSendingMessageHandlerSpec(sender);
+	public static MailSendingMessageHandlerSpec outboundAdapter(String host) {
+		return new MailSendingMessageHandlerSpec().host(host);
 	}
 
 }

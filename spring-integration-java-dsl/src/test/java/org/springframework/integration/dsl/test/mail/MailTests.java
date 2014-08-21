@@ -24,8 +24,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import org.springframework.integration.dsl.mail.Mail;
-import org.springframework.integration.dsl.test.PoorMansMailServer;
-import org.springframework.integration.dsl.test.PoorMansMailServer.SmtpServer;
+import org.springframework.integration.dsl.test.mail.PoorMansMailServer.SmtpServer;
 import org.springframework.integration.mail.MailHeaders;
 import org.springframework.integration.mail.MailSendingMessageHandler;
 import org.springframework.integration.support.MessageBuilder;
@@ -41,18 +40,16 @@ public class MailTests {
 	@Test
 	public void testOutbound() throws Exception {
 		int port = SocketUtils.findAvailableTcpPort();
-		SmtpServer server = new PoorMansMailServer().smtp(port);
+		SmtpServer server = PoorMansMailServer.smtp(port);
 		MailSendingMessageHandler handler =
-				Mail.outboundAdapter(Mail.mailsender()
-						.setHost("localhost")
-						.setPort(port)
-						.setUsername("user")
-						.setPassword("pw")
-						.setProtocol("smtp")
-						.setJavaMailProperties(Mail.properties()
+				Mail.outboundAdapter("localhost")
+						.port(port)
+						.username("user")
+						.password("pw")
+						.protocol("smtp")
+						.javaMailProperties(Mail.properties()
 								.put("mail.debug", "true")
 								.get())
-							.get())
 						.get();
 		assertEquals("localhost", TestUtils.getPropertyValue(handler, "mailSender.host"));
 		int n = 0;

@@ -15,9 +15,13 @@
  */
 package org.springframework.integration.dsl.mail;
 
+import java.util.Properties;
+
+import javax.activation.FileTypeMap;
+
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.mail.MailSendingMessageHandler;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 /**
  * @author Gary Russell
@@ -26,8 +30,50 @@ import org.springframework.mail.javamail.JavaMailSender;
 public class MailSendingMessageHandlerSpec extends
 		MessageHandlerSpec<MailSendingMessageHandlerSpec, MailSendingMessageHandler> {
 
-	protected MailSendingMessageHandlerSpec (JavaMailSender sender) {
-		this.target = new MailSendingMessageHandler(sender);
+	private final JavaMailSenderImpl sender = new JavaMailSenderImpl();
+
+	protected MailSendingMessageHandlerSpec () {
+		this.target = new MailSendingMessageHandler(this.sender);
+	}
+
+	public MailSendingMessageHandlerSpec javaMailProperties(Properties javaMailProperties) {
+		this.sender.setJavaMailProperties(javaMailProperties);
+		return this;
+	}
+
+	public MailSendingMessageHandlerSpec protocol(String protocol) {
+		this.sender.setProtocol(protocol);
+		return this;
+	}
+
+	public MailSendingMessageHandlerSpec host(String host) {
+		this.sender.setHost(host);
+		return this;
+	}
+
+	public MailSendingMessageHandlerSpec port(int port) {
+		this.sender.setPort(port);
+		return this;
+	}
+
+	public MailSendingMessageHandlerSpec username(String username) {
+		this.sender.setUsername(username);
+		return this;
+	}
+
+	public MailSendingMessageHandlerSpec password(String password) {
+		this.sender.setPassword(password);
+		return this;
+	}
+
+	public MailSendingMessageHandlerSpec defaultEncoding(String defaultEncoding) {
+		this.sender.setDefaultEncoding(defaultEncoding);
+		return this;
+	}
+
+	public MailSendingMessageHandlerSpec defaultFileTypeMap(FileTypeMap defaultFileTypeMap) {
+		this.sender.setDefaultFileTypeMap(defaultFileTypeMap);
+		return this;
 	}
 
 	@Override

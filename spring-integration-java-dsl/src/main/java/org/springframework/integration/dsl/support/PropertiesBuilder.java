@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.dsl.mail;
+package org.springframework.integration.dsl.support;
 
 import java.util.Properties;
 
@@ -22,11 +22,11 @@ import java.util.Properties;
  * @author Gary Russell
  *
  */
-public class JavaMailPropertiesBuilder {
+public class PropertiesBuilder {
 
 	private final Properties properties = new Properties();
 
-	public JavaMailPropertiesBuilder put(Object key, Object value) {
+	public PropertiesBuilder put(Object key, Object value) {
 		properties.put(key, value);
 		return this;
 	}
