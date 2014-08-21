@@ -30,6 +30,7 @@ ext {
 	ftpServerVersion = '1.0.6'
 	jacocoVersion = '0.7.1.201405082137'
 	jmsApiVersion = '1.1-rev-1'
+	mailVersion = '1.4.7'
 	slf4jVersion = '1.7.7'
 	springIntegrationVersion = '4.0.3.RELEASE'
 	springBootVersion = '1.1.5.RELEASE'
@@ -78,12 +79,15 @@ dependencies {
 		compile("org.springframework.integration:$it:$springIntegrationVersion", optional)
 	}
 	compile ("javax.jms:jms-api:$jmsApiVersion", provided)
+	compile ("javax.mail:javax.mail-api:$mailVersion", provided)
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embedMongoVersion"
 	testCompile "org.apache.ftpserver:ftpserver-core:$ftpServerVersion"
 	testCompile "org.apache.sshd:sshd-core:$apacheSshdVersion"
 	testCompile "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
+	testCompile "com.sun.mail:mailapi:$mailVersion"
+	testCompile "com.sun.mail:smtp:$mailVersion"
 
 	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
 	testRuntime("org.apache.activemq:activemq-broker:$activeMqVersion")
