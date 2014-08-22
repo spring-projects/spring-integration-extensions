@@ -18,10 +18,14 @@ package org.springframework.integration.dsl.test.mail;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
+
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,13 +39,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.mail.Mail;
+import org.springframework.integration.dsl.support.Pollers;
+import org.springframework.integration.dsl.test.mail.PoorMansMailServer.ImapServer;
+import org.springframework.integration.dsl.test.mail.PoorMansMailServer.Pop3Server;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.SmtpServer;
 import org.springframework.integration.mail.MailHeaders;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.test.util.TestUtils;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -56,15 +66,23 @@ import org.springframework.util.SocketUtils;
 @DirtiesContext
 public class MailTests {
 
-	private final static int port = SocketUtils.findAvailableTcpPort();
+	private final static int smtpPort = SocketUtils.findAvailableTcpPort();
 
-	private static SmtpServer server = PoorMansMailServer.smtp(port);
+	private static SmtpServer smtpServer = PoorMansMailServer.smtp(smtpPort);
+
+	private final static int pop3Port = SocketUtils.findAvailableTcpPort(smtpPort + 1);
+
+	private static Pop3Server pop3Server = PoorMansMailServer.pop3(pop3Port);
+
+	private final static int imapPort = SocketUtils.findAvailableTcpPort(pop3Port + 1);
+
+	private static ImapServer imapServer = PoorMansMailServer.imap(imapPort);
 
 
 	@BeforeClass
 	public static void setup() throws InterruptedException {
 		int n = 0;
-		while (n++ < 100 && !server.isListening()) {
+		while (n++ < 100 && (!smtpServer.isListening() || !pop3Server.isListening() || !imapServer.isListening())) {
 			Thread.sleep(100);
 		}
 		assertTrue(n < 100);
@@ -72,7 +90,9 @@ public class MailTests {
 
 	@AfterClass
 	public static void tearDown() {
-		server.stop();
+		smtpServer.stop();
+		pop3Server.stop();
+		imapServer.stop();
 	}
 
 	@Autowired
@@ -82,6 +102,12 @@ public class MailTests {
 	@Autowired
 	@Qualifier("sendMailEndpoint.handler")
 	private MessageHandler sendMailHandler;
+
+	@Autowired
+	private PollableChannel pop3Channel;
+
+	@Autowired
+	private PollableChannel imapChannel;
 
 	@Test
 	public void testOutbound() throws Exception {
@@ -98,18 +124,40 @@ public class MailTests {
 				.build());
 
 		int n = 0;
-		while (n++ < 100 && server.getMessages().size() == 0) {
+		while (n++ < 100 && smtpServer.getMessages().size() == 0) {
 			Thread.sleep(100);
 		}
 
-		assertTrue(server.getMessages().size() > 0);
-		String message = server.getMessages().get(0);
+		assertTrue(smtpServer.getMessages().size() > 0);
+		String message = smtpServer.getMessages().get(0);
 		assertThat(message, endsWith("foo\n"));
 		assertThat(message, containsString("foo@bar"));
 		assertThat(message, containsString("bar@baz"));
 		assertThat(message, containsString("user:user"));
 		assertThat(message, containsString("password:pw"));
 
+	}
+
+	@Test
+	public void testPop3() throws Exception {
+		Message<?> message = pop3Channel.receive(10000);
+		assertNotNull(message);
+		MimeMessage mm = (MimeMessage) message.getPayload();
+		assertEquals("foo@bar", mm.getRecipients(RecipientType.TO)[0].toString());
+		assertEquals("bar@baz", mm.getFrom()[0].toString());
+		assertEquals("Test Email", mm.getSubject());
+		assertEquals("foo\r\n", mm.getContent());
+	}
+
+	@Test
+	public void testImap() throws Exception {
+		Message<?> message = imapChannel.receive(10000);
+		assertNotNull(message);
+		MimeMessage mm = (MimeMessage) message.getPayload();
+		assertEquals("foo@bar", mm.getRecipients(RecipientType.TO)[0].toString());
+		assertEquals("bar@baz", mm.getFrom()[0].toString());
+		assertEquals("Test Email", mm.getSubject());
+		assertEquals("foo\r\n", mm.getContent());
 	}
 
 	@Configuration
@@ -120,11 +168,41 @@ public class MailTests {
 		public IntegrationFlow sendMailFlow() {
 			return IntegrationFlows.from("sendMailChannel")
 					.handle(Mail.outboundAdapter("localhost")
-									.port(port)
+									.port(smtpPort)
 									.credentials("user", "pw")
 									.protocol("smtp")
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.id("sendMailEndpoint"))
+					.get();
+		}
+
+		@Bean
+		public MessageChannel pop3Channel() {
+			return MessageChannels.queue().get();
+		}
+
+		@Bean
+		public IntegrationFlow pop3MailFlow() {
+			return IntegrationFlows.from(Mail.pop3InboundAdapter("localhost", pop3Port, "user", "pw")
+							.javaMailProperties(p -> p.put("mail.debug", "true")),
+						e -> e.autoStartup(true)
+								.poller(Pollers.fixedDelay(1000)))
+					.channel(pop3Channel())
+					.get();
+		}
+
+		@Bean
+		public MessageChannel imapChannel() {
+			return MessageChannels.queue().get();
+		}
+
+		@Bean
+		public IntegrationFlow imapMailFlow() {
+			return IntegrationFlows.from(Mail.imapInboundAdapter("imap://user:pw@localhost:" + imapPort + "/INBOX")
+							.javaMailProperties(p -> p.put("mail.debug", "true")),
+						e -> e.autoStartup(true)
+								.poller(Pollers.fixedDelay(1000)))
+					.channel(imapChannel())
 					.get();
 		}
 
