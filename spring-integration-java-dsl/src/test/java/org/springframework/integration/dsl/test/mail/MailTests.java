@@ -35,7 +35,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.mail.Mail;
+import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.SmtpServer;
 import org.springframework.integration.mail.MailHeaders;
 import org.springframework.integration.support.MessageBuilder;
@@ -125,6 +127,36 @@ public class MailTests {
 									.protocol("smtp")
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.id("sendMailEndpoint"))
+					.get();
+		}
+
+		@Bean
+		public MessageChannel pop3Channel() {
+			return MessageChannels.queue().get();
+		}
+
+		@Bean
+		public IntegrationFlow pop3MailFlow() {
+			return IntegrationFlows.from(Mail.pop3InboundAdapter("localhost", 999, "user", "pw")
+							.javaMailProperties(p -> p.put("mail.debug", "true")),
+						e -> e.autoStartup(false)
+								.poller(Pollers.fixedDelay(1000)))
+					.channel(pop3Channel())
+					.get();
+		}
+
+		@Bean
+		public MessageChannel imapChannel() {
+			return MessageChannels.queue().get();
+		}
+
+		@Bean
+		public IntegrationFlow imapMailFlow() {
+			return IntegrationFlows.from(Mail.imapInboundAdapter("imap://localhost:143")
+							.javaMailProperties(p -> p.put("mail.debug", "true")),
+						e -> e.autoStartup(false)
+								.poller(Pollers.fixedDelay(1000)))
+					.channel(pop3Channel())
 					.get();
 		}
 
