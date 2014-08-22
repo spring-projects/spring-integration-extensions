@@ -46,69 +46,35 @@ public class PoorMansMailServer {
 		}
 	}
 
-	public static class SmtpServer implements Runnable {
+	public static Pop3Server pop3(int port) {
+		try {
+			return new Pop3Server(port);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-		private final ServerSocket socket;
-
-		private final ExecutorService exec = Executors.newCachedThreadPool();
-
-		private final List<String> messages = new ArrayList<String>();
-
-		private volatile boolean listening;
+	public static class SmtpServer extends MailServer {
 
 		public SmtpServer(int port) throws IOException {
-			this.socket = ServerSocketFactory.getDefault().createServerSocket(port);
-			this.listening = true;
-			exec.execute(this);
-		}
-
-		public boolean isListening() {
-			return listening;
-		}
-
-		public List<String> getMessages() {
-			return messages;
+			super(port);
 		}
 
 		@Override
-		public void run() {
-			try {
-				while (!socket.isClosed()) {
-					Socket socket = this.socket.accept();
-					exec.execute(new SmtpHandler(socket));
-				}
-			}
-			catch (IOException e) {
-				this.listening = false;
-			}
+		protected MailHandler mailHandler(Socket socket) {
+			return new SmtpHandler(socket);
 		}
 
-		public void stop() {
-			try {
-				this.socket.close();
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-			this.exec.shutdownNow();
-		}
-
-		public class SmtpHandler implements Runnable {
-
-			private final Socket socket;
-
-			private BufferedWriter writer;
+		public class SmtpHandler extends MailHandler {
 
 			public SmtpHandler(Socket socket) {
-				this.socket = socket;
+				super(socket);
 			}
 
 			@Override
-			public void run() {
+			void doRun() {
 				try {
-					StringBuilder sb = new StringBuilder();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-					this.writer = new BufferedWriter(new OutputStreamWriter(this.socket.getOutputStream()));
 					write("220 foo SMTP");
 					while (!socket.isClosed()) {
 						String line = reader.readLine();
@@ -160,12 +126,156 @@ public class PoorMansMailServer {
 				}
 			}
 
-			private void write(String str) throws IOException {
+		}
+
+	}
+
+	public static class Pop3Server extends MailServer {
+
+		public Pop3Server(int port) throws IOException {
+			super(port);
+		}
+
+		@Override
+		protected MailHandler mailHandler(Socket socket) {
+			return new Pop3Handler(socket);
+		}
+
+		public class Pop3Handler extends MailHandler {
+
+			public Pop3Handler(Socket socket) {
+				super(socket);
+			}
+
+			@Override
+			void doRun() {
+				try {
+					write("+OK POP3");
+					while (!socket.isClosed()) {
+						String line = reader.readLine();
+						if ("CAPA".equals(line)) {
+							write("+OK");
+							write("USER");
+							write(".");
+						}
+						else if ("USER user".equals(line)) {
+							write("+OK");
+						}
+						else if ("PASS pw".equals(line)) {
+							write("+OK");
+						}
+						else if ("STAT".equals(line)) {
+							write("+OK 1 3");
+						}
+						else if ("NOOP".equals(line)) {
+							write("+OK");
+						}
+						else if ("RETR 1".equals(line)) {
+							write("+OK");
+							write("To: foo@bar");
+							write("From: bar@baz");
+							write("Subject: Test Email");
+							write("");
+							write("foo");
+							write(".");
+						}
+						else if ("QUIT".equals(line)) {
+							write("+OK");
+							socket.close();
+						}
+					}
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+	}
+
+	public abstract static class MailServer implements Runnable {
+
+		private final ServerSocket socket;
+
+		private final ExecutorService exec = Executors.newCachedThreadPool();
+
+		protected final List<String> messages = new ArrayList<String>();
+
+		private volatile boolean listening;
+
+		public MailServer(int port) throws IOException {
+			this.socket = ServerSocketFactory.getDefault().createServerSocket(port);
+			this.listening = true;
+			exec.execute(this);
+		}
+
+		public boolean isListening() {
+			return listening;
+		}
+
+		public List<String> getMessages() {
+			return messages;
+		}
+
+		@Override
+		public void run() {
+			try {
+				while (!socket.isClosed()) {
+					Socket socket = this.socket.accept();
+					exec.execute(mailHandler(socket));
+				}
+			}
+			catch (IOException e) {
+				this.listening = false;
+			}
+		}
+
+		protected abstract MailHandler mailHandler(Socket socket);
+
+		public void stop() {
+			try {
+				this.socket.close();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			this.exec.shutdownNow();
+		}
+
+		public abstract class MailHandler implements Runnable {
+
+			protected final Socket socket;
+
+			private BufferedWriter writer;
+
+			protected StringBuilder sb = new StringBuilder();
+
+			protected BufferedReader reader;
+
+			public MailHandler(Socket socket) {
+				this.socket = socket;
+			}
+
+			@Override
+			public void run() {
+				try {
+					this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+					this.writer = new BufferedWriter(new OutputStreamWriter(this.socket.getOutputStream()));
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+				doRun();
+			}
+
+			protected void write(String str) throws IOException {
 				this.writer.write(str);
 				this.writer.write("\r\n");
 				this.writer.flush();
 			}
 
+			abstract void doRun();
 
 		}
 

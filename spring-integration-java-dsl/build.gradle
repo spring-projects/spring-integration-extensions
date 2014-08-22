@@ -94,6 +94,7 @@ dependencies {
 	}
 	testRuntime "com.sun.mail:mailapi:$mailVersion"
 	testRuntime "com.sun.mail:smtp:$mailVersion"
+	testRuntime "com.sun.mail:pop3:$mailVersion"
 
 	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }
