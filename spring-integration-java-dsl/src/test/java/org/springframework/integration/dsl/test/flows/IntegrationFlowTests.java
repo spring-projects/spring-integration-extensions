@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.test;
+package org.springframework.integration.dsl.test.flows;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
@@ -86,6 +86,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
@@ -114,6 +115,8 @@ import org.springframework.integration.dsl.jms.Jms;
 import org.springframework.integration.dsl.sftp.Sftp;
 import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.dsl.support.Transformers;
+import org.springframework.integration.dsl.test.TestFtpServer;
+import org.springframework.integration.dsl.test.TestSftpServer;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
@@ -1275,6 +1278,7 @@ public class IntegrationFlowTests {
 	}
 
 	@Configuration
+	@Import({TestFtpServer.class, TestSftpServer.class})
 	@EnableAutoConfiguration
 	@IntegrationComponentScan
 	public static class ContextConfiguration {
