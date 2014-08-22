@@ -55,6 +55,15 @@ public class PoorMansMailServer {
 		}
 	}
 
+	public static ImapServer imap(int port) {
+		try {
+			return new ImapServer(port);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static class SmtpServer extends MailServer {
 
 		public SmtpServer(int port) throws IOException {
@@ -172,16 +181,109 @@ public class PoorMansMailServer {
 						}
 						else if ("RETR 1".equals(line)) {
 							write("+OK");
-							write("To: foo@bar");
-							write("From: bar@baz");
-							write("Subject: Test Email");
-							write("");
-							write("foo");
+							write(MESSAGE);
 							write(".");
 						}
 						else if ("QUIT".equals(line)) {
 							write("+OK");
 							socket.close();
+						}
+					}
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+	}
+
+	public static class ImapServer extends MailServer {
+
+		public ImapServer(int port) throws IOException {
+			super(port);
+		}
+
+		@Override
+		protected MailHandler mailHandler(Socket socket) {
+			return new Pop3Handler(socket);
+		}
+
+		public class Pop3Handler extends MailHandler {
+
+			public Pop3Handler(Socket socket) {
+				super(socket);
+			}
+
+			@Override
+			void doRun() {
+				try {
+					write("* OK IMAP4rev1 Service Ready");
+					while (!socket.isClosed()) {
+						String line = reader.readLine();
+						if (line == null) {
+							break;
+						}
+						String tag = line.substring(0, line.indexOf(" ") + 1);
+						System.out.println(line);
+						if (line.endsWith("CAPABILITY")) {
+							write("* CAPABILITY IMAP4rev1");
+							write(tag + "OK CAPABILITY completed");
+						}
+						else if (line.endsWith("LOGIN user pw")) {
+							write(tag + "OK LOGIN completed");
+						}
+						else if (line.endsWith("LIST \"\" INBOX")) {
+							write("* LIST \"/\" \"\"");
+							write(tag + "OK LIST completed");
+						}
+						else if (line.endsWith("EXAMINE \"\"")) {
+							write("* 1 EXISTS");
+							write("* 1 RECENT");
+							write("* OK [UNSEEN 1]");
+							write(tag + "OK EXAMINE completed");
+						}
+						else if (line.endsWith("SEARCH NOT (FLAGGED) ALL")) {
+							write("* SEARCH 1 1");
+							write(tag + "OK SEARCH completed");
+						}
+						else if (line.contains("FETCH 1,1")) {
+							write("* 1 FETCH (RFC822.SIZE 6909 INTERNALDATE \"27-May-2013 09:45:41 +0000\" "
+									+ "FLAGS (\\Seen) "
+									+ "ENVELOPE (\"Mon, 27 May 2013 15:14:49 +0530\" "
+									+ "\"Test Email\" ((\"Foo\" NIL \"foo\" \"bar.tv\")) "
+									+ "((\"Foo\" NIL \"foo\" \"bar.tv\")) "
+									+ "((\"Foo\" NIL \"foo\" \"bar.tv\")) "
+									+ "((\"Bar\" NIL \"bar\" \"baz.net\")) NIL NIL "
+									+ "\"<4DA0A7E4.3010506@baz.net>\" "
+									+ "\"<CACVnpJkAUUfa3d_-4GNZW2WpxbB39tBCHC=T0gc7hty6dOEHcA@foo.bar.com>\") "
+									+ "BODYSTRUCTURE (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"ISO-8859-1\") NIL NIL \"7BIT\" 1176 43)))");
+							write(tag + "OK FETCH completed");
+						}
+						else if (line.contains("STORE 1 +FLAGS (\\Flagged)")) {
+							write("* 1 FETCH (FLAGS (\\Flagged))");
+							write(tag + "OK STORE completed");
+						}
+						else if (line.contains("STORE 1 +FLAGS (\\Seen)")) {
+							write("* 1 FETCH (FLAGS (\\Flagged \\Seen))");
+							write(tag + "OK STORE completed");
+						}
+						else if (line.contains("FETCH 1 FLAGS")) {
+							write("* 1 FLAGS(\\Seen)");
+							write(tag + "OK FETCH completed");
+						}
+						else if (line.contains("FETCH 1 (BODY.PEEK")) {
+							write("* 1 FETCH (BODY[]<0> {"+ (MESSAGE.length() + 2) + "}");
+							write(MESSAGE);
+							write(")");
+							write(tag + "OK FETCH completed");
+						}
+						else if (line.contains("CLOSE")) {
+							write(tag + "OK CLOSE completed");
+						}
+						else if (line.contains("NOOP")) {
+							write(tag + "OK NOOP completed");
 						}
 					}
 				}
@@ -244,6 +346,8 @@ public class PoorMansMailServer {
 		}
 
 		public abstract class MailHandler implements Runnable {
+
+			protected static final String MESSAGE = "To: foo@bar\r\nFrom: bar@baz\r\nSubject: Test Email\r\n\r\nfoo";
 
 			protected final Socket socket;
 

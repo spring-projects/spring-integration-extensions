@@ -24,20 +24,20 @@ import org.springframework.integration.mail.SearchTermStrategy;
  */
 public class ImapMailInboundChannelAdapterSpec extends MailInboundChannelAdapterSpec<ImapMailInboundChannelAdapterSpec, ImapMailReceiver> {
 
-	public ImapMailInboundChannelAdapterSpec() {
+	ImapMailInboundChannelAdapterSpec() {
 		this.receiver = new ImapMailReceiver();
 	}
 
-	public ImapMailInboundChannelAdapterSpec(String url) {
+	ImapMailInboundChannelAdapterSpec(String url) {
 		this.receiver = new ImapMailReceiver(url);
 	}
 
-	public ImapMailInboundChannelAdapterSpec setSearchTermStrategy(SearchTermStrategy searchTermStrategy) {
+	public ImapMailInboundChannelAdapterSpec searchTermStrategy(SearchTermStrategy searchTermStrategy) {
 		this.receiver.setSearchTermStrategy(searchTermStrategy);
 		return this;
 	}
 
-	public ImapMailInboundChannelAdapterSpec setShouldMarkMessagesAsRead(Boolean shouldMarkMessagesAsRead) {
+	public ImapMailInboundChannelAdapterSpec shouldMarkMessagesAsRead(boolean shouldMarkMessagesAsRead) {
 		this.receiver.setShouldMarkMessagesAsRead(shouldMarkMessagesAsRead);
 		return this;
 	}

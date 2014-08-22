@@ -20,7 +20,6 @@ import java.util.Properties;
 import javax.mail.Authenticator;
 import javax.mail.Session;
 
-import org.springframework.expression.Expression;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
 import org.springframework.integration.dsl.support.PropertiesConfigurer;
@@ -36,8 +35,8 @@ public abstract class MailInboundChannelAdapterSpec<S extends MailInboundChannel
 
 	protected volatile R receiver;
 
-	public S selectorExpression(Expression selectorExpression) {
-		this.receiver.setSelectorExpression(selectorExpression);
+	public S selectorExpression(String selectorExpression) {
+		this.receiver.setSelectorExpression(PARSER.parseExpression(selectorExpression));
 		return _this();
 	}
 

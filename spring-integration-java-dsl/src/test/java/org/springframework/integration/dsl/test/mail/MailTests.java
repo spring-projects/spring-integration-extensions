@@ -42,6 +42,7 @@ import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.mail.Mail;
 import org.springframework.integration.dsl.support.Pollers;
+import org.springframework.integration.dsl.test.mail.PoorMansMailServer.ImapServer;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.Pop3Server;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.SmtpServer;
 import org.springframework.integration.mail.MailHeaders;
@@ -73,11 +74,15 @@ public class MailTests {
 
 	private static Pop3Server pop3Server = PoorMansMailServer.pop3(pop3Port);
 
+	private final static int imapPort = SocketUtils.findAvailableTcpPort(pop3Port + 1);
+
+	private static ImapServer imapServer = PoorMansMailServer.imap(imapPort);
+
 
 	@BeforeClass
 	public static void setup() throws InterruptedException {
 		int n = 0;
-		while (n++ < 100 && (!smtpServer.isListening() || !pop3Server.isListening())) {
+		while (n++ < 100 && (!smtpServer.isListening() || !pop3Server.isListening() || !imapServer.isListening())) {
 			Thread.sleep(100);
 		}
 		assertTrue(n < 100);
@@ -87,6 +92,7 @@ public class MailTests {
 	public static void tearDown() {
 		smtpServer.stop();
 		pop3Server.stop();
+		imapServer.stop();
 	}
 
 	@Autowired
@@ -99,6 +105,9 @@ public class MailTests {
 
 	@Autowired
 	private PollableChannel pop3Channel;
+
+	@Autowired
+	private PollableChannel imapChannel;
 
 	@Test
 	public void testOutbound() throws Exception {
@@ -140,6 +149,17 @@ public class MailTests {
 		assertEquals("foo\r\n", mm.getContent());
 	}
 
+	@Test
+	public void testImap() throws Exception {
+		Message<?> message = imapChannel.receive(10000);
+		assertNotNull(message);
+		MimeMessage mm = (MimeMessage) message.getPayload();
+		assertEquals("foo@bar", mm.getRecipients(RecipientType.TO)[0].toString());
+		assertEquals("bar@baz", mm.getFrom()[0].toString());
+		assertEquals("Test Email", mm.getSubject());
+		assertEquals("foo\r\n", mm.getContent());
+	}
+
 	@Configuration
 	@EnableIntegration
 	public static class ContextConfiguration {
@@ -165,7 +185,8 @@ public class MailTests {
 		public IntegrationFlow pop3MailFlow() {
 			return IntegrationFlows.from(Mail.pop3InboundAdapter("localhost", pop3Port, "user", "pw")
 							.javaMailProperties(p -> p.put("mail.debug", "true")),
-						e -> e.poller(Pollers.fixedDelay(60000)))
+						e -> e.autoStartup(true)
+								.poller(Pollers.fixedDelay(1000)))
 					.channel(pop3Channel())
 					.get();
 		}
@@ -177,11 +198,11 @@ public class MailTests {
 
 		@Bean
 		public IntegrationFlow imapMailFlow() {
-			return IntegrationFlows.from(Mail.imapInboundAdapter("imap://localhost:143")
+			return IntegrationFlows.from(Mail.imapInboundAdapter("imap://user:pw@localhost:" + imapPort + "/INBOX")
 							.javaMailProperties(p -> p.put("mail.debug", "true")),
-						e -> e.autoStartup(false)
+						e -> e.autoStartup(true)
 								.poller(Pollers.fixedDelay(1000)))
-					.channel(pop3Channel())
+					.channel(imapChannel())
 					.get();
 		}
 
