@@ -29,8 +29,8 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
  * @author Gary Russell
  * @author Artem Bilan
  */
-public class MailSendingMessageHandlerSpec extends
-		MessageHandlerSpec<MailSendingMessageHandlerSpec, MailSendingMessageHandler> {
+public class MailSendingMessageHandlerSpec
+		extends MessageHandlerSpec<MailSendingMessageHandlerSpec, MailSendingMessageHandler> {
 
 	private final JavaMailSenderImpl sender = new JavaMailSenderImpl();
 

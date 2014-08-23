@@ -25,4 +25,25 @@ public class Mail {
 		return new MailSendingMessageHandlerSpec(host);
 	}
 
+	public static Pop3MailInboundChannelAdapterSpec pop3InboundAdapter() {
+		return new Pop3MailInboundChannelAdapterSpec();
+	}
+
+	public static Pop3MailInboundChannelAdapterSpec pop3InboundAdapter(String url) {
+		return new Pop3MailInboundChannelAdapterSpec(url);
+	}
+
+	public static Pop3MailInboundChannelAdapterSpec pop3InboundAdapter(String host, int port, String username,
+			String password) {
+		return new Pop3MailInboundChannelAdapterSpec(host, port, username, password);
+	}
+
+	public static ImapMailInboundChannelAdapterSpec imapInboundAdapter() {
+		return new ImapMailInboundChannelAdapterSpec();
+	}
+
+	public static ImapMailInboundChannelAdapterSpec imapInboundAdapter(String url) {
+		return new ImapMailInboundChannelAdapterSpec(url);
+	}
+
 }
