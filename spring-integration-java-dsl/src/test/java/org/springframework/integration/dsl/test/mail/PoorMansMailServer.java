@@ -209,12 +209,12 @@ public class PoorMansMailServer {
 
 		@Override
 		protected MailHandler mailHandler(Socket socket) {
-			return new Pop3Handler(socket);
+			return new ImapHandler(socket);
 		}
 
-		public class Pop3Handler extends MailHandler {
+		public class ImapHandler extends MailHandler {
 
-			public Pop3Handler(Socket socket) {
+			public ImapHandler(Socket socket) {
 				super(socket);
 			}
 
@@ -246,7 +246,7 @@ public class PoorMansMailServer {
 							write("* OK [UNSEEN 1]");
 							write(tag + "OK EXAMINE completed");
 						}
-						else if (line.endsWith("SEARCH NOT (FLAGGED) ALL")) {
+						else if (line.endsWith("SEARCH FROM bar@baz ALL")) {
 							write("* SEARCH 1 1");
 							write(tag + "OK SEARCH completed");
 						}

@@ -24,8 +24,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
+import javax.mail.search.FromTerm;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -190,11 +193,21 @@ public class MailTests {
 		public IntegrationFlow imapMailFlow() {
 			return IntegrationFlows
 					.from(Mail.imapInboundAdapter("imap://user:pw@localhost:" + imapPort + "/INBOX")
+									.searchTermStrategy((f,l) -> new FromTerm(fromAddress()))
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
 									.poller(Pollers.fixedDelay(1000)))
 					.channel(MessageChannels.queue("imapChannel"))
 					.get();
+		}
+
+		private InternetAddress fromAddress() {
+			try {
+				return new InternetAddress("bar@baz");
+			}
+			catch (AddressException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 	}
