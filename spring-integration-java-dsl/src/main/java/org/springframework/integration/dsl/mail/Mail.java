@@ -46,4 +46,12 @@ public class Mail {
 		return new ImapMailInboundChannelAdapterSpec(url);
 	}
 
+	public static ImapIdleChannelAdapterSpec imapIdleAdapter() {
+		return new ImapIdleChannelAdapterSpec();
+	}
+
+	public static ImapIdleChannelAdapterSpec imapIdleAdapter(String url) {
+		return new ImapIdleChannelAdapterSpec(url);
+	}
+
 }

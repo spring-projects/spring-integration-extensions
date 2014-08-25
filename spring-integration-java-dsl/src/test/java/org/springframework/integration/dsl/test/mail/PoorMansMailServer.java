@@ -203,6 +203,8 @@ public class PoorMansMailServer {
 
 	public static class ImapServer extends MailServer {
 
+		private boolean seen;
+
 		public ImapServer(int port) throws IOException {
 			super(port);
 		}
@@ -222,15 +224,15 @@ public class PoorMansMailServer {
 			void doRun() {
 				try {
 					write("* OK IMAP4rev1 Service Ready");
+					String idleTag = "";
 					while (!socket.isClosed()) {
 						String line = reader.readLine();
 						if (line == null) {
 							break;
 						}
 						String tag = line.substring(0, line.indexOf(" ") + 1);
-						System.out.println(line);
 						if (line.endsWith("CAPABILITY")) {
-							write("* CAPABILITY IMAP4rev1");
+							write("* CAPABILITY IDLE IMAP4rev1");
 							write(tag + "OK CAPABILITY completed");
 						}
 						else if (line.endsWith("LOGIN user pw")) {
@@ -240,17 +242,28 @@ public class PoorMansMailServer {
 							write("* LIST \"/\" \"\"");
 							write(tag + "OK LIST completed");
 						}
+						else if (line.endsWith("LIST \"\" \"\"")) {
+							write("* LIST \"/\" \"\"");
+							write(tag + "OK LIST completed");
+						}
 						else if (line.endsWith("EXAMINE \"\"")) {
-							write("* 1 EXISTS");
-							write("* 1 RECENT");
-							write("* OK [UNSEEN 1]");
+							if (!seen) {
+								write("* 1 EXISTS");
+								write("* 1 RECENT");
+								write("* OK [UNSEEN 1]");
+							}
 							write(tag + "OK EXAMINE completed");
 						}
-						else if (line.endsWith("SEARCH FROM bar@baz ALL")) {
-							write("* SEARCH 1 1");
+						else if (line.endsWith("SEARCH FROM bar@baz UNSEEN ALL")) {
+							if (seen) {
+								write("* SEARCH");
+							}
+							else {
+								write("* SEARCH 1");
+							}
 							write(tag + "OK SEARCH completed");
 						}
-						else if (line.contains("FETCH 1,1")) {
+						else if (line.contains("FETCH 1 (ENVELOPE")) {
 							write("* 1 FETCH (RFC822.SIZE 6909 INTERNALDATE \"27-May-2013 09:45:41 +0000\" "
 									+ "FLAGS (\\Seen) "
 									+ "ENVELOPE (\"Mon, 27 May 2013 15:14:49 +0530\" "
@@ -270,6 +283,7 @@ public class PoorMansMailServer {
 						else if (line.contains("STORE 1 +FLAGS (\\Seen)")) {
 							write("* 1 FETCH (FLAGS (\\Flagged \\Seen))");
 							write(tag + "OK STORE completed");
+							seen = true;
 						}
 						else if (line.contains("FETCH 1 FLAGS")) {
 							write("* 1 FLAGS(\\Seen)");
@@ -286,6 +300,17 @@ public class PoorMansMailServer {
 						}
 						else if (line.contains("NOOP")) {
 							write(tag + "OK NOOP completed");
+						}
+						else if (line.endsWith("IDLE")) {
+							write("+ idling");
+							idleTag = tag;
+						}
+						else if (line.equals("DONE")) {
+							write(idleTag + "OK");
+						}
+						else if (line.contains("LOGOUT")) {
+							write(tag + "OK LOGOUT completed");
+							this.socket.close();
 						}
 					}
 				}

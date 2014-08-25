@@ -18,17 +18,22 @@ package org.springframework.integration.dsl.test.mail;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import javax.mail.Flags;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
+import javax.mail.search.AndTerm;
+import javax.mail.search.FlagTerm;
 import javax.mail.search.FromTerm;
+import javax.mail.search.SearchTerm;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,6 +53,7 @@ import org.springframework.integration.dsl.support.Pollers;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.ImapServer;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.Pop3Server;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.SmtpServer;
+import org.springframework.integration.mail.ImapIdleChannelAdapter;
 import org.springframework.integration.mail.MailHeaders;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.test.util.TestUtils;
@@ -71,15 +77,19 @@ public class MailTests {
 
 	private final static int smtpPort = SocketUtils.findAvailableTcpPort();
 
-	private static SmtpServer smtpServer = PoorMansMailServer.smtp(smtpPort);
+	private final static SmtpServer smtpServer = PoorMansMailServer.smtp(smtpPort);
 
 	private final static int pop3Port = SocketUtils.findAvailableTcpPort(smtpPort + 1);
 
-	private static Pop3Server pop3Server = PoorMansMailServer.pop3(pop3Port);
+	private final static Pop3Server pop3Server = PoorMansMailServer.pop3(pop3Port);
 
 	private final static int imapPort = SocketUtils.findAvailableTcpPort(pop3Port + 1);
 
-	private static ImapServer imapServer = PoorMansMailServer.imap(imapPort);
+	private final static ImapServer imapServer = PoorMansMailServer.imap(imapPort);
+
+	private final static int imapIdlePort = SocketUtils.findAvailableTcpPort(imapPort + 1);
+
+	private final static ImapServer imapIdleServer = PoorMansMailServer.imap(imapIdlePort);
 
 
 	@BeforeClass
@@ -96,6 +106,7 @@ public class MailTests {
 		smtpServer.stop();
 		pop3Server.stop();
 		imapServer.stop();
+		imapIdleServer.stop();
 	}
 
 	@Autowired
@@ -110,6 +121,12 @@ public class MailTests {
 
 	@Autowired
 	private PollableChannel imapChannel;
+
+	@Autowired
+	private PollableChannel imapIdleChannel;
+
+	@Autowired
+	private ImapIdleChannelAdapter imapIdleAdapter;
 
 	@Test
 	public void testOutbound() throws Exception {
@@ -162,6 +179,19 @@ public class MailTests {
 		assertEquals("foo\r\n", mm.getContent());
 	}
 
+	@Test
+	public void testImapIdle() throws Exception {
+		Message<?> message = this.imapIdleChannel.receive(10000);
+		assertNotNull(message);
+		MimeMessage mm = (MimeMessage) message.getPayload();
+		assertEquals("foo@bar", mm.getRecipients(RecipientType.TO)[0].toString());
+		assertEquals("bar@baz", mm.getFrom()[0].toString());
+		assertEquals("Test Email", mm.getSubject());
+		assertEquals("foo\r\n", mm.getContent());
+		this.imapIdleAdapter.stop();
+		assertFalse(TestUtils.getPropertyValue(this.imapIdleAdapter, "shouldReconnectAutomatically", Boolean.class));
+	}
+
 	@Configuration
 	@EnableIntegration
 	public static class ContextConfiguration {
@@ -193,7 +223,7 @@ public class MailTests {
 		public IntegrationFlow imapMailFlow() {
 			return IntegrationFlows
 					.from(Mail.imapInboundAdapter("imap://user:pw@localhost:" + imapPort + "/INBOX")
-									.searchTermStrategy((f,l) -> new FromTerm(fromAddress()))
+									.searchTermStrategy((f,l) -> fromAndNotSeenTerm())
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
 									.poller(Pollers.fixedDelay(1000)))
@@ -201,9 +231,23 @@ public class MailTests {
 					.get();
 		}
 
-		private InternetAddress fromAddress() {
+		@Bean
+		public IntegrationFlow imapIdleFlow() {
+			return IntegrationFlows
+					.from(Mail.imapIdleAdapter("imap://user:pw@localhost:" + imapIdlePort + "/INBOX")
+									.searchTermStrategy((f,l) -> fromAndNotSeenTerm())
+									.javaMailProperties(p -> p.put("mail.debug", "true")
+											.put("mail.imap.connectionpoolsize", "5"))
+									.shouldReconnectAutomatically(false))
+					.channel(MessageChannels.queue("imapIdleChannel"))
+					.get();
+		}
+
+		private SearchTerm fromAndNotSeenTerm() {
 			try {
-				return new InternetAddress("bar@baz");
+				FromTerm fromTerm = new FromTerm(new InternetAddress("bar@baz"));
+				AndTerm andTerm = new AndTerm(fromTerm, new FlagTerm(new Flags(Flags.Flag.SEEN), false));
+				return andTerm;
 			}
 			catch (AddressException e) {
 				throw new RuntimeException(e);
