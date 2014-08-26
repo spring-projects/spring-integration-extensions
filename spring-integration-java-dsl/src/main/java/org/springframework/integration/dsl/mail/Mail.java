@@ -15,6 +15,8 @@
  */
 package org.springframework.integration.dsl.mail;
 
+import org.springframework.integration.mail.ImapMailReceiver;
+
 /**
  * @author Gary Russell
  *
@@ -44,6 +46,18 @@ public class Mail {
 
 	public static ImapMailInboundChannelAdapterSpec imapInboundAdapter(String url) {
 		return new ImapMailInboundChannelAdapterSpec(url);
+	}
+
+	public static ImapIdleChannelAdapterSpec imapIdleAdapter() {
+		return imapIdleAdapter(new ImapMailReceiver());
+	}
+
+	public static ImapIdleChannelAdapterSpec imapIdleAdapter(String url) {
+		return imapIdleAdapter(new ImapMailReceiver(url));
+	}
+
+	private static ImapIdleChannelAdapterSpec imapIdleAdapter(ImapMailReceiver imapMailReceiver) {
+		return new ImapIdleChannelAdapterSpec(imapMailReceiver);
 	}
 
 }

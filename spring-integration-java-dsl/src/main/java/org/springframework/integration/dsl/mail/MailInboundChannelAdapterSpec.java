@@ -15,11 +15,14 @@
  */
 package org.springframework.integration.dsl.mail;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
 import javax.mail.Session;
 
+import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
 import org.springframework.integration.dsl.support.PropertiesConfigurer;
@@ -32,7 +35,8 @@ import org.springframework.integration.mail.MailReceivingMessageSource;
  */
 public abstract class MailInboundChannelAdapterSpec<S extends MailInboundChannelAdapterSpec<S, R>,
 		R extends AbstractMailReceiver>
-		extends MessageSourceSpec<S, MailReceivingMessageSource> {
+		extends MessageSourceSpec<S, MailReceivingMessageSource>
+		implements ComponentsRegistration {
 
 	protected volatile R receiver;
 
@@ -70,6 +74,11 @@ public abstract class MailInboundChannelAdapterSpec<S extends MailInboundChannel
 	public S shouldDeleteMessages(boolean shouldDeleteMessages) {
 		this.receiver.setShouldDeleteMessages(shouldDeleteMessages);
 		return _this();
+	}
+
+	@Override
+	public Collection<Object> getComponentsToRegister() {
+		return Collections.<Object>singletonList(this.receiver);
 	}
 
 	@Override

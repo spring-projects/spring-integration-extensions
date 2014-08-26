@@ -94,8 +94,10 @@ public final class IntegrationFlowBuilder {
 	}
 
 	IntegrationFlowBuilder addComponents(Collection<Object> components) {
-		for (Object component : components) {
-			this.flow.addComponent(component);
+		if (components != null) {
+			for (Object component : components) {
+				this.flow.addComponent(component);
+			}
 		}
 		return this;
 	}
