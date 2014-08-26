@@ -27,7 +27,7 @@ import javax.mail.Session;
 import org.aopalliance.aop.Advice;
 
 import org.springframework.integration.dsl.core.ComponentsRegistration;
-import org.springframework.integration.dsl.core.MessagingProducerSpec;
+import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
 import org.springframework.integration.dsl.support.PropertiesConfigurer;
 import org.springframework.integration.mail.ImapIdleChannelAdapter;
@@ -39,7 +39,7 @@ import org.springframework.integration.transaction.TransactionSynchronizationFac
  * @author Gary Russell
  */
 public class ImapIdleChannelAdapterSpec
-		extends MessagingProducerSpec<ImapIdleChannelAdapterSpec, ImapIdleChannelAdapter>
+		extends MessageProducerSpec<ImapIdleChannelAdapterSpec, ImapIdleChannelAdapter>
 		implements ComponentsRegistration {
 
 	private final ImapMailReceiver receiver;

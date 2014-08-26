@@ -96,8 +96,10 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	B addComponents(Collection<Object> components) {
-		for (Object component : components) {
-			this.integrationComponents.add(component);
+		if (components != null) {
+			for (Object component : components) {
+				this.integrationComponents.add(component);
+			}
 		}
 		return _this();
 	}

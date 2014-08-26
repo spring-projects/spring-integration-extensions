@@ -96,7 +96,7 @@ public class FileWritingMessageHandlerSpec
 		if (this.defaultFileNameGenerator != null) {
 			return Collections.<Object>singletonList(this.defaultFileNameGenerator);
 		}
-		return Collections.<Object>emptyList();
+		return null;
 	}
 
 	@Override

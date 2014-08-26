@@ -71,7 +71,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 			return processStandardIntegrationFlow((IntegrationFlowBuilder.StandardIntegrationFlow) bean, beanName);
 		}
 		else if (bean instanceof IntegrationFlow) {
-			return processLambdaIntegrationFlow((IntegrationFlow) bean, beanName);
+			return processIntegrationFlowImpl((IntegrationFlow) bean, beanName);
 		}
 		return bean;
 	}
@@ -175,7 +175,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 		return flow;
 	}
 
-	private Object processLambdaIntegrationFlow(IntegrationFlow flow, String beanName) {
+	private Object processIntegrationFlowImpl(IntegrationFlow flow, String beanName) {
 		IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(beanName + ".input");
 		flow.define(flowBuilder);
 		return processStandardIntegrationFlow(flowBuilder.get(), beanName);
