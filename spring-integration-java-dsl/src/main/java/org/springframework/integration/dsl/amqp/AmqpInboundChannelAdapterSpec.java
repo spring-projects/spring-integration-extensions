@@ -27,14 +27,14 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.integration.amqp.inbound.AmqpInboundChannelAdapter;
 import org.springframework.integration.amqp.support.AmqpHeaderMapper;
 import org.springframework.integration.amqp.support.DefaultAmqpHeaderMapper;
-import org.springframework.integration.dsl.core.MessagingProducerSpec;
+import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.ErrorHandler;
 
 /**
  * @author Artem Bilan
  */
-public class AmqpInboundChannelAdapterSpec extends MessagingProducerSpec<AmqpInboundChannelAdapterSpec, AmqpInboundChannelAdapter> {
+public class AmqpInboundChannelAdapterSpec extends MessageProducerSpec<AmqpInboundChannelAdapterSpec, AmqpInboundChannelAdapter> {
 
 	private final SimpleMessageListenerContainer listenerContainer;
 

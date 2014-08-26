@@ -19,7 +19,7 @@ package org.springframework.integration.dsl.file;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.integration.channel.NullChannel;
-import org.springframework.integration.dsl.core.MessagingProducerSpec;
+import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.integration.file.config.FileTailInboundChannelAdapterFactoryBean;
 import org.springframework.integration.file.tail.FileTailingMessageProducerSupport;
 import org.springframework.messaging.MessageChannel;
@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
 /**
  * @author Artem Bilan
  */
-public class TailAdapterSpec extends MessagingProducerSpec<TailAdapterSpec, FileTailingMessageProducerSupport> {
+public class TailAdapterSpec extends MessageProducerSpec<TailAdapterSpec, FileTailingMessageProducerSupport> {
 
 	private final FileTailInboundChannelAdapterFactoryBean factoryBean = new FileTailInboundChannelAdapterFactoryBean();
 

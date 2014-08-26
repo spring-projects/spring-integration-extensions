@@ -22,8 +22,8 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.integration.amqp.inbound.AmqpInboundChannelAdapter;
 import org.springframework.integration.amqp.inbound.AmqpInboundGateway;
+import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.integration.dsl.core.MessagingGatewaySpec;
-import org.springframework.integration.dsl.core.MessagingProducerSpec;
 
 /**
  * @author Artem Bilan
@@ -59,7 +59,7 @@ public abstract class Amqp {
 		return (AmqpInboundChannelAdapterSpec) inboundAdapter(listenerContainer);
 	}
 
-	public static MessagingProducerSpec<AmqpInboundChannelAdapterSpec, AmqpInboundChannelAdapter> inboundAdapter(
+	public static MessageProducerSpec<AmqpInboundChannelAdapterSpec, AmqpInboundChannelAdapter> inboundAdapter(
 			SimpleMessageListenerContainer listenerContainer) {
 		return new AmqpInboundChannelAdapterSpec(listenerContainer);
 	}

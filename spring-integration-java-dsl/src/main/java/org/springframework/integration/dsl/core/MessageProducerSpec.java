@@ -22,10 +22,10 @@ import org.springframework.messaging.MessageChannel;
 /**
  * @author Artem Bilan
  */
-public abstract class MessagingProducerSpec<S extends MessagingProducerSpec<S, P>, P extends MessageProducerSupport>
+public abstract class MessageProducerSpec<S extends MessageProducerSpec<S, P>, P extends MessageProducerSupport>
 		extends IntegrationComponentSpec<S, P> {
 
-	public MessagingProducerSpec(P producer) {
+	public MessageProducerSpec(P producer) {
 		this.target = producer;
 	}
 

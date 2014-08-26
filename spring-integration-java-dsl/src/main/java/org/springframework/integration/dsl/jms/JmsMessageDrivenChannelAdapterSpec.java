@@ -18,7 +18,7 @@ package org.springframework.integration.dsl.jms;
 
 import javax.jms.Destination;
 
-import org.springframework.integration.dsl.core.MessagingProducerSpec;
+import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.integration.dsl.support.ComponentConfigurer;
 import org.springframework.integration.jms.ChannelPublishingJmsMessageListener;
 import org.springframework.integration.jms.JmsHeaderMapper;
@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
  * @author Artem Bilan
  */
 public class JmsMessageDrivenChannelAdapterSpec<S extends JmsMessageDrivenChannelAdapterSpec<S>>
-		extends MessagingProducerSpec<S, JmsMessageDrivenChannelAdapter> {
+		extends MessageProducerSpec<S, JmsMessageDrivenChannelAdapter> {
 
 	JmsMessageDrivenChannelAdapterSpec(AbstractMessageListenerContainer listenerContainer) {
 		super(new JmsMessageDrivenChannelAdapter(listenerContainer, new ChannelPublishingJmsMessageListener()));

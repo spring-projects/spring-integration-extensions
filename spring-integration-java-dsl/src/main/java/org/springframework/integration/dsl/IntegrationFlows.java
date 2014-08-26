@@ -21,9 +21,9 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
 import org.springframework.integration.dsl.core.ComponentsRegistration;
+import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
 import org.springframework.integration.dsl.core.MessagingGatewaySpec;
-import org.springframework.integration.dsl.core.MessagingProducerSpec;
 import org.springframework.integration.dsl.support.EndpointConfigurer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
 import org.springframework.integration.dsl.support.MessageChannelReference;
@@ -98,8 +98,8 @@ public final class IntegrationFlows {
 				.currentComponent(spec);
 	}
 
-	public static IntegrationFlowBuilder from(MessagingProducerSpec<?, ?> messagingProducerSpec) {
-		return from(messagingProducerSpec.get(), registerComponents(messagingProducerSpec));
+	public static IntegrationFlowBuilder from(MessageProducerSpec<?, ?> messageProducerSpec) {
+		return from(messageProducerSpec.get(), registerComponents(messageProducerSpec));
 	}
 
 	public static IntegrationFlowBuilder from(MessageProducerSupport messageProducer) {

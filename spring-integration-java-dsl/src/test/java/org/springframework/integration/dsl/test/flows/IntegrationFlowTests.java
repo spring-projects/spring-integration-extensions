@@ -46,14 +46,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.mongodb.MongoClient;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -65,6 +57,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.jcraft.jsch.ChannelSftp;
+import com.mongodb.MongoClient;
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
@@ -255,7 +256,7 @@ public class IntegrationFlowTests {
 	private FixedSubscriberChannel enricherInput3;
 
 	@Autowired
-	@Qualifier("splitInput")
+	@Qualifier("splitResequenceFlow.input")
 	private MessageChannel splitInput;
 
 	@Autowired
@@ -295,7 +296,7 @@ public class IntegrationFlowTests {
 	private MessageChannel routerMethod2Input;
 
 	@Autowired
-	@Qualifier("routerMethod3Input")
+	@Qualifier("routeMethodInvocationFlow3.input")
 	private MessageChannel routerMethod3Input;
 
 	@Autowired
@@ -1017,7 +1018,7 @@ public class IntegrationFlowTests {
 	}
 
 	@Autowired
-	@Qualifier("jmsOutboundInboundChannel")
+	@Qualifier("jmsOutboundFlow.input")
 	private MessageChannel jmsOutboundInboundChannel;
 
 	@Autowired
@@ -1046,7 +1047,7 @@ public class IntegrationFlowTests {
 	}
 
 	@Autowired
-	@Qualifier("jmsOutboundGatewayChannel")
+	@Qualifier("jmsOutboundGatewayFlow.input")
 	private MessageChannel jmsOutboundGatewayChannel;
 
 	@Test
@@ -1337,10 +1338,8 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow jmsOutboundFlow() {
-			return IntegrationFlows.from("jmsOutboundInboundChannel")
-					.handle(Jms.outboundAdapter(this.jmsConnectionFactory)
-							.destinationExpression("headers." + SimpMessageHeaderAccessor.DESTINATION_HEADER))
-					.get();
+			return f -> f.handle(Jms.outboundAdapter(this.jmsConnectionFactory)
+					.destinationExpression("headers." + SimpMessageHeaderAccessor.DESTINATION_HEADER));
 		}
 
 		@Bean
@@ -1370,11 +1369,9 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow jmsOutboundGatewayFlow() {
-			return IntegrationFlows.from("jmsOutboundGatewayChannel")
-					.handle(Jms.outboundGateway(this.jmsConnectionFactory)
-							.replyContainer()
-							.requestDestination("jmsPipelineTest"))
-					.get();
+			return f -> f.handle(Jms.outboundGateway(this.jmsConnectionFactory)
+					.replyContainer()
+					.requestDestination("jmsPipelineTest"));
 		}
 
 		@Bean
@@ -1760,8 +1757,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow splitResequenceFlow() {
-			return IntegrationFlows.from("splitInput")
-					.enrichHeaders(s -> s.header("FOO", "BAR"))
+			return f -> f.enrichHeaders(s -> s.header("FOO", "BAR"))
 					.split("testSplitterData", "buildList", c -> c.applySequence(false))
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.split(Message.class, target -> (List<?>) target.getPayload(), c -> c.applySequence(false))
@@ -1771,8 +1767,7 @@ public class IntegrationFlowTests {
 					.<String, Integer>transform(Integer::parseInt)
 					.enrichHeaders(s -> s.headerExpression(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, "payload"))
 					.resequence(r -> r.releasePartialSequences(true).correlationExpression("'foo'"), null)
-					.headerFilter("foo", false)
-					.get();
+					.headerFilter("foo", false);
 		}
 
 		@Bean
@@ -1838,9 +1833,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow routeMethodInvocationFlow3() {
-			return IntegrationFlows.from("routerMethod3Input")
-					.route((String p) -> ContextConfiguration4.this.routingTestBean().routePayload(p))
-					.get();
+			return f -> f.route((String p) -> ContextConfiguration4.this.routingTestBean().routePayload(p));
 		}
 
 		@Bean
