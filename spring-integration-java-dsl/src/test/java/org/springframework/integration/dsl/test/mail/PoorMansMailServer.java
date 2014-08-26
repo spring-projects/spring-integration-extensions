@@ -239,20 +239,23 @@ public class PoorMansMailServer {
 							write(tag + "OK LOGIN completed");
 						}
 						else if (line.endsWith("LIST \"\" INBOX")) {
-							write("* LIST \"/\" \"\"");
+							write("* LIST \"/\" \"INBOX\"");
 							write(tag + "OK LIST completed");
 						}
 						else if (line.endsWith("LIST \"\" \"\"")) {
 							write("* LIST \"/\" \"\"");
 							write(tag + "OK LIST completed");
 						}
-						else if (line.endsWith("EXAMINE \"\"")) {
+						else if (line.endsWith("SELECT INBOX")) {
 							if (!seen) {
 								write("* 1 EXISTS");
 								write("* 1 RECENT");
 								write("* OK [UNSEEN 1]");
 							}
-							write(tag + "OK EXAMINE completed");
+							write(tag + "OK SELECT completed");
+						}
+						else if (line.endsWith("EXAMINE INBOX")) {
+							write(tag + "OK");
 						}
 						else if (line.endsWith("SEARCH FROM bar@baz UNSEEN ALL")) {
 							if (seen) {
