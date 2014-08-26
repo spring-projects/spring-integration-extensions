@@ -223,7 +223,7 @@ public class MailTests {
 		public IntegrationFlow imapMailFlow() {
 			return IntegrationFlows
 					.from(Mail.imapInboundAdapter("imap://user:pw@localhost:" + imapPort + "/INBOX")
-									.searchTermStrategy((f,l) -> fromAndNotSeenTerm())
+									.searchTermStrategy((f, l) -> fromAndNotSeenTerm())
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
 									.poller(Pollers.fixedDelay(1000)))
@@ -235,10 +235,10 @@ public class MailTests {
 		public IntegrationFlow imapIdleFlow() {
 			return IntegrationFlows
 					.from(Mail.imapIdleAdapter("imap://user:pw@localhost:" + imapIdlePort + "/INBOX")
-									.searchTermStrategy((f,l) -> fromAndNotSeenTerm())
-									.javaMailProperties(p -> p.put("mail.debug", "true")
-											.put("mail.imap.connectionpoolsize", "5"))
-									.shouldReconnectAutomatically(false))
+							.searchTermStrategy((f, l) -> fromAndNotSeenTerm())
+							.javaMailProperties(p -> p.put("mail.debug", "true")
+									.put("mail.imap.connectionpoolsize", "5"))
+							.shouldReconnectAutomatically(false))
 					.channel(MessageChannels.queue("imapIdleChannel"))
 					.get();
 		}
@@ -246,12 +246,12 @@ public class MailTests {
 		private SearchTerm fromAndNotSeenTerm() {
 			try {
 				FromTerm fromTerm = new FromTerm(new InternetAddress("bar@baz"));
-				AndTerm andTerm = new AndTerm(fromTerm, new FlagTerm(new Flags(Flags.Flag.SEEN), false));
-				return andTerm;
+				return new AndTerm(fromTerm, new FlagTerm(new Flags(Flags.Flag.SEEN), false));
 			}
 			catch (AddressException e) {
 				throw new RuntimeException(e);
 			}
+
 		}
 
 	}

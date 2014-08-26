@@ -15,7 +15,9 @@
  */
 package org.springframework.integration.dsl.mail;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
@@ -24,7 +26,7 @@ import javax.mail.Session;
 
 import org.aopalliance.aop.Advice;
 
-import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessagingProducerSpec;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
 import org.springframework.integration.dsl.support.PropertiesConfigurer;
@@ -35,20 +37,16 @@ import org.springframework.integration.transaction.TransactionSynchronizationFac
 
 /**
  * @author Gary Russell
- *
  */
-public class ImapIdleChannelAdapterSpec extends MessagingProducerSpec<ImapIdleChannelAdapterSpec, ImapIdleChannelAdapter>  {
+public class ImapIdleChannelAdapterSpec
+		extends MessagingProducerSpec<ImapIdleChannelAdapterSpec, ImapIdleChannelAdapter>
+		implements ComponentsRegistration {
 
 	private final ImapMailReceiver receiver;
 
-	public ImapIdleChannelAdapterSpec() {
-		super(new ImapIdleChannelAdapter(new ImapMailReceiver()));
-		this.receiver = (ImapMailReceiver) new DirectFieldAccessor(this.target).getPropertyValue("mailReceiver");
-	}
-
-	public ImapIdleChannelAdapterSpec(String url) {
-		super(new ImapIdleChannelAdapter(new ImapMailReceiver(url)));
-		this.receiver = (ImapMailReceiver) new DirectFieldAccessor(this.target).getPropertyValue("mailReceiver");
+	ImapIdleChannelAdapterSpec(ImapMailReceiver receiver) {
+		super(new ImapIdleChannelAdapter(receiver));
+		this.receiver = receiver;
 	}
 
 	public ImapIdleChannelAdapterSpec selectorExpression(String selectorExpression) {
@@ -87,13 +85,24 @@ public class ImapIdleChannelAdapterSpec extends MessagingProducerSpec<ImapIdleCh
 		return this;
 	}
 
-	public ImapIdleChannelAdapterSpec transactionSynchronizationFactory(TransactionSynchronizationFactory transactionSynchronizationFactory) {
+	public ImapIdleChannelAdapterSpec searchTermStrategy(SearchTermStrategy searchTermStrategy) {
+		this.receiver.setSearchTermStrategy(searchTermStrategy);
+		return this;
+	}
+
+	public ImapIdleChannelAdapterSpec shouldMarkMessagesAsRead(boolean shouldMarkMessagesAsRead) {
+		this.receiver.setShouldMarkMessagesAsRead(shouldMarkMessagesAsRead);
+		return this;
+	}
+
+	public ImapIdleChannelAdapterSpec
+	transactionSynchronizationFactory(TransactionSynchronizationFactory transactionSynchronizationFactory) {
 		this.target.setTransactionSynchronizationFactory(transactionSynchronizationFactory);
 		return this;
 	}
 
-	public ImapIdleChannelAdapterSpec adviceChain(List<Advice> adviceChain) {
-		this.target.setAdviceChain(adviceChain);
+	public ImapIdleChannelAdapterSpec adviceChain(Advice... adviceChain) {
+		this.target.setAdviceChain(Arrays.asList(adviceChain));
 		return this;
 	}
 
@@ -107,13 +116,9 @@ public class ImapIdleChannelAdapterSpec extends MessagingProducerSpec<ImapIdleCh
 		return this;
 	}
 
-	public ImapIdleChannelAdapterSpec searchTermStrategy(SearchTermStrategy searchTermStrategy) {
-		this.receiver.setSearchTermStrategy(searchTermStrategy);
-		return this;
+	@Override
+	public Collection<Object> getComponentsToRegister() {
+		return Collections.<Object>singletonList(this.receiver);
 	}
 
-	public ImapIdleChannelAdapterSpec shouldMarkMessagesAsRead(boolean shouldMarkMessagesAsRead) {
-		this.receiver.setShouldMarkMessagesAsRead(shouldMarkMessagesAsRead);
-		return this;
-	}
 }
