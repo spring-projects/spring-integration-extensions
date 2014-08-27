@@ -18,11 +18,16 @@ package org.springframework.integration.dsl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
+import org.springframework.integration.dsl.support.MapBuilder;
+import org.springframework.integration.dsl.support.MapBuilder.MapBuilderConfigurer;
+import org.springframework.integration.dsl.support.StringStringMapBuilder;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
 import org.springframework.integration.handler.MessageProcessor;
 import org.springframework.integration.transformer.HeaderEnricher;
@@ -34,6 +39,7 @@ import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
+ * @author Gary Russell
  */
 public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherSpec, HeaderEnricher> {
 
@@ -68,6 +74,43 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 
 	public HeaderEnricherSpec messageProcessor(String beanName, String methodName) {
 		return this.messageProcessor(new BeanNameMessageProcessor<Object>(beanName, methodName));
+	}
+
+	public HeaderEnricherSpec headers(MapBuilder<?, String, Object> headers) {
+		return headers(headers.get());
+	}
+
+	public HeaderEnricherSpec headers(Map<String, Object> headers) {
+		Assert.notNull(headers);
+		for (Entry<String, Object> entry : headers.entrySet()) {
+			String name = entry.getKey();
+			Object value = entry.getValue();
+			if (value instanceof Expression) {
+				header(name, new ExpressionEvaluatingHeaderValueMessageProcessor<Object>((Expression) value, null));
+			}
+			else {
+				header(name, value);
+			}
+		}
+		return this;
+	}
+
+	public HeaderEnricherSpec headerExpressions(MapBuilder<?, String, String> headers) {
+		return headerExpressions(headers.get());
+	}
+
+	public HeaderEnricherSpec headerExpressions(MapBuilderConfigurer<StringStringMapBuilder, String, String> configurer) {
+		StringStringMapBuilder builder = new StringStringMapBuilder();
+		configurer.configure(builder);
+		return headerExpressions(builder.get());
+	}
+
+	public HeaderEnricherSpec headerExpressions(Map<String, String> headers) {
+		Assert.notNull(headers);
+		for (Entry<String, String> entry : headers.entrySet()) {
+			header(entry.getKey(), new ExpressionEvaluatingHeaderValueMessageProcessor<Object>(entry.getValue(), null));
+		}
+		return this;
 	}
 
 	public <V> HeaderEnricherSpec header(String name, V value) {

@@ -16,11 +16,38 @@
 
 package org.springframework.integration.dsl.support;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+
 /**
  * @author Artem Bilan
  */
-public interface PropertiesConfigurer {
+public class MapBuilder<B extends MapBuilder<B, K, V>, K, V> {
 
-	void configure(PropertiesBuilder propertiesBuilder);
+	protected final static SpelExpressionParser PARSER = new SpelExpressionParser();
+
+	private final Map<K, V> map = new HashMap<K, V>();
+
+	public B put(K key, V value) {
+		this.map.put(key, value);
+		return _this();
+	}
+
+	public Map<K, V> get() {
+		return this.map;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected final B _this() {
+		return (B) this;
+	}
+
+	public interface MapBuilderConfigurer<B extends MapBuilder<B, K, V>, K, V> {
+
+		void configure(MapBuilder<B, K, V> builder);
+
+	}
 
 }

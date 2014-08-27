@@ -29,7 +29,7 @@ import org.aopalliance.aop.Advice;
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
-import org.springframework.integration.dsl.support.PropertiesConfigurer;
+import org.springframework.integration.dsl.support.PropertiesBuilder.PropertiesConfigurer;
 import org.springframework.integration.mail.ImapIdleChannelAdapter;
 import org.springframework.integration.mail.ImapMailReceiver;
 import org.springframework.integration.mail.SearchTermStrategy;

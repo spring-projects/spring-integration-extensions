@@ -18,6 +18,7 @@ package org.springframework.integration.dsl;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.BeanCreationException;
@@ -40,6 +41,7 @@ import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototy
 import org.springframework.integration.dsl.support.GenericHandler;
 import org.springframework.integration.dsl.support.GenericRouter;
 import org.springframework.integration.dsl.support.GenericSplitter;
+import org.springframework.integration.dsl.support.MapBuilder;
 import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.expression.ControlBusMethodFilter;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
@@ -76,6 +78,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * @author Artem Bilan
+ * @author Gary Russell
  */
 public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinition<B>> {
 
@@ -284,6 +287,37 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		EnricherSpec enricherSpec = new EnricherSpec();
 		enricherConfigurer.configure(enricherSpec);
 		return this.handle(enricherSpec.get(), endpointConfigurer);
+	}
+
+	public B enrichHeaders(MapBuilder<?, String, Object> headers) {
+		return enrichHeaders(headers, null);
+	}
+
+	public B enrichHeaders(MapBuilder<?, String, Object> headers,
+			EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		return enrichHeaders(headers.get(), endpointConfigurer);
+	}
+
+	/**
+	 * Accept a {@link Map} of values to be used for the
+	 * {@link org.springframework.messaging.Message} header enrichment.
+	 * {@code values} can apply an {@link org.springframework.expression.Expression}
+	 * to be evaluated against a request {@link org.springframework.messaging.Message}.
+	 * @param headers the Map of headers to enrich.
+	 * @return this.
+	 */
+	public B enrichHeaders(Map<String, Object> headers) {
+		return enrichHeaders(headers, null);
+	}
+
+	public B enrichHeaders(final Map<String, Object> headers,
+			EndpointConfigurer<GenericEndpointSpec<MessageTransformingHandler>> endpointConfigurer) {
+		return enrichHeaders(new ComponentConfigurer<HeaderEnricherSpec>() {
+			@Override
+			public void configure(HeaderEnricherSpec spec) {
+				spec.headers(headers);
+			}
+		}, endpointConfigurer);
 	}
 
 	public B enrichHeaders(ComponentConfigurer<HeaderEnricherSpec> headerEnricherConfigurer) {

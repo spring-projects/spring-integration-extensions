@@ -15,31 +15,12 @@
  */
 package org.springframework.integration.dsl.support;
 
-import java.util.Properties;
-
-
 /**
+ * A map builder creating a map with String keys and values.
+ *
  * @author Gary Russell
- * @author Artem Bilan
  *
  */
-public class PropertiesBuilder {
-
-	private final Properties properties = new Properties();
-
-	public PropertiesBuilder put(Object key, Object value) {
-		properties.put(key, value);
-		return this;
-	}
-
-	public Properties get() {
-		return this.properties;
-	}
-
-	public interface PropertiesConfigurer {
-
-		void configure(PropertiesBuilder propertiesBuilder);
-
-	}
+public class StringStringMapBuilder extends MapBuilder<StringStringMapBuilder, String, String> {
 
 }

@@ -25,7 +25,7 @@ import javax.mail.Session;
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
-import org.springframework.integration.dsl.support.PropertiesConfigurer;
+import org.springframework.integration.dsl.support.PropertiesBuilder.PropertiesConfigurer;
 import org.springframework.integration.mail.AbstractMailReceiver;
 import org.springframework.integration.mail.MailReceivingMessageSource;
 

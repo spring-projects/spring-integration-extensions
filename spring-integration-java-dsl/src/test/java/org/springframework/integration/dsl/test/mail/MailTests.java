@@ -129,18 +129,14 @@ public class MailTests {
 	private ImapIdleChannelAdapter imapIdleAdapter;
 
 	@Test
-	public void testOutbound() throws Exception {
+	public void testSmtp() throws Exception {
 		assertEquals("localhost", TestUtils.getPropertyValue(this.sendMailHandler, "mailSender.host"));
 
 		Properties javaMailProperties = TestUtils.getPropertyValue(this.sendMailHandler,
 				"mailSender.javaMailProperties", Properties.class);
 		assertEquals("true", javaMailProperties.getProperty("mail.debug"));
 
-		this.sendMailChannel.send(MessageBuilder.withPayload("foo")
-				.setHeader(MailHeaders.SUBJECT, "foo")
-				.setHeader(MailHeaders.FROM, "foo@bar")
-				.setHeader(MailHeaders.TO, "bar@baz")
-				.build());
+		this.sendMailChannel.send(MessageBuilder.withPayload("foo").build());
 
 		int n = 0;
 		while (n++ < 100 && smtpServer.getMessages().size() == 0) {
@@ -163,8 +159,8 @@ public class MailTests {
 		assertNotNull(message);
 		MimeMessage mm = (MimeMessage) message.getPayload();
 		assertEquals("foo@bar", mm.getRecipients(RecipientType.TO)[0].toString());
-		assertEquals("bar@baz", mm.getFrom()[0].toString());
-		assertEquals("Test Email", mm.getSubject());
+		assertEquals("bar@baz", message.getHeaders().get(MailHeaders.FROM));
+		assertEquals("Test Email", message.getHeaders().get(MailHeaders.SUBJECT));
 		assertEquals("foo\r\n", mm.getContent());
 	}
 
@@ -199,6 +195,7 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow sendMailFlow() {
 			return IntegrationFlows.from("sendMailChannel")
+					.enrichHeaders(Mail.headers().subject("foo").from("foo@bar").to("bar@baz"))
 					.handle(Mail.outboundAdapter("localhost")
 									.port(smtpPort)
 									.credentials("user", "pw")
@@ -215,6 +212,8 @@ public class MailTests {
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
 									.poller(Pollers.fixedDelay(1000)))
+					.enrichHeaders(s -> s.headerExpressions(c -> c.put(MailHeaders.SUBJECT, "payload.subject")
+									.put(MailHeaders.FROM, "payload.from[0].toString()")))
 					.channel(MessageChannels.queue("pop3Channel"))
 					.get();
 		}
