@@ -19,10 +19,12 @@ package org.springframework.integration.dsl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
+import org.springframework.integration.dsl.support.MapBuilder;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
 import org.springframework.integration.handler.MessageProcessor;
 import org.springframework.integration.transformer.HeaderEnricher;
@@ -68,6 +70,24 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 
 	public HeaderEnricherSpec messageProcessor(String beanName, String methodName) {
 		return this.messageProcessor(new BeanNameMessageProcessor<Object>(beanName, methodName));
+	}
+
+	public HeaderEnricherSpec headers(MapBuilder<?, String> headers) {
+		return headers(headers.get());
+	}
+
+	public HeaderEnricherSpec headers(Map<String, Object> headers) {
+		Assert.notNull(headers);
+		for (String name : headers.keySet()) {
+			Object value = headers.get(name);
+			if (value instanceof Expression) {
+				header(name, new ExpressionEvaluatingHeaderValueMessageProcessor<Object>((Expression) value, null));
+			}
+			else {
+				header(name, value);
+			}
+		}
+		return this;
 	}
 
 	public <V> HeaderEnricherSpec header(String name, V value) {
