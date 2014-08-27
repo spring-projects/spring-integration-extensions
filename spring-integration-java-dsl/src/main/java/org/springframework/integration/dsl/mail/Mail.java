@@ -19,7 +19,7 @@ import org.springframework.integration.mail.ImapMailReceiver;
 
 /**
  * @author Gary Russell
- *
+ * @author Artem Bilan
  */
 public class Mail {
 
@@ -54,6 +54,10 @@ public class Mail {
 
 	public static ImapIdleChannelAdapterSpec imapIdleAdapter(String url) {
 		return imapIdleAdapter(new ImapMailReceiver(url));
+	}
+
+	public static MailHeadersBuilder headers() {
+		return new MailHeadersBuilder();
 	}
 
 	private static ImapIdleChannelAdapterSpec imapIdleAdapter(ImapMailReceiver imapMailReceiver) {

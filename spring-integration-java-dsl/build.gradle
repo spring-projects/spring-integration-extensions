@@ -92,7 +92,7 @@ dependencies {
 	testRuntime("org.apache.activemq:activemq-kahadb-store:$activeMqVersion") {
 		exclude group: "org.springframework"
 	}
-	testRuntime "com.sun.mail:mailapi:$mailVersion"
+	testRuntime "com.sun.mail:javax.mail:$mailVersion"
 	testRuntime "com.sun.mail:smtp:$mailVersion"
 	testRuntime "com.sun.mail:pop3:$mailVersion"
 	testRuntime "com.sun.mail:imap:$mailVersion"

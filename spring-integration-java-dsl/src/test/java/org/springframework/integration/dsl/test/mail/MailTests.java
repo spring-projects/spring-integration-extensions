@@ -136,11 +136,7 @@ public class MailTests {
 				"mailSender.javaMailProperties", Properties.class);
 		assertEquals("true", javaMailProperties.getProperty("mail.debug"));
 
-		this.sendMailChannel.send(MessageBuilder.withPayload("foo")
-				.setHeader(MailHeaders.SUBJECT, "foo")
-				.setHeader(MailHeaders.FROM, "foo@bar")
-				.setHeader(MailHeaders.TO, "bar@baz")
-				.build());
+		this.sendMailChannel.send(MessageBuilder.withPayload("foo").build());
 
 		int n = 0;
 		while (n++ < 100 && smtpServer.getMessages().size() == 0) {
@@ -199,6 +195,7 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow sendMailFlow() {
 			return IntegrationFlows.from("sendMailChannel")
+					.enrichHeaders(Mail.headers().subject("foo").from("foo@bar").to("bar@baz"))
 					.handle(Mail.outboundAdapter("localhost")
 									.port(smtpPort)
 									.credentials("user", "pw")
