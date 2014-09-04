@@ -18,7 +18,6 @@ package org.springframework.integration.dsl;
 
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.router.AbstractMessageRouter;
-import org.springframework.messaging.MessageChannel;
 
 /**
  * @author Artem Bilan
@@ -28,16 +27,6 @@ public class AbstractRouterSpec<S extends AbstractRouterSpec<S, R>, R extends Ab
 
 	AbstractRouterSpec(R router) {
 		this.target = router;
-	}
-
-	public S defaultOutputChannel(MessageChannel defaultOutputChannel) {
-		this.target.setDefaultOutputChannel(defaultOutputChannel);
-		return _this();
-	}
-
-	public S defaultOutputChannel(String defaultOutputChannel) {
-		this.target.setDefaultOutputChannelName(defaultOutputChannel);
-		return _this();
 	}
 
 	public S ignoreSendFailures(boolean ignoreSendFailures) {

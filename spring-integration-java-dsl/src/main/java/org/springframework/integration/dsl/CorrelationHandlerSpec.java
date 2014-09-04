@@ -29,6 +29,7 @@ import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.store.MessageGroupStore;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Artem Bilan
@@ -144,7 +145,9 @@ public abstract class CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S,
 		if (this.discardChannel != null) {
 			handler.setDiscardChannel(this.discardChannel);
 		}
-		handler.setDiscardChannelName(this.discardChannelName);
+		if (StringUtils.hasText(this.discardChannelName)) {
+			handler.setDiscardChannelName(this.discardChannelName);
+		}
 		if (this.messageStore != null) {
 			handler.setMessageStore(this.messageStore);
 		}

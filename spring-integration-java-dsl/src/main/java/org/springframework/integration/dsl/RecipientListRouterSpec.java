@@ -31,13 +31,13 @@ public class RecipientListRouterSpec extends AbstractRouterSpec<RecipientListRou
 
 	public RecipientListRouterSpec recipient(String channelName, String expression) {
 		Assert.hasText(channelName);
-		((DslRecipientListRouter) this.target).addRecipient(channelName, expression);
+		((DslRecipientListRouter) this.target).add(channelName, expression);
 		return _this();
 	}
 
 	public RecipientListRouterSpec recipient(String channelName, MessageSelector selector) {
 		Assert.hasText(channelName);
-		((DslRecipientListRouter) this.target).addRecipient(channelName, selector);
+		((DslRecipientListRouter) this.target).add(channelName, selector);
 		return _this();
 	}
 

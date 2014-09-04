@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,15 +58,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.jcraft.jsch.ChannelSftp;
-import com.mongodb.MongoClient;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
@@ -110,7 +102,7 @@ import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
-import org.springframework.integration.dsl.file.File;
+import org.springframework.integration.dsl.file.Files;
 import org.springframework.integration.dsl.ftp.Ftp;
 import org.springframework.integration.dsl.jms.Jms;
 import org.springframework.integration.dsl.sftp.Sftp;
@@ -164,6 +156,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.StreamUtils;
 
+import com.jcraft.jsch.ChannelSftp;
+import com.mongodb.MongoClient;
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
+
 /**
  * @author Artem Bilan
  * @author Tim Ysewyn
@@ -173,7 +174,7 @@ import org.springframework.util.StreamUtils;
 @DirtiesContext
 public class IntegrationFlowTests {
 
-	private static final java.io.File tmpDir = new java.io.File(System.getProperty("java.io.tmpdir"));
+	private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 
 	private static int mongoPort;
 
@@ -452,22 +453,20 @@ public class IntegrationFlowTests {
 		assertTrue(this.delayedAdvice.getInvoked());
 	}
 
+	@Autowired
+	@Qualifier("routerAsNonLastFlow.input")
+	private MessageChannel routerAsNonLastFlowChannel;
+
+	@Autowired
+	@Qualifier("routerAsNonLastDefaultOutputChannel")
+	private PollableChannel routerAsNonLastDefaultOutputChannel;
+
 	@Test
-	public void testWrongLastComponent() {
-		ConfigurableApplicationContext context = null;
-		try {
-			context = new AnnotationConfigApplicationContext(InvalidLastComponentFlowContext.class);
-			fail("BeanCreationException expected");
-		}
-		catch (Exception e) {
-			assertThat(e, instanceOf(BeanCreationException.class));
-			assertThat(e.getMessage(), containsString("is a one-way 'MessageHandler'"));
-		}
-		finally {
-			if (context != null) {
-				context.close();
-			}
-		}
+	public void testRouterAsNonLastComponent() {
+		this.routerAsNonLastFlowChannel.send(new GenericMessage<String>("Hello World"));
+		Message<?> receive = this.routerAsNonLastDefaultOutputChannel.receive(1000);
+		assertNotNull(receive);
+		assertEquals("Hello World", receive.getPayload());
 	}
 
 	@Test
@@ -514,7 +513,7 @@ public class IntegrationFlowTests {
 		dfa.setPropertyValue("fileNameGenerator", fileNameGenerator);
 		this.fileFlow1Input.send(message);
 
-		assertTrue(new java.io.File(tmpDir, "foo").exists());
+		assertTrue(new File(tmpDir, "foo").exists());
 	}
 
 	@Test
@@ -940,7 +939,7 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testMessageProducerFlow() throws Exception {
-		FileOutputStream file = new FileOutputStream(new java.io.File(tmpDir, "TailTest"));
+		FileOutputStream file = new FileOutputStream(new File(tmpDir, "TailTest"));
 		for (int i = 0; i < 50; i++) {
 			file.write((i + "\n").getBytes());
 		}
@@ -1078,7 +1077,7 @@ public class IntegrationFlowTests {
 			if (even) {
 				evens.add(i);
 			}
-			FileOutputStream file = new FileOutputStream(new java.io.File(tmpDir, i + extension));
+			FileOutputStream file = new FileOutputStream(new File(tmpDir, i + extension));
 			file.write(("" + i).getBytes());
 			file.flush();
 			file.close();
@@ -1109,8 +1108,8 @@ public class IntegrationFlowTests {
 		this.fileWritingInput.send(new GenericMessage<>(payload));
 		Message<?> receive = this.fileWritingResultChannel.receive(1000);
 		assertNotNull(receive);
-		assertThat(receive.getPayload(), instanceOf(java.io.File.class));
-		java.io.File resultFile = (java.io.File) receive.getPayload();
+		assertThat(receive.getPayload(), instanceOf(File.class));
+		File resultFile = (File) receive.getPayload();
 		assertThat(resultFile.getAbsolutePath(),
 				endsWith(TestUtils.applySystemFileSeparator("fileWritingFlow/foo.sitest")));
 		String fileContent = StreamUtils.copyToString(new FileInputStream(resultFile), Charset.defaultCharset());
@@ -1148,14 +1147,14 @@ public class IntegrationFlowTests {
 		Message<?> message = this.ftpInboundResultChannel.receive(1000);
 		assertNotNull(message);
 		Object payload = message.getPayload();
-		assertThat(payload, instanceOf(java.io.File.class));
-		java.io.File file = (java.io.File) payload;
+		assertThat(payload, instanceOf(File.class));
+		File file = (File) payload;
 		assertThat(file.getName(), isOneOf("FTPSOURCE1.TXT.a", "FTPSOURCE2.TXT.a"));
 		assertThat(file.getAbsolutePath(), containsString("ftpTest"));
 
 		message = this.ftpInboundResultChannel.receive(1000);
 		assertNotNull(message);
-		file = (java.io.File) message.getPayload();
+		file = (File) message.getPayload();
 		assertThat(file.getName(), isOneOf("FTPSOURCE1.TXT.a", "FTPSOURCE2.TXT.a"));
 		assertThat(file.getAbsolutePath(), containsString("ftpTest"));
 
@@ -1171,14 +1170,14 @@ public class IntegrationFlowTests {
 		Message<?> message = this.sftpInboundResultChannel.receive(1000);
 		assertNotNull(message);
 		Object payload = message.getPayload();
-		assertThat(payload, instanceOf(java.io.File.class));
-		java.io.File file = (java.io.File) payload;
+		assertThat(payload, instanceOf(File.class));
+		File file = (File) payload;
 		assertThat(file.getName(), isOneOf("SFTPSOURCE1.TXT.a", "SFTPSOURCE2.TXT.a"));
 		assertThat(file.getAbsolutePath(), containsString("sftpTest"));
 
 		message = this.sftpInboundResultChannel.receive(1000);
 		assertNotNull(message);
-		file = (java.io.File) message.getPayload();
+		file = (File) message.getPayload();
 		assertThat(file.getName(), isOneOf("SFTPSOURCE1.TXT.a", "SFTPSOURCE2.TXT.a"));
 		assertThat(file.getAbsolutePath(), containsString("sftpTest"));
 
@@ -1236,15 +1235,15 @@ public class IntegrationFlowTests {
 		this.ftpMgetInputChannel.send(new GenericMessage<Object>(dir + "*"));
 		Message<?> result = this.remoteFileOutputChannel.receive(1000);
 		assertNotNull(result);
-		List<java.io.File> localFiles = (List<java.io.File>) result.getPayload();
+		List<File> localFiles = (List<File>) result.getPayload();
 		// should have filtered ftpSource2.txt
 		assertEquals(2, localFiles.size());
 
-		for (java.io.File file : localFiles) {
-			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+		for (File file : localFiles) {
+			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
 					Matchers.containsString(dir));
 		}
-		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
 				Matchers.containsString(dir + "subFtpSource"));
 	}
 
@@ -1260,15 +1259,15 @@ public class IntegrationFlowTests {
 		this.sftpMgetInputChannel.send(new GenericMessage<Object>(dir + "*"));
 		Message<?> result = this.remoteFileOutputChannel.receive(1000);
 		assertNotNull(result);
-		List<java.io.File> localFiles = (List<java.io.File>) result.getPayload();
+		List<File> localFiles = (List<File>) result.getPayload();
 		// should have filtered sftpSource2.txt
 		assertEquals(2, localFiles.size());
 
-		for (java.io.File file : localFiles) {
-			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+		for (File file : localFiles) {
+			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
 					Matchers.containsString(dir));
 		}
-		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(java.io.File.separator), "/"),
+		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
 				Matchers.containsString(dir + "subSftpSource"));
 	}
 
@@ -1471,6 +1470,12 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
+		@Bean
+		public IntegrationFlow routerAsNonLastFlow() {
+			return f -> f.<String, String>route(p -> p, r -> r.resolutionRequired(false))
+					.channel(MessageChannels.queue("routerAsNonLastDefaultOutputChannel"));
+		}
+
 	}
 
 	@Configuration
@@ -1633,13 +1638,11 @@ public class IntegrationFlowTests {
 		public IntegrationFlow recipientListFlow() {
 			return IntegrationFlows.from("recipientListInput")
 					.<String, String>transform(p -> p.replaceFirst("Payload", ""))
-					.recipientListRoute(r ->
-									r.defaultOutputChannel(this.defaultOutputChannel())
-											.recipient("foo-channel", "'foo' == payload")
-											.recipient("bar-channel", m ->
-													m.getHeaders().containsKey("recipient")
-															&& (boolean) m.getHeaders().get("recipient"))
-					)
+					.routeToRecipients(r -> r.recipient("foo-channel", "'foo' == payload")
+							.recipient("bar-channel", m ->
+									m.getHeaders().containsKey("recipient")
+											&& (boolean) m.getHeaders().get("recipient")))
+					.channel("defaultOutputChannel")
 					.get();
 		}
 	}
@@ -1667,7 +1670,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow fileFlow1() {
 			return IntegrationFlows.from("fileFlow1Input")
-					.handle(File.outboundAdapter(tmpDir).fileNameGenerator(message -> null),
+					.handle(Files.outboundAdapter(tmpDir).fileNameGenerator(message -> null),
 							c -> c.id("fileWriting"))
 					.get();
 		}
@@ -1846,7 +1849,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow tailFlow() {
-			return IntegrationFlows.from(File.tailAdapter(new java.io.File(tmpDir, "TailTest"))
+			return IntegrationFlows.from(Files.tailAdapter(new File(tmpDir, "TailTest"))
 					.delay(500)
 					.id("tailer"))
 					.transform("hello "::concat)
@@ -1925,7 +1928,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow fileReadingFlow() {
 			return IntegrationFlows
-					.from(File.inboundAdapter(tmpDir).patternFilter("*.sitest"),
+					.from(Files.inboundAdapter(tmpDir).patternFilter("*.sitest"),
 							e -> e.poller(Pollers.fixedDelay(100)))
 					.transform(Transformers.fileToString())
 					.aggregate(a -> a.correlationExpression("1")
@@ -1938,8 +1941,8 @@ public class IntegrationFlowTests {
 		public IntegrationFlow fileWritingFlow() {
 			return IntegrationFlows.from("fileWritingInput")
 					.enrichHeaders(h -> h.header(FileHeaders.FILENAME, "foo.sitest")
-							.header("directory", new java.io.File(tmpDir, "fileWritingFlow")))
-					.handle(File.outboundGateway("headers[directory]"))
+							.header("directory", new File(tmpDir, "fileWritingFlow")))
+					.handle(Files.outboundGateway("headers[directory]"))
 					.channel(MessageChannels.queue("fileWritingResultChannel"))
 					.get();
 		}
@@ -1987,18 +1990,6 @@ public class IntegrationFlowTests {
 		}
 	}
 
-
-	private static class InvalidLastComponentFlowContext {
-
-		@Bean
-		public IntegrationFlow wrongLastComponent() {
-			return IntegrationFlows.from(MessageChannels.direct())
-					.route(Object::toString)
-					.channel(MessageChannels.direct())
-					.get();
-		}
-
-	}
 
 	private static class InvalidLastMessageChannelFlowContext {
 

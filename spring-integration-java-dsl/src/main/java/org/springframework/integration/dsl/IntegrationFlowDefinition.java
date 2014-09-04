@@ -535,17 +535,17 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.route(router, endpointConfigurer);
 	}
 
-	public B recipientListRoute(ComponentConfigurer<RecipientListRouterSpec> routerConfigurer) {
-		return this.recipientListRoute(routerConfigurer, null);
+	public B routeToRecipients(ComponentConfigurer<RecipientListRouterSpec> routerConfigurer) {
+		return this.routeToRecipients(routerConfigurer, null);
 	}
 
-	public B recipientListRoute(ComponentConfigurer<RecipientListRouterSpec> routerConfigurer,
+	public B routeToRecipients(ComponentConfigurer<RecipientListRouterSpec> routerConfigurer,
 			EndpointConfigurer<GenericEndpointSpec<RecipientListRouter>> endpointConfigurer) {
 		Assert.notNull(routerConfigurer);
 		RecipientListRouterSpec spec = new RecipientListRouterSpec();
 		routerConfigurer.configure(spec);
 		DslRecipientListRouter recipientListRouter = (DslRecipientListRouter) spec.get();
-		Assert.notEmpty(recipientListRouter.getRecipients(), "recipient list must not be empty");
+		Assert.notEmpty(recipientListRouter.get(), "recipient list must not be empty");
 		return this.route(recipientListRouter, endpointConfigurer);
 	}
 
@@ -642,6 +642,15 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 					}
 					else {
 						messageProducer.setOutputChannel(outputChannel);
+					}
+				}
+				else if (this.currentComponent instanceof AbstractMessageRouter) {
+					AbstractMessageRouter router = (AbstractMessageRouter) this.currentComponent;
+					if (channelName != null) {
+						router.setDefaultOutputChannelName(channelName);
+					}
+					else {
+						router.setDefaultOutputChannel(outputChannel);
 					}
 				}
 				else {

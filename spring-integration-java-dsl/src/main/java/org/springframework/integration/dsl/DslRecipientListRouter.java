@@ -38,15 +38,15 @@ class DslRecipientListRouter extends RecipientListRouter {
 
 	private final Map<String, MessageSelector> selectorRecipientMap = new HashMap<String, MessageSelector>();
 
-	void addRecipient(String channelName, String expression) {
+	void add(String channelName, String expression) {
 		this.expressionRecipientMap.put(channelName, expression);
 	}
 
-	void addRecipient(String channelName, MessageSelector selector) {
+	void add(String channelName, MessageSelector selector) {
 		this.selectorRecipientMap.put(channelName, selector);
 	}
 
-	Map<String, Object> getRecipients() {
+	Map<String, Object> get() {
 		Map<String, Object> recipients =
 				new HashMap<String, Object>(this.expressionRecipientMap.size() + this.selectorRecipientMap.size());
 		recipients.putAll(this.expressionRecipientMap);

@@ -16,23 +16,24 @@
 
 package org.springframework.integration.dsl.file;
 
+import java.io.File;
 import java.util.Comparator;
 
 /**
  * @author Artem Bilan
  */
-public abstract class File {
+public abstract class Files {
 
-	public static FileInboundChannelAdapterSpec inboundAdapter(java.io.File directory) {
+	public static FileInboundChannelAdapterSpec inboundAdapter(File directory) {
 		return inboundAdapter(directory, null);
 	}
 
-	public static FileInboundChannelAdapterSpec inboundAdapter(java.io.File directory,
-			Comparator<java.io.File> receptionOrderComparator) {
+	public static FileInboundChannelAdapterSpec inboundAdapter(File directory,
+			Comparator<File> receptionOrderComparator) {
 		return new FileInboundChannelAdapterSpec(receptionOrderComparator).directory(directory);
 	}
 
-	public static FileWritingMessageHandlerSpec outboundAdapter(java.io.File destinationDirectory) {
+	public static FileWritingMessageHandlerSpec outboundAdapter(File destinationDirectory) {
 		return new FileWritingMessageHandlerSpec(destinationDirectory).expectReply(false);
 	}
 
@@ -40,7 +41,7 @@ public abstract class File {
 		return new FileWritingMessageHandlerSpec(directoryExpression).expectReply(false);
 	}
 
-	public static FileWritingMessageHandlerSpec outboundGateway(java.io.File destinationDirectory) {
+	public static FileWritingMessageHandlerSpec outboundGateway(File destinationDirectory) {
 		return new FileWritingMessageHandlerSpec(destinationDirectory).expectReply(true);
 	}
 
@@ -48,7 +49,7 @@ public abstract class File {
 		return new FileWritingMessageHandlerSpec(directoryExpression).expectReply(true);
 	}
 
-	public static TailAdapterSpec tailAdapter(java.io.File file) {
+	public static TailAdapterSpec tailAdapter(File file) {
 		return new TailAdapterSpec().file(file);
 	}
 
