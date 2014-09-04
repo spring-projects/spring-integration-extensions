@@ -21,6 +21,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
@@ -614,9 +616,16 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 				if (outputChannel instanceof MessageChannelReference) {
 					channelName = ((MessageChannelReference) outputChannel).getName();
 				}
-				if (this.currentComponent instanceof AbstractReplyProducingMessageHandler) {
+
+				Object currentComponent = this.currentComponent;
+
+				if (AopUtils.isAopProxy(currentComponent)) {
+					currentComponent = extractProxyTarget(currentComponent);
+				}
+
+				if (currentComponent instanceof AbstractReplyProducingMessageHandler) {
 					AbstractReplyProducingMessageHandler messageProducer =
-							(AbstractReplyProducingMessageHandler) this.currentComponent;
+							(AbstractReplyProducingMessageHandler) currentComponent;
 					if (channelName != null) {
 						messageProducer.setOutputChannelName(channelName);
 					}
@@ -624,9 +633,9 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 						messageProducer.setOutputChannel(outputChannel);
 					}
 				}
-				else if (this.currentComponent instanceof SourcePollingChannelAdapterSpec) {
+				else if (currentComponent instanceof SourcePollingChannelAdapterSpec) {
 					SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean =
-							((SourcePollingChannelAdapterSpec) this.currentComponent).get().getT1();
+							((SourcePollingChannelAdapterSpec) currentComponent).get().getT1();
 					if (channelName != null) {
 						pollingChannelAdapterFactoryBean.setOutputChannelName(channelName);
 					}
@@ -634,9 +643,9 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 						pollingChannelAdapterFactoryBean.setOutputChannel(outputChannel);
 					}
 				}
-				else if (this.currentComponent instanceof AbstractCorrelatingMessageHandler) {
+				else if (currentComponent instanceof AbstractCorrelatingMessageHandler) {
 					AbstractCorrelatingMessageHandler messageProducer =
-							(AbstractCorrelatingMessageHandler) this.currentComponent;
+							(AbstractCorrelatingMessageHandler) currentComponent;
 					if (channelName != null) {
 						messageProducer.setOutputChannelName(channelName);
 					}
@@ -645,7 +654,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 					}
 				}
 				else {
-					throw new BeanCreationException("The 'currentComponent' (" + this.currentComponent +
+					throw new BeanCreationException("The 'currentComponent' (" + currentComponent +
 							") is a one-way 'MessageHandler' and it isn't appropriate to configure 'outputChannel'. " +
 							"This is the end of the integration flow.");
 				}
@@ -663,6 +672,22 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	private static boolean isLambda(Object o) {
 		Class<?> aClass = o.getClass();
 		return aClass.isSynthetic() && !aClass.isAnonymousClass() && !aClass.isLocalClass();
+	}
+
+	private static Object extractProxyTarget(Object target) {
+		if (!(target instanceof Advised)) {
+			return target;
+		}
+		Advised advised = (Advised) target;
+		if (advised.getTargetSource() == null) {
+			return null;
+		}
+		try {
+			return extractProxyTarget(advised.getTargetSource().getTarget());
+		}
+		catch (Exception e) {
+			throw new BeanCreationException("Could not extract target", e);
+		}
 	}
 
 }
