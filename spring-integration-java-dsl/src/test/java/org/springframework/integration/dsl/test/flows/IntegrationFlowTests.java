@@ -47,6 +47,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -1271,6 +1275,17 @@ public class IntegrationFlowTests {
 				Matchers.containsString(dir + "subSftpSource"));
 	}
 
+	@Autowired
+	private MBeanServer mBeanServer;
+
+	@Test
+	public void testMBeansForDSL() throws MalformedObjectNameException {
+		assertFalse(this.mBeanServer.queryMBeans(ObjectName.getInstance("org.springframework.integration:" +
+				"bean=anonymous,name=sftpMgetInputChannel,type=MessageHandler"), null).isEmpty());
+		assertFalse(this.mBeanServer.queryMBeans(ObjectName.getInstance("org.springframework.integration:" +
+				"type=MessageHandler,name=ftpMgetInputChannel,bean=anonymous"), null).isEmpty());
+	}
+
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
 
@@ -1445,18 +1460,23 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
+		public MessageHandler ftpOutboundGateway() {
+			return Ftp.outboundGateway(this.ftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
+					"payload")
+					.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
+					.regexFileNameFilter("(subFtpSource|.*1.txt)")
+					.localDirectoryExpression("@ftpServer.targetLocalDirectoryName + #remoteDirectory")
+					.localFilenameGeneratorExpression("#remoteFileName.replaceFirst('ftpSource', " +
+							"'localTarget')").get();
+		}
+
+		@Bean
 		public IntegrationFlow ftpMGetFlow() {
 			return IntegrationFlows.from("ftpMgetInputChannel")
-					.handle(Ftp.outboundGateway(this.ftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
-							"payload")
-							.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
-							.regexFileNameFilter("(subFtpSource|.*1.txt)")
-							.localDirectoryExpression("@ftpServer.targetLocalDirectoryName + #remoteDirectory")
-							.localFilenameGeneratorExpression("#remoteFileName.replaceFirst('ftpSource', 'localTarget')"))
+					.handle(ftpOutboundGateway())
 					.channel(remoteFileOutputChannel())
 					.get();
 		}
-
 		@Bean
 		public IntegrationFlow sftpMGetFlow() {
 			return IntegrationFlows.from("sftpMgetInputChannel")
