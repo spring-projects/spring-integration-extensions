@@ -121,6 +121,7 @@ import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.file.remote.gateway.AbstractRemoteFileOutboundGateway;
+import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessageProducer;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
@@ -162,6 +163,7 @@ import org.springframework.util.StreamUtils;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.mongodb.MongoClient;
+
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
@@ -338,6 +340,9 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("tailChannel")
 	private PollableChannel tailChannel;
+
+	@Autowired
+	private ApacheCommonsFileTailingMessageProducer tailer;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -947,7 +952,7 @@ public class IntegrationFlowTests {
 		for (int i = 0; i < 50; i++) {
 			file.write((i + "\n").getBytes());
 		}
-
+		this.tailer.start();
 		for (int i = 0; i < 50; i++) {
 			Message<?> message = this.tailChannel.receive(5000);
 			assertNotNull(message);
@@ -1870,8 +1875,10 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow tailFlow() {
 			return IntegrationFlows.from(Files.tailAdapter(new File(tmpDir, "TailTest"))
-					.delay(500)
-					.id("tailer"))
+						.delay(500)
+						.end(false)
+						.id("tailer")
+						.autoStartup(false))
 					.transform("hello "::concat)
 					.channel(MessageChannels.queue("tailChannel"))
 					.get();
