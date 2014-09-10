@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Properties;
 
 import javax.mail.Flags;
+import javax.mail.Folder;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -222,7 +223,7 @@ public class MailTests {
 		public IntegrationFlow imapMailFlow() {
 			return IntegrationFlows
 					.from(Mail.imapInboundAdapter("imap://user:pw@localhost:" + imapPort + "/INBOX")
-									.searchTermStrategy((f, l) -> fromAndNotSeenTerm())
+									.searchTermStrategy(this::fromAndNotSeenTerm)
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
 									.poller(Pollers.fixedDelay(1000)))
@@ -234,7 +235,7 @@ public class MailTests {
 		public IntegrationFlow imapIdleFlow() {
 			return IntegrationFlows
 					.from(Mail.imapIdleAdapter("imap://user:pw@localhost:" + imapIdlePort + "/INBOX")
-							.searchTermStrategy((f, l) -> fromAndNotSeenTerm())
+							.searchTermStrategy(this::fromAndNotSeenTerm)
 							.javaMailProperties(p -> p.put("mail.debug", "true")
 									.put("mail.imap.connectionpoolsize", "5"))
 							.shouldReconnectAutomatically(false))
@@ -242,7 +243,7 @@ public class MailTests {
 					.get();
 		}
 
-		private SearchTerm fromAndNotSeenTerm() {
+		private SearchTerm fromAndNotSeenTerm(Flags supportedFlags, Folder folder) {
 			try {
 				FromTerm fromTerm = new FromTerm(new InternetAddress("bar@baz"));
 				return new AndTerm(fromTerm, new FlagTerm(new Flags(Flags.Flag.SEEN), false));
