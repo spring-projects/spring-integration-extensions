@@ -16,6 +16,8 @@
 
 package org.springframework.integration.dsl;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -32,6 +34,8 @@ import org.springframework.util.StringUtils;
 class GatewayMessageHandler extends AbstractReplyProducingMessageHandler {
 
 	private final GatewayProxyFactoryBean gatewayProxyFactoryBean;
+
+	private final AtomicBoolean initialized = new AtomicBoolean();
 
 	private RequestReplyExchanger exchanger;
 
@@ -79,7 +83,14 @@ class GatewayMessageHandler extends AbstractReplyProducingMessageHandler {
 	}
 
 	@Override
-	protected void doInit() {
+	protected Object handleRequestMessage(Message<?> requestMessage) {
+		if (!this.initialized.getAndSet(true)) {
+			initialize();
+		}
+		return exchanger.exchange(requestMessage);
+	}
+
+	private void initialize() {
 		BeanFactory beanFactory = getBeanFactory();
 
 		if (StringUtils.hasText(this.requestChannel)) {
@@ -106,11 +117,6 @@ class GatewayMessageHandler extends AbstractReplyProducingMessageHandler {
 		catch (Exception e) {
 			throw new BeanCreationException("Can't instantiate the GatewayProxyFactoryBean: " + this, e);
 		}
-	}
-
-	@Override
-	protected Object handleRequestMessage(Message<?> requestMessage) {
-		return exchanger.exchange(requestMessage);
 	}
 
 }

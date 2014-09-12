@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.springframework.beans.BeansException;
 import org.springframework.integration.core.MessageSelector;
+import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.filter.ExpressionEvaluatingSelector;
 import org.springframework.integration.router.RecipientListRouter;
 import org.springframework.messaging.MessageChannel;
@@ -69,21 +70,45 @@ class DslRecipientListRouter extends RecipientListRouter {
 		List<Recipient> recipients = new ArrayList<Recipient>(this.selectorRecipientMap.size());
 
 		for (Map.Entry<String, MessageSelector> entry : selectorRecipientMap.entrySet()) {
-			recipients.add(new Recipient(this.resolveChannelName(entry.getKey()), entry.getValue()));
+			recipients.add(new DslRecipient(new MessageChannelReference(entry.getKey()), entry.getValue()));
 		}
 
 		this.setRecipients(recipients);
 		super.onInit();
 	}
 
-	private MessageChannel resolveChannelName(String channelName) {
-		try {
-			return this.getBeanFactory().getBean(channelName, MessageChannel.class);
+
+	class DslRecipient extends Recipient {
+
+		private volatile MessageChannel channel;
+
+		DslRecipient(MessageChannelReference channel, MessageSelector selector) {
+			super(channel, selector);
 		}
-		catch (BeansException e) {
-			throw new DestinationResolutionException("Failed to look up MessageChannel with name '"
-					+ channelName + "' in the BeanFactory.");
+
+		@Override
+		public MessageChannel getChannel() {
+			if (this.channel == null) {
+				synchronized (this) {
+					if (this.channel == null) {
+						this.channel = resolveChannelName((MessageChannelReference) super.getChannel());
+					}
+				}
+			}
+			return this.channel;
 		}
+
+		private MessageChannel resolveChannelName(MessageChannelReference channelReference) {
+			String channelName = channelReference.getName();
+			try {
+				return DslRecipientListRouter.this.getBeanFactory().getBean(channelName, MessageChannel.class);
+			}
+			catch (BeansException e) {
+				throw new DestinationResolutionException("Failed to look up MessageChannel with name '"
+						+ channelName + "' in the BeanFactory.");
+			}
+		}
+
 	}
 
 }
