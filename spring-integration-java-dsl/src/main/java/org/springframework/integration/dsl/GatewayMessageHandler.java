@@ -79,7 +79,18 @@ class GatewayMessageHandler extends AbstractReplyProducingMessageHandler {
 	}
 
 	@Override
-	protected void doInit() {
+	protected Object handleRequestMessage(Message<?> requestMessage) {
+		if (this.exchanger == null) {
+			synchronized (this) {
+				if (this.exchanger == null) {
+					initialize();
+				}
+			}
+		}
+		return this.exchanger.exchange(requestMessage);
+	}
+
+	private void initialize() {
 		BeanFactory beanFactory = getBeanFactory();
 
 		if (StringUtils.hasText(this.requestChannel)) {
@@ -106,11 +117,6 @@ class GatewayMessageHandler extends AbstractReplyProducingMessageHandler {
 		catch (Exception e) {
 			throw new BeanCreationException("Can't instantiate the GatewayProxyFactoryBean: " + this, e);
 		}
-	}
-
-	@Override
-	protected Object handleRequestMessage(Message<?> requestMessage) {
-		return exchanger.exchange(requestMessage);
 	}
 
 }

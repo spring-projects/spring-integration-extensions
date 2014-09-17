@@ -24,7 +24,7 @@ compileTestJava {
 }
 
 ext {
-	activeMqVersion = '5.9.0'
+	activeMqVersion = '5.10.0'
 	apacheSshdVersion = '0.10.1'
 	embedMongoVersion = '1.46.0'
 	ftpServerVersion = '1.0.6'
