@@ -19,7 +19,7 @@ package org.springframework.integration.dsl.jms;
 import javax.jms.Destination;
 
 import org.springframework.integration.dsl.core.MessageProducerSpec;
-import org.springframework.integration.dsl.support.ComponentConfigurer;
+import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.jms.ChannelPublishingJmsMessageListener;
 import org.springframework.integration.jms.JmsHeaderMapper;
 import org.springframework.jms.listener.AbstractMessageListenerContainer;
@@ -74,10 +74,10 @@ public class JmsMessageDrivenChannelAdapterSpec<S extends JmsMessageDrivenChanne
 			return _this();
 		}
 
-		public JmsMessageDrivenChannelAdapterListenerContainerSpec<C> configureListenerContainer
-				(ComponentConfigurer<JmsListenerContainerSpec<C>> configurer) {
+		public JmsMessageDrivenChannelAdapterListenerContainerSpec<C> configureListenerContainer(
+				Consumer<JmsListenerContainerSpec<C>> configurer) {
 			Assert.notNull(configurer);
-			configurer.configure(this.spec);
+			configurer.accept(this.spec);
 			return _this();
 		}
 

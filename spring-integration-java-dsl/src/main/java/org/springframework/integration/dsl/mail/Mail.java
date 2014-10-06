@@ -35,6 +35,10 @@ public class Mail {
 		return new Pop3MailInboundChannelAdapterSpec(url);
 	}
 
+	public static Pop3MailInboundChannelAdapterSpec pop3InboundAdapter(String host, String username, String password) {
+		return pop3InboundAdapter(host, -1, username, password);
+	}
+
 	public static Pop3MailInboundChannelAdapterSpec pop3InboundAdapter(String host, int port, String username,
 			String password) {
 		return new Pop3MailInboundChannelAdapterSpec(host, port, username, password);

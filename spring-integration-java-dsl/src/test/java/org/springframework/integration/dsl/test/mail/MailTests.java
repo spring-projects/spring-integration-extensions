@@ -197,7 +197,7 @@ public class MailTests {
 		public IntegrationFlow sendMailFlow() {
 			return IntegrationFlows.from("sendMailChannel")
 					.enrichHeaders(Mail.headers().subject("foo").from("foo@bar").to("bar@baz"))
-					.handle(Mail.outboundAdapter("localhost")
+					.handleAdapter(a -> a.mail("localhost")
 									.port(smtpPort)
 									.credentials("user", "pw")
 									.protocol("smtp")
@@ -209,7 +209,7 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow pop3MailFlow() {
 			return IntegrationFlows
-					.from(Mail.pop3InboundAdapter("localhost", pop3Port, "user", "pw")
+					.fromMessageSource(s -> s.pop3("localhost", pop3Port, "user", "pw")
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
 									.poller(Pollers.fixedDelay(1000)))
@@ -222,7 +222,7 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow imapMailFlow() {
 			return IntegrationFlows
-					.from(Mail.imapInboundAdapter("imap://user:pw@localhost:" + imapPort + "/INBOX")
+					.fromMessageSource(s -> s.imap("imap://user:pw@localhost:" + imapPort + "/INBOX")
 									.searchTermStrategy(this::fromAndNotSeenTerm)
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
@@ -234,7 +234,7 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow imapIdleFlow() {
 			return IntegrationFlows
-					.from(Mail.imapIdleAdapter("imap://user:pw@localhost:" + imapIdlePort + "/INBOX")
+					.fromMessageProducer(mp -> mp.imap("imap://user:pw@localhost:" + imapIdlePort + "/INBOX")
 							.searchTermStrategy(this::fromAndNotSeenTerm)
 							.javaMailProperties(p -> p.put("mail.debug", "true")
 									.put("mail.imap.connectionpoolsize", "5"))

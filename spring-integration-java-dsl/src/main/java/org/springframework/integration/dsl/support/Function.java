@@ -14,31 +14,28 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.tuple;
+package org.springframework.integration.dsl.support;
 
 /**
- * A tuple that holds a single value
+ * Implementations of this class perform work on the given parameter and return a result of an optionally different
+ * type.
  *
- * @param <T1> The type held by this tuple
+ * @param <T> The type of the input to the apply operation
+ * @param <R> The type of the result of the apply operation
  *
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
-public class Tuple1<T1> extends Tuple {
-
-	private static final long serialVersionUID = -1467756857377152573L;
-
-	Tuple1(Object... values) {
-		super(values);
-	}
+public interface Function<T, R> {
 
 	/**
-	 * Type-safe way to get the first object of this {@link Tuple}.
+	 * Execute the logic of the action, accepting the given parameter.
 	 *
-	 * @return The first object, cast to the correct type.
+	 * @param t The parameter to pass to the action.
+	 *
+	 * @return result
 	 */
-	@SuppressWarnings("unchecked")
-	public T1 getT1() {
-		return (T1) get(0);
-	}
+	R apply(T t);
 
 }
+

@@ -19,7 +19,7 @@ package org.springframework.integration.dsl.jms;
 import javax.jms.Destination;
 
 import org.springframework.integration.dsl.core.MessagingGatewaySpec;
-import org.springframework.integration.dsl.support.ComponentConfigurer;
+import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.jms.ChannelPublishingJmsMessageListener;
 import org.springframework.integration.jms.JmsHeaderMapper;
 import org.springframework.jms.listener.AbstractMessageListenerContainer;
@@ -124,10 +124,10 @@ public class JmsInboundGatewaySpec<S extends JmsInboundGatewaySpec<S>>
 			return _this();
 		}
 
-		public JmsInboundGatewayListenerContainerSpec<C> configureListenerContainer
-				(ComponentConfigurer<JmsListenerContainerSpec<C>> configurer) {
+		public JmsInboundGatewayListenerContainerSpec<C> configureListenerContainer(
+				Consumer<JmsListenerContainerSpec<C>> configurer) {
 			Assert.notNull(configurer);
-			configurer.configure(this.spec);
+			configurer.accept(this.spec);
 			return _this();
 		}
 

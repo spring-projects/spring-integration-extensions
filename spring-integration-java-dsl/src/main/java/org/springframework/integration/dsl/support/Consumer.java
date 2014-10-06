@@ -16,14 +16,21 @@
 
 package org.springframework.integration.dsl.support;
 
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
-
 /**
- * @author Artem Bilan
-
+ * Implementations accept a given value and perform work on the argument.
+ *
+ * @author Jon Brisbin
+ * @author Stephane Maldini
+ *
+ * @param <T> the type of values to accept
  */
-public interface ComponentConfigurer<S extends IntegrationComponentSpec<?, ?>> {
+public interface Consumer<T> {
 
-	void configure(S spec);
+	/**
+	 * Execute the logic of the action, accepting the given parameter.
+	 *
+	 * @param t The parameter to pass to the consumer.
+	 */
+	void accept(T t);
 
 }

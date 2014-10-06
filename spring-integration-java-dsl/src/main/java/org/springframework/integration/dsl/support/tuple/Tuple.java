@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.tuple;
+package org.springframework.integration.dsl.support.tuple;
 
 import java.io.Serializable;
 import java.util.Arrays;

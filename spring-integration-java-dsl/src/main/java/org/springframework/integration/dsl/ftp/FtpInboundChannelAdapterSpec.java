@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 import org.apache.commons.net.ftp.FTPFile;
 
-import org.springframework.integration.dsl.file.RemoteInboundChannelAdapterSpec;
+import org.springframework.integration.dsl.file.RemoteFileInboundChannelAdapterSpec;
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.ftp.filters.FtpRegexPatternFileListFilter;
 import org.springframework.integration.ftp.filters.FtpSimplePatternFileListFilter;
@@ -32,8 +32,8 @@ import org.springframework.integration.ftp.inbound.FtpInboundFileSynchronizingMe
  * @author Artem Bilan
  */
 public class FtpInboundChannelAdapterSpec
-		extends RemoteInboundChannelAdapterSpec<FTPFile, FtpInboundChannelAdapterSpec,
-		FtpInboundFileSynchronizingMessageSource> {
+		extends RemoteFileInboundChannelAdapterSpec<FTPFile, FtpInboundChannelAdapterSpec,
+				FtpInboundFileSynchronizingMessageSource> {
 
 	FtpInboundChannelAdapterSpec(SessionFactory<FTPFile> sessionFactory, Comparator<File> comparator) {
 		super(new FtpInboundFileSynchronizer(sessionFactory));

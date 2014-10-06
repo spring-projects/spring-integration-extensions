@@ -14,32 +14,31 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.tuple;
+package org.springframework.integration.dsl.support.tuple;
 
 /**
- * A tuple that holds two values
+ * A tuple that holds a single value
  *
- * @param <T1> The type of the first value held by this tuple
- * @param <T2> The type of the second balue held by this tuple
+ * @param <T1> The type held by this tuple
  *
  * @author Jon Brisbin
  */
-public class Tuple2<T1, T2> extends Tuple1<T1> {
+public class Tuple1<T1> extends Tuple {
 
-	private static final long serialVersionUID = -565933838909569191L;
+	private static final long serialVersionUID = -1467756857377152573L;
 
-	Tuple2(Object... values) {
+	Tuple1(Object... values) {
 		super(values);
 	}
 
 	/**
-	 * Type-safe way to get the second object of this {@link Tuple}.
+	 * Type-safe way to get the first object of this {@link Tuple}.
 	 *
-	 * @return The second object, cast to the correct type.
+	 * @return The first object, cast to the correct type.
 	 */
 	@SuppressWarnings("unchecked")
-	public T2 getT2() {
-		return (T2) get(1);
+	public T1 getT1() {
+		return (T1) get(0);
 	}
 
 }

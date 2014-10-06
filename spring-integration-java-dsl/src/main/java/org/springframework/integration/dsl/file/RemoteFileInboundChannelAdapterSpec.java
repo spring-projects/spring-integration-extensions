@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 /**
  * @author Artem Bilan
  */
-public abstract class RemoteInboundChannelAdapterSpec<F, S extends RemoteInboundChannelAdapterSpec<F, S, MS>,
+public abstract class RemoteFileInboundChannelAdapterSpec<F, S extends RemoteFileInboundChannelAdapterSpec<F, S, MS>,
 		MS extends AbstractInboundFileSynchronizingMessageSource<F>>
 		extends MessageSourceSpec<S, MS> implements ComponentsRegistration {
 
@@ -38,7 +38,7 @@ public abstract class RemoteInboundChannelAdapterSpec<F, S extends RemoteInbound
 
 	private FileListFilter<F> filter;
 
-	protected RemoteInboundChannelAdapterSpec(AbstractInboundFileSynchronizer<F> synchronizer) {
+	protected RemoteFileInboundChannelAdapterSpec(AbstractInboundFileSynchronizer<F> synchronizer) {
 		this.synchronizer = synchronizer;
 	}
 

@@ -20,7 +20,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 
 import org.springframework.integration.dsl.core.MessageSourceSpec;
-import org.springframework.integration.dsl.support.ComponentConfigurer;
+import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.jms.JmsDestinationPollingSource;
 import org.springframework.integration.jms.JmsHeaderMapper;
 import org.springframework.jms.core.JmsTemplate;
@@ -74,9 +74,9 @@ public class JmsInboundChannelAdapterSpec<S extends JmsInboundChannelAdapterSpec
 			super(connectionFactory);
 		}
 
-		public JmsInboundChannelSpecTemplateAware configureJmsTemplate(ComponentConfigurer<JmsTemplateSpec> configurer) {
+		public JmsInboundChannelSpecTemplateAware configureJmsTemplate(Consumer<JmsTemplateSpec> configurer) {
 			Assert.notNull(configurer);
-			configurer.configure(this.jmsTemplateSpec);
+			configurer.accept(this.jmsTemplateSpec);
 			return _this();
 		}
 

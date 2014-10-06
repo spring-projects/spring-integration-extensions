@@ -16,15 +16,16 @@
 
 package org.springframework.integration.dsl.sftp;
 
+import java.io.File;
 import java.util.Comparator;
-
-import com.jcraft.jsch.ChannelSftp;
 
 import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.file.remote.gateway.AbstractRemoteFileOutboundGateway;
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.integration.sftp.gateway.SftpOutboundGateway;
+
+import com.jcraft.jsch.ChannelSftp;
 
 /**
  * @author Artem Bilan
@@ -36,7 +37,7 @@ public abstract class Sftp {
 	}
 
 	public static SftpInboundChannelAdapterSpec inboundAdapter(SessionFactory<ChannelSftp.LsEntry> sessionFactory,
-			Comparator<java.io.File> receptionOrderComparator) {
+			Comparator<File> receptionOrderComparator) {
 		return new SftpInboundChannelAdapterSpec(sessionFactory, receptionOrderComparator);
 	}
 
