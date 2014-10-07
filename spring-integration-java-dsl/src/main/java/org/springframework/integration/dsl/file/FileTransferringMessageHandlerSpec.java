@@ -53,7 +53,8 @@ public abstract class FileTransferringMessageHandlerSpec<F, S extends FileTransf
 	}
 
 	@SuppressWarnings("unchecked")
-	protected FileTransferringMessageHandlerSpec(RemoteFileTemplate<F> remoteFileTemplate, FileExistsMode fileExistsMode) {
+	protected FileTransferringMessageHandlerSpec(RemoteFileTemplate<F> remoteFileTemplate,
+			FileExistsMode fileExistsMode) {
 		Constructor<?> fileExistsModeConstructor =
 				ClassUtils.getConstructorIfAvailable(FileTransferringMessageHandler.class, RemoteFileTemplate.class,
 						FileExistsMode.class);
@@ -64,7 +65,8 @@ public abstract class FileTransferringMessageHandlerSpec<F, S extends FileTransf
 		}
 		else {
 			try {
-				this.target = (FileTransferringMessageHandler<F>) fileExistsModeConstructor.newInstance(remoteFileTemplate,
+				this.target =
+						(FileTransferringMessageHandler<F>) fileExistsModeConstructor.newInstance(remoteFileTemplate,
 								fileExistsMode);
 			}
 			catch (Exception e) {

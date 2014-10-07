@@ -34,13 +34,13 @@ import org.springframework.jms.listener.AbstractMessageListenerContainer;
  */
 public class MessageProducers {
 
-	public AmqpInboundChannelAdapterSpec
-	amqp(org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory, String... queueNames) {
+	public AmqpInboundChannelAdapterSpec amqp(
+			org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory, String... queueNames) {
 		return Amqp.inboundAdapter(connectionFactory, queueNames);
 	}
 
-	public AmqpInboundChannelAdapterSpec
-	amqp(org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory, Queue... queues) {
+	public AmqpInboundChannelAdapterSpec amqp(
+			org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory, Queue... queues) {
 		return Amqp.inboundAdapter(connectionFactory, queues);
 	}
 
@@ -64,7 +64,8 @@ public class MessageProducers {
 
 	public <C extends AbstractMessageListenerContainer>
 	JmsMessageDrivenChannelAdapterSpec<? extends JmsMessageDrivenChannelAdapterSpec<?>> jms(
-			javax.jms.ConnectionFactory connectionFactory, Class<C> containerClass) {
+			javax.jms.ConnectionFactory connectionFactory,
+			Class<C> containerClass) {
 		return Jms.messageDriverChannelAdapter(connectionFactory, containerClass);
 	}
 

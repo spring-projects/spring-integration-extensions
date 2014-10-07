@@ -34,7 +34,8 @@ import org.springframework.util.ErrorHandler;
 /**
  * @author Artem Bilan
  */
-public class AmqpInboundChannelAdapterSpec extends MessageProducerSpec<AmqpInboundChannelAdapterSpec, AmqpInboundChannelAdapter> {
+public class AmqpInboundChannelAdapterSpec
+		extends MessageProducerSpec<AmqpInboundChannelAdapterSpec, AmqpInboundChannelAdapter> {
 
 	private final SimpleMessageListenerContainer listenerContainer;
 

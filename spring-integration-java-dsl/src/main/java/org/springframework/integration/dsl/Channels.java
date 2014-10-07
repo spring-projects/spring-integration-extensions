@@ -92,11 +92,13 @@ public class Channels {
 		return MessageChannels.priority(id);
 	}
 
-	public QueueChannelSpec.MessageStoreSpec priority(String id, PriorityCapableChannelMessageStore messageGroupStore, Object groupId) {
+	public QueueChannelSpec.MessageStoreSpec priority(String id, PriorityCapableChannelMessageStore messageGroupStore,
+			Object groupId) {
 		return MessageChannels.priority(id, messageGroupStore, groupId);
 	}
 
-	public QueueChannelSpec.MessageStoreSpec priority(PriorityCapableChannelMessageStore messageGroupStore, Object groupId) {
+	public QueueChannelSpec.MessageStoreSpec priority(PriorityCapableChannelMessageStore messageGroupStore,
+			Object groupId) {
 		return MessageChannels.priority(messageGroupStore, groupId);
 	}
 

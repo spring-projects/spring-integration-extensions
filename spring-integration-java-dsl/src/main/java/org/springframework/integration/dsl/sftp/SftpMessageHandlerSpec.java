@@ -16,17 +16,18 @@
 
 package org.springframework.integration.dsl.sftp;
 
-import com.jcraft.jsch.ChannelSftp;
-
 import org.springframework.integration.dsl.file.FileTransferringMessageHandlerSpec;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.file.support.FileExistsMode;
 
+import com.jcraft.jsch.ChannelSftp;
+
 /**
  * @author Artem Bilan
  */
-public class SftpMessageHandlerSpec extends FileTransferringMessageHandlerSpec<ChannelSftp.LsEntry, SftpMessageHandlerSpec> {
+public class SftpMessageHandlerSpec
+		extends FileTransferringMessageHandlerSpec<ChannelSftp.LsEntry, SftpMessageHandlerSpec> {
 
 	SftpMessageHandlerSpec(SessionFactory<ChannelSftp.LsEntry> sessionFactory) {
 		super(sessionFactory);

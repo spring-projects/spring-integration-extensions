@@ -47,7 +47,8 @@ public abstract class Amqp {
 		return new AmqpInboundGatewaySpec(listenerContainer);
 	}
 
-	public static AmqpInboundChannelAdapterSpec inboundAdapter(ConnectionFactory connectionFactory, String... queueNames) {
+	public static AmqpInboundChannelAdapterSpec inboundAdapter(ConnectionFactory connectionFactory,
+			String... queueNames) {
 		SimpleMessageListenerContainer listenerContainer = new SimpleMessageListenerContainer(connectionFactory);
 		listenerContainer.setQueueNames(queueNames);
 		return (AmqpInboundChannelAdapterSpec) inboundAdapter(listenerContainer);
@@ -77,12 +78,13 @@ public abstract class Amqp {
 		return pollableChannel(null, connectionFactory);
 	}
 
-	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S> pollableChannel(String id,
-			ConnectionFactory connectionFactory) {
+	public static <S extends AmqpPollableMessageChannelSpec<S>> AmqpPollableMessageChannelSpec<S> pollableChannel(
+			String id, ConnectionFactory connectionFactory) {
 		return new AmqpPollableMessageChannelSpec<S>(connectionFactory).id(id);
 	}
 
-	public static <S extends AmqpMessageChannelSpec<S>> AmqpMessageChannelSpec<S> channel(ConnectionFactory connectionFactory) {
+	public static <S extends AmqpMessageChannelSpec<S>> AmqpMessageChannelSpec<S> channel(
+			ConnectionFactory connectionFactory) {
 		return channel(null, connectionFactory);
 	}
 

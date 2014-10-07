@@ -276,7 +276,8 @@ public class PoorMansMailServer {
 									+ "((\"Bar\" NIL \"bar\" \"baz.net\")) NIL NIL "
 									+ "\"<4DA0A7E4.3010506@baz.net>\" "
 									+ "\"<CACVnpJkAUUfa3d_-4GNZW2WpxbB39tBCHC=T0gc7hty6dOEHcA@foo.bar.com>\") "
-									+ "BODYSTRUCTURE (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"ISO-8859-1\") NIL NIL \"7BIT\" 1176 43)))");
+									+ "BODYSTRUCTURE (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"ISO-8859-1\") NIL NIL "
+									+ "\"7BIT\" 1176 43)))");
 							write(tag + "OK FETCH completed");
 						}
 						else if (line.contains("STORE 1 +FLAGS (\\Flagged)")) {

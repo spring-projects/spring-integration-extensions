@@ -18,7 +18,7 @@ package org.springframework.integration.dsl.core;
 
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.core.ResolvableType;
-import org.springframework.integration.dsl.support.PollerSpec;
+import org.springframework.integration.dsl.support.Function;
 import org.springframework.integration.dsl.support.tuple.Tuple;
 import org.springframework.integration.dsl.support.tuple.Tuple2;
 import org.springframework.integration.scheduling.PollerMetadata;
@@ -54,6 +54,10 @@ public abstract class EndpointSpec<S extends EndpointSpec<S, F, H>, F extends Be
 	public abstract S autoStartup(boolean autoStartup);
 
 	public abstract S poller(PollerMetadata pollerMetadata);
+
+	public S poller(Function<PollerFactory, PollerSpec> pollers) {
+		return poller(pollers.apply(new PollerFactory()));
+	}
 
 	public S poller(PollerSpec pollerMetadataSpec) {
 		return this.poller(pollerMetadataSpec.get());

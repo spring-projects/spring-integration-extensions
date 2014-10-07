@@ -17,8 +17,8 @@
 package org.springframework.integration.dsl.support;
 
 /**
- * Implementations of this class perform work on the given parameter and return a result of an optionally different
- * type.
+ * Implementations of this class perform work on the given parameter
+ * and return a result of an optionally different type.
  *
  * @param <T> The type of the input to the apply operation
  * @param <R> The type of the result of the apply operation
@@ -30,9 +30,7 @@ public interface Function<T, R> {
 
 	/**
 	 * Execute the logic of the action, accepting the given parameter.
-	 *
 	 * @param t The parameter to pass to the action.
-	 *
 	 * @return result
 	 */
 	R apply(T t);

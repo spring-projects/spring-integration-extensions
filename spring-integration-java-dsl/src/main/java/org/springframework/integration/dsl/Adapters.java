@@ -49,7 +49,7 @@ import com.jcraft.jsch.ChannelSftp;
 /**
  * @author Artem Bilan
  */
-public class MessageHandlers {
+public class Adapters {
 
 	public AmqpOutboundEndpointSpec amqp(AmqpTemplate amqpTemplate) {
 		return Amqp.outboundAdapter(amqpTemplate);
@@ -145,7 +145,7 @@ public class MessageHandlers {
 		return Mail.outboundAdapter(host);
 	}
 
-	MessageHandlers() {
+	Adapters() {
 	}
 
 }

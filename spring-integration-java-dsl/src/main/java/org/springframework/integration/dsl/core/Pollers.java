@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.support;
+package org.springframework.integration.dsl.core;
 
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;

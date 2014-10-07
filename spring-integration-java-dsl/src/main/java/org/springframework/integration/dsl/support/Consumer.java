@@ -19,16 +19,15 @@ package org.springframework.integration.dsl.support;
 /**
  * Implementations accept a given value and perform work on the argument.
  *
+ * @param <T> the type of values to accept
+ *
  * @author Jon Brisbin
  * @author Stephane Maldini
- *
- * @param <T> the type of values to accept
  */
 public interface Consumer<T> {
 
 	/**
 	 * Execute the logic of the action, accepting the given parameter.
-	 *
 	 * @param t The parameter to pass to the consumer.
 	 */
 	void accept(T t);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.support;
+package org.springframework.integration.dsl.core;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -23,7 +23,6 @@ import java.util.concurrent.Executor;
 
 import org.aopalliance.aop.Advice;
 
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.transaction.TransactionSynchronizationFactory;
 import org.springframework.scheduling.Trigger;
@@ -46,7 +45,8 @@ public final class PollerSpec extends IntegrationComponentSpec<PollerSpec, Polle
 		this.pollerMetadata.setTrigger(trigger);
 	}
 
-	public PollerSpec transactionSynchronizationFactory(TransactionSynchronizationFactory transactionSynchronizationFactory) {
+	public PollerSpec transactionSynchronizationFactory(
+			TransactionSynchronizationFactory transactionSynchronizationFactory) {
 		pollerMetadata.setTransactionSynchronizationFactory(transactionSynchronizationFactory);
 		return this;
 	}

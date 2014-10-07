@@ -53,7 +53,8 @@ public class JmsMessageDrivenChannelAdapterSpec<S extends JmsMessageDrivenChanne
 	}
 
 
-	public static class JmsMessageDrivenChannelAdapterListenerContainerSpec<C extends AbstractMessageListenerContainer> extends
+	public static class
+			JmsMessageDrivenChannelAdapterListenerContainerSpec<C extends AbstractMessageListenerContainer> extends
 			JmsMessageDrivenChannelAdapterSpec<JmsMessageDrivenChannelAdapterListenerContainerSpec<C>> {
 
 		private final JmsListenerContainerSpec<C> spec;

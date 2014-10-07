@@ -48,9 +48,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.MessageProducers;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.mail.Mail;
-import org.springframework.integration.dsl.support.Pollers;
+import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.ImapServer;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.Pop3Server;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.SmtpServer;
@@ -197,7 +198,7 @@ public class MailTests {
 		public IntegrationFlow sendMailFlow() {
 			return IntegrationFlows.from("sendMailChannel")
 					.enrichHeaders(Mail.headers().subject("foo").from("foo@bar").to("bar@baz"))
-					.handleAdapter(a -> a.mail("localhost")
+					.handleWithAdapter(h -> h.mail("localhost")
 									.port(smtpPort)
 									.credentials("user", "pw")
 									.protocol("smtp")
@@ -209,10 +210,9 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow pop3MailFlow() {
 			return IntegrationFlows
-					.fromMessageSource(s -> s.pop3("localhost", pop3Port, "user", "pw")
+					.from(s -> s.pop3("localhost", pop3Port, "user", "pw")
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
-							e -> e.autoStartup(true)
-									.poller(Pollers.fixedDelay(1000)))
+							e -> e.autoStartup(true).poller(p -> p.fixedDelay(1000)))
 					.enrichHeaders(s -> s.headerExpressions(c -> c.put(MailHeaders.SUBJECT, "payload.subject")
 									.put(MailHeaders.FROM, "payload.from[0].toString()")))
 					.channel(MessageChannels.queue("pop3Channel"))
@@ -222,11 +222,11 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow imapMailFlow() {
 			return IntegrationFlows
-					.fromMessageSource(s -> s.imap("imap://user:pw@localhost:" + imapPort + "/INBOX")
+					.from(s -> s.imap("imap://user:pw@localhost:" + imapPort + "/INBOX")
 									.searchTermStrategy(this::fromAndNotSeenTerm)
 									.javaMailProperties(p -> p.put("mail.debug", "true")),
 							e -> e.autoStartup(true)
-									.poller(Pollers.fixedDelay(1000)))
+									.poller(p -> p.fixedDelay(1000)))
 					.channel(MessageChannels.queue("imapChannel"))
 					.get();
 		}
@@ -234,7 +234,7 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow imapIdleFlow() {
 			return IntegrationFlows
-					.fromMessageProducer(mp -> mp.imap("imap://user:pw@localhost:" + imapIdlePort + "/INBOX")
+					.from((MessageProducers mp) -> mp.imap("imap://user:pw@localhost:" + imapIdlePort + "/INBOX")
 							.searchTermStrategy(this::fromAndNotSeenTerm)
 							.javaMailProperties(p -> p.put("mail.debug", "true")
 									.put("mail.imap.connectionpoolsize", "5"))

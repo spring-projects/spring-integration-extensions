@@ -150,8 +150,8 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	public B controlBus(Consumer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
-		return this.handle(new ServiceActivatingHandler(new ExpressionCommandMessageProcessor(new ControlBusMethodFilter())),
-				endpointConfigurer);
+		return this.handle(new ServiceActivatingHandler(new ExpressionCommandMessageProcessor(
+						new ControlBusMethodFilter())), endpointConfigurer);
 	}
 
 	public B transform(String expression) {
@@ -211,19 +211,19 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.register(new FilterEndpointSpec(new MessageFilter(selector)), endpointConfigurer);
 	}
 
-	public <H extends MessageHandler> B handleAdapter(
-			Function<MessageHandlers, MessageHandlerSpec<?, H>> handlerFactory) {
-		return handleAdapter(handlerFactory, null);
+	public <H extends MessageHandler> B handleWithAdapter(
+			Function<Adapters, MessageHandlerSpec<?, H>> adapters) {
+		return handleWithAdapter(adapters, null);
 	}
 
-	public <H extends MessageHandler> B handleAdapter(
-			Function<MessageHandlers, MessageHandlerSpec<?, H>> handlerFactory,
+	public <H extends MessageHandler> B handleWithAdapter(
+			Function<Adapters, MessageHandlerSpec<?, H>> adapters,
 			Consumer<GenericEndpointSpec<H>> endpointConfigurer) {
-		return handleAdapter(handlerFactory.apply(new MessageHandlers()), endpointConfigurer);
+		return handle(adapters.apply(new Adapters()), endpointConfigurer);
 	}
 
-	public B handleAdapter(MessageHandlerSpec<?, ? extends MessageHandler> messageHandlerSpec) {
-		return handleAdapter(messageHandlerSpec, null);
+	public B handle(MessageHandlerSpec<?, ? extends MessageHandler> messageHandlerSpec) {
+		return handle(messageHandlerSpec, null);
 	}
 
 	public B handle(MessageHandler messageHandler) {
@@ -265,7 +265,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.handle(serviceActivatingHandler, endpointConfigurer);
 	}
 
-	public <H extends MessageHandler> B handleAdapter(MessageHandlerSpec<?, H> messageHandlerSpec,
+	public <H extends MessageHandler> B handle(MessageHandlerSpec<?, H> messageHandlerSpec,
 			Consumer<GenericEndpointSpec<H>> endpointConfigurer) {
 		Assert.notNull(messageHandlerSpec);
 		return handle(messageHandlerSpec.get(), endpointConfigurer);
@@ -394,7 +394,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	/**
-	 * Provides the {@link HeaderFilter} to the current {@link org.springframework.integration.dsl.IntegrationFlowBuilder.StandardIntegrationFlow}.
+	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlowBuilder.StandardIntegrationFlow}.
 	 * @param headersToRemove the array of headers (or patterns)
 	 * to remove from {@link org.springframework.messaging.MessageHeaders}.
 	 * @return this {@link IntegrationFlowDefinition}.
@@ -404,7 +404,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	/**
-	 * Provides the {@link HeaderFilter} to the current {@link org.springframework.integration.dsl.IntegrationFlowBuilder.StandardIntegrationFlow}.
+	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlowBuilder.StandardIntegrationFlow}.
 	 * @param headersToRemove the comma separated headers (or patterns) to remove from
 	 * {@link org.springframework.messaging.MessageHeaders}.
 	 * @param patternMatch    the {@code boolean} flag to indicate if {@code headersToRemove}

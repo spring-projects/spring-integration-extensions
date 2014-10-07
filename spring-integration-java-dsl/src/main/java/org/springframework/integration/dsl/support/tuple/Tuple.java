@@ -24,7 +24,8 @@ import java.util.Iterator;
 import org.springframework.util.Assert;
 
 /**
- * A {@literal Tuple} is an immutable {@link java.util.Collection} of objects, each of which can be of an arbitrary type.
+ * A {@literal Tuple} is an immutable {@link java.util.Collection} of objects,
+ * each of which can be of an arbitrary type.
  *
  * @author Jon Brisbin
  * @author Stephane Maldini

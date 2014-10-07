@@ -25,7 +25,8 @@ import org.springframework.jms.support.destination.JmsDestinationAccessor;
 /**
  * @author Artem Bilan
  */
-public abstract class JmsDestinationAccessorSpec<S extends JmsDestinationAccessorSpec<S, A>, A extends JmsDestinationAccessor>
+public abstract class
+		JmsDestinationAccessorSpec<S extends JmsDestinationAccessorSpec<S, A>, A extends JmsDestinationAccessor>
 		extends IntegrationComponentSpec<S, A> {
 
 	protected JmsDestinationAccessorSpec(A accessor) {

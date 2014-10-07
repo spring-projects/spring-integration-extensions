@@ -25,8 +25,8 @@ import org.springframework.integration.scheduling.PollerMetadata;
  * @author Artem Bilan
 
  */
-public final class SourcePollingChannelAdapterSpec extends EndpointSpec<SourcePollingChannelAdapterSpec,
-		SourcePollingChannelAdapterFactoryBean, MessageSource<?>> {
+public final class SourcePollingChannelAdapterSpec extends
+		EndpointSpec<SourcePollingChannelAdapterSpec, SourcePollingChannelAdapterFactoryBean, MessageSource<?>> {
 
 	SourcePollingChannelAdapterSpec(MessageSource<?> messageSource) {
 		super(messageSource);

@@ -37,8 +37,8 @@ public final class IntegrationFlowBuilder extends IntegrationFlowDefinition<Inte
 		if (this.integrationComponents.size() == 1) {
 			if (this.currentComponent != null) {
 				if (this.currentComponent instanceof SourcePollingChannelAdapterSpec) {
-					throw new BeanCreationException("The 'SourcePollingChannelAdapter' (" + this.currentComponent + ") " +
-							"must be configured with at least one 'MessageChanel' or 'MessageHandler'.");
+					throw new BeanCreationException("The 'SourcePollingChannelAdapter' (" + this.currentComponent
+							+ ") " + "must be configured with at least one 'MessageChanel' or 'MessageHandler'.");
 				}
 			}
 			else if (this.currentMessageChannel != null) {
