@@ -16,17 +16,17 @@
 
 package org.springframework.integration.dsl.mail;
 
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.dsl.support.MapBuilder;
 import org.springframework.integration.mail.MailHeaders;
+import org.springframework.messaging.Message;
 
 /**
  * @author Artem Bilan
  * @author Gary Russell
  */
 public class MailHeadersBuilder extends MapBuilder<MailHeadersBuilder, String, Object> {
-
-	MailHeadersBuilder() {
-	}
 
 	public MailHeadersBuilder subject(String subject) {
 		return put(MailHeaders.SUBJECT, subject);
@@ -36,7 +36,11 @@ public class MailHeadersBuilder extends MapBuilder<MailHeadersBuilder, String, O
 		return putExpression(MailHeaders.SUBJECT, subject);
 	}
 
-	public MailHeadersBuilder to(String to) {
+	public <P> MailHeadersBuilder subjectFunction(Function<Message<P>, String> subject) {
+		return put(MailHeaders.SUBJECT, new FunctionExpression<Message<P>>(subject));
+	}
+
+	public MailHeadersBuilder to(String... to) {
 		return put(MailHeaders.TO, to);
 	}
 
@@ -44,7 +48,11 @@ public class MailHeadersBuilder extends MapBuilder<MailHeadersBuilder, String, O
 		return putExpression(MailHeaders.TO, to);
 	}
 
-	public MailHeadersBuilder cc(String cc) {
+	public <P> MailHeadersBuilder toFunction(Function<Message<P>, String[]> to) {
+		return put(MailHeaders.TO, new FunctionExpression<Message<P>>(to));
+	}
+
+	public MailHeadersBuilder cc(String... cc) {
 		return put(MailHeaders.CC, cc);
 	}
 
@@ -52,12 +60,20 @@ public class MailHeadersBuilder extends MapBuilder<MailHeadersBuilder, String, O
 		return putExpression(MailHeaders.CC, cc);
 	}
 
-	public MailHeadersBuilder bcc(String bcc) {
+	public <P> MailHeadersBuilder ccFunction(Function<Message<P>, String[]> cc) {
+		return put(MailHeaders.CC, new FunctionExpression<Message<P>>(cc));
+	}
+
+	public MailHeadersBuilder bcc(String... bcc) {
 		return put(MailHeaders.BCC, bcc);
 	}
 
 	public MailHeadersBuilder bccExpression(String bcc) {
 		return putExpression(MailHeaders.BCC, bcc);
+	}
+
+	public <P> MailHeadersBuilder bccFunction(Function<Message<P>, String[]> bcc) {
+		return put(MailHeaders.BCC, new FunctionExpression<Message<P>>(bcc));
 	}
 
 	public MailHeadersBuilder from(String from) {
@@ -68,12 +84,20 @@ public class MailHeadersBuilder extends MapBuilder<MailHeadersBuilder, String, O
 		return putExpression(MailHeaders.FROM, from);
 	}
 
+	public <P> MailHeadersBuilder fromFunction(Function<Message<P>, String> from) {
+		return put(MailHeaders.FROM, new FunctionExpression<Message<P>>(from));
+	}
+
 	public MailHeadersBuilder replyTo(String replyTo) {
 		return put(MailHeaders.REPLY_TO, replyTo);
 	}
 
 	public MailHeadersBuilder replyToExpression(String replyTo) {
 		return putExpression(MailHeaders.REPLY_TO, replyTo);
+	}
+
+	public <P> MailHeadersBuilder replyToFunction(Function<Message<P>, String> replyTo) {
+		return put(MailHeaders.REPLY_TO, new FunctionExpression<Message<P>>(replyTo));
 	}
 
 	/**
@@ -89,12 +113,20 @@ public class MailHeadersBuilder extends MapBuilder<MailHeadersBuilder, String, O
 		return putExpression(MailHeaders.MULTIPART_MODE, multipartMode);
 	}
 
+	public <P> MailHeadersBuilder multipartModeFunction(Function<Message<P>, Integer> multipartMode) {
+		return put(MailHeaders.MULTIPART_MODE, new FunctionExpression<Message<P>>(multipartMode));
+	}
+
 	public MailHeadersBuilder attachmentFilename(String attachmentFilename) {
 		return put(MailHeaders.ATTACHMENT_FILENAME, attachmentFilename);
 	}
 
 	public MailHeadersBuilder attachmentFilenameExpression(String attachmentFilename) {
 		return putExpression(MailHeaders.ATTACHMENT_FILENAME, attachmentFilename);
+	}
+
+	public <P> MailHeadersBuilder attachmentFilenameFunction(Function<Message<P>, String> attachmentFilename) {
+		return put(MailHeaders.ATTACHMENT_FILENAME, new FunctionExpression<Message<P>>(attachmentFilename));
 	}
 
 	public MailHeadersBuilder contentType(String contentType) {
@@ -105,8 +137,15 @@ public class MailHeadersBuilder extends MapBuilder<MailHeadersBuilder, String, O
 		return putExpression(MailHeaders.CONTENT_TYPE, contentType);
 	}
 
+	public <P> MailHeadersBuilder contentTypeFunction(Function<Message<P>, String> contentType) {
+		return put(MailHeaders.CONTENT_TYPE, new FunctionExpression<Message<P>>(contentType));
+	}
+
 	private MailHeadersBuilder putExpression(String key, String expression) {
 		return put(key, PARSER.parseExpression(expression));
+	}
+
+	MailHeadersBuilder() {
 	}
 
 }

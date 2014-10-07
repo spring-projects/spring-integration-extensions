@@ -24,12 +24,15 @@ import java.util.Collections;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileNameGenerator;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.file.remote.handler.FileTransferringMessageHandler;
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.file.support.FileExistsMode;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -95,6 +98,11 @@ public abstract class FileTransferringMessageHandlerSpec<F, S extends FileTransf
 		return _this();
 	}
 
+	public <P> S remoteDirectory(Function<Message<P>, String> remoteDirectoryFunction) {
+		this.target.setRemoteDirectoryExpression(new FunctionExpression<Message<P>>(remoteDirectoryFunction));
+		return _this();
+	}
+
 	public S temporaryRemoteDirectory(String temporaryRemoteDirectory) {
 		this.target.setTemporaryRemoteDirectoryExpression(new LiteralExpression(temporaryRemoteDirectory));
 		return _this();
@@ -105,17 +113,24 @@ public abstract class FileTransferringMessageHandlerSpec<F, S extends FileTransf
 		return _this();
 	}
 
+	public <P> S temporaryRemoteDirectory(Function<Message<P>, String> temporaryRemoteDirectoryFunction) {
+		this.target.setTemporaryRemoteDirectoryExpression(
+				new FunctionExpression<Message<P>>(temporaryRemoteDirectoryFunction));
+		return _this();
+	}
+
 	public S useTemporaryFileName(boolean useTemporaryFileName) {
 		this.target.setUseTemporaryFileName(useTemporaryFileName);
 		return _this();
 	}
 
 	public S fileNameGenerator(FileNameGenerator fileNameGenerator) {
+		this.fileNameGenerator = fileNameGenerator;
 		this.target.setFileNameGenerator(fileNameGenerator);
 		return _this();
 	}
 
-	public S fileNameGeneratorExpression(String fileNameGeneratorExpression) {
+	public S fileNameExpression(String fileNameGeneratorExpression) {
 		Assert.isNull(this.fileNameGenerator,
 				"'fileNameGenerator' and 'fileNameGeneratorExpression' are mutually exclusive.");
 		this.defaultFileNameGenerator = new DefaultFileNameGenerator();

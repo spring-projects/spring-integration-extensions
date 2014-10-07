@@ -177,7 +177,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 
 	private Object processIntegrationFlowImpl(IntegrationFlow flow, String beanName) {
 		IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(beanName + ".input");
-		flow.define(flowBuilder);
+		flow.accept(flowBuilder);
 		return processStandardIntegrationFlow(flowBuilder.get(), beanName);
 	}
 

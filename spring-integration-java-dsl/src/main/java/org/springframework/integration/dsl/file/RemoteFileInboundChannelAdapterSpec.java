@@ -22,6 +22,8 @@ import java.util.Collections;
 
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.file.filters.FileListFilter;
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizer;
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizingMessageSource;
@@ -62,8 +64,13 @@ public abstract class RemoteFileInboundChannelAdapterSpec<F, S extends RemoteFil
 		return _this();
 	}
 
-	public S localFilenameGeneratorExpression(String localFilenameGeneratorExpression) {
-		this.synchronizer.setLocalFilenameGeneratorExpression(PARSER.parseExpression(localFilenameGeneratorExpression));
+	public S localFilenameExpression(String localFilenameExpression) {
+		this.synchronizer.setLocalFilenameGeneratorExpression(PARSER.parseExpression(localFilenameExpression));
+		return _this();
+	}
+
+	public S localFilename(Function<String, String> localFilenameFunction) {
+		this.synchronizer.setLocalFilenameGeneratorExpression(new FunctionExpression<String>(localFilenameFunction));
 		return _this();
 	}
 

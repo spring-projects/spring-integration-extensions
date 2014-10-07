@@ -21,17 +21,20 @@ import java.util.Properties;
 
 import javax.mail.Authenticator;
 import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
+import org.springframework.integration.dsl.support.Consumer;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
-import org.springframework.integration.dsl.support.PropertiesBuilder.PropertiesConfigurer;
 import org.springframework.integration.mail.AbstractMailReceiver;
 import org.springframework.integration.mail.MailReceivingMessageSource;
 
 /**
  * @author Gary Russell
- *
+ * @author Artem Bilan
  */
 public abstract class MailInboundChannelAdapterSpec<S extends MailInboundChannelAdapterSpec<S, R>,
 		R extends AbstractMailReceiver>
@@ -45,6 +48,11 @@ public abstract class MailInboundChannelAdapterSpec<S extends MailInboundChannel
 		return _this();
 	}
 
+	public S selector(Function<MimeMessage, Boolean> selectorFunction) {
+		this.receiver.setSelectorExpression(new FunctionExpression<MimeMessage>(selectorFunction));
+		return _this();
+	}
+
 	public S session(Session session) {
 		this.receiver.setSession(session);
 		return _this();
@@ -55,9 +63,9 @@ public abstract class MailInboundChannelAdapterSpec<S extends MailInboundChannel
 		return _this();
 	}
 
-	public S javaMailProperties(PropertiesConfigurer configurer) {
+	public S javaMailProperties(Consumer<PropertiesBuilder> configurer) {
 		PropertiesBuilder properties = new PropertiesBuilder();
-		configurer.configure(properties);
+		configurer.accept(properties);
 		return javaMailProperties(properties.get());
 	}
 

@@ -20,14 +20,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.transformer.ContentEnricher;
 import org.springframework.integration.transformer.support.AbstractHeaderValueMessageProcessor;
 import org.springframework.integration.transformer.support.ExpressionEvaluatingHeaderValueMessageProcessor;
 import org.springframework.integration.transformer.support.HeaderValueMessageProcessor;
 import org.springframework.integration.transformer.support.StaticHeaderValueMessageProcessor;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.util.Assert;
 
@@ -37,13 +39,12 @@ import org.springframework.util.Assert;
  */
 public class EnricherSpec extends MessageHandlerSpec<EnricherSpec, ContentEnricher> {
 
-	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
-
 	private final ContentEnricher enricher = new ContentEnricher();
 
 	private final Map<String, Expression> propertyExpressions = new HashMap<String, Expression>();
 
-	private final Map<String, HeaderValueMessageProcessor<?>> headerExpressions = new HashMap<String, HeaderValueMessageProcessor<?>>();
+	private final Map<String, HeaderValueMessageProcessor<?>> headerExpressions =
+			new HashMap<String, HeaderValueMessageProcessor<?>>();
 
 	EnricherSpec() {
 	}
@@ -83,6 +84,11 @@ public class EnricherSpec extends MessageHandlerSpec<EnricherSpec, ContentEnrich
 		return _this();
 	}
 
+	public <P> EnricherSpec requestPayload(Function<Message<P>, ?> requestPayloadFunction) {
+		this.enricher.setRequestPayloadExpression(new FunctionExpression<Message<P>>(requestPayloadFunction));
+		return _this();
+	}
+
 	public EnricherSpec shouldClonePayload(boolean shouldClonePayload) {
 		this.enricher.setShouldClonePayload(shouldClonePayload);
 		return _this();
@@ -99,6 +105,12 @@ public class EnricherSpec extends MessageHandlerSpec<EnricherSpec, ContentEnrich
 		return _this();
 	}
 
+	public <P> EnricherSpec propertyFunction(String key, Function<Message<P>, Object> function) {
+		Assert.notNull(key);
+		this.propertyExpressions.put(key, new FunctionExpression<Message<P>>(function));
+		return _this();
+	}
+
 	public <V> EnricherSpec header(String name, V value) {
 		return this.header(name, value, null);
 	}
@@ -107,22 +119,36 @@ public class EnricherSpec extends MessageHandlerSpec<EnricherSpec, ContentEnrich
 		AbstractHeaderValueMessageProcessor<V> headerValueMessageProcessor =
 				new StaticHeaderValueMessageProcessor<V>(value);
 		headerValueMessageProcessor.setOverwrite(overwrite);
-		return this.header(name, headerValueMessageProcessor);
+		return header(name, headerValueMessageProcessor);
 	}
 
 	public EnricherSpec headerExpression(String name, String expression) {
-		return this.headerExpression(name, expression, null);
+		return headerExpression(name, expression, null);
 	}
 
 	public EnricherSpec headerExpression(String name, String expression, Boolean overwrite) {
+		Assert.hasText(expression);
+		return headerExpression(name, PARSER.parseExpression(expression), overwrite);
+	}
+
+	public <P> EnricherSpec headerFunction(String name, Function<Message<P>, Object> function) {
+		return headerFunction(name, function, null);
+	}
+
+	public <P> EnricherSpec headerFunction(String name, Function<Message<P>, Object> function, Boolean overwrite) {
+		Assert.notNull(function);
+		return headerExpression(name, new FunctionExpression<Message<P>>(function), overwrite);
+	}
+
+	private EnricherSpec headerExpression(String name, Expression expression, Boolean overwrite) {
 		AbstractHeaderValueMessageProcessor<?> headerValueMessageProcessor =
 				new ExpressionEvaluatingHeaderValueMessageProcessor<Object>(expression, null);
 		headerValueMessageProcessor.setOverwrite(overwrite);
-		return this.header(name, headerValueMessageProcessor);
+		return header(name, headerValueMessageProcessor);
 	}
 
 	public <V> EnricherSpec header(String name, HeaderValueMessageProcessor<V> headerValueMessageProcessor) {
-		Assert.notNull(name);
+		Assert.hasText(name);
 		this.headerExpressions.put(name, headerValueMessageProcessor);
 		return _this();
 	}

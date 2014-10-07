@@ -16,15 +16,19 @@
 
 package org.springframework.integration.dsl.file;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileNameGenerator;
 import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.file.support.FileExistsMode;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
@@ -38,12 +42,16 @@ public class FileWritingMessageHandlerSpec
 
 	private DefaultFileNameGenerator defaultFileNameGenerator;
 
-	FileWritingMessageHandlerSpec(java.io.File destinationDirectory) {
+	FileWritingMessageHandlerSpec(File destinationDirectory) {
 		this.target = new FileWritingMessageHandler(destinationDirectory);
 	}
 
 	FileWritingMessageHandlerSpec(String directoryExpression) {
 		this.target = new FileWritingMessageHandler(PARSER.parseExpression(directoryExpression));
+	}
+
+	<P> FileWritingMessageHandlerSpec(Function<Message<P>, ?> directoryFunction) {
+		this.target = new FileWritingMessageHandler(new FunctionExpression<Message<P>>(directoryFunction));
 	}
 
 	FileWritingMessageHandlerSpec expectReply(boolean expectReply) {
@@ -72,11 +80,11 @@ public class FileWritingMessageHandlerSpec
 		return _this();
 	}
 
-	public FileWritingMessageHandlerSpec fileNameGeneratorExpression(String fileNameGeneratorExpression) {
+	public FileWritingMessageHandlerSpec fileNameExpression(String fileNameExpression) {
 		Assert.isNull(this.fileNameGenerator,
 				"'fileNameGenerator' and 'fileNameGeneratorExpression' are mutually exclusive.");
 		this.defaultFileNameGenerator = new DefaultFileNameGenerator();
-		this.defaultFileNameGenerator.setExpression(fileNameGeneratorExpression);
+		this.defaultFileNameGenerator.setExpression(fileNameExpression);
 		return fileNameGenerator(this.defaultFileNameGenerator);
 	}
 

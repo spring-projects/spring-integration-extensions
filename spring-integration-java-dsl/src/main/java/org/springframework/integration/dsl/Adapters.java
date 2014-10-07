@@ -38,11 +38,13 @@ import org.springframework.integration.dsl.mail.MailSendingMessageHandlerSpec;
 import org.springframework.integration.dsl.sftp.Sftp;
 import org.springframework.integration.dsl.sftp.SftpMessageHandlerSpec;
 import org.springframework.integration.dsl.sftp.SftpOutboundGatewaySpec;
+import org.springframework.integration.dsl.support.Function;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.file.remote.gateway.AbstractRemoteFileOutboundGateway;
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.messaging.Message;
 
 import com.jcraft.jsch.ChannelSftp;
 
@@ -67,12 +69,20 @@ public class Adapters {
 		return Files.outboundAdapter(directoryExpression);
 	}
 
+	public <P> FileWritingMessageHandlerSpec file(Function<Message<P>, ?> directoryFunction) {
+		return Files.outboundAdapter(directoryFunction);
+	}
+
 	public FileWritingMessageHandlerSpec fileGateway(File destinationDirectory) {
 		return Files.outboundGateway(destinationDirectory);
 	}
 
 	public FileWritingMessageHandlerSpec fileGateway(String directoryExpression) {
 		return Files.outboundGateway(directoryExpression);
+	}
+
+	public <P> FileWritingMessageHandlerSpec fileGateway(Function<Message<P>, ?> directoryFunction) {
+		return Files.outboundGateway(directoryFunction);
 	}
 
 	public FtpMessageHandlerSpec ftp(SessionFactory<FTPFile> sessionFactory) {
