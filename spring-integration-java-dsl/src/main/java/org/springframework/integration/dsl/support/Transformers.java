@@ -27,7 +27,7 @@ import org.springframework.core.serializer.Deserializer;
 import org.springframework.core.serializer.Serializer;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.integration.dsl.tuple.Tuple2;
+import org.springframework.integration.dsl.support.tuple.Tuple2;
 import org.springframework.integration.file.transformer.FileToByteArrayTransformer;
 import org.springframework.integration.file.transformer.FileToStringTransformer;
 import org.springframework.integration.json.JsonToObjectTransformer;

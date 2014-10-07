@@ -101,8 +101,12 @@ import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.core.MessageSource;
+import org.springframework.integration.dsl.Channels;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.MessageProducers;
+import org.springframework.integration.dsl.MessageSources;
+import org.springframework.integration.dsl.MessagingGateways;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
@@ -110,7 +114,7 @@ import org.springframework.integration.dsl.file.Files;
 import org.springframework.integration.dsl.ftp.Ftp;
 import org.springframework.integration.dsl.jms.Jms;
 import org.springframework.integration.dsl.sftp.Sftp;
-import org.springframework.integration.dsl.support.Pollers;
+import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.dsl.support.Transformers;
 import org.springframework.integration.dsl.test.TestFtpServer;
 import org.springframework.integration.dsl.test.TestSftpServer;
@@ -119,6 +123,7 @@ import org.springframework.integration.event.core.MessagingEvent;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.file.DefaultFileNameGenerator;
 import org.springframework.integration.file.FileHeaders;
+import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.file.remote.gateway.AbstractRemoteFileOutboundGateway;
 import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessageProducer;
@@ -163,7 +168,6 @@ import org.springframework.util.StreamUtils;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.mongodb.MongoClient;
-
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
@@ -442,8 +446,7 @@ public class IntegrationFlowTests {
 		assertEquals("test", reply.getPayload());
 
 		assertTrue(this.beanFactory.containsBean("bridgeFlow2.channel#0"));
-		assertThat(this.beanFactory.getBean("bridgeFlow2.channel#0"), instanceOf(FixedSubscriberChannel
-				.class));
+		assertThat(this.beanFactory.getBean("bridgeFlow2.channel#0"), instanceOf(FixedSubscriberChannel.class));
 
 		try {
 			this.bridgeFlow2Input.send(message);
@@ -1357,7 +1360,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow jmsOutboundFlow() {
-			return f -> f.handle(Jms.outboundAdapter(this.jmsConnectionFactory)
+			return f -> f.handleWithAdapter(h -> h.jms(this.jmsConnectionFactory)
 					.destinationExpression("headers." + SimpMessageHeaderAccessor.DESTINATION_HEADER));
 		}
 
@@ -1369,8 +1372,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow jmsInboundFlow() {
 			return IntegrationFlows
-					.from(Jms.inboundAdapter(this.jmsConnectionFactory)
-							.destination("jmsInbound"))
+					.from((MessageSources s) -> s.jms(this.jmsConnectionFactory).destination("jmsInbound"))
 					.<String, String>transform(String::toUpperCase)
 					.channel(this.jmsOutboundInboundReplyChannel())
 					.get();
@@ -1379,7 +1381,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow jmsMessageDriverFlow() {
 			return IntegrationFlows
-					.from(Jms.messageDriverAdapter(this.jmsConnectionFactory)
+					.from(Jms.messageDriverChannelAdapter(this.jmsConnectionFactory)
 							.destination("jmsMessageDriver"))
 					.<String, String>transform(String::toLowerCase)
 					.channel(this.jmsOutboundInboundReplyChannel())
@@ -1388,14 +1390,14 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow jmsOutboundGatewayFlow() {
-			return f -> f.handle(Jms.outboundGateway(this.jmsConnectionFactory)
+			return f -> f.handleWithAdapter(a -> a.jmsGateway(this.jmsConnectionFactory)
 					.replyContainer()
 					.requestDestination("jmsPipelineTest"));
 		}
 
 		@Bean
 		public IntegrationFlow jmsInboundGatewayFlow() {
-			return IntegrationFlows.from(Jms.inboundGateway(this.jmsConnectionFactory)
+			return IntegrationFlows.from((MessagingGateways g) -> g.jms(this.jmsConnectionFactory)
 					.destination("jmsPipelineTest"))
 					.<String, String>transform(String::toUpperCase)
 					.get();
@@ -1416,7 +1418,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow ftpInboundFlow() {
 			return IntegrationFlows
-					.from(Ftp.inboundAdapter(this.ftpSessionFactory)
+					.from(s -> s.ftp(this.ftpSessionFactory)
 									.preserveTimestamp(true)
 									.remoteDirectory("ftpSource")
 									.regexFilter(".*\\.txt$")
@@ -1430,7 +1432,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow sftpInboundFlow() {
 			return IntegrationFlows
-					.from(Sftp.inboundAdapter(this.sftpSessionFactory)
+					.from(s -> s.sftp(this.sftpSessionFactory)
 									.preserveTimestamp(true)
 									.remoteDirectory("sftpSource")
 									.regexFilter(".*\\.txt$")
@@ -1482,15 +1484,18 @@ public class IntegrationFlowTests {
 					.channel(remoteFileOutputChannel())
 					.get();
 		}
+
 		@Bean
 		public IntegrationFlow sftpMGetFlow() {
 			return IntegrationFlows.from("sftpMgetInputChannel")
-					.handle(Sftp.outboundGateway(this.sftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
-							"payload")
-							.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
-							.regexFileNameFilter("(subSftpSource|.*1.txt)")
-							.localDirectoryExpression("@sftpServer.targetLocalDirectoryName + #remoteDirectory")
-							.localFilenameGeneratorExpression("#remoteFileName.replaceFirst('sftpSource', 'localTarget')"))
+					.handleWithAdapter(h ->
+							h.sftpGateway(this.sftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
+									"payload")
+									.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
+									.regexFileNameFilter("(subSftpSource|.*1.txt)")
+									.localDirectoryExpression("@sftpServer.targetLocalDirectoryName + #remoteDirectory")
+									.localFilenameGeneratorExpression(
+											"#remoteFileName.replaceFirst('sftpSource', 'localTarget')"))
 					.channel(remoteFileOutputChannel())
 					.get();
 		}
@@ -1559,7 +1564,8 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
-			return IntegrationFlows.from(MessageChannels.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
+			return IntegrationFlows.from((Channels c) ->
+					c.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
 					.bridge(s -> s.poller(Pollers.fixedDelay(100))
 							.autoStartup(false)
 							.id("priorityChannelBridge"))
@@ -1627,7 +1633,7 @@ public class IntegrationFlowTests {
 					.bridge(c -> c.autoStartup(false).id("bridge"))
 					.fixedSubscriberChannel()
 					.delay("delayer", "200", c -> c.advice(this.delayedAdvice).messageStore(this.messageStore()))
-					.channel(MessageChannels.queue("bridgeFlow2Output"))
+					.channel(c -> c.queue("bridgeFlow2Output"))
 					.get();
 		}
 
@@ -1695,8 +1701,8 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow fileFlow1() {
 			return IntegrationFlows.from("fileFlow1Input")
-					.handle(Files.outboundAdapter(tmpDir).fileNameGenerator(message -> null),
-							c -> c.id("fileWriting"))
+					.<FileWritingMessageHandler>handleWithAdapter(h -> h.file(tmpDir).fileNameGenerator(message -> null)
+							, c -> c.id("fileWriting"))
 					.get();
 		}
 
@@ -1722,7 +1728,7 @@ public class IntegrationFlowTests {
 		@Bean
 		@DependsOn("enrichFlow")
 		public IntegrationFlow enricherFlow() {
-			return IntegrationFlows.fromFixedMessageChannel("enricherInput")
+			return IntegrationFlows.from("enricherInput", true)
 					.enrich(e -> e.requestChannel("enrichChannel")
 									.requestPayloadExpression("payload")
 									.shouldClonePayload(false)
@@ -1736,7 +1742,7 @@ public class IntegrationFlowTests {
 		@Bean
 		@DependsOn("enrichFlow")
 		public IntegrationFlow enricherFlow2() {
-			return IntegrationFlows.fromFixedMessageChannel("enricherInput2")
+			return IntegrationFlows.from("enricherInput2", true)
 					.enrich(e -> e.requestChannel("enrichChannel")
 									.requestPayloadExpression("payload")
 									.shouldClonePayload(false)
@@ -1749,7 +1755,7 @@ public class IntegrationFlowTests {
 		@Bean
 		@DependsOn("enrichFlow")
 		public IntegrationFlow enricherFlow3() {
-			return IntegrationFlows.fromFixedMessageChannel("enricherInput3")
+			return IntegrationFlows.from("enricherInput3", true)
 					.enrich(e -> e.requestChannel("enrichChannel")
 									.requestPayloadExpression("payload")
 									.shouldClonePayload(false)
@@ -1787,11 +1793,11 @@ public class IntegrationFlowTests {
 		public IntegrationFlow splitResequenceFlow() {
 			return f -> f.enrichHeaders(s -> s.header("FOO", "BAR"))
 					.split("testSplitterData", "buildList", c -> c.applySequence(false))
-					.channel(MessageChannels.executor(this.taskExecutor()))
+					.channel(c -> c.executor(this.taskExecutor()))
 					.split(Message.class, target -> (List<?>) target.getPayload(), c -> c.applySequence(false))
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.split(s -> s.applySequence(false).get().getT2().setDelimiters(","))
-					.channel(MessageChannels.executor(this.taskExecutor()))
+					.channel(c -> c.executor(this.taskExecutor()))
 					.<String, Integer>transform(Integer::parseInt)
 					.enrichHeaders(s -> s.headerExpression(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, "payload"))
 					.resequence(r -> r.releasePartialSequences(true).correlationExpression("'foo'"), null)
@@ -1800,7 +1806,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow splitAggregateFlow() {
-			return IntegrationFlows.fromFixedMessageChannel("splitAggregateInput")
+			return IntegrationFlows.from("splitAggregateInput", true)
 					.split(null)
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.resequence()
@@ -1812,8 +1818,10 @@ public class IntegrationFlowTests {
 		public IntegrationFlow xpathHeaderEnricherFlow() {
 			return IntegrationFlows.from("xpathHeaderEnricherInput")
 					.enrichHeaders(
-							s -> s.header("one", new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementOne"))
-									.header("two", new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementTwo"))
+							s -> s.header("one",
+									new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementOne"))
+									.header("two",
+											new XPathExpressionEvaluatingHeaderValueMessageProcessor("/root/elementTwo"))
 									.headerChannelsToString(),
 							c -> c.autoStartup(false).id("xpathHeaderEnricher")
 					)
@@ -1874,11 +1882,11 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow tailFlow() {
-			return IntegrationFlows.from(Files.tailAdapter(new File(tmpDir, "TailTest"))
-						.delay(500)
-						.end(false)
-						.id("tailer")
-						.autoStartup(false))
+			return IntegrationFlows.from((MessageProducers p) -> p.tail(new File(tmpDir, "TailTest"))
+					.delay(500)
+					.end(false)
+					.id("tailer")
+					.autoStartup(false))
 					.transform("hello "::concat)
 					.channel(MessageChannels.queue("tailChannel"))
 					.get();
@@ -1922,7 +1930,7 @@ public class IntegrationFlowTests {
 
 		@Bean
 		public IntegrationFlow amqpInboundFlow() {
-			return IntegrationFlows.from(Amqp.inboundAdapter(this.rabbitConnectionFactory, fooQueue()))
+			return IntegrationFlows.from((MessageProducers p) -> p.amqp(this.rabbitConnectionFactory, fooQueue()))
 					.transform(String.class, String::toUpperCase)
 					.channel(Amqp.pollableChannel(this.rabbitConnectionFactory)
 							.queueName("amqpReplyChannel")
@@ -1955,7 +1963,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow fileReadingFlow() {
 			return IntegrationFlows
-					.from(Files.inboundAdapter(tmpDir).patternFilter("*.sitest"),
+					.from(s -> s.file(tmpDir).patternFilter("*.sitest"),
 							e -> e.poller(Pollers.fixedDelay(100)))
 					.transform(Transformers.fileToString())
 					.aggregate(a -> a.correlationExpression("1")

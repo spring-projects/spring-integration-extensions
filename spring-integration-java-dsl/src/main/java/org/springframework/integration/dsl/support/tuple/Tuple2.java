@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.tuple;
+package org.springframework.integration.dsl.support.tuple;
 
 /**
  * A tuple that holds two values
  *
  * @param <T1> The type of the first value held by this tuple
- * @param <T2> The type of the second balue held by this tuple
+ * @param <T2> The type of the second value held by this tuple
  *
  * @author Jon Brisbin
  */

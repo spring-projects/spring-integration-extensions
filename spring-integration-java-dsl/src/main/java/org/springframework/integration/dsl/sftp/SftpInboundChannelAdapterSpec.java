@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 import com.jcraft.jsch.ChannelSftp;
 
-import org.springframework.integration.dsl.file.RemoteInboundChannelAdapterSpec;
+import org.springframework.integration.dsl.file.RemoteFileInboundChannelAdapterSpec;
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.sftp.filters.SftpRegexPatternFileListFilter;
 import org.springframework.integration.sftp.filters.SftpSimplePatternFileListFilter;
@@ -32,8 +32,8 @@ import org.springframework.integration.sftp.inbound.SftpInboundFileSynchronizing
  * @author Artem Bilan
  */
 public class SftpInboundChannelAdapterSpec
-		extends RemoteInboundChannelAdapterSpec<ChannelSftp.LsEntry, SftpInboundChannelAdapterSpec,
-		SftpInboundFileSynchronizingMessageSource> {
+		extends RemoteFileInboundChannelAdapterSpec<ChannelSftp.LsEntry, SftpInboundChannelAdapterSpec,
+				SftpInboundFileSynchronizingMessageSource> {
 
 	SftpInboundChannelAdapterSpec(SessionFactory<ChannelSftp.LsEntry> sessionFactory, Comparator<File> comparator) {
 		super(new SftpInboundFileSynchronizer(sessionFactory));

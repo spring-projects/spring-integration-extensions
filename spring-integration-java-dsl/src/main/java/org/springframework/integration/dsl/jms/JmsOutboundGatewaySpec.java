@@ -23,7 +23,7 @@ import javax.jms.Destination;
 
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
-import org.springframework.integration.dsl.support.ComponentConfigurer;
+import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.jms.JmsHeaderMapper;
 import org.springframework.integration.jms.JmsOutboundGateway;
 import org.springframework.jms.support.converter.MessageConverter;
@@ -140,10 +140,10 @@ public class JmsOutboundGatewaySpec extends MessageHandlerSpec<JmsOutboundGatewa
 		return _this();
 	}
 
-	public JmsOutboundGatewaySpec replyContainer(ComponentConfigurer<ReplyContainerSpec> configurer) {
+	public JmsOutboundGatewaySpec replyContainer(Consumer<ReplyContainerSpec> configurer) {
 		Assert.notNull(configurer);
 		ReplyContainerSpec spec = new ReplyContainerSpec();
-		configurer.configure(spec);
+		configurer.accept(spec);
 		this.target.setReplyContainerProperties(spec.get());
 		return _this();
 	}

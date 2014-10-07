@@ -16,6 +16,7 @@
 
 package org.springframework.integration.dsl.ftp;
 
+import java.io.File;
 import java.util.Comparator;
 
 import org.apache.commons.net.ftp.FTPFile;
@@ -36,7 +37,7 @@ public abstract class Ftp {
 	}
 
 	public static FtpInboundChannelAdapterSpec inboundAdapter(SessionFactory<FTPFile> sessionFactory,
-			Comparator<java.io.File> receptionOrderComparator) {
+			Comparator<File> receptionOrderComparator) {
 		return new FtpInboundChannelAdapterSpec(sessionFactory, receptionOrderComparator);
 	}
 

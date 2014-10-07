@@ -24,12 +24,14 @@ import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageProducerSpec;
 import org.springframework.integration.dsl.core.MessageSourceSpec;
 import org.springframework.integration.dsl.core.MessagingGatewaySpec;
-import org.springframework.integration.dsl.support.EndpointConfigurer;
+import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
+import org.springframework.integration.dsl.support.Function;
 import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.util.Assert;
 
 /**
  * The central factory for fluent {@link IntegrationFlowBuilder} API.
@@ -39,9 +41,9 @@ import org.springframework.messaging.MessageChannel;
 public final class IntegrationFlows {
 
 	/**
-	 * @param messageChannelName the name of existing {@link org.springframework.messaging.MessageChannel} bean.
-	 *                           The new {@link org.springframework.integration.channel.DirectChannel} bean will be
-	 *                           created on context startup, if there is no bean with this name.
+	 * @param messageChannelName the name of existing {@link MessageChannel} bean.
+	 * The new {@link DirectChannel} bean will be created on context startup
+	 * if there is no bean with this name.
 	 * @return new {@link IntegrationFlowBuilder}
 	 */
 	public static IntegrationFlowBuilder from(String messageChannelName) {
@@ -49,15 +51,28 @@ public final class IntegrationFlows {
 	}
 
 	/**
-	 * @param messageChannelName the name for {@link org.springframework.integration.channel.FixedSubscriberChannel}
-	 *                           to be created on context startup, not reference.
+	 * @param messageChannelName the name for {@link DirectChannel} or
+	 * {@link org.springframework.integration.channel.FixedSubscriberChannel}
+	 * to be created on context startup, not reference.
+	 * The {@link MessageChannel} depends on the {@code fixedSubscriber} boolean argument.
+	 * @param fixedSubscriber the boolean flag to determine if result {@link MessageChannel} should
+	 * be {@link DirectChannel}, if {@code false} or
+	 * {@link org.springframework.integration.channel.FixedSubscriberChannel}, if {@code true}.
 	 * @return new {@link IntegrationFlowBuilder}
 	 */
-	public static IntegrationFlowBuilder fromFixedMessageChannel(String messageChannelName) {
-		return from(new FixedSubscriberChannelPrototype(messageChannelName));
+	public static IntegrationFlowBuilder from(String messageChannelName, boolean fixedSubscriber) {
+		return fixedSubscriber
+				? from(new FixedSubscriberChannelPrototype(messageChannelName))
+				: from(messageChannelName);
+	}
+
+	public static IntegrationFlowBuilder from(ChannelsFunction channels) {
+		Assert.notNull(channels);
+		return from(channels.apply(new Channels()));
 	}
 
 	public static IntegrationFlowBuilder from(MessageChannelSpec<?, ?> messageChannelSpec) {
+		Assert.notNull(messageChannelSpec);
 		return from(messageChannelSpec.get());
 	}
 
@@ -65,13 +80,23 @@ public final class IntegrationFlows {
 		return new IntegrationFlowBuilder().channel(messageChannel);
 	}
 
-	public static <S extends MessageSourceSpec<S, ? extends MessageSource<?>>> IntegrationFlowBuilder
-	from(S messageSourceSpec) {
+	public static IntegrationFlowBuilder from(MessageSourcesFunction sources) {
+		return from(sources, null);
+	}
+
+	public static IntegrationFlowBuilder from(MessageSourcesFunction sources,
+			Consumer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+		Assert.notNull(sources);
+		return from(sources.apply(new MessageSources()), endpointConfigurer);
+	}
+
+	public static IntegrationFlowBuilder from(MessageSourceSpec<?, ? extends MessageSource<?>> messageSourceSpec) {
 		return from(messageSourceSpec, null);
 	}
 
-	public static <S extends MessageSourceSpec<S, ? extends MessageSource<?>>> IntegrationFlowBuilder
-	from(S messageSourceSpec, EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+	public static IntegrationFlowBuilder from(MessageSourceSpec<?, ? extends MessageSource<?>> messageSourceSpec,
+			Consumer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+		Assert.notNull(messageSourceSpec);
 		return from(messageSourceSpec.get(), endpointConfigurer, registerComponents(messageSourceSpec));
 	}
 
@@ -80,22 +105,26 @@ public final class IntegrationFlows {
 	}
 
 	public static IntegrationFlowBuilder from(MessageSource<?> messageSource,
-			EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
+			Consumer<SourcePollingChannelAdapterSpec> endpointConfigurer) {
 		return from(messageSource, endpointConfigurer, null);
 	}
 
 	private static IntegrationFlowBuilder from(MessageSource<?> messageSource,
-			EndpointConfigurer<SourcePollingChannelAdapterSpec> endpointConfigurer,
+			Consumer<SourcePollingChannelAdapterSpec> endpointConfigurer,
 			IntegrationFlowBuilder integrationFlowBuilder) {
 		SourcePollingChannelAdapterSpec spec = new SourcePollingChannelAdapterSpec(messageSource);
 		if (endpointConfigurer != null) {
-			endpointConfigurer.configure(spec);
+			endpointConfigurer.accept(spec);
 		}
 		if (integrationFlowBuilder == null) {
 			integrationFlowBuilder = new IntegrationFlowBuilder();
 		}
 		return integrationFlowBuilder.addComponent(spec)
 				.currentComponent(spec);
+	}
+
+	public static IntegrationFlowBuilder from(MessageProducersFunction producers) {
+		return from(producers.apply(new MessageProducers()));
 	}
 
 	public static IntegrationFlowBuilder from(MessageProducerSpec<?, ?> messageProducerSpec) {
@@ -121,6 +150,10 @@ public final class IntegrationFlows {
 			integrationFlowBuilder.channel(outputChannel);
 		}
 		return integrationFlowBuilder.addComponent(messageProducer);
+	}
+
+	public static IntegrationFlowBuilder from(MessagingGatewaysFunction gateways) {
+		return from(gateways.apply(new MessagingGateways()));
 	}
 
 	public static IntegrationFlowBuilder from(MessagingGatewaySpec<?, ?> inboundGatewaySpec) {
@@ -164,5 +197,13 @@ public final class IntegrationFlows {
 
 	private IntegrationFlows() {
 	}
+
+	public interface ChannelsFunction extends Function<Channels, MessageChannelSpec<?, ?>> {}
+
+	public interface MessageSourcesFunction extends Function<MessageSources, MessageSourceSpec<?, ?>> {}
+
+	public interface MessageProducersFunction extends Function<MessageProducers, MessageProducerSpec<?, ?>> {}
+
+	public interface MessagingGatewaysFunction extends Function<MessagingGateways, MessagingGatewaySpec<?, ?>> {}
 
 }

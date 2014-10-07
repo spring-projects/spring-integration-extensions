@@ -111,13 +111,13 @@ public abstract class Jms {
 
 	public static
 	JmsMessageDrivenChannelAdapterSpec.JmsMessageDrivenChannelAdapterListenerContainerSpec<DefaultMessageListenerContainer>
-	messageDriverAdapter(ConnectionFactory connectionFactory) {
-		return messageDriverAdapter(connectionFactory, DefaultMessageListenerContainer.class);
+	messageDriverChannelAdapter(ConnectionFactory connectionFactory) {
+		return messageDriverChannelAdapter(connectionFactory, DefaultMessageListenerContainer.class);
 	}
 
 	public static <C extends AbstractMessageListenerContainer>
 	JmsMessageDrivenChannelAdapterSpec.JmsMessageDrivenChannelAdapterListenerContainerSpec<C>
-	messageDriverAdapter(ConnectionFactory connectionFactory, Class<C> containerClass) {
+	messageDriverChannelAdapter(ConnectionFactory connectionFactory, Class<C> containerClass) {
 		try {
 			JmsListenerContainerSpec<C> spec = new JmsListenerContainerSpec<C>(containerClass)
 					.connectionFactory(connectionFactory);

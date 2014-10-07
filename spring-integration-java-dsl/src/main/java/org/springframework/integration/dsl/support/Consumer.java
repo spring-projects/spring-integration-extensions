@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,31 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.tuple;
+package org.springframework.integration.dsl.support;
 
 /**
- * A tuple that holds a single value
+ * Implementations accept a given value and perform work on the argument.
  *
- * @param <T1> The type held by this tuple
+ * @param <T> the type of values to accept
  *
  * @author Jon Brisbin
+ * @author Stephane Maldini
  */
-public class Tuple1<T1> extends Tuple {
-
-	private static final long serialVersionUID = -1467756857377152573L;
-
-	Tuple1(Object... values) {
-		super(values);
-	}
+public interface Consumer<T> {
 
 	/**
-	 * Type-safe way to get the first object of this {@link Tuple}.
-	 *
-	 * @return The first object, cast to the correct type.
+	 * Execute the logic of the action, accepting the given parameter.
+	 * @param t The parameter to pass to the consumer.
 	 */
-	@SuppressWarnings("unchecked")
-	public T1 getT1() {
-		return (T1) get(0);
-	}
+	void accept(T t);
 
 }

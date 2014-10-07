@@ -69,7 +69,8 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 	}
 
 	public HeaderEnricherSpec messageProcessor(String expression) {
-		return this.messageProcessor(new ExpressionEvaluatingMessageProcessor<Object>(PARSER.parseExpression(expression)));
+		return this.messageProcessor(new ExpressionEvaluatingMessageProcessor<Object>(
+				PARSER.parseExpression(expression)));
 	}
 
 	public HeaderEnricherSpec messageProcessor(String beanName, String methodName) {
@@ -99,7 +100,8 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 		return headerExpressions(headers.get());
 	}
 
-	public HeaderEnricherSpec headerExpressions(MapBuilderConfigurer<StringStringMapBuilder, String, String> configurer) {
+	public HeaderEnricherSpec headerExpressions(
+			MapBuilderConfigurer<StringStringMapBuilder, String, String> configurer) {
 		StringStringMapBuilder builder = new StringStringMapBuilder();
 		configurer.configure(builder);
 		return headerExpressions(builder.get());

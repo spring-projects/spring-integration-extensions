@@ -34,7 +34,8 @@ import org.springframework.util.StringUtils;
 /**
  * @author Artem Bilan
  */
-public abstract class CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S, H>, H extends AbstractCorrelatingMessageHandler>
+public abstract class
+		CorrelationHandlerSpec<S extends CorrelationHandlerSpec<S, H>, H extends AbstractCorrelatingMessageHandler>
 		extends MessageHandlerSpec<S, H> {
 
 	protected MessageGroupStore messageStore;

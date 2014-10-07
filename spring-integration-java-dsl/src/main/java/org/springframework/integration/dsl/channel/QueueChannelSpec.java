@@ -107,7 +107,8 @@ public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, Queue
 				this.queue = new MessageGroupQueue(this.messageGroupStore, this.groupId);
 			}
 
-			((MessageGroupQueue) this.queue).setPriority(this.messageGroupStore instanceof PriorityCapableChannelMessageStore);
+			((MessageGroupQueue) this.queue).setPriority(
+					this.messageGroupStore instanceof PriorityCapableChannelMessageStore);
 
 			return super.doGet();
 		}

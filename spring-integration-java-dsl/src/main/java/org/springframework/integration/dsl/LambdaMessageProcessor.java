@@ -55,16 +55,20 @@ class LambdaMessageProcessor implements MessageProcessor<Object>, BeanFactoryAwa
 		this.target = target;
 		final AtomicReference<Method> methodValue = new AtomicReference<Method>();
 		ReflectionUtils.doWithMethods(target.getClass(), new ReflectionUtils.MethodCallback() {
+
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 				methodValue.set(method);
 			}
+
 		}, new ReflectionUtils.MethodFilter() {
+
 			@Override
 			public boolean matches(Method method) {
 				return !method.isBridge() && method.getDeclaringClass() != Object.class &&
 						Modifier.isPublic(method.getModifiers()) && !Modifier.isStatic(method.getModifiers());
 			}
+
 		});
 
 		Assert.notNull(methodValue.get(), "LambdaMessageProcessor is applicable for inline or lambda " +
@@ -125,4 +129,5 @@ class LambdaMessageProcessor implements MessageProcessor<Object>, BeanFactoryAwa
 			throw new MessageHandlingException(message, e);
 		}
 	}
+
 }
