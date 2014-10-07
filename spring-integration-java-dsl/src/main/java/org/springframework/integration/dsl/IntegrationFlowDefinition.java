@@ -24,6 +24,7 @@ import java.util.Set;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.aggregator.AbstractCorrelatingMessageHandler;
 import org.springframework.integration.aggregator.AggregatingMessageHandler;
@@ -40,9 +41,8 @@ import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
 import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.dsl.support.FixedSubscriberChannelPrototype;
 import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.dsl.support.GenericHandler;
-import org.springframework.integration.dsl.support.GenericRouter;
-import org.springframework.integration.dsl.support.GenericSplitter;
 import org.springframework.integration.dsl.support.MapBuilder;
 import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.expression.ControlBusMethodFilter;
@@ -73,6 +73,7 @@ import org.springframework.integration.transformer.HeaderFilter;
 import org.springframework.integration.transformer.MessageTransformingHandler;
 import org.springframework.integration.transformer.MethodInvokingTransformer;
 import org.springframework.integration.transformer.Transformer;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
@@ -151,7 +152,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 
 	public B controlBus(Consumer<GenericEndpointSpec<ServiceActivatingHandler>> endpointConfigurer) {
 		return this.handle(new ServiceActivatingHandler(new ExpressionCommandMessageProcessor(
-						new ControlBusMethodFilter())), endpointConfigurer);
+				new ControlBusMethodFilter())), endpointConfigurer);
 	}
 
 	public B transform(String expression) {
@@ -241,7 +242,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	public <P> B handle(GenericHandler<P> handler) {
-		return this.handle(null, handler);
+		return handle(null, handler);
 	}
 
 	public <P> B handle(GenericHandler<P> handler,
@@ -281,15 +282,38 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.register(new GenericEndpointSpec<BridgeHandler>(new BridgeHandler()), endpointConfigurer);
 	}
 
+	public B delay(String groupId) {
+		return this.delay(groupId, (String) null);
+	}
+
+	public B delay(String groupId, Consumer<DelayerEndpointSpec> endpointConfigurer) {
+		return this.delay(groupId, (String) null, endpointConfigurer);
+	}
+
 	public B delay(String groupId, String expression) {
 		return this.delay(groupId, expression, null);
 	}
 
-	public B delay(String groupId, String expression,
+	public <P> B delay(String groupId, Function<Message<P>, Object> function) {
+		return this.delay(groupId, function, null);
+	}
+
+	public <P> B delay(String groupId, Function<Message<P>, Object> function,
 			Consumer<DelayerEndpointSpec> endpointConfigurer) {
+		Assert.notNull(function);
+		return this.delay(groupId, new FunctionExpression<Message<P>>(function), endpointConfigurer);
+	}
+
+	public B delay(String groupId, String expression, Consumer<DelayerEndpointSpec> endpointConfigurer) {
+		return delay(groupId,
+				StringUtils.hasText(expression) ? PARSER.parseExpression(expression) : null,
+				endpointConfigurer);
+	}
+
+	private B delay(String groupId, Expression expression, Consumer<DelayerEndpointSpec> endpointConfigurer) {
 		DelayHandler delayHandler = new DelayHandler(groupId);
-		if (StringUtils.hasText(expression)) {
-			delayHandler.setDelayExpression(PARSER.parseExpression(expression));
+		if (expression != null) {
+			delayHandler.setDelayExpression(expression);
 		}
 		return this.register(new DelayerEndpointSpec(delayHandler), endpointConfigurer);
 	}
@@ -351,6 +375,10 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return transform(headerEnricherSpec.get(), endpointConfigurer);
 	}
 
+	public B split() {
+		return this.split((Consumer<SplitterEndpointSpec<DefaultMessageSplitter>>) null);
+	}
+
 	public B split(Consumer<SplitterEndpointSpec<DefaultMessageSplitter>> endpointConfigurer) {
 		return this.split(new DefaultMessageSplitter(), endpointConfigurer);
 	}
@@ -366,24 +394,24 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 
 	public B split(String beanName, String methodName,
 			Consumer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
-		return this.split(new MethodInvokingSplitter(new BeanNameMessageProcessor<Collection<?>>(beanName, methodName)),
+		return this.split(new MethodInvokingSplitter(new BeanNameMessageProcessor<Object>(beanName, methodName)),
 				endpointConfigurer);
 	}
 
-	public <P> B split(Class<P> payloadType, GenericSplitter<P> splitter) {
-		return this.split(payloadType, splitter, null);
+	public <P> B split(Class<P> payloadType, Function<P, ?> splitter) {
+		return split(payloadType, splitter, null);
 	}
 
-	public <T> B split(GenericSplitter<T> splitter,
+	public <P> B split(Function<P, ?> splitter,
 			Consumer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
 		return split(null, splitter, endpointConfigurer);
 	}
 
-	public <P> B split(Class<P> payloadType, GenericSplitter<P> splitter,
+	public <P> B split(Class<P> payloadType, Function<P, ?> splitter,
 			Consumer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
 		MethodInvokingSplitter split = isLambda(splitter)
 				? new MethodInvokingSplitter(new LambdaMessageProcessor(splitter, payloadType))
-				: new MethodInvokingSplitter(splitter, "split");
+				: new MethodInvokingSplitter(splitter);
 		return this.split(split, endpointConfigurer);
 	}
 
@@ -509,31 +537,31 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 				endpointConfigurer);
 	}
 
-	public <S, T> B route(GenericRouter<S, T> router) {
+	public <S, T> B route(Function<S, T> router) {
 		return this.route(null, router);
 	}
 
-	public <S, T> B route(GenericRouter<S, T> router,
+	public <S, T> B route(Function<S, T> router,
 			Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
 		return this.route(null, router, routerConfigurer);
 	}
 
-	public <P, T> B route(Class<P> payloadType, GenericRouter<P, T> router) {
+	public <P, T> B route(Class<P> payloadType, Function<P, T> router) {
 		return this.route(payloadType, router, null, null);
 	}
 
-	public <P, T> B route(Class<P> payloadType, GenericRouter<P, T> router,
+	public <P, T> B route(Class<P> payloadType, Function<P, T> router,
 			Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
 		return this.route(payloadType, router, routerConfigurer, null);
 	}
 
-	public <S, T> B route(GenericRouter<S, T> router,
+	public <S, T> B route(Function<S, T> router,
 			Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
 			Consumer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
 		return route(null, router, routerConfigurer, endpointConfigurer);
 	}
 
-	public <P, T> B route(Class<P> payloadType, GenericRouter<P, T> router,
+	public <P, T> B route(Class<P> payloadType, Function<P, T> router,
 			Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
 			Consumer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
 		MethodInvokingRouter methodInvokingRouter = isLambda(router)

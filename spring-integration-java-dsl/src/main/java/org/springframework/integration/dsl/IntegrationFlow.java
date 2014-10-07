@@ -16,11 +16,10 @@
 
 package org.springframework.integration.dsl;
 
+import org.springframework.integration.dsl.support.Consumer;
+
 /**
  * @author Artem Bilan
  */
-public interface IntegrationFlow {
-
-	void define(IntegrationFlowDefinition<?> flow);
-
+public interface IntegrationFlow extends Consumer<IntegrationFlowDefinition<?>> {
 }

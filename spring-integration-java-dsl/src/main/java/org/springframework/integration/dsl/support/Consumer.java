@@ -19,6 +19,8 @@ package org.springframework.integration.dsl.support;
 /**
  * Implementations accept a given value and perform work on the argument.
  *
+ * <p>This is a copy of Java 8 {@code Consumer} interface.
+ *
  * @param <T> the type of values to accept
  *
  * @author Jon Brisbin

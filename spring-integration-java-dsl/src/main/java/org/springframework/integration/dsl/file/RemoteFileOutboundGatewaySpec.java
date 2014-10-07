@@ -19,10 +19,13 @@ package org.springframework.integration.dsl.file;
 import java.io.File;
 
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.file.filters.FileListFilter;
 import org.springframework.integration.file.filters.RegexPatternFileListFilter;
 import org.springframework.integration.file.filters.SimplePatternFileListFilter;
 import org.springframework.integration.file.remote.gateway.AbstractRemoteFileOutboundGateway;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
@@ -59,13 +62,18 @@ public abstract class RemoteFileOutboundGatewaySpec<F, S extends RemoteFileOutbo
 		return _this();
 	}
 
-	public S localDirectory(java.io.File localDirectory) {
+	public S localDirectory(File localDirectory) {
 		this.target.setLocalDirectory(localDirectory);
 		return _this();
 	}
 
 	public S localDirectoryExpression(String localDirectoryExpression) {
 		this.target.setLocalDirectoryExpression(PARSER.parseExpression(localDirectoryExpression));
+		return _this();
+	}
+
+	public <P> S localDirectory(Function<Message<P>, String> localDirectoryFunction) {
+		this.target.setLocalDirectoryExpression(new FunctionExpression<Message<P>>(localDirectoryFunction));
 		return _this();
 	}
 
@@ -114,8 +122,13 @@ public abstract class RemoteFileOutboundGatewaySpec<F, S extends RemoteFileOutbo
 		return _this();
 	}
 
-	public S localFilenameGeneratorExpression(String localFilenameGeneratorExpression) {
-		this.target.setLocalFilenameGeneratorExpression(PARSER.parseExpression(localFilenameGeneratorExpression));
+	public S localFilenameExpression(String localFilenameExpression) {
+		this.target.setLocalFilenameGeneratorExpression(PARSER.parseExpression(localFilenameExpression));
+		return _this();
+	}
+
+	public <P> S localFilename(Function<Message<P>, String> localFilenameFunction) {
+		this.target.setLocalFilenameGeneratorExpression(new FunctionExpression<Message<P>>(localFilenameFunction));
 		return _this();
 	}
 

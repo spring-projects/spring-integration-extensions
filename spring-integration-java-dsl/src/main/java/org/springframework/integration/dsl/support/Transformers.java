@@ -26,7 +26,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.serializer.Deserializer;
 import org.springframework.core.serializer.Serializer;
 import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.dsl.support.tuple.Tuple2;
 import org.springframework.integration.file.transformer.FileToByteArrayTransformer;
 import org.springframework.integration.file.transformer.FileToStringTransformer;
@@ -59,8 +58,6 @@ import org.springframework.xml.xpath.NodeMapper;
  * @author Artem Bilan
  */
 public abstract class Transformers {
-
-	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
 	public static ObjectToStringTransformer objectToString() {
 		return objectToString(null);
@@ -325,12 +322,14 @@ public abstract class Transformers {
 		return transformer;
 	}
 
-	public static XsltPayloadTransformer xslt(Resource xsltTemplate, Tuple2<String, String>... xslParameterMappings) {
+	@SuppressWarnings("unchecked")
+	public static XsltPayloadTransformer xslt(Resource xsltTemplate,
+			Tuple2<String, Expression>... xslParameterMappings) {
 		XsltPayloadTransformer transformer = new XsltPayloadTransformer(xsltTemplate);
 		if (xslParameterMappings != null) {
 			Map<String, Expression> params = new HashMap<String, Expression>(xslParameterMappings.length);
-			for (Tuple2<String, String> mapping : xslParameterMappings) {
-				params.put(mapping.getT1(), PARSER.parseExpression(mapping.getT2()));
+			for (Tuple2<String, Expression> mapping : xslParameterMappings) {
+				params.put(mapping.getT1(), mapping.getT2());
 			}
 			transformer.setXslParameterMappings(params);
 		}

@@ -46,12 +46,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.config.EnableIntegration;
+import org.springframework.integration.dsl.HeaderEnricherSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.MessageProducers;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.mail.Mail;
-import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.ImapServer;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.Pop3Server;
 import org.springframework.integration.dsl.test.mail.PoorMansMailServer.SmtpServer;
@@ -197,7 +197,10 @@ public class MailTests {
 		@Bean
 		public IntegrationFlow sendMailFlow() {
 			return IntegrationFlows.from("sendMailChannel")
-					.enrichHeaders(Mail.headers().subject("foo").from("foo@bar").to("bar@baz"))
+					.enrichHeaders(Mail.headers()
+							.subjectFunction(m -> "foo")
+							.from("foo@bar")
+							.toFunction(m -> new String[] {"bar@baz"}))
 					.handleWithAdapter(h -> h.mail("localhost")
 									.port(smtpPort)
 									.credentials("user", "pw")
