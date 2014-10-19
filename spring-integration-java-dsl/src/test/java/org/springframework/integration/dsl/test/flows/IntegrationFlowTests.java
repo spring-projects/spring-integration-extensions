@@ -1805,7 +1805,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow splitAggregateFlow() {
 			return IntegrationFlows.from("splitAggregateInput", true)
-					.split(null)
+					.split()
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.resequence()
 					.aggregate()

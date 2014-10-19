@@ -375,6 +375,10 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return transform(headerEnricherSpec.get(), endpointConfigurer);
 	}
 
+	public B split() {
+		return this.split((Consumer<SplitterEndpointSpec<DefaultMessageSplitter>>) null);
+	}
+
 	public B split(Consumer<SplitterEndpointSpec<DefaultMessageSplitter>> endpointConfigurer) {
 		return this.split(new DefaultMessageSplitter(), endpointConfigurer);
 	}
@@ -390,20 +394,20 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 
 	public B split(String beanName, String methodName,
 			Consumer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
-		return this.split(new MethodInvokingSplitter(new BeanNameMessageProcessor<Collection<?>>(beanName, methodName)),
+		return this.split(new MethodInvokingSplitter(new BeanNameMessageProcessor<Object>(beanName, methodName)),
 				endpointConfigurer);
 	}
 
-	public <P> B split(Class<P> payloadType, Function<P, Collection<?>> splitter) {
-		return this.split(payloadType, splitter, null);
+	public <P> B split(Class<P> payloadType, Function<P, ?> splitter) {
+		return split(payloadType, splitter, null);
 	}
 
-	public <P> B split(Function<P, Collection<?>> splitter,
+	public <P> B split(Function<P, ?> splitter,
 			Consumer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
 		return split(null, splitter, endpointConfigurer);
 	}
 
-	public <P> B split(Class<P> payloadType, Function<P, Collection<?>> splitter,
+	public <P> B split(Class<P> payloadType, Function<P, ?> splitter,
 			Consumer<SplitterEndpointSpec<MethodInvokingSplitter>> endpointConfigurer) {
 		MethodInvokingSplitter split = isLambda(splitter)
 				? new MethodInvokingSplitter(new LambdaMessageProcessor(splitter, payloadType))
