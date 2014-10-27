@@ -25,6 +25,8 @@ import org.springframework.expression.common.ExpressionUtils;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
+ * An {@link Expression} that simply invokes {@link Function#apply(Object)} on its
+ * provided {@link Function}.
  * @author Artem Bilan
  */
 public class FunctionExpression<S> implements Expression {
@@ -35,11 +37,10 @@ public class FunctionExpression<S> implements Expression {
 
 	private final EvaluationException readOnlyException;
 
-	@SuppressWarnings("unchecked")
 	public FunctionExpression(Function<S, ?> function) {
 		this.function = function;
 		this.readOnlyException = new EvaluationException(getExpressionString(),
-				"FunctionExpression is the 'read only' Expression implementation");
+				"FunctionExpression is a 'read only' Expression implementation");
 	}
 
 	@Override
