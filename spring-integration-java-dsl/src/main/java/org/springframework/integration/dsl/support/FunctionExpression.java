@@ -27,6 +27,19 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 /**
  * An {@link Expression} that simply invokes {@link Function#apply(Object)} on its
  * provided {@link Function}.
+ * <p>
+ * This is a powerful alternative to the SpEL, when Java 8 and its Lambda support is in use.
+ * <p>
+ * If the target component has support of an {@link Expression} property,
+ * the {@link FunctionExpression} can be specified instead of
+ * {@link org.springframework.expression.spel.standard.SpelExpression}
+ * as an alternative to evaluate value from the Lambda, not runtime SpEL resolution.
+ * <p>
+ * The {@link FunctionExpression} is 'read-only', hence only {@link #getValue} operations
+ * are allowed.
+ * Any {@link #setValue} operation and {@link #getValueType} related operations
+ * throw {@link EvaluationException}.
+ *
  * @author Artem Bilan
  */
 public class FunctionExpression<S> implements Expression {
