@@ -19,6 +19,9 @@ package org.springframework.integration.dsl.file;
 import java.io.File;
 import java.util.Comparator;
 
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.messaging.Message;
+
 /**
  * @author Artem Bilan
  */
@@ -41,12 +44,20 @@ public abstract class Files {
 		return new FileWritingMessageHandlerSpec(directoryExpression).expectReply(false);
 	}
 
+	public static <P> FileWritingMessageHandlerSpec outboundAdapter(Function<Message<P>, ?> directoryFunction) {
+		return new FileWritingMessageHandlerSpec(directoryFunction).expectReply(false);
+	}
+
 	public static FileWritingMessageHandlerSpec outboundGateway(File destinationDirectory) {
 		return new FileWritingMessageHandlerSpec(destinationDirectory).expectReply(true);
 	}
 
 	public static FileWritingMessageHandlerSpec outboundGateway(String directoryExpression) {
 		return new FileWritingMessageHandlerSpec(directoryExpression).expectReply(true);
+	}
+
+	public static <P> FileWritingMessageHandlerSpec outboundGateway(Function<Message<P>, ?> directoryFunction) {
+		return new FileWritingMessageHandlerSpec(directoryFunction).expectReply(true);
 	}
 
 	public static TailAdapterSpec tailAdapter(File file) {

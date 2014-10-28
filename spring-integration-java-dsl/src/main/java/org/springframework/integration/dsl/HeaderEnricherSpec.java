@@ -21,12 +21,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
+import org.springframework.integration.dsl.support.Consumer;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.dsl.support.MapBuilder;
-import org.springframework.integration.dsl.support.MapBuilder.MapBuilderConfigurer;
 import org.springframework.integration.dsl.support.StringStringMapBuilder;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
 import org.springframework.integration.handler.MessageProcessor;
@@ -35,6 +36,7 @@ import org.springframework.integration.transformer.support.AbstractHeaderValueMe
 import org.springframework.integration.transformer.support.ExpressionEvaluatingHeaderValueMessageProcessor;
 import org.springframework.integration.transformer.support.HeaderValueMessageProcessor;
 import org.springframework.integration.transformer.support.StaticHeaderValueMessageProcessor;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
@@ -42,8 +44,6 @@ import org.springframework.util.Assert;
  * @author Gary Russell
  */
 public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherSpec, HeaderEnricher> {
-
-	private final static SpelExpressionParser PARSER = new SpelExpressionParser();
 
 	private final Map<String, HeaderValueMessageProcessor<?>> headerToAdd = new HashMap<String, HeaderValueMessageProcessor<?>>();
 
@@ -62,19 +62,17 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 		return _this();
 	}
 
-
 	public HeaderEnricherSpec messageProcessor(MessageProcessor<?> messageProcessor) {
 		this.headerEnricher.setMessageProcessor(messageProcessor);
 		return _this();
 	}
 
 	public HeaderEnricherSpec messageProcessor(String expression) {
-		return this.messageProcessor(new ExpressionEvaluatingMessageProcessor<Object>(
-				PARSER.parseExpression(expression)));
+		return messageProcessor(new ExpressionEvaluatingMessageProcessor<Object>(PARSER.parseExpression(expression)));
 	}
 
 	public HeaderEnricherSpec messageProcessor(String beanName, String methodName) {
-		return this.messageProcessor(new BeanNameMessageProcessor<Object>(beanName, methodName));
+		return messageProcessor(new BeanNameMessageProcessor<Object>(beanName, methodName));
 	}
 
 	public HeaderEnricherSpec headers(MapBuilder<?, String, Object> headers) {
@@ -97,13 +95,14 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 	}
 
 	public HeaderEnricherSpec headerExpressions(MapBuilder<?, String, String> headers) {
+		Assert.notNull(headers);
 		return headerExpressions(headers.get());
 	}
 
-	public HeaderEnricherSpec headerExpressions(
-			MapBuilderConfigurer<StringStringMapBuilder, String, String> configurer) {
+	public HeaderEnricherSpec headerExpressions(Consumer<StringStringMapBuilder> configurer) {
+		Assert.notNull(configurer);
 		StringStringMapBuilder builder = new StringStringMapBuilder();
-		configurer.configure(builder);
+		configurer.accept(builder);
 		return headerExpressions(builder.get());
 	}
 
@@ -116,29 +115,44 @@ public class HeaderEnricherSpec extends IntegrationComponentSpec<HeaderEnricherS
 	}
 
 	public <V> HeaderEnricherSpec header(String name, V value) {
-		return this.header(name, value, null);
+		return header(name, value, null);
 	}
 
 	public <V> HeaderEnricherSpec header(String name, V value, Boolean overwrite) {
 		AbstractHeaderValueMessageProcessor<V> headerValueMessageProcessor =
 				new StaticHeaderValueMessageProcessor<V>(value);
 		headerValueMessageProcessor.setOverwrite(overwrite);
-		return this.header(name, headerValueMessageProcessor);
+		return header(name, headerValueMessageProcessor);
 	}
 
 	public HeaderEnricherSpec headerExpression(String name, String expression) {
-		return this.headerExpression(name, expression, null);
+		return headerExpression(name, expression, null);
 	}
 
 	public HeaderEnricherSpec headerExpression(String name, String expression, Boolean overwrite) {
+		Assert.hasText(expression);
+		return headerExpression(name, PARSER.parseExpression(expression), overwrite);
+	}
+
+	public <P> HeaderEnricherSpec headerFunction(String name, Function<Message<P>, Object> function) {
+		return headerFunction(name, function, null);
+	}
+
+	public <P> HeaderEnricherSpec headerFunction(String name, Function<Message<P>, Object> function,
+			Boolean overwrite) {
+		Assert.notNull(function);
+		return headerExpression(name, new FunctionExpression<Message<P>>(function), overwrite);
+	}
+
+	private HeaderEnricherSpec headerExpression(String name, Expression expression, Boolean overwrite) {
 		AbstractHeaderValueMessageProcessor<?> headerValueMessageProcessor =
 				new ExpressionEvaluatingHeaderValueMessageProcessor<Object>(expression, null);
 		headerValueMessageProcessor.setOverwrite(overwrite);
-		return this.header(name, headerValueMessageProcessor);
+		return header(name, headerValueMessageProcessor);
 	}
 
 	public <V> HeaderEnricherSpec header(String name, HeaderValueMessageProcessor<V> headerValueMessageProcessor) {
-		Assert.notNull(name);
+		Assert.hasText(name);
 		this.headerToAdd.put(name, headerValueMessageProcessor);
 		return _this();
 	}

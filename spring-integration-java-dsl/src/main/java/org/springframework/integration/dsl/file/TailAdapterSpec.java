@@ -16,6 +16,8 @@
 
 package org.springframework.integration.dsl.file;
 
+import java.io.File;
+
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.integration.channel.NullChannel;
@@ -42,7 +44,7 @@ public class TailAdapterSpec extends MessageProducerSpec<TailAdapterSpec, FileTa
 		this.factoryBean.setBeanFactory(new DefaultListableBeanFactory());
 	}
 
-	TailAdapterSpec file(java.io.File file) {
+	TailAdapterSpec file(File file) {
 		Assert.notNull(file);
 		this.factoryBean.setFile(file);
 		return _this();

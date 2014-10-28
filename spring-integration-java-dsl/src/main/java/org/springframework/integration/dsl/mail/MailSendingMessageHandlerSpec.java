@@ -20,8 +20,8 @@ import java.util.Properties;
 import javax.activation.FileTypeMap;
 
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
+import org.springframework.integration.dsl.support.Consumer;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
-import org.springframework.integration.dsl.support.PropertiesBuilder.PropertiesConfigurer;
 import org.springframework.integration.mail.MailSendingMessageHandler;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
@@ -44,9 +44,9 @@ public class MailSendingMessageHandlerSpec
 		return this;
 	}
 
-	public MailSendingMessageHandlerSpec javaMailProperties(PropertiesConfigurer propertiesConfigurer) {
+	public MailSendingMessageHandlerSpec javaMailProperties(Consumer<PropertiesBuilder> propertiesConfigurer) {
 		PropertiesBuilder properties = new PropertiesBuilder();
-		propertiesConfigurer.configure(properties);
+		propertiesConfigurer.accept(properties);
 		return javaMailProperties(properties.get());
 	}
 

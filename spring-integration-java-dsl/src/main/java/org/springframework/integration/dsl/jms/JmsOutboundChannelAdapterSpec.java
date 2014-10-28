@@ -21,9 +21,12 @@ import javax.jms.Destination;
 
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.dsl.support.Consumer;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.jms.JmsHeaderMapper;
 import org.springframework.integration.jms.JmsSendingMessageHandler;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
@@ -64,6 +67,11 @@ public class JmsOutboundChannelAdapterSpec<S extends JmsOutboundChannelAdapterSp
 
 	public S destinationExpression(String destination) {
 		this.target.setDestinationExpression(PARSER.parseExpression(destination));
+		return _this();
+	}
+
+	public <P> S destination(Function<Message<P>, ?> destinationFunction) {
+		this.target.setDestinationExpression(new FunctionExpression<Message<P>>(destinationFunction));
 		return _this();
 	}
 

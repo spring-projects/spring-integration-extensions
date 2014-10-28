@@ -28,12 +28,13 @@ ext {
 	apacheSshdVersion = '0.10.1'
 	embedMongoVersion = '1.46.0'
 	ftpServerVersion = '1.0.6'
+	hsqldbVersion = '2.3.2'
 	jacocoVersion = '0.7.1.201405082137'
 	jmsApiVersion = '1.1-rev-1'
 	mailVersion = '1.4.7'
 	slf4jVersion = '1.7.7'
 	springIntegrationVersion = '4.0.4.RELEASE'
-	springBootVersion = '1.1.7.RELEASE'
+	springBootVersion = '1.1.8.RELEASE'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
 	linkCi = 'https://build.spring.io/browse/INTEXT'
@@ -96,6 +97,7 @@ dependencies {
 	testRuntime "com.sun.mail:smtp:$mailVersion"
 	testRuntime "com.sun.mail:pop3:$mailVersion"
 	testRuntime "com.sun.mail:imap:$mailVersion"
+	testRuntime "org.hsqldb:hsqldb:$hsqldbVersion"
 
 	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }

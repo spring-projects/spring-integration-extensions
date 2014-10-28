@@ -20,6 +20,8 @@ package org.springframework.integration.dsl.support;
  * Implementations of this class perform work on the given parameter
  * and return a result of an optionally different type.
  *
+ * <p>This is a copy of Java 8 {@code Function} interface.
+ *
  * @param <T> The type of the input to the apply operation
  * @param <R> The type of the result of the apply operation
  *

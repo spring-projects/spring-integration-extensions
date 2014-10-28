@@ -23,13 +23,16 @@ import java.util.concurrent.Executor;
 
 import javax.mail.Authenticator;
 import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 
 import org.aopalliance.aop.Advice;
 
 import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.MessageProducerSpec;
+import org.springframework.integration.dsl.support.Consumer;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.dsl.support.PropertiesBuilder;
-import org.springframework.integration.dsl.support.PropertiesBuilder.PropertiesConfigurer;
 import org.springframework.integration.mail.ImapIdleChannelAdapter;
 import org.springframework.integration.mail.ImapMailReceiver;
 import org.springframework.integration.mail.SearchTermStrategy;
@@ -37,6 +40,7 @@ import org.springframework.integration.transaction.TransactionSynchronizationFac
 
 /**
  * @author Gary Russell
+ * @author Artem Bilan
  */
 public class ImapIdleChannelAdapterSpec
 		extends MessageProducerSpec<ImapIdleChannelAdapterSpec, ImapIdleChannelAdapter>
@@ -54,6 +58,11 @@ public class ImapIdleChannelAdapterSpec
 		return this;
 	}
 
+	public ImapIdleChannelAdapterSpec selector(Function<MimeMessage, Boolean> selectorFunction) {
+		this.receiver.setSelectorExpression(new FunctionExpression<MimeMessage>(selectorFunction));
+		return this;
+	}
+
 	public ImapIdleChannelAdapterSpec session(Session session) {
 		this.receiver.setSession(session);
 		return this;
@@ -64,9 +73,9 @@ public class ImapIdleChannelAdapterSpec
 		return this;
 	}
 
-	public ImapIdleChannelAdapterSpec javaMailProperties(PropertiesConfigurer configurer) {
+	public ImapIdleChannelAdapterSpec javaMailProperties(Consumer<PropertiesBuilder> configurer) {
 		PropertiesBuilder properties = new PropertiesBuilder();
-		configurer.configure(properties);
+		configurer.accept(properties);
 		return javaMailProperties(properties.get());
 	}
 

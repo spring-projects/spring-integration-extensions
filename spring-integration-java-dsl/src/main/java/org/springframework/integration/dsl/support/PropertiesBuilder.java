@@ -36,10 +36,4 @@ public class PropertiesBuilder {
 		return this.properties;
 	}
 
-	public interface PropertiesConfigurer {
-
-		void configure(PropertiesBuilder propertiesBuilder);
-
-	}
-
 }

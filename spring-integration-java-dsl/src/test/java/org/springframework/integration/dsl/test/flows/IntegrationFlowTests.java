@@ -110,11 +110,10 @@ import org.springframework.integration.dsl.MessagingGateways;
 import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
-import org.springframework.integration.dsl.file.Files;
+import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.dsl.ftp.Ftp;
 import org.springframework.integration.dsl.jms.Jms;
 import org.springframework.integration.dsl.sftp.Sftp;
-import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.dsl.support.Transformers;
 import org.springframework.integration.dsl.test.TestFtpServer;
 import org.springframework.integration.dsl.test.TestSftpServer;
@@ -1422,7 +1421,7 @@ public class IntegrationFlowTests {
 									.preserveTimestamp(true)
 									.remoteDirectory("ftpSource")
 									.regexFilter(".*\\.txt$")
-									.localFilenameGeneratorExpression("#this.toUpperCase() + '.a'")
+									.localFilename(f -> f.toUpperCase() + ".a")
 									.localDirectory(this.ftpServer.getTargetLocalDirectory()),
 							e -> e.id("ftpInboundAdapter"))
 					.channel(MessageChannels.queue("ftpInboundResultChannel"))
@@ -1436,7 +1435,7 @@ public class IntegrationFlowTests {
 									.preserveTimestamp(true)
 									.remoteDirectory("sftpSource")
 									.regexFilter(".*\\.txt$")
-									.localFilenameGeneratorExpression("#this.toUpperCase() + '.a'")
+									.localFilenameExpression("#this.toUpperCase() + '.a'")
 									.localDirectory(this.sftpServer.getTargetLocalDirectory()),
 							e -> e.id("sftpInboundAdapter"))
 					.channel(MessageChannels.queue("sftpInboundResultChannel"))
@@ -1473,8 +1472,8 @@ public class IntegrationFlowTests {
 					.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
 					.regexFileNameFilter("(subFtpSource|.*1.txt)")
 					.localDirectoryExpression("@ftpServer.targetLocalDirectoryName + #remoteDirectory")
-					.localFilenameGeneratorExpression("#remoteFileName.replaceFirst('ftpSource', " +
-							"'localTarget')").get();
+					.localFilenameExpression("#remoteFileName.replaceFirst('ftpSource', 'localTarget')")
+					.get();
 		}
 
 		@Bean
@@ -1494,8 +1493,7 @@ public class IntegrationFlowTests {
 									.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
 									.regexFileNameFilter("(subSftpSource|.*1.txt)")
 									.localDirectoryExpression("@sftpServer.targetLocalDirectoryName + #remoteDirectory")
-									.localFilenameGeneratorExpression(
-											"#remoteFileName.replaceFirst('sftpSource', 'localTarget')"))
+									.localFilenameExpression("#remoteFileName.replaceFirst('sftpSource', 'localTarget')"))
 					.channel(remoteFileOutputChannel())
 					.get();
 		}
@@ -1733,7 +1731,7 @@ public class IntegrationFlowTests {
 									.requestPayloadExpression("payload")
 									.shouldClonePayload(false)
 									.propertyExpression("name", "payload['name']")
-									.propertyExpression("date", "new java.util.Date()")
+									.propertyFunction("date", m -> new Date())
 									.headerExpression("foo", "payload['name']")
 					)
 					.get();
@@ -1757,10 +1755,9 @@ public class IntegrationFlowTests {
 		public IntegrationFlow enricherFlow3() {
 			return IntegrationFlows.from("enricherInput3", true)
 					.enrich(e -> e.requestChannel("enrichChannel")
-									.requestPayloadExpression("payload")
-									.shouldClonePayload(false)
-									.headerExpression("foo", "payload['name']")
-					)
+							.requestPayload(Message::getPayload)
+							.shouldClonePayload(false)
+							.<Map<String, String>>headerFunction("foo", m -> m.getPayload().get("name")))
 					.get();
 		}
 
@@ -1799,7 +1796,8 @@ public class IntegrationFlowTests {
 					.split(s -> s.applySequence(false).get().getT2().setDelimiters(","))
 					.channel(c -> c.executor(this.taskExecutor()))
 					.<String, Integer>transform(Integer::parseInt)
-					.enrichHeaders(s -> s.headerExpression(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, "payload"))
+					.enrichHeaders(h ->
+							h.headerFunction(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER, Message::getPayload))
 					.resequence(r -> r.releasePartialSequences(true).correlationExpression("'foo'"), null)
 					.headerFilter("foo", false);
 		}
@@ -1807,7 +1805,7 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow splitAggregateFlow() {
 			return IntegrationFlows.from("splitAggregateInput", true)
-					.split(null)
+					.split()
 					.channel(MessageChannels.executor(this.taskExecutor()))
 					.resequence()
 					.aggregate()
@@ -1967,7 +1965,7 @@ public class IntegrationFlowTests {
 							e -> e.poller(Pollers.fixedDelay(100)))
 					.transform(Transformers.fileToString())
 					.aggregate(a -> a.correlationExpression("1")
-							.releaseExpression("size() == 25"), null)
+							.releaseStrategy(g -> g.size() == 25), null)
 					.channel(MessageChannels.queue("fileReadingResultChannel"))
 					.get();
 		}
@@ -1977,7 +1975,7 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from("fileWritingInput")
 					.enrichHeaders(h -> h.header(FileHeaders.FILENAME, "foo.sitest")
 							.header("directory", new File(tmpDir, "fileWritingFlow")))
-					.handle(Files.outboundGateway("headers[directory]"))
+					.handleWithAdapter(a -> a.fileGateway(m -> m.getHeaders().get("directory")))
 					.channel(MessageChannels.queue("fileWritingResultChannel"))
 					.get();
 		}

@@ -24,10 +24,13 @@ import javax.jms.Destination;
 import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.dsl.support.Consumer;
+import org.springframework.integration.dsl.support.Function;
+import org.springframework.integration.dsl.support.FunctionExpression;
 import org.springframework.integration.jms.JmsHeaderMapper;
 import org.springframework.integration.jms.JmsOutboundGateway;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.destination.DestinationResolver;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
@@ -70,6 +73,11 @@ public class JmsOutboundGatewaySpec extends MessageHandlerSpec<JmsOutboundGatewa
 		return _this();
 	}
 
+	public <P> JmsOutboundGatewaySpec requestDestination(Function<Message<P>, ?> destinationFunction) {
+		this.target.setRequestDestinationExpression(new FunctionExpression<Message<P>>(destinationFunction));
+		return _this();
+	}
+
 	public JmsOutboundGatewaySpec replyDestination(Destination destination) {
 		this.target.setReplyDestination(destination);
 		return _this();
@@ -82,6 +90,11 @@ public class JmsOutboundGatewaySpec extends MessageHandlerSpec<JmsOutboundGatewa
 
 	public JmsOutboundGatewaySpec replyDestinationExpression(String destination) {
 		this.target.setReplyDestinationExpression(PARSER.parseExpression(destination));
+		return _this();
+	}
+
+	public <P> JmsOutboundGatewaySpec replyDestination(Function<Message<P>, ?> destinationFunction) {
+		this.target.setReplyDestinationExpression(new FunctionExpression<Message<P>>(destinationFunction));
 		return _this();
 	}
 

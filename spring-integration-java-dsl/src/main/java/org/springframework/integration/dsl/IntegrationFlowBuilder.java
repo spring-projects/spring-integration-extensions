@@ -62,7 +62,7 @@ public final class IntegrationFlowBuilder extends IntegrationFlowDefinition<Inte
 		}
 
 		@Override
-		public void define(IntegrationFlowDefinition<?> flow) {
+		public void accept(IntegrationFlowDefinition<?> flow) {
 			throw new UnsupportedOperationException();
 		}
 
