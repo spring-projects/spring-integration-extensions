@@ -24,40 +24,40 @@ import org.springframework.util.ErrorHandler;
 /**
  * @author Artem Bilan
  */
-public class PublishSubscribeChannelSpec
-		extends MessageChannelSpec<PublishSubscribeChannelSpec, PublishSubscribeChannel> {
+public class PublishSubscribeChannelSpec<S extends PublishSubscribeChannelSpec<S>>
+		extends MessageChannelSpec<S, PublishSubscribeChannel> {
 
-	PublishSubscribeChannelSpec() {
+	protected PublishSubscribeChannelSpec() {
 		this.channel = new PublishSubscribeChannel();
 	}
 
-	PublishSubscribeChannelSpec(Executor executor) {
+	protected PublishSubscribeChannelSpec(Executor executor) {
 		this.channel = new PublishSubscribeChannel(executor);
 	}
 
-	PublishSubscribeChannelSpec errorHandler(ErrorHandler errorHandler) {
+	public S errorHandler(ErrorHandler errorHandler) {
 		this.channel.setErrorHandler(errorHandler);
-		return this;
+		return _this();
 	}
 
-	public PublishSubscribeChannelSpec ignoreFailures(boolean ignoreFailures) {
+	public S ignoreFailures(boolean ignoreFailures) {
 		this.channel.setIgnoreFailures(ignoreFailures);
-		return this;
+		return _this();
 	}
 
-	public PublishSubscribeChannelSpec applySequence(boolean applySequence) {
+	public S applySequence(boolean applySequence) {
 		this.channel.setApplySequence(applySequence);
-		return this;
+		return _this();
 	}
 
-	public PublishSubscribeChannelSpec maxSubscribers(Integer maxSubscribers) {
+	public S maxSubscribers(Integer maxSubscribers) {
 		this.channel.setMaxSubscribers(maxSubscribers);
-		return this;
+		return _this();
 	}
 
-	public PublishSubscribeChannelSpec minSubscribers(int minSubscribers) {
+	public S minSubscribers(int minSubscribers) {
 		this.channel.setMinSubscribers(minSubscribers);
-		return this;
+		return _this();
 	}
 
 }

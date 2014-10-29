@@ -17,9 +17,7 @@
 package org.springframework.integration.dsl.test.flows;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.isOneOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,11 +27,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,39 +36,19 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.net.ftp.FTPFile;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.AnonymousQueue;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.aop.TargetSource;
-import org.springframework.aop.framework.Advised;
-import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.ConfigFileApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -83,9 +56,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.MongoDbFactory;
-import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.MessageDispatchingException;
 import org.springframework.integration.MessageRejectedException;
@@ -94,51 +64,25 @@ import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.channel.ChannelInterceptorAware;
 import org.springframework.integration.channel.FixedSubscriberChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
-import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.context.IntegrationContextUtils;
-import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.dsl.Channels;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.MessageProducers;
-import org.springframework.integration.dsl.MessageSources;
-import org.springframework.integration.dsl.MessagingGateways;
-import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.core.Pollers;
-import org.springframework.integration.dsl.ftp.Ftp;
-import org.springframework.integration.dsl.jms.Jms;
-import org.springframework.integration.dsl.sftp.Sftp;
-import org.springframework.integration.dsl.support.Transformers;
-import org.springframework.integration.dsl.test.TestFtpServer;
-import org.springframework.integration.dsl.test.TestSftpServer;
-import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
-import org.springframework.integration.file.DefaultFileNameGenerator;
-import org.springframework.integration.file.FileHeaders;
-import org.springframework.integration.file.FileWritingMessageHandler;
-import org.springframework.integration.file.remote.RemoteFileTemplate;
-import org.springframework.integration.file.remote.gateway.AbstractRemoteFileOutboundGateway;
-import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessageProducer;
-import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
-import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
 import org.springframework.integration.router.MethodInvokingRouter;
 import org.springframework.integration.scheduling.PollerMetadata;
-import org.springframework.integration.sftp.session.DefaultSftpSessionFactory;
 import org.springframework.integration.store.MessageStore;
-import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.support.MutableMessageBuilder;
-import org.springframework.integration.test.util.TestUtils;
 import org.springframework.integration.transformer.PayloadDeserializingTransformer;
 import org.springframework.integration.transformer.PayloadSerializingTransformer;
 import org.springframework.integration.xml.transformer.support.XPathExpressionEvaluatingHeaderValueMessageProcessor;
@@ -146,14 +90,11 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.core.DestinationResolutionException;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.scheduling.TaskScheduler;
@@ -163,31 +104,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.StreamUtils;
-
-import com.jcraft.jsch.ChannelSftp;
-import com.mongodb.MongoClient;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 
 /**
  * @author Artem Bilan
  * @author Tim Ysewyn
  */
-@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
+@ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext
 public class IntegrationFlowTests {
-
-	private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-
-	private static int mongoPort;
-
-	private static MongodExecutable mongodExe;
 
 	@Autowired
 	private ListableBeanFactory beanFactory;
@@ -196,15 +121,12 @@ public class IntegrationFlowTests {
 	private ControlBusGateway controlBus;
 
 	@Autowired
-	@Qualifier("flow1QueueChannel")
-	private PollableChannel outputChannel;
-
-	@Autowired
-	private TestChannelInterceptor testChannelInterceptor;
-
-	@Autowired
 	@Qualifier("inputChannel")
 	private MessageChannel inputChannel;
+
+	@Autowired
+	@Qualifier("discardChannel")
+	private PollableChannel discardChannel;
 
 	@Autowired
 	@Qualifier("foo")
@@ -236,14 +158,6 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("bridgeFlow2Output")
 	private PollableChannel bridgeFlow2Output;
-
-	@Autowired
-	@Qualifier("fileFlow1Input")
-	private MessageChannel fileFlow1Input;
-
-	@Autowired
-	@Qualifier("fileWriting.handler")
-	private MessageHandler fileWritingMessageHandler;
 
 	@Autowired
 	@Qualifier("methodInvokingInput")
@@ -329,30 +243,8 @@ public class IntegrationFlowTests {
 	private MessageChannel claimCheckInput;
 
 	@Autowired
-	@Qualifier("priorityChannel")
-	private MessageChannel priorityChannel;
-
-	@Autowired
-	@Qualifier("priorityReplyChannel")
-	private PollableChannel priorityReplyChannel;
-
-	@Autowired
 	@Qualifier("lamdasInput")
 	private MessageChannel lamdasInput;
-
-	@Autowired
-	@Qualifier("tailChannel")
-	private PollableChannel tailChannel;
-
-	@Autowired
-	private ApacheCommonsFileTailingMessageProducer tailer;
-
-	@Autowired
-	private AmqpTemplate amqpTemplate;
-
-	@Autowired
-	@Qualifier("queue")
-	private Queue amqpQueue;
 
 	@Autowired
 	@Qualifier("gatewayInput")
@@ -361,39 +253,6 @@ public class IntegrationFlowTests {
 	@Autowired
 	@Qualifier("gatewayError")
 	private PollableChannel gatewayError;
-
-	@BeforeClass
-	public static void setup() throws IOException {
-		mongoPort = Network.getFreeServerPort();
-		mongodExe = MongodStarter.getDefaultInstance()
-				.prepare(new MongodConfigBuilder()
-						.version(Version.Main.PRODUCTION)
-						.net(new Net(mongoPort, Network.localhostIsIPv6()))
-						.build());
-		mongodExe.start();
-	}
-
-	@AfterClass
-	public static void tearDown() {
-		mongodExe.stop();
-	}
-
-	@Test
-	public void testPollingFlow() {
-		this.controlBus.send("@integerEndpoint.start()");
-		assertThat(this.beanFactory.getBean("integerChannel"), instanceOf(FixedSubscriberChannel.class));
-		for (int i = 0; i < 5; i++) {
-			Message<?> message = this.outputChannel.receive(20000);
-			assertNotNull(message);
-			assertEquals("" + i, message.getPayload());
-		}
-		this.controlBus.send("@integerEndpoint.stop()");
-
-		assertTrue(((ChannelInterceptorAware) this.outputChannel).getChannelInterceptors()
-				.contains(this.testChannelInterceptor));
-		assertThat(this.testChannelInterceptor.getInvoked(), Matchers.greaterThanOrEqualTo(5));
-
-	}
 
 	@Test
 	public void testDirectFlow() {
@@ -426,6 +285,11 @@ public class IntegrationFlowTests {
 		assertEquals(100, successMessage.getPayload());
 
 		assertTrue(used.get());
+
+		this.inputChannel.send(new GenericMessage<Object>(1000));
+		Message<?> discarded = this.discardChannel.receive(5000);
+		assertNotNull(discarded);
+		assertEquals("Discarded: 1000", discarded.getPayload());
 	}
 
 	@Test
@@ -497,34 +361,6 @@ public class IntegrationFlowTests {
 				context.close();
 			}
 		}
-	}
-
-
-	@Test
-	public void testFileHandler() throws Exception {
-		Message<?> message = MessageBuilder.withPayload("foo").setHeader(FileHeaders.FILENAME, "foo").build();
-		try {
-			this.fileFlow1Input.send(message);
-			fail("NullPointerException expected");
-		}
-		catch (Exception e) {
-			assertThat(e, instanceOf(MessageHandlingException.class));
-			assertThat(e.getCause(), instanceOf(NullPointerException.class));
-		}
-		DefaultFileNameGenerator fileNameGenerator = new DefaultFileNameGenerator();
-		fileNameGenerator.setBeanFactory(this.beanFactory);
-		Object targetFileWritingMessageHandler = this.fileWritingMessageHandler;
-		if (this.fileWritingMessageHandler instanceof Advised) {
-			TargetSource targetSource = ((Advised) this.fileWritingMessageHandler).getTargetSource();
-			if (targetSource != null) {
-				targetFileWritingMessageHandler = targetSource.getTarget();
-			}
-		}
-		DirectFieldAccessor dfa = new DirectFieldAccessor(targetFileWritingMessageHandler);
-		dfa.setPropertyValue("fileNameGenerator", fileNameGenerator);
-		this.fileFlow1Input.send(message);
-
-		assertTrue(new File(tmpDir, "foo").exists());
 	}
 
 	@Test
@@ -702,6 +538,7 @@ public class IntegrationFlowTests {
 
 	@Test
 	public void testRouter() {
+		this.beanFactory.containsBean("routeFlow.subFlow#0.channel#0");
 
 		int[] payloads = new int[] {1, 2, 3, 4, 5, 6};
 
@@ -712,11 +549,11 @@ public class IntegrationFlowTests {
 		for (int i = 0; i < 3; i++) {
 			Message<?> receive = this.oddChannel.receive(2000);
 			assertNotNull(receive);
-			assertEquals(i * 2 + 1, receive.getPayload());
+			assertEquals(payloads[i * 2] * 3, receive.getPayload());
 
 			receive = this.evenChannel.receive(2000);
 			assertNotNull(receive);
-			assertEquals(i * 2 + 2, receive.getPayload());
+			assertEquals(payloads[i * 2 + 1], receive.getPayload());
 		}
 
 	}
@@ -893,87 +730,6 @@ public class IntegrationFlowTests {
 	}
 
 	@Test
-	public void testPriority() throws InterruptedException {
-		Message<String> message = MessageBuilder.withPayload("1").setPriority(1).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("-1").setPriority(-1).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("3").setPriority(3).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("0").setPriority(0).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("2").setPriority(2).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("none").build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("31").setPriority(3).build();
-		this.priorityChannel.send(message);
-
-		this.controlBus.send("@priorityChannelBridge.start()");
-
-		Message<?> receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("3", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("31", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("2", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("1", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("0", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("-1", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("none", receive.getPayload());
-
-		this.controlBus.send("@priorityChannelBridge.stop()");
-	}
-
-	@Test
-	public void testMessageProducerFlow() throws Exception {
-		FileOutputStream file = new FileOutputStream(new File(tmpDir, "TailTest"));
-		for (int i = 0; i < 50; i++) {
-			file.write((i + "\n").getBytes());
-		}
-		this.tailer.start();
-		for (int i = 0; i < 50; i++) {
-			Message<?> message = this.tailChannel.receive(5000);
-			assertNotNull(message);
-			assertEquals("hello " + i, message.getPayload());
-		}
-		assertNull(this.tailChannel.receive(1));
-
-		this.controlBus.send("@tailer.stop()");
-		file.close();
-	}
-
-
-	@Test
-	public void testAmqpInboundGatewayFlow() throws Exception {
-		Object result = this.amqpTemplate.convertSendAndReceive(this.amqpQueue.getName(), "world");
-		assertEquals("HELLO WORLD", result);
-	}
-
-	@Test
 	public void testGatewayFlow() throws Exception {
 		PollableChannel replyChannel = new QueueChannel();
 		Message<String> message = MessageBuilder.withPayload("foo").setReplyChannel(replyChannel).build();
@@ -1000,297 +756,35 @@ public class IntegrationFlowTests {
 	}
 
 	@Autowired
-	@Qualifier("amqpOutboundInput")
-	private MessageChannel amqpOutboundInput;
+	@Qualifier("subscribersFlow.input")
+	private MessageChannel subscribersFlowInput;
 
 	@Autowired
-	@Qualifier("amqpReplyChannel.channel")
-	private PollableChannel amqpReplyChannel;
+	@Qualifier("subscriber1Results")
+	private PollableChannel subscriber1Results;
+
+	@Autowired
+	@Qualifier("subscriber2Results")
+	private PollableChannel subscriber2Results;
+
+	@Autowired
+	@Qualifier("subscriber3Results")
+	private PollableChannel subscriber3Results;
 
 	@Test
-	public void testAmqpOutboundFlow() throws Exception {
-		this.amqpOutboundInput.send(MessageBuilder.withPayload("hello through the amqp")
-				.setHeader("routingKey", "foo")
-				.build());
-		Message<?> receive = null;
-		int i = 0;
-		do {
-			receive = this.amqpReplyChannel.receive();
-			if (receive != null) {
-				break;
-			}
-			Thread.sleep(100);
-			i++;
-		} while (i < 10);
+	public void testSubscribersSubFlows() {
+		this.subscribersFlowInput.send(new GenericMessage<Integer>(2));
 
-		assertNotNull(receive);
-		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
-	}
+		Message<?> receive1 = this.subscriber1Results.receive(5000);
+		assertNotNull(receive1);
+		assertEquals(1, receive1.getPayload());
 
-	@Autowired
-	@Qualifier("jmsOutboundFlow.input")
-	private MessageChannel jmsOutboundInboundChannel;
-
-	@Autowired
-	@Qualifier("jmsOutboundInboundReplyChannel")
-	private PollableChannel jmsOutboundInboundReplyChannel;
-
-	@Test
-	public void testJmsOutboundInboundFlow() {
-		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello THROUGH the JMS")
-				.setHeader(SimpMessageHeaderAccessor.DESTINATION_HEADER, "jmsInbound")
-				.build());
-
-		Message<?> receive = this.jmsOutboundInboundReplyChannel.receive(5000);
-
-		assertNotNull(receive);
-		assertEquals("HELLO THROUGH THE JMS", receive.getPayload());
-
-		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello THROUGH the JMS")
-				.setHeader(SimpMessageHeaderAccessor.DESTINATION_HEADER, "jmsMessageDriver")
-				.build());
-
-		receive = this.jmsOutboundInboundReplyChannel.receive(5000);
-
-		assertNotNull(receive);
-		assertEquals("hello through the jms", receive.getPayload());
-	}
-
-	@Autowired
-	@Qualifier("jmsOutboundGatewayFlow.input")
-	private MessageChannel jmsOutboundGatewayChannel;
-
-	@Test
-	public void testJmsPipelineFlow() {
-		PollableChannel replyChannel = new QueueChannel();
-		Message<String> message = MessageBuilder.withPayload("hello through the jms pipeline")
-				.setReplyChannel(replyChannel)
-				.setHeader("destination", "jmsPipelineTest")
-				.build();
-		this.jmsOutboundGatewayChannel.send(message);
-
-		Message<?> receive = replyChannel.receive(5000);
-
-		assertNotNull(receive);
-		assertEquals("HELLO THROUGH THE JMS PIPELINE", receive.getPayload());
-	}
-
-	@Autowired
-	@Qualifier("fileReadingResultChannel")
-	private PollableChannel fileReadingResultChannel;
-
-	@Test
-	public void testFileReadingFlow() throws Exception {
-		List<Integer> evens = new ArrayList<>(25);
-		for (int i = 0; i < 50; i++) {
-			boolean even = i % 2 == 0;
-			String extension = even ? ".sitest" : ".foofile";
-			if (even) {
-				evens.add(i);
-			}
-			FileOutputStream file = new FileOutputStream(new File(tmpDir, i + extension));
-			file.write(("" + i).getBytes());
-			file.flush();
-			file.close();
-		}
-
-		Message<?> message = fileReadingResultChannel.receive(10000);
-		assertNotNull(message);
-		Object payload = message.getPayload();
-		assertThat(payload, instanceOf(List.class));
-		@SuppressWarnings("unchecked")
-		List<String> result = (List<String>) payload;
-		assertEquals(25, result.size());
-		result.forEach(s -> assertTrue(evens.contains(Integer.parseInt(s))));
-	}
-
-
-	@Autowired
-	@Qualifier("fileWritingInput")
-	private MessageChannel fileWritingInput;
-
-	@Autowired
-	@Qualifier("fileWritingResultChannel")
-	private PollableChannel fileWritingResultChannel;
-
-	@Test
-	public void testFileWritingFlow() throws Exception {
-		String payload = "Spring Integration";
-		this.fileWritingInput.send(new GenericMessage<>(payload));
-		Message<?> receive = this.fileWritingResultChannel.receive(1000);
-		assertNotNull(receive);
-		assertThat(receive.getPayload(), instanceOf(File.class));
-		File resultFile = (File) receive.getPayload();
-		assertThat(resultFile.getAbsolutePath(),
-				endsWith(TestUtils.applySystemFileSeparator("fileWritingFlow/foo.sitest")));
-		String fileContent = StreamUtils.copyToString(new FileInputStream(resultFile), Charset.defaultCharset());
-		assertEquals(payload, fileContent);
-	}
-
-
-	@Autowired
-	private TestFtpServer ftpServer;
-
-	@Autowired
-	private DefaultFtpSessionFactory ftpSessionFactory;
-
-	@Autowired
-	private TestSftpServer sftpServer;
-
-	@Autowired
-	private DefaultSftpSessionFactory sftpSessionFactory;
-
-	@Before
-	@After
-	public void setupRemoteFileServers() {
-		this.ftpServer.recursiveDelete(this.ftpServer.getTargetLocalDirectory());
-		this.ftpServer.recursiveDelete(this.ftpServer.getTargetFtpDirectory());
-		this.sftpServer.recursiveDelete(this.sftpServer.getTargetLocalDirectory());
-		this.sftpServer.recursiveDelete(this.sftpServer.getTargetSftpDirectory());
-	}
-
-	@Autowired
-	@Qualifier("ftpInboundResultChannel")
-	private PollableChannel ftpInboundResultChannel;
-
-	@Test
-	public void testFtpInboundFlow() {
-		Message<?> message = this.ftpInboundResultChannel.receive(1000);
-		assertNotNull(message);
-		Object payload = message.getPayload();
-		assertThat(payload, instanceOf(File.class));
-		File file = (File) payload;
-		assertThat(file.getName(), isOneOf("FTPSOURCE1.TXT.a", "FTPSOURCE2.TXT.a"));
-		assertThat(file.getAbsolutePath(), containsString("ftpTest"));
-
-		message = this.ftpInboundResultChannel.receive(1000);
-		assertNotNull(message);
-		file = (File) message.getPayload();
-		assertThat(file.getName(), isOneOf("FTPSOURCE1.TXT.a", "FTPSOURCE2.TXT.a"));
-		assertThat(file.getAbsolutePath(), containsString("ftpTest"));
-
-		this.controlBus.send("@ftpInboundAdapter.stop()");
-	}
-
-	@Autowired
-	@Qualifier("sftpInboundResultChannel")
-	private PollableChannel sftpInboundResultChannel;
-
-	@Test
-	public void testSftpInboundFlow() {
-		Message<?> message = this.sftpInboundResultChannel.receive(1000);
-		assertNotNull(message);
-		Object payload = message.getPayload();
-		assertThat(payload, instanceOf(File.class));
-		File file = (File) payload;
-		assertThat(file.getName(), isOneOf("SFTPSOURCE1.TXT.a", "SFTPSOURCE2.TXT.a"));
-		assertThat(file.getAbsolutePath(), containsString("sftpTest"));
-
-		message = this.sftpInboundResultChannel.receive(1000);
-		assertNotNull(message);
-		file = (File) message.getPayload();
-		assertThat(file.getName(), isOneOf("SFTPSOURCE1.TXT.a", "SFTPSOURCE2.TXT.a"));
-		assertThat(file.getAbsolutePath(), containsString("sftpTest"));
-
-		this.controlBus.send("@sftpInboundAdapter.stop()");
-	}
-
-	@Autowired
-	@Qualifier("toFtpChannel")
-	private MessageChannel toFtpChannel;
-
-	@Test
-	public void testFtpOutboundFlow() {
-		String fileName = "foo.file";
-		this.toFtpChannel.send(MessageBuilder.withPayload("foo")
-				.setHeader(FileHeaders.FILENAME, fileName)
-				.build());
-
-		RemoteFileTemplate<FTPFile> template = new RemoteFileTemplate<>(this.ftpSessionFactory);
-		FTPFile[] files = template.execute(session ->
-				session.list(this.ftpServer.getTargetFtpDirectory().getName() + "/" + fileName));
-		assertEquals(1, files.length);
-		assertEquals(3, files[0].getSize());
-	}
-
-	@Autowired
-	@Qualifier("toSftpChannel")
-	private MessageChannel toSftpChannel;
-
-	@Test
-	public void testSftpOutboundFlow() {
-		String fileName = "foo.file";
-		this.toSftpChannel.send(MessageBuilder.withPayload("foo")
-				.setHeader(FileHeaders.FILENAME, fileName)
-				.build());
-
-		RemoteFileTemplate<ChannelSftp.LsEntry> template = new RemoteFileTemplate<>(this.sftpSessionFactory);
-		ChannelSftp.LsEntry[] files = template.execute(session ->
-				session.list(this.sftpServer.getTargetSftpDirectory().getName() + "/" + fileName));
-		assertEquals(1, files.length);
-		assertEquals(3, files[0].getAttrs().getSize());
-	}
-
-	@Autowired
-	@Qualifier("ftpMgetInputChannel")
-	private MessageChannel ftpMgetInputChannel;
-
-	@Autowired
-	@Qualifier("remoteFileOutputChannel")
-	private PollableChannel remoteFileOutputChannel;
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void testFtpMgetFlow() {
-		String dir = "ftpSource/";
-		this.ftpMgetInputChannel.send(new GenericMessage<Object>(dir + "*"));
-		Message<?> result = this.remoteFileOutputChannel.receive(1000);
-		assertNotNull(result);
-		List<File> localFiles = (List<File>) result.getPayload();
-		// should have filtered ftpSource2.txt
-		assertEquals(2, localFiles.size());
-
-		for (File file : localFiles) {
-			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
-					Matchers.containsString(dir));
-		}
-		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
-				Matchers.containsString(dir + "subFtpSource"));
-	}
-
-
-	@Autowired
-	@Qualifier("sftpMgetInputChannel")
-	private MessageChannel sftpMgetInputChannel;
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void testSftpMgetFlow() {
-		String dir = "sftpSource/";
-		this.sftpMgetInputChannel.send(new GenericMessage<Object>(dir + "*"));
-		Message<?> result = this.remoteFileOutputChannel.receive(1000);
-		assertNotNull(result);
-		List<File> localFiles = (List<File>) result.getPayload();
-		// should have filtered sftpSource2.txt
-		assertEquals(2, localFiles.size());
-
-		for (File file : localFiles) {
-			assertThat(file.getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
-					Matchers.containsString(dir));
-		}
-		assertThat(localFiles.get(1).getPath().replaceAll(Matcher.quoteReplacement(File.separator), "/"),
-				Matchers.containsString(dir + "subSftpSource"));
-	}
-
-	@Autowired
-	private MBeanServer mBeanServer;
-
-	@Test
-	public void testMBeansForDSL() throws MalformedObjectNameException {
-		assertFalse(this.mBeanServer.queryMBeans(ObjectName.getInstance("org.springframework.integration:" +
-				"bean=anonymous,name=sftpMgetInputChannel,type=MessageHandler"), null).isEmpty());
-		assertFalse(this.mBeanServer.queryMBeans(ObjectName.getInstance("org.springframework.integration:" +
-				"type=MessageHandler,name=ftpMgetInputChannel,bean=anonymous"), null).isEmpty());
+		Message<?> receive2 = this.subscriber2Results.receive(5000);
+		assertNotNull(receive2);
+		assertEquals(4, receive2.getPayload());
+		Message<?> receive3 = this.subscriber3Results.receive(5000);
+		assertNotNull(receive3);
+		assertEquals(6, receive3.getPayload());
 	}
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
@@ -1300,38 +794,13 @@ public class IntegrationFlowTests {
 	}
 
 	@Configuration
-	@Import({TestFtpServer.class, TestSftpServer.class})
-	@EnableAutoConfiguration
+	@EnableIntegration
 	@IntegrationComponentScan
 	public static class ContextConfiguration {
 
 		@Bean
-		public MessageSource<?> integerMessageSource() {
-			MethodInvokingMessageSource source = new MethodInvokingMessageSource();
-			source.setObject(new AtomicInteger());
-			source.setMethodName("getAndIncrement");
-			return source;
-		}
-
-		@Bean
 		public IntegrationFlow controlBusFlow() {
 			return IntegrationFlows.from("controlBus").controlBus().get();
-		}
-
-		@Autowired
-		private javax.jms.ConnectionFactory jmsConnectionFactory;
-
-		@Bean
-		public IntegrationFlow flow1() {
-			return IntegrationFlows.from(this.integerMessageSource(),
-					c -> c.poller(Pollers.fixedRate(100))
-							.id("integerEndpoint")
-							.autoStartup(false))
-					.fixedSubscriberChannel("integerChannel")
-					.transform("payload.toString()")
-					.channel(Jms.pollableChannel("flow1QueueChannel", this.jmsConnectionFactory)
-							.destination("flow1QueueChannel"))
-					.get();
 		}
 
 		@Bean(name = PollerMetadata.DEFAULT_POLLER)
@@ -1354,148 +823,6 @@ public class IntegrationFlowTests {
 		@Bean
 		public MessageChannel foo() {
 			return MessageChannels.publishSubscribe().get();
-		}
-
-
-		@Bean
-		public IntegrationFlow jmsOutboundFlow() {
-			return f -> f.handleWithAdapter(h -> h.jms(this.jmsConnectionFactory)
-					.destinationExpression("headers." + SimpMessageHeaderAccessor.DESTINATION_HEADER));
-		}
-
-		@Bean
-		public MessageChannel jmsOutboundInboundReplyChannel() {
-			return MessageChannels.queue().get();
-		}
-
-		@Bean
-		public IntegrationFlow jmsInboundFlow() {
-			return IntegrationFlows
-					.from((MessageSources s) -> s.jms(this.jmsConnectionFactory).destination("jmsInbound"))
-					.<String, String>transform(String::toUpperCase)
-					.channel(this.jmsOutboundInboundReplyChannel())
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow jmsMessageDriverFlow() {
-			return IntegrationFlows
-					.from(Jms.messageDriverChannelAdapter(this.jmsConnectionFactory)
-							.destination("jmsMessageDriver"))
-					.<String, String>transform(String::toLowerCase)
-					.channel(this.jmsOutboundInboundReplyChannel())
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow jmsOutboundGatewayFlow() {
-			return f -> f.handleWithAdapter(a -> a.jmsGateway(this.jmsConnectionFactory)
-					.replyContainer()
-					.requestDestination("jmsPipelineTest"));
-		}
-
-		@Bean
-		public IntegrationFlow jmsInboundGatewayFlow() {
-			return IntegrationFlows.from((MessagingGateways g) -> g.jms(this.jmsConnectionFactory)
-					.destination("jmsPipelineTest"))
-					.<String, String>transform(String::toUpperCase)
-					.get();
-		}
-
-		@Autowired
-		private TestFtpServer ftpServer;
-
-		@Autowired
-		private DefaultFtpSessionFactory ftpSessionFactory;
-
-		@Autowired
-		private TestSftpServer sftpServer;
-
-		@Autowired
-		private DefaultSftpSessionFactory sftpSessionFactory;
-
-		@Bean
-		public IntegrationFlow ftpInboundFlow() {
-			return IntegrationFlows
-					.from(s -> s.ftp(this.ftpSessionFactory)
-									.preserveTimestamp(true)
-									.remoteDirectory("ftpSource")
-									.regexFilter(".*\\.txt$")
-									.localFilename(f -> f.toUpperCase() + ".a")
-									.localDirectory(this.ftpServer.getTargetLocalDirectory()),
-							e -> e.id("ftpInboundAdapter"))
-					.channel(MessageChannels.queue("ftpInboundResultChannel"))
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow sftpInboundFlow() {
-			return IntegrationFlows
-					.from(s -> s.sftp(this.sftpSessionFactory)
-									.preserveTimestamp(true)
-									.remoteDirectory("sftpSource")
-									.regexFilter(".*\\.txt$")
-									.localFilenameExpression("#this.toUpperCase() + '.a'")
-									.localDirectory(this.sftpServer.getTargetLocalDirectory()),
-							e -> e.id("sftpInboundAdapter"))
-					.channel(MessageChannels.queue("sftpInboundResultChannel"))
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow ftpOutboundFlow() {
-			return IntegrationFlows.from("toFtpChannel")
-					.handle(Ftp.outboundAdapter(this.ftpSessionFactory)
-									.useTemporaryFileName(false)
-									.remoteDirectory(this.ftpServer.getTargetFtpDirectory().getName())
-					).get();
-		}
-
-		@Bean
-		public IntegrationFlow sftpOutboundFlow() {
-			return IntegrationFlows.from("toSftpChannel")
-					.handle(Sftp.outboundAdapter(this.sftpSessionFactory)
-									.useTemporaryFileName(false)
-									.remoteDirectory(this.sftpServer.getTargetSftpDirectory().getName())
-					).get();
-		}
-
-		@Bean
-		public PollableChannel remoteFileOutputChannel() {
-			return new QueueChannel();
-		}
-
-		@Bean
-		public MessageHandler ftpOutboundGateway() {
-			return Ftp.outboundGateway(this.ftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
-					"payload")
-					.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
-					.regexFileNameFilter("(subFtpSource|.*1.txt)")
-					.localDirectoryExpression("@ftpServer.targetLocalDirectoryName + #remoteDirectory")
-					.localFilenameExpression("#remoteFileName.replaceFirst('ftpSource', 'localTarget')")
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow ftpMGetFlow() {
-			return IntegrationFlows.from("ftpMgetInputChannel")
-					.handle(ftpOutboundGateway())
-					.channel(remoteFileOutputChannel())
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow sftpMGetFlow() {
-			return IntegrationFlows.from("sftpMgetInputChannel")
-					.handleWithAdapter(h ->
-							h.sftpGateway(this.sftpSessionFactory, AbstractRemoteFileOutboundGateway.Command.MGET,
-									"payload")
-									.options(AbstractRemoteFileOutboundGateway.Option.RECURSIVE)
-									.regexFileNameFilter("(subSftpSource|.*1.txt)")
-									.localDirectoryExpression("@sftpServer.targetLocalDirectoryName + #remoteDirectory")
-									.localFilenameExpression("#remoteFileName.replaceFirst('sftpSource', 'localTarget')"))
-					.channel(remoteFileOutputChannel())
-					.get();
 		}
 
 		@Bean
@@ -1530,7 +857,11 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow flow2() {
 			return IntegrationFlows.from(this.inputChannel)
-					.filter(p -> p instanceof String, c -> c.id("filter"))
+					.filter(p -> p instanceof String, e -> e
+							.id("filter")
+							.discardFlow(df -> df
+									.transform(String.class, "Discarded: "::concat)
+									.channel(c -> c.queue("discardChannel"))))
 					.channel("foo")
 					.fixedSubscriberChannel()
 					.<String, Integer>transform(Integer::parseInt)
@@ -1549,26 +880,17 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
-		public MongoDbFactory mongoDbFactory() throws Exception {
-			return new SimpleMongoDbFactory(new MongoClient("localhost", mongoPort), "local");
-		}
-
-		@Bean
-		public MongoDbChannelMessageStore mongoDbChannelMessageStore(MongoDbFactory mongoDbFactory) {
-			MongoDbChannelMessageStore mongoDbChannelMessageStore = new MongoDbChannelMessageStore(mongoDbFactory);
-			mongoDbChannelMessageStore.setPriorityEnabled(true);
-			return mongoDbChannelMessageStore;
-		}
-
-		@Bean
-		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
-			return IntegrationFlows.from((Channels c) ->
-					c.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
-					.bridge(s -> s.poller(Pollers.fixedDelay(100))
-							.autoStartup(false)
-							.id("priorityChannelBridge"))
-					.channel(MessageChannels.queue("priorityReplyChannel"))
-					.get();
+		public IntegrationFlow subscribersFlow() {
+			return flow -> flow
+					.publishSubscribeChannel(Executors.newCachedThreadPool(), s -> s
+							.subscribe(f -> f
+									.<Integer>handle((p, h) -> p / 2)
+									.channel(c -> c.queue("subscriber1Results")))
+							.subscribe(f -> f
+									.<Integer>handle((p, h) -> p * 2)
+									.channel(c -> c.queue("subscriber2Results"))))
+					.<Integer>handle((p, h) -> p * 3)
+					.channel(c -> c.queue("subscriber3Results"));
 		}
 
 	}
@@ -1607,6 +929,7 @@ public class IntegrationFlowTests {
 				public void onApplicationEvent(MessagingEvent event) {
 					eventHolder().set(event.getMessage().getPayload());
 				}
+
 			};
 		}
 
@@ -1695,14 +1018,6 @@ public class IntegrationFlowTests {
 
 	@Configuration
 	public static class ContextConfiguration4 {
-
-		@Bean
-		public IntegrationFlow fileFlow1() {
-			return IntegrationFlows.from("fileFlow1Input")
-					.<FileWritingMessageHandler>handleWithAdapter(h -> h.file(tmpDir).fileNameGenerator(message -> null)
-							, c -> c.id("fileWriting"))
-					.get();
-		}
 
 		@Autowired
 		@Qualifier("integrationFlowTests.GreetingService")
@@ -1827,11 +1142,6 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
-		public QueueChannel oddChannel() {
-			return new QueueChannel();
-		}
-
-		@Bean
 		public QueueChannel evenChannel() {
 			return new QueueChannel();
 		}
@@ -1840,9 +1150,10 @@ public class IntegrationFlowTests {
 		public IntegrationFlow routeFlow() {
 			return IntegrationFlows.from("routerInput")
 					.<Integer, Boolean>route(p -> p % 2 == 0,
-							m -> m.suffix("Channel")
-									.channelMapping("true", "even")
-									.channelMapping("false", "odd"))
+							m -> m.channelMapping("true", "evenChannel")
+									.subFlowMapping("false", f ->
+											f.<Integer>handle((p, h) -> p * 3)))
+					.channel(c -> c.queue("oddChannel"))
 					.get();
 		}
 
@@ -1879,64 +1190,6 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
-		public IntegrationFlow tailFlow() {
-			return IntegrationFlows.from((MessageProducers p) -> p.tail(new File(tmpDir, "TailTest"))
-					.delay(500)
-					.end(false)
-					.id("tailer")
-					.autoStartup(false))
-					.transform("hello "::concat)
-					.channel(MessageChannels.queue("tailChannel"))
-					.get();
-		}
-
-		@Autowired
-		private ConnectionFactory rabbitConnectionFactory;
-
-		@Autowired
-		private AmqpTemplate amqpTemplate;
-
-		@Bean
-		public Queue queue() {
-			return new AnonymousQueue();
-		}
-
-		@Bean
-		public IntegrationFlow amqpFlow() {
-			return IntegrationFlows.from(Amqp.inboundGateway(this.rabbitConnectionFactory, queue()))
-					.transform("hello "::concat)
-					.transform(String.class, String::toUpperCase)
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow amqpOutboundFlow() {
-			return IntegrationFlows.from(Amqp.channel("amqpOutboundInput", this.rabbitConnectionFactory))
-					.handle(Amqp.outboundAdapter(this.amqpTemplate).routingKeyExpression("headers.routingKey"))
-					.get();
-		}
-
-		@Bean
-		public Queue fooQueue() {
-			return new Queue("foo");
-		}
-
-		@Bean
-		public Queue amqpReplyChannel() {
-			return new Queue("amqpReplyChannel");
-		}
-
-		@Bean
-		public IntegrationFlow amqpInboundFlow() {
-			return IntegrationFlows.from((MessageProducers p) -> p.amqp(this.rabbitConnectionFactory, fooQueue()))
-					.transform(String.class, String::toUpperCase)
-					.channel(Amqp.pollableChannel(this.rabbitConnectionFactory)
-							.queueName("amqpReplyChannel")
-							.channelTransacted(true))
-					.get();
-		}
-
-		@Bean
 		@DependsOn("gatewayRequestFlow")
 		public IntegrationFlow gatewayFlow() {
 			return IntegrationFlows.from("gatewayInput")
@@ -1955,29 +1208,6 @@ public class IntegrationFlowTests {
 		@Bean
 		public MessageChannel gatewayError() {
 			return MessageChannels.queue().get();
-		}
-
-
-		@Bean
-		public IntegrationFlow fileReadingFlow() {
-			return IntegrationFlows
-					.from(s -> s.file(tmpDir).patternFilter("*.sitest"),
-							e -> e.poller(Pollers.fixedDelay(100)))
-					.transform(Transformers.fileToString())
-					.aggregate(a -> a.correlationExpression("1")
-							.releaseStrategy(g -> g.size() == 25), null)
-					.channel(MessageChannels.queue("fileReadingResultChannel"))
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow fileWritingFlow() {
-			return IntegrationFlows.from("fileWritingInput")
-					.enrichHeaders(h -> h.header(FileHeaders.FILENAME, "foo.sitest")
-							.header("directory", new File(tmpDir, "fileWritingFlow")))
-					.handleWithAdapter(a -> a.fileGateway(m -> m.getHeaders().get("directory")))
-					.channel(MessageChannels.queue("fileWritingResultChannel"))
-					.get();
 		}
 
 	}
@@ -2041,24 +1271,6 @@ public class IntegrationFlowTests {
 		@Bean
 		public DirectChannelSpec invalidBean() {
 			return MessageChannels.direct();
-		}
-
-	}
-
-	@Component
-	@GlobalChannelInterceptor(patterns = "flow1QueueChannel")
-	public static class TestChannelInterceptor extends ChannelInterceptorAdapter {
-
-		private final AtomicInteger invoked = new AtomicInteger();
-
-		@Override
-		public Message<?> preSend(Message<?> message, MessageChannel channel) {
-			this.invoked.incrementAndGet();
-			return message;
-		}
-
-		public Integer getInvoked() {
-			return invoked.get();
 		}
 
 	}
