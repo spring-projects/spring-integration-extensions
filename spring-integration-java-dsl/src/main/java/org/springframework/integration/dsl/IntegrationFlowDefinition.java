@@ -35,6 +35,7 @@ import org.springframework.integration.config.SourcePollingChannelAdapterFactory
 import org.springframework.integration.core.GenericSelector;
 import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.dsl.channel.MessageChannelSpec;
+import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
 import org.springframework.integration.dsl.core.MessageHandlerSpec;
 import org.springframework.integration.dsl.support.BeanNameMessageProcessor;
@@ -269,6 +270,9 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	public <H extends MessageHandler> B handle(MessageHandlerSpec<?, H> messageHandlerSpec,
 			Consumer<GenericEndpointSpec<H>> endpointConfigurer) {
 		Assert.notNull(messageHandlerSpec);
+		if (messageHandlerSpec instanceof ComponentsRegistration) {
+			addComponents(((ComponentsRegistration) messageHandlerSpec).getComponentsToRegister());
+		}
 		return handle(messageHandlerSpec.get(), endpointConfigurer);
 	}
 
@@ -567,7 +571,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		MethodInvokingRouter methodInvokingRouter = isLambda(router)
 				? new MethodInvokingRouter(new LambdaMessageProcessor(router, payloadType))
 				: new MethodInvokingRouter(router);
-		return this.route(methodInvokingRouter, routerConfigurer, endpointConfigurer);
+		return route(methodInvokingRouter, routerConfigurer, endpointConfigurer);
 	}
 
 	public <R extends AbstractMappingMessageRouter> B route(R router,
@@ -576,8 +580,9 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		if (routerConfigurer != null) {
 			RouterSpec<R> routerSpec = new RouterSpec<R>(router);
 			routerConfigurer.accept(routerSpec);
+			addComponents(routerSpec.getComponentsToRegister());
 		}
-		return this.route(router, endpointConfigurer);
+		return route(router, endpointConfigurer);
 	}
 
 	public B routeToRecipients(Consumer<RecipientListRouterSpec> routerConfigurer) {

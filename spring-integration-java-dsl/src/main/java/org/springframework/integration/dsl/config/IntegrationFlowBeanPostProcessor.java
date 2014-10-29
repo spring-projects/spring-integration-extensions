@@ -37,7 +37,6 @@ import org.springframework.integration.dsl.IntegrationFlowBuilder;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
-import org.springframework.integration.dsl.core.IntegrationComponentSpec;
 import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.support.context.NamedComponent;
 import org.springframework.messaging.MessageChannel;
@@ -147,7 +146,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 				else if (component instanceof SourcePollingChannelAdapterSpec) {
 					SourcePollingChannelAdapterSpec spec = (SourcePollingChannelAdapterSpec) component;
 					SourcePollingChannelAdapterFactoryBean pollingChannelAdapterFactoryBean = spec.get().getT1();
-					String id = ((IntegrationComponentSpec) spec).getId();
+					String id = spec.getId();
 					if (!StringUtils.hasText(id)) {
 						id = generateBeanName(pollingChannelAdapterFactoryBean);
 					}

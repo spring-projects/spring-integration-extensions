@@ -32,7 +32,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,16 +56,10 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.net.ftp.FTPFile;
 import org.hamcrest.Matchers;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.AnonymousQueue;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.DirectFieldAccessor;
@@ -84,8 +77,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.MongoDbFactory;
-import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.MessageDispatchingException;
 import org.springframework.integration.MessageRejectedException;
@@ -100,24 +91,17 @@ import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.config.GlobalChannelInterceptor;
 import org.springframework.integration.context.IntegrationContextUtils;
-import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.dsl.Channels;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.MessageProducers;
-import org.springframework.integration.dsl.MessageSources;
-import org.springframework.integration.dsl.MessagingGateways;
-import org.springframework.integration.dsl.amqp.Amqp;
 import org.springframework.integration.dsl.channel.DirectChannelSpec;
 import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.dsl.ftp.Ftp;
-import org.springframework.integration.dsl.jms.Jms;
 import org.springframework.integration.dsl.sftp.Sftp;
 import org.springframework.integration.dsl.support.Transformers;
 import org.springframework.integration.dsl.test.TestFtpServer;
 import org.springframework.integration.dsl.test.TestSftpServer;
-import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.event.core.MessagingEvent;
 import org.springframework.integration.event.outbound.ApplicationEventPublishingMessageHandler;
 import org.springframework.integration.file.DefaultFileNameGenerator;
@@ -129,12 +113,10 @@ import org.springframework.integration.file.tail.ApacheCommonsFileTailingMessage
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.advice.ExpressionEvaluatingRequestHandlerAdvice;
-import org.springframework.integration.mongodb.store.MongoDbChannelMessageStore;
 import org.springframework.integration.router.MethodInvokingRouter;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.integration.sftp.session.DefaultSftpSessionFactory;
 import org.springframework.integration.store.MessageStore;
-import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.integration.store.SimpleMessageStore;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.support.MutableMessageBuilder;
@@ -152,7 +134,6 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.core.DestinationResolutionException;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.messaging.support.GenericMessage;
@@ -166,13 +147,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.StreamUtils;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.mongodb.MongoClient;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 
 /**
  * @author Artem Bilan
@@ -185,22 +159,11 @@ public class IntegrationFlowTests {
 
 	private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 
-	private static int mongoPort;
-
-	private static MongodExecutable mongodExe;
-
 	@Autowired
 	private ListableBeanFactory beanFactory;
 
 	@Autowired
 	private ControlBusGateway controlBus;
-
-	@Autowired
-	@Qualifier("flow1QueueChannel")
-	private PollableChannel outputChannel;
-
-	@Autowired
-	private TestChannelInterceptor testChannelInterceptor;
 
 	@Autowired
 	@Qualifier("inputChannel")
@@ -329,14 +292,6 @@ public class IntegrationFlowTests {
 	private MessageChannel claimCheckInput;
 
 	@Autowired
-	@Qualifier("priorityChannel")
-	private MessageChannel priorityChannel;
-
-	@Autowired
-	@Qualifier("priorityReplyChannel")
-	private PollableChannel priorityReplyChannel;
-
-	@Autowired
 	@Qualifier("lamdasInput")
 	private MessageChannel lamdasInput;
 
@@ -348,52 +303,12 @@ public class IntegrationFlowTests {
 	private ApacheCommonsFileTailingMessageProducer tailer;
 
 	@Autowired
-	private AmqpTemplate amqpTemplate;
-
-	@Autowired
-	@Qualifier("queue")
-	private Queue amqpQueue;
-
-	@Autowired
 	@Qualifier("gatewayInput")
 	private MessageChannel gatewayInput;
 
 	@Autowired
 	@Qualifier("gatewayError")
 	private PollableChannel gatewayError;
-
-	@BeforeClass
-	public static void setup() throws IOException {
-		mongoPort = Network.getFreeServerPort();
-		mongodExe = MongodStarter.getDefaultInstance()
-				.prepare(new MongodConfigBuilder()
-						.version(Version.Main.PRODUCTION)
-						.net(new Net(mongoPort, Network.localhostIsIPv6()))
-						.build());
-		mongodExe.start();
-	}
-
-	@AfterClass
-	public static void tearDown() {
-		mongodExe.stop();
-	}
-
-	@Test
-	public void testPollingFlow() {
-		this.controlBus.send("@integerEndpoint.start()");
-		assertThat(this.beanFactory.getBean("integerChannel"), instanceOf(FixedSubscriberChannel.class));
-		for (int i = 0; i < 5; i++) {
-			Message<?> message = this.outputChannel.receive(20000);
-			assertNotNull(message);
-			assertEquals("" + i, message.getPayload());
-		}
-		this.controlBus.send("@integerEndpoint.stop()");
-
-		assertTrue(((ChannelInterceptorAware) this.outputChannel).getChannelInterceptors()
-				.contains(this.testChannelInterceptor));
-		assertThat(this.testChannelInterceptor.getInvoked(), Matchers.greaterThanOrEqualTo(5));
-
-	}
 
 	@Test
 	public void testDirectFlow() {
@@ -712,11 +627,11 @@ public class IntegrationFlowTests {
 		for (int i = 0; i < 3; i++) {
 			Message<?> receive = this.oddChannel.receive(2000);
 			assertNotNull(receive);
-			assertEquals(i * 2 + 1, receive.getPayload());
+			assertEquals(payloads[i * 2] * 3, receive.getPayload());
 
 			receive = this.evenChannel.receive(2000);
 			assertNotNull(receive);
-			assertEquals(i * 2 + 2, receive.getPayload());
+			assertEquals(payloads[i * 2 + 1], receive.getPayload());
 		}
 
 	}
@@ -893,62 +808,6 @@ public class IntegrationFlowTests {
 	}
 
 	@Test
-	public void testPriority() throws InterruptedException {
-		Message<String> message = MessageBuilder.withPayload("1").setPriority(1).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("-1").setPriority(-1).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("3").setPriority(3).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("0").setPriority(0).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("2").setPriority(2).build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("none").build();
-		this.priorityChannel.send(message);
-
-		message = MessageBuilder.withPayload("31").setPriority(3).build();
-		this.priorityChannel.send(message);
-
-		this.controlBus.send("@priorityChannelBridge.start()");
-
-		Message<?> receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("3", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("31", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("2", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("1", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("0", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("-1", receive.getPayload());
-
-		receive = this.priorityReplyChannel.receive(2000);
-		assertNotNull(receive);
-		assertEquals("none", receive.getPayload());
-
-		this.controlBus.send("@priorityChannelBridge.stop()");
-	}
-
-	@Test
 	public void testMessageProducerFlow() throws Exception {
 		FileOutputStream file = new FileOutputStream(new File(tmpDir, "TailTest"));
 		for (int i = 0; i < 50; i++) {
@@ -964,13 +823,6 @@ public class IntegrationFlowTests {
 
 		this.controlBus.send("@tailer.stop()");
 		file.close();
-	}
-
-
-	@Test
-	public void testAmqpInboundGatewayFlow() throws Exception {
-		Object result = this.amqpTemplate.convertSendAndReceive(this.amqpQueue.getName(), "world");
-		assertEquals("HELLO WORLD", result);
 	}
 
 	@Test
@@ -999,81 +851,6 @@ public class IntegrationFlowTests {
 		assertThat(((Exception) receive.getPayload()).getMessage(), containsString("' rejected Message"));
 	}
 
-	@Autowired
-	@Qualifier("amqpOutboundInput")
-	private MessageChannel amqpOutboundInput;
-
-	@Autowired
-	@Qualifier("amqpReplyChannel.channel")
-	private PollableChannel amqpReplyChannel;
-
-	@Test
-	public void testAmqpOutboundFlow() throws Exception {
-		this.amqpOutboundInput.send(MessageBuilder.withPayload("hello through the amqp")
-				.setHeader("routingKey", "foo")
-				.build());
-		Message<?> receive = null;
-		int i = 0;
-		do {
-			receive = this.amqpReplyChannel.receive();
-			if (receive != null) {
-				break;
-			}
-			Thread.sleep(100);
-			i++;
-		} while (i < 10);
-
-		assertNotNull(receive);
-		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
-	}
-
-	@Autowired
-	@Qualifier("jmsOutboundFlow.input")
-	private MessageChannel jmsOutboundInboundChannel;
-
-	@Autowired
-	@Qualifier("jmsOutboundInboundReplyChannel")
-	private PollableChannel jmsOutboundInboundReplyChannel;
-
-	@Test
-	public void testJmsOutboundInboundFlow() {
-		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello THROUGH the JMS")
-				.setHeader(SimpMessageHeaderAccessor.DESTINATION_HEADER, "jmsInbound")
-				.build());
-
-		Message<?> receive = this.jmsOutboundInboundReplyChannel.receive(5000);
-
-		assertNotNull(receive);
-		assertEquals("HELLO THROUGH THE JMS", receive.getPayload());
-
-		this.jmsOutboundInboundChannel.send(MessageBuilder.withPayload("hello THROUGH the JMS")
-				.setHeader(SimpMessageHeaderAccessor.DESTINATION_HEADER, "jmsMessageDriver")
-				.build());
-
-		receive = this.jmsOutboundInboundReplyChannel.receive(5000);
-
-		assertNotNull(receive);
-		assertEquals("hello through the jms", receive.getPayload());
-	}
-
-	@Autowired
-	@Qualifier("jmsOutboundGatewayFlow.input")
-	private MessageChannel jmsOutboundGatewayChannel;
-
-	@Test
-	public void testJmsPipelineFlow() {
-		PollableChannel replyChannel = new QueueChannel();
-		Message<String> message = MessageBuilder.withPayload("hello through the jms pipeline")
-				.setReplyChannel(replyChannel)
-				.setHeader("destination", "jmsPipelineTest")
-				.build();
-		this.jmsOutboundGatewayChannel.send(message);
-
-		Message<?> receive = replyChannel.receive(5000);
-
-		assertNotNull(receive);
-		assertEquals("HELLO THROUGH THE JMS PIPELINE", receive.getPayload());
-	}
 
 	@Autowired
 	@Qualifier("fileReadingResultChannel")
@@ -1306,32 +1083,8 @@ public class IntegrationFlowTests {
 	public static class ContextConfiguration {
 
 		@Bean
-		public MessageSource<?> integerMessageSource() {
-			MethodInvokingMessageSource source = new MethodInvokingMessageSource();
-			source.setObject(new AtomicInteger());
-			source.setMethodName("getAndIncrement");
-			return source;
-		}
-
-		@Bean
 		public IntegrationFlow controlBusFlow() {
 			return IntegrationFlows.from("controlBus").controlBus().get();
-		}
-
-		@Autowired
-		private javax.jms.ConnectionFactory jmsConnectionFactory;
-
-		@Bean
-		public IntegrationFlow flow1() {
-			return IntegrationFlows.from(this.integerMessageSource(),
-					c -> c.poller(Pollers.fixedRate(100))
-							.id("integerEndpoint")
-							.autoStartup(false))
-					.fixedSubscriberChannel("integerChannel")
-					.transform("payload.toString()")
-					.channel(Jms.pollableChannel("flow1QueueChannel", this.jmsConnectionFactory)
-							.destination("flow1QueueChannel"))
-					.get();
 		}
 
 		@Bean(name = PollerMetadata.DEFAULT_POLLER)
@@ -1354,52 +1107,6 @@ public class IntegrationFlowTests {
 		@Bean
 		public MessageChannel foo() {
 			return MessageChannels.publishSubscribe().get();
-		}
-
-
-		@Bean
-		public IntegrationFlow jmsOutboundFlow() {
-			return f -> f.handleWithAdapter(h -> h.jms(this.jmsConnectionFactory)
-					.destinationExpression("headers." + SimpMessageHeaderAccessor.DESTINATION_HEADER));
-		}
-
-		@Bean
-		public MessageChannel jmsOutboundInboundReplyChannel() {
-			return MessageChannels.queue().get();
-		}
-
-		@Bean
-		public IntegrationFlow jmsInboundFlow() {
-			return IntegrationFlows
-					.from((MessageSources s) -> s.jms(this.jmsConnectionFactory).destination("jmsInbound"))
-					.<String, String>transform(String::toUpperCase)
-					.channel(this.jmsOutboundInboundReplyChannel())
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow jmsMessageDriverFlow() {
-			return IntegrationFlows
-					.from(Jms.messageDriverChannelAdapter(this.jmsConnectionFactory)
-							.destination("jmsMessageDriver"))
-					.<String, String>transform(String::toLowerCase)
-					.channel(this.jmsOutboundInboundReplyChannel())
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow jmsOutboundGatewayFlow() {
-			return f -> f.handleWithAdapter(a -> a.jmsGateway(this.jmsConnectionFactory)
-					.replyContainer()
-					.requestDestination("jmsPipelineTest"));
-		}
-
-		@Bean
-		public IntegrationFlow jmsInboundGatewayFlow() {
-			return IntegrationFlows.from((MessagingGateways g) -> g.jms(this.jmsConnectionFactory)
-					.destination("jmsPipelineTest"))
-					.<String, String>transform(String::toUpperCase)
-					.get();
 		}
 
 		@Autowired
@@ -1447,6 +1154,7 @@ public class IntegrationFlowTests {
 			return IntegrationFlows.from("toFtpChannel")
 					.handle(Ftp.outboundAdapter(this.ftpSessionFactory)
 									.useTemporaryFileName(false)
+									.fileNameExpression("headers['" + FileHeaders.FILENAME + "']")
 									.remoteDirectory(this.ftpServer.getTargetFtpDirectory().getName())
 					).get();
 		}
@@ -1546,29 +1254,6 @@ public class IntegrationFlowTests {
 		@Bean
 		public MessageChannel publishSubscribeChannel() {
 			return MessageChannels.publishSubscribe().get();
-		}
-
-		@Bean
-		public MongoDbFactory mongoDbFactory() throws Exception {
-			return new SimpleMongoDbFactory(new MongoClient("localhost", mongoPort), "local");
-		}
-
-		@Bean
-		public MongoDbChannelMessageStore mongoDbChannelMessageStore(MongoDbFactory mongoDbFactory) {
-			MongoDbChannelMessageStore mongoDbChannelMessageStore = new MongoDbChannelMessageStore(mongoDbFactory);
-			mongoDbChannelMessageStore.setPriorityEnabled(true);
-			return mongoDbChannelMessageStore;
-		}
-
-		@Bean
-		public IntegrationFlow priorityFlow(PriorityCapableChannelMessageStore mongoDbChannelMessageStore) {
-			return IntegrationFlows.from((Channels c) ->
-					c.priority("priorityChannel", mongoDbChannelMessageStore, "priorityGroup"))
-					.bridge(s -> s.poller(Pollers.fixedDelay(100))
-							.autoStartup(false)
-							.id("priorityChannelBridge"))
-					.channel(MessageChannels.queue("priorityReplyChannel"))
-					.get();
 		}
 
 	}
@@ -1827,11 +1512,6 @@ public class IntegrationFlowTests {
 		}
 
 		@Bean
-		public QueueChannel oddChannel() {
-			return new QueueChannel();
-		}
-
-		@Bean
 		public QueueChannel evenChannel() {
 			return new QueueChannel();
 		}
@@ -1840,9 +1520,11 @@ public class IntegrationFlowTests {
 		public IntegrationFlow routeFlow() {
 			return IntegrationFlows.from("routerInput")
 					.<Integer, Boolean>route(p -> p % 2 == 0,
-							m -> m.suffix("Channel")
-									.channelMapping("true", "even")
-									.channelMapping("false", "odd"))
+							m -> m.channelMapping("true", "evenChannel")
+									.subFlowMapping("false", f ->
+											f.<Integer>handle((p, h) ->
+													p * 3)
+													.channel(c -> c.queue("oddChannel"))))
 					.get();
 		}
 
@@ -1890,51 +1572,6 @@ public class IntegrationFlowTests {
 					.get();
 		}
 
-		@Autowired
-		private ConnectionFactory rabbitConnectionFactory;
-
-		@Autowired
-		private AmqpTemplate amqpTemplate;
-
-		@Bean
-		public Queue queue() {
-			return new AnonymousQueue();
-		}
-
-		@Bean
-		public IntegrationFlow amqpFlow() {
-			return IntegrationFlows.from(Amqp.inboundGateway(this.rabbitConnectionFactory, queue()))
-					.transform("hello "::concat)
-					.transform(String.class, String::toUpperCase)
-					.get();
-		}
-
-		@Bean
-		public IntegrationFlow amqpOutboundFlow() {
-			return IntegrationFlows.from(Amqp.channel("amqpOutboundInput", this.rabbitConnectionFactory))
-					.handle(Amqp.outboundAdapter(this.amqpTemplate).routingKeyExpression("headers.routingKey"))
-					.get();
-		}
-
-		@Bean
-		public Queue fooQueue() {
-			return new Queue("foo");
-		}
-
-		@Bean
-		public Queue amqpReplyChannel() {
-			return new Queue("amqpReplyChannel");
-		}
-
-		@Bean
-		public IntegrationFlow amqpInboundFlow() {
-			return IntegrationFlows.from((MessageProducers p) -> p.amqp(this.rabbitConnectionFactory, fooQueue()))
-					.transform(String.class, String::toUpperCase)
-					.channel(Amqp.pollableChannel(this.rabbitConnectionFactory)
-							.queueName("amqpReplyChannel")
-							.channelTransacted(true))
-					.get();
-		}
 
 		@Bean
 		@DependsOn("gatewayRequestFlow")
@@ -2041,24 +1678,6 @@ public class IntegrationFlowTests {
 		@Bean
 		public DirectChannelSpec invalidBean() {
 			return MessageChannels.direct();
-		}
-
-	}
-
-	@Component
-	@GlobalChannelInterceptor(patterns = "flow1QueueChannel")
-	public static class TestChannelInterceptor extends ChannelInterceptorAdapter {
-
-		private final AtomicInteger invoked = new AtomicInteger();
-
-		@Override
-		public Message<?> preSend(Message<?> message, MessageChannel channel) {
-			this.invoked.incrementAndGet();
-			return message;
-		}
-
-		public Integer getInvoked() {
-			return invoked.get();
 		}
 
 	}
