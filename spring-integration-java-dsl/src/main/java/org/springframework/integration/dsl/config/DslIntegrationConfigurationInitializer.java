@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.core;
+package org.springframework.integration.dsl.config;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +25,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.integration.config.IntegrationConfigurationInitializer;
+import org.springframework.integration.dsl.core.IntegrationComponentSpec;
+import org.springframework.integration.dsl.config.IntegrationFlowBeanPostProcessor;
 import org.springframework.util.Assert;
 
 /**

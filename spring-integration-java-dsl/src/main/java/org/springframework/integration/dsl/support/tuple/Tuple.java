@@ -60,30 +60,6 @@ public class Tuple implements Iterable, Serializable {
 		this.size = values.length;
 	}
 
-	/**
-	 * Create a {@link Tuple1} with the given object.
-	 *
-	 * @param t1   The first value in the tuple.
-	 * @param <T1> The type of the first value.
-	 * @return The new {@link Tuple1}.
-	 */
-	public static <T1> Tuple1<T1> of(T1 t1) {
-		return new Tuple1<T1>(t1);
-	}
-
-	/**
-	 * Create a {@link Tuple2} with the given objects.
-	 *
-	 * @param t1   The first value in the tuple.
-	 * @param t2   The second value in the tuple.
-	 * @param <T1> The type of the first value.
-	 * @param <T2> The type of the second value.
-	 * @return The new {@link Tuple2}.
-	 */
-	public static <T1, T2> Tuple2<T1, T2> of(T1 t1, T2 t2) {
-		return new Tuple2<T1, T2>(t1, t2);
-	}
-
 
 	/**
 	 * Get the object at the given index.

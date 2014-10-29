@@ -41,7 +41,7 @@ public abstract class IntegrationComponentSpec<S extends IntegrationComponentSpe
 		return _this();
 	}
 
-	final String getId() {
+	public final String getId() {
 		return id;
 	}
 

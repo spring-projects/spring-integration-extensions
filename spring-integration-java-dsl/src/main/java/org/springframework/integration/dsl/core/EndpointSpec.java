@@ -19,8 +19,8 @@ package org.springframework.integration.dsl.core;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.core.ResolvableType;
 import org.springframework.integration.dsl.support.Function;
-import org.springframework.integration.dsl.support.tuple.Tuple;
 import org.springframework.integration.dsl.support.tuple.Tuple2;
+import org.springframework.integration.dsl.support.tuple.Tuples;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.util.Assert;
 
@@ -37,7 +37,7 @@ public abstract class EndpointSpec<S extends EndpointSpec<S, F, H>, F extends Be
 		try {
 			Class<?> fClass = ResolvableType.forClass(this.getClass()).as(EndpointSpec.class).resolveGenerics()[1];
 			F endpointFactoryBean = (F) fClass.newInstance();
-			this.target = Tuple.of(endpointFactoryBean, handler);
+			this.target = Tuples.of(endpointFactoryBean, handler);
 		}
 		catch (Exception e) {
 			throw new IllegalStateException(e);

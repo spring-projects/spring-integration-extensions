@@ -1,2 +1,2 @@
 org.springframework.integration.config.IntegrationConfigurationInitializer=\
-org.springframework.integration.dsl.core.DslIntegrationConfigurationInitializer
+org.springframework.integration.dsl.config.DslIntegrationConfigurationInitializer
