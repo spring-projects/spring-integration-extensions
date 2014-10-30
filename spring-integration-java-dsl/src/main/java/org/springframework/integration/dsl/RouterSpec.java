@@ -81,11 +81,12 @@ public final class RouterSpec<R extends AbstractMappingMessageRouter> extends Ab
 		Assert.notNull(subFlow);
 		Assert.state(!(StringUtils.hasText(this.prefix) || StringUtils.hasText(this.suffix)),
 				"The 'prefix'('suffix') and 'subFlowMapping' are mutually exclusive");
-		DirectChannel channel = new DirectChannel();
 
+		DirectChannel channel = new DirectChannel();
 		IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(channel);
 		subFlow.accept(flowBuilder);
-		this.subFlows.add(flowBuilder.get());
+
+		this.subFlows.add(flowBuilder);
 
 		if (this.mappingProvider == null) {
 			this.mappingProvider = new RouterSubFlowMappingProvider(this.target);

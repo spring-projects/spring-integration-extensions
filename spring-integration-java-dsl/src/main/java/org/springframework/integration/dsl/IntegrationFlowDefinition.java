@@ -78,6 +78,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -426,7 +427,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	/**
-	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlowBuilder.StandardIntegrationFlow}.
+	 * Provides the {@link HeaderFilter} to the current {@link StandardIntegrationFlow}.
 	 * @param headersToRemove the array of headers (or patterns)
 	 * to remove from {@link org.springframework.messaging.MessageHeaders}.
 	 * @return this {@link IntegrationFlowDefinition}.
@@ -436,7 +437,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	/**
-	 * Provides the {@link HeaderFilter} to the current {@link IntegrationFlowBuilder.StandardIntegrationFlow}.
+	 * Provides the {@link HeaderFilter} to the current {@link StandardIntegrationFlow}.
 	 * @param headersToRemove the comma separated headers (or patterns) to remove from
 	 * {@link org.springframework.messaging.MessageHeaders}.
 	 * @param patternMatch    the {@code boolean} flag to indicate if {@code headersToRemove}
@@ -577,12 +578,42 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	public <R extends AbstractMappingMessageRouter> B route(R router,
 			Consumer<RouterSpec<R>> routerConfigurer,
 			Consumer<GenericEndpointSpec<R>> endpointConfigurer) {
+		Collection<Object> componentsToRegister = null;
 		if (routerConfigurer != null) {
 			RouterSpec<R> routerSpec = new RouterSpec<R>(router);
 			routerConfigurer.accept(routerSpec);
-			addComponents(routerSpec.getComponentsToRegister());
+			componentsToRegister = routerSpec.getComponentsToRegister();
 		}
-		return route(router, endpointConfigurer);
+
+		route(router, endpointConfigurer);
+
+		final MessageChannel afterRouterChannel = new DirectChannel();
+		boolean hasSubFlows = false;
+		if (!CollectionUtils.isEmpty(componentsToRegister)) {
+			for (Object component : componentsToRegister) {
+				if (component instanceof IntegrationFlowDefinition) {
+					hasSubFlows = true;
+					IntegrationFlowDefinition<?> flowBuilder = (IntegrationFlowDefinition<?>) component;
+					addComponent(flowBuilder.fixedSubscriberChannel()
+							.bridge(new Consumer<GenericEndpointSpec<BridgeHandler>>() {
+
+								@Override
+								public void accept(GenericEndpointSpec<BridgeHandler> bridge) {
+									bridge.get().getT2().setOutputChannel(afterRouterChannel);
+								}
+
+							})
+							.get());
+				}
+				else {
+					addComponent(component);
+				}
+			}
+		}
+		if (hasSubFlows) {
+			channel(afterRouterChannel);
+		}
+		return _this();
 	}
 
 	public B routeToRecipients(Consumer<RecipientListRouterSpec> routerConfigurer) {
@@ -630,6 +661,9 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 			Consumer<S> endpointConfigurer) {
 		if (endpointConfigurer != null) {
 			endpointConfigurer.accept(endpointSpec);
+		}
+		if (endpointSpec instanceof ComponentsRegistration) {
+			addComponents(((ComponentsRegistration) endpointSpec).getComponentsToRegister());
 		}
 		MessageChannel inputChannel = this.currentMessageChannel;
 		this.currentMessageChannel = null;
@@ -747,4 +781,26 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		}
 	}
 
+	protected StandardIntegrationFlow get() {
+		if (this.currentMessageChannel instanceof FixedSubscriberChannelPrototype) {
+			throw new BeanCreationException("The 'currentMessageChannel' (" + this.currentMessageChannel +
+					") is a prototype for FixedSubscriberChannel which can't be created without MessageHandler " +
+					"constructor argument. That means that '.fixedSubscriberChannel()' can't be the last EIP-method " +
+					"in the IntegrationFlow definition.");
+		}
+
+		if (this.integrationComponents.size() == 1) {
+			if (this.currentComponent != null) {
+				if (this.currentComponent instanceof SourcePollingChannelAdapterSpec) {
+					throw new BeanCreationException("The 'SourcePollingChannelAdapter' (" + this.currentComponent
+							+ ") " + "must be configured with at least one 'MessageChanel' or 'MessageHandler'.");
+				}
+			}
+			else if (this.currentMessageChannel != null) {
+				throw new BeanCreationException("The 'IntegrationFlow' can't consist of only one 'MessageChannel'. " +
+						"Add at lest '.bridge()' EIP-method before the end of flow.");
+			}
+		}
+		return new StandardIntegrationFlow(this.integrationComponents);
+	}
 }

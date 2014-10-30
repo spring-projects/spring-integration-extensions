@@ -36,6 +36,7 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlowBuilder;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec;
+import org.springframework.integration.dsl.StandardIntegrationFlow;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
 import org.springframework.integration.dsl.support.MessageChannelReference;
 import org.springframework.integration.support.context.NamedComponent;
@@ -68,8 +69,8 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if (bean instanceof IntegrationFlowBuilder.StandardIntegrationFlow) {
-			return processStandardIntegrationFlow((IntegrationFlowBuilder.StandardIntegrationFlow) bean, beanName);
+		if (bean instanceof StandardIntegrationFlow) {
+			return processStandardIntegrationFlow((StandardIntegrationFlow) bean, beanName);
 		}
 		else if (bean instanceof IntegrationFlow) {
 			return processIntegrationFlowImpl((IntegrationFlow) bean, beanName);
@@ -77,7 +78,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 		return bean;
 	}
 
-	private Object processStandardIntegrationFlow(IntegrationFlowBuilder.StandardIntegrationFlow flow,
+	private Object processStandardIntegrationFlow(StandardIntegrationFlow flow,
 			String beanName) {
 		String flowNamePrefix = beanName + ".";
 		int subFlowNameIndex = 0;
@@ -166,7 +167,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 						registerComponent(messageSource, messageSourceId);
 					}
 				}
-				else if (component instanceof IntegrationFlowBuilder.StandardIntegrationFlow) {
+				else if (component instanceof StandardIntegrationFlow) {
 					String subFlowBeanName = flowNamePrefix + "subFlow" +
 							BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + subFlowNameIndex++;
 					registerComponent(component, subFlowBeanName);

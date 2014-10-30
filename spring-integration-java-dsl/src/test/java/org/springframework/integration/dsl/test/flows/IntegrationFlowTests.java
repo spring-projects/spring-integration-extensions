@@ -125,6 +125,10 @@ public class IntegrationFlowTests {
 	private MessageChannel inputChannel;
 
 	@Autowired
+	@Qualifier("discardChannel")
+	private PollableChannel discardChannel;
+
+	@Autowired
 	@Qualifier("foo")
 	private SubscribableChannel foo;
 
@@ -281,6 +285,11 @@ public class IntegrationFlowTests {
 		assertEquals(100, successMessage.getPayload());
 
 		assertTrue(used.get());
+
+		this.inputChannel.send(new GenericMessage<Object>(1000));
+		Message<?> discarded = this.discardChannel.receive(5000);
+		assertNotNull(discarded);
+		assertEquals("Discarded: 1000", discarded.getPayload());
 	}
 
 	@Test
@@ -817,7 +826,11 @@ public class IntegrationFlowTests {
 		@Bean
 		public IntegrationFlow flow2() {
 			return IntegrationFlows.from(this.inputChannel)
-					.filter(p -> p instanceof String, c -> c.id("filter"))
+					.filter(p -> p instanceof String, e -> e
+							.id("filter")
+							.discardFlow(df -> df
+									.transform(String.class, "Discarded: "::concat)
+									.channel(c -> c.queue("discardChannel"))))
 					.channel("foo")
 					.fixedSubscriberChannel()
 					.<String, Integer>transform(Integer::parseInt)
@@ -1094,8 +1107,8 @@ public class IntegrationFlowTests {
 					.<Integer, Boolean>route(p -> p % 2 == 0,
 							m -> m.channelMapping("true", "evenChannel")
 									.subFlowMapping("false", f ->
-											f.<Integer>handle((p, h) -> p * 3)
-													.channel(c -> c.queue("oddChannel"))))
+											f.<Integer>handle((p, h) -> p * 3)))
+					.channel(c -> c.queue("oddChannel"))
 					.get();
 		}
 

@@ -16,14 +16,23 @@
 
 package org.springframework.integration.dsl;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
 import org.springframework.integration.filter.MessageFilter;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
  */
-public final class FilterEndpointSpec extends ConsumerEndpointSpec<FilterEndpointSpec, MessageFilter> {
+public final class FilterEndpointSpec extends ConsumerEndpointSpec<FilterEndpointSpec, MessageFilter>
+		implements ComponentsRegistration {
+
+	private IntegrationFlow discardFlow;
 
 	FilterEndpointSpec(MessageFilter messageFilter) {
 		super(messageFilter);
@@ -44,9 +53,26 @@ public final class FilterEndpointSpec extends ConsumerEndpointSpec<FilterEndpoin
 		return _this();
 	}
 
+	public FilterEndpointSpec discardFlow(IntegrationFlow discardFlow) {
+		Assert.notNull(discardFlow);
+		DirectChannel channel = new DirectChannel();
+		IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(channel);
+		discardFlow.accept(flowBuilder);
+		this.discardFlow = flowBuilder.get();
+		return discardChannel(channel);
+	}
+
 	public FilterEndpointSpec discardWithinAdvice(boolean discardWithinAdvice) {
 		this.target.getT2().setDiscardWithinAdvice(discardWithinAdvice);
 		return _this();
+	}
+
+	@Override
+	public Collection<Object> getComponentsToRegister() {
+		if (this.discardFlow != null) {
+			return Collections.<Object>singletonList(this.discardFlow);
+		}
+		return null;
 	}
 
 }
