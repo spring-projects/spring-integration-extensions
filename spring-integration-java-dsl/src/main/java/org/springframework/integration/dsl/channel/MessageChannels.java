@@ -16,7 +16,7 @@
 
 package org.springframework.integration.dsl.channel;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 import java.util.concurrent.Executor;
 
 import org.springframework.integration.store.ChannelMessageStore;
@@ -44,11 +44,11 @@ public final class MessageChannels {
 		return queue().id(id);
 	}
 
-	public static QueueChannelSpec queue(BlockingQueue<Message<?>> queue) {
+	public static QueueChannelSpec queue(Queue<Message<?>> queue) {
 		return new QueueChannelSpec(queue);
 	}
 
-	public static QueueChannelSpec queue(String id, BlockingQueue<Message<?>> queue) {
+	public static QueueChannelSpec queue(String id, Queue<Message<?>> queue) {
 		return queue(queue).id(id);
 	}
 

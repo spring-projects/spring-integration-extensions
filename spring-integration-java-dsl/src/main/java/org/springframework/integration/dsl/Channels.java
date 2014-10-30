@@ -16,7 +16,7 @@
 
 package org.springframework.integration.dsl;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 import java.util.concurrent.Executor;
 
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -68,11 +68,11 @@ public class Channels {
 		return MessageChannels.queue(id, capacity);
 	}
 
-	public QueueChannelSpec queue(BlockingQueue<Message<?>> queue) {
+	public QueueChannelSpec queue(Queue<Message<?>> queue) {
 		return MessageChannels.queue(queue);
 	}
 
-	public QueueChannelSpec queue(String id, BlockingQueue<Message<?>> queue) {
+	public QueueChannelSpec queue(String id, Queue<Message<?>> queue) {
 		return MessageChannels.queue(id, queue);
 	}
 

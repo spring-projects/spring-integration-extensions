@@ -5,13 +5,30 @@ apply from: "${rootProject.projectDir}/publish-maven.gradle"
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
+buildscript {
+	repositories {
+		maven { url 'http://repo.spring.io/plugins-release' }
+	}
+	dependencies {
+		classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
+	}
+}
+
 group = 'org.springframework.integration'
 
 repositories {
-	if (version.endsWith('BUILD-SNAPSHOT')) {
+	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 	}
 	maven { url 'http://repo.spring.io/libs-milestone' }
+}
+
+if (project.hasProperty('platformVersion')) {
+	apply plugin: 'spring-io'
+
+	dependencies {
+		springIoVersions "io.spring.platform:platform-versions:${platformVersion}@properties"
+	}
 }
 
 compileJava {

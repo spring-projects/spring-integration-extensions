@@ -154,6 +154,7 @@ public class JmsTests {
 	private static interface ControlBusGateway {
 
 		void send(String command);
+
 	}
 
 	@Configuration
@@ -228,15 +229,17 @@ public class JmsTests {
 
 		@Bean
 		public IntegrationFlow jmsOutboundGatewayFlow() {
-			return f -> f.handleWithAdapter(a -> a.jmsGateway(this.jmsConnectionFactory)
-					.replyContainer()
-					.requestDestination("jmsPipelineTest"));
+			return f -> f.handleWithAdapter(a ->
+					a.jmsGateway(this.jmsConnectionFactory)
+							.replyContainer()
+							.requestDestination("jmsPipelineTest"));
 		}
 
 		@Bean
 		public IntegrationFlow jmsInboundGatewayFlow() {
-			return IntegrationFlows.from((MessagingGateways g) -> g.jms(this.jmsConnectionFactory)
-					.destination("jmsPipelineTest"))
+			return IntegrationFlows.from((MessagingGateways g) ->
+					g.jms(this.jmsConnectionFactory)
+							.destination("jmsPipelineTest"))
 					.<String, String>transform(String::toUpperCase)
 					.get();
 		}

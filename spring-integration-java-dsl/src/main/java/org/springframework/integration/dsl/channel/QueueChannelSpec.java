@@ -16,6 +16,8 @@
 
 package org.springframework.integration.dsl.channel;
 
+import java.lang.reflect.Constructor;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
 
@@ -24,20 +26,21 @@ import org.springframework.integration.store.ChannelMessageStore;
 import org.springframework.integration.store.MessageGroupQueue;
 import org.springframework.integration.store.PriorityCapableChannelMessageStore;
 import org.springframework.messaging.Message;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Artem Bilan
  */
 public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, QueueChannel> {
 
-	protected BlockingQueue<Message<?>> queue;
+	protected Queue<Message<?>> queue;
 
 	protected Integer capacity;
 
 	QueueChannelSpec() {
 	}
 
-	QueueChannelSpec(BlockingQueue<Message<?>> queue) {
+	QueueChannelSpec(Queue<Message<?>> queue) {
 		this.queue = queue;
 	}
 
@@ -48,7 +51,25 @@ public class QueueChannelSpec extends MessageChannelSpec<QueueChannelSpec, Queue
 	@Override
 	protected QueueChannel doGet() {
 		if (this.queue != null) {
-			this.channel = new QueueChannel(this.queue);
+			Constructor<?> queueConstructor =
+					ClassUtils.getConstructorIfAvailable(QueueChannel.class, Queue.class);
+			if (queueConstructor == null) {
+				if (!(this.queue instanceof BlockingQueue)) {
+					throw new IllegalArgumentException("The 'queue' must be an instance of BlockingQueue " +
+							"for Spring Integration versions less than 4.1");
+				}
+				else {
+					this.channel = new QueueChannel((BlockingQueue<Message<?>>) this.queue);
+				}
+			}
+			else {
+				try {
+					this.channel = (QueueChannel) queueConstructor.newInstance(this.queue);
+				}
+				catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			}
 		}
 		else if (this.capacity != null) {
 			this.channel = new QueueChannel(this.capacity);

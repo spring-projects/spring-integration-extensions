@@ -80,6 +80,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 	private Object processStandardIntegrationFlow(IntegrationFlowBuilder.StandardIntegrationFlow flow,
 			String beanName) {
 		String flowNamePrefix = beanName + ".";
+		int subFlowNameIndex = 0;
 		int channelNameIndex = 0;
 		for (Object component : flow.getIntegrationComponents()) {
 			if (component instanceof ConsumerEndpointSpec) {
@@ -164,6 +165,11 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 						}
 						registerComponent(messageSource, messageSourceId);
 					}
+				}
+				else if (component instanceof IntegrationFlowBuilder.StandardIntegrationFlow) {
+					String subFlowBeanName = flowNamePrefix + "subFlow" +
+							BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR + subFlowNameIndex++;
+					registerComponent(component, subFlowBeanName);
 				}
 				else if (!this.beanFactory
 						.getBeansOfType(AopUtils.getTargetClass(component), false, false)

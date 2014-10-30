@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl.test;
+package org.springframework.integration.dsl.test.sftp;
 
 import java.io.File;
 import java.io.FileOutputStream;

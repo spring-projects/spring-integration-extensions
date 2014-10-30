@@ -83,7 +83,7 @@ public class JdbcTests {
 											new ResultSetIterator<Foo>(ps.executeQuery(),
 													(rs1, rowNum) ->
 															new Foo(rs1.getInt(1), rs1.getString(2))))
-							, null)
+							, e -> e.applySequence(false))
 							.channel(c -> c.queue("splitResultsChannel"));
 		}
 
@@ -116,7 +116,11 @@ public class JdbcTests {
 		@Override
 		public boolean hasNext() {
 			try {
-				return !this.rs.isLast();
+				boolean hasNext = !this.rs.isLast();
+				if (!hasNext) {
+					this.rs.close();
+				}
+				return hasNext;
 			}
 			catch (SQLException e) {
 				throw new InvalidResultSetAccessException(e);
