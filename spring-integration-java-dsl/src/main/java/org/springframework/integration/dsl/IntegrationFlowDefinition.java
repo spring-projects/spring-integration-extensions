@@ -149,14 +149,14 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return registerOutputChannelIfCan(this.currentMessageChannel);
 	}
 
-	public B publishSubscribeChannel(Consumer<PublishSubscribersSpec> publishSubscribeChannelConfigurer) {
+	public B publishSubscribeChannel(Consumer<PublishSubscribeSpec> publishSubscribeChannelConfigurer) {
 		return publishSubscribeChannel(null, publishSubscribeChannelConfigurer);
 	}
 
 	public B publishSubscribeChannel(Executor executor,
-			Consumer<PublishSubscribersSpec> publishSubscribeChannelConfigurer) {
+			Consumer<PublishSubscribeSpec> publishSubscribeChannelConfigurer) {
 		Assert.notNull(publishSubscribeChannelConfigurer);
-		PublishSubscribersSpec spec = new PublishSubscribersSpec(executor);
+		PublishSubscribeSpec spec = new PublishSubscribeSpec(executor);
 		publishSubscribeChannelConfigurer.accept(spec);
 		return addComponents(spec.getComponentsToRegister()).channel(spec);
 	}
@@ -816,4 +816,5 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		}
 		return new StandardIntegrationFlow(this.integrationComponents);
 	}
+
 }

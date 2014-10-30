@@ -883,10 +883,10 @@ public class IntegrationFlowTests {
 		public IntegrationFlow subscribersFlow() {
 			return flow -> flow
 					.publishSubscribeChannel(Executors.newCachedThreadPool(), s -> s
-							.subscriber(f -> f
+							.subscribe(f -> f
 									.<Integer>handle((p, h) -> p / 2)
 									.channel(c -> c.queue("subscriber1Results")))
-							.subscriber(f -> f
+							.subscribe(f -> f
 									.<Integer>handle((p, h) -> p * 2)
 									.channel(c -> c.queue("subscriber2Results"))))
 					.<Integer>handle((p, h) -> p * 3)

@@ -27,25 +27,25 @@ import org.springframework.integration.dsl.core.ComponentsRegistration;
 /**
  * @author Artem Bilan
  */
-public class PublishSubscribersSpec extends PublishSubscribeChannelSpec<PublishSubscribersSpec>
+public class PublishSubscribeSpec extends PublishSubscribeChannelSpec<PublishSubscribeSpec>
 		implements ComponentsRegistration {
 
 	private final List<Object> subscriberFlows = new ArrayList<Object>();
 
-	PublishSubscribersSpec() {
+	PublishSubscribeSpec() {
 		super();
 	}
 
-	PublishSubscribersSpec(Executor executor) {
+	PublishSubscribeSpec(Executor executor) {
 		super(executor);
 	}
 
 	@Override
-	public PublishSubscribersSpec id(String id) {
+	public PublishSubscribeSpec id(String id) {
 		return super.id(id);
 	}
 
-	public PublishSubscribersSpec subscriber(IntegrationFlow flow) {
+	public PublishSubscribeSpec subscribe(IntegrationFlow flow) {
 		IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(this.channel);
 		flow.accept(flowBuilder);
 		this.subscriberFlows.add(flowBuilder.get());
