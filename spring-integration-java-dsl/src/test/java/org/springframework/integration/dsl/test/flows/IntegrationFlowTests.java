@@ -755,6 +755,37 @@ public class IntegrationFlowTests {
 		assertThat(((Exception) receive.getPayload()).getMessage(), containsString("' rejected Message"));
 	}
 
+	@Autowired
+	@Qualifier("subscribersFlow.input")
+	private MessageChannel subscribersFlowInput;
+
+	@Autowired
+	@Qualifier("subscriber1Results")
+	private PollableChannel subscriber1Results;
+
+	@Autowired
+	@Qualifier("subscriber2Results")
+	private PollableChannel subscriber2Results;
+
+	@Autowired
+	@Qualifier("subscriber3Results")
+	private PollableChannel subscriber3Results;
+
+	@Test
+	public void testSubscribersSubFlows() {
+		this.subscribersFlowInput.send(new GenericMessage<Integer>(2));
+
+		Message<?> receive1 = this.subscriber1Results.receive(5000);
+		assertNotNull(receive1);
+		assertEquals(1, receive1.getPayload());
+
+		Message<?> receive2 = this.subscriber2Results.receive(5000);
+		assertNotNull(receive2);
+		assertEquals(4, receive2.getPayload());
+		Message<?> receive3 = this.subscriber3Results.receive(5000);
+		assertNotNull(receive3);
+		assertEquals(6, receive3.getPayload());
+	}
 
 	@MessagingGateway(defaultRequestChannel = "controlBus")
 	private static interface ControlBusGateway {
@@ -846,6 +877,20 @@ public class IntegrationFlowTests {
 		@Bean
 		public MessageChannel publishSubscribeChannel() {
 			return MessageChannels.publishSubscribe().get();
+		}
+
+		@Bean
+		public IntegrationFlow subscribersFlow() {
+			return flow -> flow
+					.publishSubscribeChannel(Executors.newCachedThreadPool(), s -> s
+							.subscriber(f -> f
+									.<Integer>handle((p, h) -> p / 2)
+									.channel(c -> c.queue("subscriber1Results")))
+							.subscriber(f -> f
+									.<Integer>handle((p, h) -> p * 2)
+									.channel(c -> c.queue("subscriber2Results"))))
+					.<Integer>handle((p, h) -> p * 3)
+					.channel(c -> c.queue("subscriber3Results"));
 		}
 
 	}

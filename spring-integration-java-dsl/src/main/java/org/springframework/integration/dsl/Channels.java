@@ -110,12 +110,21 @@ public class Channels {
 		return MessageChannels.rendezvous(id);
 	}
 
-	public PublishSubscribeChannelSpec publishSubscribe() {
+	public PublishSubscribeChannelSpec<? extends PublishSubscribeChannelSpec<?>>  publishSubscribe() {
 		return MessageChannels.publishSubscribe();
 	}
 
-	public PublishSubscribeChannelSpec publishSubscribe(Executor executor) {
+	public PublishSubscribeChannelSpec<? extends PublishSubscribeChannelSpec<?>> publishSubscribe(Executor executor) {
 		return MessageChannels.publishSubscribe(executor);
+	}
+
+	public PublishSubscribeChannelSpec<? extends PublishSubscribeChannelSpec<?>> publishSubscribe(String id,
+			Executor executor) {
+		return MessageChannels.publishSubscribe(id, executor);
+	}
+
+	public PublishSubscribeChannelSpec<? extends PublishSubscribeChannelSpec<?>> publishSubscribe(String id) {
+		return MessageChannels.publishSubscribe(id);
 	}
 
 	public ExecutorChannelSpec executor(Executor executor) {
@@ -124,14 +133,6 @@ public class Channels {
 
 	public ExecutorChannelSpec executor(String id, Executor executor) {
 		return MessageChannels.executor(id, executor);
-	}
-
-	public PublishSubscribeChannelSpec publishSubscribe(String id, Executor executor) {
-		return MessageChannels.publishSubscribe(id, executor);
-	}
-
-	public PublishSubscribeChannelSpec publishSubscribe(String id) {
-		return MessageChannels.publishSubscribe(id);
 	}
 
 	public AmqpPollableMessageChannelSpec<? extends AmqpPollableMessageChannelSpec<?>> amqpPollable(

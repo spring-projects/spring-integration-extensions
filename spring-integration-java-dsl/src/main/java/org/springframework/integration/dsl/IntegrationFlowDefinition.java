@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
@@ -118,24 +119,15 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	public B fixedSubscriberChannel() {
-		return this.fixedSubscriberChannel(null);
+		return fixedSubscriberChannel(null);
 	}
 
 	public B fixedSubscriberChannel(String messageChannelName) {
-		return this.channel(new FixedSubscriberChannelPrototype(messageChannelName));
+		return channel(new FixedSubscriberChannelPrototype(messageChannelName));
 	}
 
 	public B channel(String messageChannelName) {
-		return this.channel(new MessageChannelReference(messageChannelName));
-	}
-
-	public B channel(MessageChannel messageChannel) {
-		Assert.notNull(messageChannel);
-		if (this.currentMessageChannel != null) {
-			this.register(new GenericEndpointSpec<BridgeHandler>(new BridgeHandler()), null);
-		}
-		this.currentMessageChannel = messageChannel;
-		return this.registerOutputChannelIfCan(this.currentMessageChannel);
+		return channel(new MessageChannelReference(messageChannelName));
 	}
 
 	public B channel(Function<Channels, MessageChannelSpec<?, ?>> channels) {
@@ -145,7 +137,28 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 
 	public B channel(MessageChannelSpec<?, ?> messageChannelSpec) {
 		Assert.notNull(messageChannelSpec);
-		return this.channel(messageChannelSpec.get());
+		return channel(messageChannelSpec.get());
+	}
+
+	public B channel(MessageChannel messageChannel) {
+		Assert.notNull(messageChannel);
+		if (this.currentMessageChannel != null) {
+			this.register(new GenericEndpointSpec<BridgeHandler>(new BridgeHandler()), null);
+		}
+		this.currentMessageChannel = messageChannel;
+		return registerOutputChannelIfCan(this.currentMessageChannel);
+	}
+
+	public B publishSubscribeChannel(Consumer<PublishSubscribersSpec> publishSubscribeChannelConfigurer) {
+		return publishSubscribeChannel(null, publishSubscribeChannelConfigurer);
+	}
+
+	public B publishSubscribeChannel(Executor executor,
+			Consumer<PublishSubscribersSpec> publishSubscribeChannelConfigurer) {
+		Assert.notNull(publishSubscribeChannelConfigurer);
+		PublishSubscribersSpec spec = new PublishSubscribersSpec(executor);
+		publishSubscribeChannelConfigurer.accept(spec);
+		return addComponents(spec.getComponentsToRegister()).channel(spec);
 	}
 
 	public B controlBus() {

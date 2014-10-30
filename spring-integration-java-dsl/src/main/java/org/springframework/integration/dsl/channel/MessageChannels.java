@@ -103,20 +103,23 @@ public final class MessageChannels {
 		return queue(messageGroupStore, groupId).id(id);
 	}
 
-	public static PublishSubscribeChannelSpec publishSubscribe() {
-		return new PublishSubscribeChannelSpec();
+	public static <S extends PublishSubscribeChannelSpec<S>> PublishSubscribeChannelSpec<S> publishSubscribe() {
+		return new PublishSubscribeChannelSpec<S>();
 	}
 
-	public static PublishSubscribeChannelSpec publishSubscribe(String id) {
-		return publishSubscribe().id(id);
+	public static <S extends PublishSubscribeChannelSpec<S>> PublishSubscribeChannelSpec<S> publishSubscribe(
+			String id) {
+		return MessageChannels.<S>publishSubscribe().id(id);
 	}
 
-	public static PublishSubscribeChannelSpec publishSubscribe(Executor executor) {
-		return new PublishSubscribeChannelSpec(executor);
+	public static <S extends PublishSubscribeChannelSpec<S>> PublishSubscribeChannelSpec<S> publishSubscribe(
+			Executor executor) {
+		return new PublishSubscribeChannelSpec<S>(executor);
 	}
 
-	public static PublishSubscribeChannelSpec publishSubscribe(String id, Executor executor) {
-		return publishSubscribe(executor).id(id);
+	public static <S extends PublishSubscribeChannelSpec<S>> PublishSubscribeChannelSpec<S> publishSubscribe(String id,
+			Executor executor) {
+		return MessageChannels.<S>publishSubscribe(executor).id(id);
 	}
 
 	private MessageChannels() {
