@@ -765,7 +765,7 @@ public class IntegrationFlowTests {
 
 		Message<?> receive = replyChannel.receive(2000);
 		assertNotNull(receive);
-		assertEquals("FOO", receive.getPayload());
+		assertEquals("From Gateway SubFlow: FOO", receive.getPayload());
 		assertNull(this.gatewayError.receive(1));
 
 		message = MessageBuilder.withPayload("bar").setReplyChannel(replyChannel).build();
@@ -1228,6 +1228,7 @@ public class IntegrationFlowTests {
 		public IntegrationFlow gatewayFlow() {
 			return IntegrationFlows.from("gatewayInput")
 					.gateway("gatewayRequest", g -> g.errorChannel("gatewayError").replyTimeout(10L))
+					.gateway(f -> f.transform("From Gateway SubFlow: "::concat))
 					.get();
 		}
 

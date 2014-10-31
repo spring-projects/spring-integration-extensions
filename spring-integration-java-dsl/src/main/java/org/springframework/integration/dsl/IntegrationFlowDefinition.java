@@ -212,8 +212,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.filter(payloadType, genericSelector, null);
 	}
 
-	public <P> B filter(GenericSelector<P> genericSelector,
-			Consumer<FilterEndpointSpec> endpointConfigurer) {
+	public <P> B filter(GenericSelector<P> genericSelector, Consumer<FilterEndpointSpec> endpointConfigurer) {
 		return filter(null, genericSelector, endpointConfigurer);
 	}
 
@@ -227,13 +226,11 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.register(new FilterEndpointSpec(new MessageFilter(selector)), endpointConfigurer);
 	}
 
-	public <H extends MessageHandler> B handleWithAdapter(
-			Function<Adapters, MessageHandlerSpec<?, H>> adapters) {
+	public <H extends MessageHandler> B handleWithAdapter(Function<Adapters, MessageHandlerSpec<?, H>> adapters) {
 		return handleWithAdapter(adapters, null);
 	}
 
-	public <H extends MessageHandler> B handleWithAdapter(
-			Function<Adapters, MessageHandlerSpec<?, H>> adapters,
+	public <H extends MessageHandler> B handleWithAdapter(Function<Adapters, MessageHandlerSpec<?, H>> adapters,
 			Consumer<GenericEndpointSpec<H>> endpointConfigurer) {
 		return handle(adapters.apply(new Adapters()), endpointConfigurer);
 	}
@@ -290,8 +287,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return handle(messageHandlerSpec.get(), endpointConfigurer);
 	}
 
-	public <H extends MessageHandler> B handle(H messageHandler,
-			Consumer<GenericEndpointSpec<H>> endpointConfigurer) {
+	public <H extends MessageHandler> B handle(H messageHandler, Consumer<GenericEndpointSpec<H>> endpointConfigurer) {
 		Assert.notNull(messageHandler);
 		return this.register(new GenericEndpointSpec<H>(messageHandler), endpointConfigurer);
 	}
@@ -529,8 +525,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.route(beanName, method, null);
 	}
 
-	public B route(String beanName, String method,
-			Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
+	public B route(String beanName, String method, Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
 		return this.route(beanName, method, routerConfigurer, null);
 	}
 
@@ -548,8 +543,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.route(expression, routerConfigurer, null);
 	}
 
-	public B route(String expression,
-			Consumer<RouterSpec<ExpressionEvaluatingRouter>> routerConfigurer,
+	public B route(String expression, Consumer<RouterSpec<ExpressionEvaluatingRouter>> routerConfigurer,
 			Consumer<GenericEndpointSpec<ExpressionEvaluatingRouter>> endpointConfigurer) {
 		return this.route(new ExpressionEvaluatingRouter(PARSER.parseExpression(expression)), routerConfigurer,
 				endpointConfigurer);
@@ -559,8 +553,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.route(null, router);
 	}
 
-	public <S, T> B route(Function<S, T> router,
-			Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
+	public <S, T> B route(Function<S, T> router, Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer) {
 		return this.route(null, router, routerConfigurer);
 	}
 
@@ -573,8 +566,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return this.route(payloadType, router, routerConfigurer, null);
 	}
 
-	public <S, T> B route(Function<S, T> router,
-			Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
+	public <S, T> B route(Function<S, T> router, Consumer<RouterSpec<MethodInvokingRouter>> routerConfigurer,
 			Consumer<GenericEndpointSpec<MethodInvokingRouter>> endpointConfigurer) {
 		return route(null, router, routerConfigurer, endpointConfigurer);
 	}
@@ -588,8 +580,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return route(methodInvokingRouter, routerConfigurer, endpointConfigurer);
 	}
 
-	public <R extends AbstractMappingMessageRouter> B route(R router,
-			Consumer<RouterSpec<R>> routerConfigurer,
+	public <R extends AbstractMappingMessageRouter> B route(R router, Consumer<RouterSpec<R>> routerConfigurer,
 			Consumer<GenericEndpointSpec<R>> endpointConfigurer) {
 		Collection<Object> componentsToRegister = null;
 		if (routerConfigurer != null) {
@@ -646,8 +637,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return route(router, null);
 	}
 
-	public <R extends AbstractMessageRouter> B route(R router,
-			Consumer<GenericEndpointSpec<R>> endpointConfigurer) {
+	public <R extends AbstractMessageRouter> B route(R router, Consumer<GenericEndpointSpec<R>> endpointConfigurer) {
 		return handle(router, endpointConfigurer);
 	}
 
@@ -655,8 +645,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return gateway(requestChannel, null);
 	}
 
-	public B gateway(String requestChannel,
-			Consumer<GatewayEndpointSpec> endpointConfigurer) {
+	public B gateway(String requestChannel, Consumer<GatewayEndpointSpec> endpointConfigurer) {
 		return register(new GatewayEndpointSpec(requestChannel), endpointConfigurer);
 	}
 
@@ -664,13 +653,24 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		return gateway(requestChannel, null);
 	}
 
-	public B gateway(MessageChannel requestChannel,
-			Consumer<GatewayEndpointSpec> endpointConfigurer) {
+	public B gateway(MessageChannel requestChannel, Consumer<GatewayEndpointSpec> endpointConfigurer) {
 		return register(new GatewayEndpointSpec(requestChannel), endpointConfigurer);
 	}
 
-	private <S extends ConsumerEndpointSpec<S, ?>> B register(S endpointSpec,
-			Consumer<S> endpointConfigurer) {
+	public B gateway(IntegrationFlow flow) {
+		return gateway(flow, null);
+	}
+
+	public B gateway(IntegrationFlow flow, Consumer<GatewayEndpointSpec> endpointConfigurer) {
+		Assert.notNull(flow);
+		final DirectChannel requestChannel = new DirectChannel();
+		IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(requestChannel);
+		flow.accept(flowBuilder);
+		addComponent(flowBuilder.get());
+		return gateway(requestChannel, endpointConfigurer);
+	}
+
+	private <S extends ConsumerEndpointSpec<S, ?>> B register(S endpointSpec, Consumer<S> endpointConfigurer) {
 		if (endpointConfigurer != null) {
 			endpointConfigurer.accept(endpointSpec);
 		}
