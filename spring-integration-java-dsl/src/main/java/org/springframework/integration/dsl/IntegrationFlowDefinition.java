@@ -630,7 +630,7 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 	}
 
 	public B routeToRecipients(Consumer<RecipientListRouterSpec> routerConfigurer) {
-		return this.routeToRecipients(routerConfigurer, null);
+		return routeToRecipients(routerConfigurer, null);
 	}
 
 	public B routeToRecipients(Consumer<RecipientListRouterSpec> routerConfigurer,
@@ -638,18 +638,17 @@ public abstract class IntegrationFlowDefinition<B extends IntegrationFlowDefinit
 		Assert.notNull(routerConfigurer);
 		RecipientListRouterSpec spec = new RecipientListRouterSpec();
 		routerConfigurer.accept(spec);
-		DslRecipientListRouter recipientListRouter = (DslRecipientListRouter) spec.get();
-		Assert.notEmpty(recipientListRouter.get(), "recipient list must not be empty");
-		return this.route(recipientListRouter, endpointConfigurer);
+		addComponents(spec.getComponentsToRegister());
+		return route(spec.get(), endpointConfigurer);
 	}
 
 	public B route(AbstractMessageRouter router) {
-		return this.route(router, null);
+		return route(router, null);
 	}
 
 	public <R extends AbstractMessageRouter> B route(R router,
 			Consumer<GenericEndpointSpec<R>> endpointConfigurer) {
-		return this.handle(router, endpointConfigurer);
+		return handle(router, endpointConfigurer);
 	}
 
 	public B gateway(String requestChannel) {

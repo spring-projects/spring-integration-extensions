@@ -16,14 +16,23 @@
 
 package org.springframework.integration.dsl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageSelector;
+import org.springframework.integration.dsl.core.ComponentsRegistration;
 import org.springframework.integration.router.RecipientListRouter;
 import org.springframework.util.Assert;
 
 /**
  * @author Artem Bilan
  */
-public class RecipientListRouterSpec extends AbstractRouterSpec<RecipientListRouterSpec, RecipientListRouter> {
+public class RecipientListRouterSpec extends AbstractRouterSpec<RecipientListRouterSpec, RecipientListRouter>
+		implements ComponentsRegistration {
+
+	private final List<Object> subFlows = new ArrayList<Object>();
 
 	RecipientListRouterSpec() {
 		super(new DslRecipientListRouter());
@@ -39,6 +48,33 @@ public class RecipientListRouterSpec extends AbstractRouterSpec<RecipientListRou
 		Assert.hasText(channelName);
 		((DslRecipientListRouter) this.target).add(channelName, selector);
 		return _this();
+	}
+
+	public RecipientListRouterSpec recipientFlow(MessageSelector selector, IntegrationFlow subFlow) {
+		Assert.notNull(subFlow);
+		DirectChannel channel = populateSubFlow(subFlow);
+		((DslRecipientListRouter) this.target).add(channel, selector);
+		return _this();
+	}
+
+	public RecipientListRouterSpec recipientFlow(String expression, IntegrationFlow subFlow) {
+		Assert.notNull(subFlow);
+		DirectChannel channel = populateSubFlow(subFlow);
+		((DslRecipientListRouter) this.target).add(channel, expression);
+		return _this();
+	}
+
+	private DirectChannel populateSubFlow(IntegrationFlow subFlow) {
+		DirectChannel channel = new DirectChannel();
+		IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(channel);
+		subFlow.accept(flowBuilder);
+		this.subFlows.add(flowBuilder.get());
+		return channel;
+	}
+
+	@Override
+	public Collection<Object> getComponentsToRegister() {
+		return subFlows;
 	}
 
 }

@@ -232,6 +232,14 @@ public class IntegrationFlowTests {
 	private MessageChannel recipientListInput;
 
 	@Autowired
+	@Qualifier("recipientListSubFlow1Result")
+	private PollableChannel recipientListSubFlow1Result;
+
+	@Autowired
+	@Qualifier("recipientListSubFlow2Result")
+	private PollableChannel recipientListSubFlow2Result;
+
+	@Autowired
 	@Qualifier("defaultOutputChannel")
 	private PollableChannel defaultOutputChannel;
 
@@ -687,6 +695,7 @@ public class IntegrationFlowTests {
 
 		Message<String> fooMessage = MessageBuilder.withPayload("fooPayload").setHeader("recipient", true).build();
 		Message<String> barMessage = MessageBuilder.withPayload("barPayload").setHeader("recipient", true).build();
+		Message<String> bazMessage = new GenericMessage<>("baz");
 		Message<String> badMessage = new GenericMessage<>("badPayload");
 
 		this.recipientListInput.send(fooMessage);
@@ -696,21 +705,39 @@ public class IntegrationFlowTests {
 		Message<?> result1b = this.barChannel.receive(2000);
 		assertNotNull(result1b);
 		assertEquals("foo", result1b.getPayload());
+		Message<?> result1c = this.recipientListSubFlow1Result.receive(2000);
+		assertNotNull(result1c);
+		assertEquals("FOO", result1c.getPayload());
+		assertNull(this.recipientListSubFlow2Result.receive(0));
 
 		this.recipientListInput.send(barMessage);
 		assertNull(this.fooChannel.receive(0));
+		assertNull(this.recipientListSubFlow2Result.receive(0));
 		Message<?> result2b = this.barChannel.receive(2000);
 		assertNotNull(result2b);
 		assertEquals("bar", result2b.getPayload());
+		Message<?> result2c = this.recipientListSubFlow1Result.receive(2000);
+		assertNotNull(result1c);
+		assertEquals("BAR", result2c.getPayload());
 
+		this.recipientListInput.send(bazMessage);
+		assertNull(this.fooChannel.receive(0));
+		assertNull(this.barChannel.receive(0));
+		Message<?> result3c = this.recipientListSubFlow1Result.receive(2000);
+		assertNotNull(result3c);
+		assertEquals("BAZ", result3c.getPayload());
+		Message<?> result4c = this.recipientListSubFlow2Result.receive(2000);
+		assertNotNull(result4c);
+		assertEquals("Hello baz", result4c.getPayload());
 
 		this.recipientListInput.send(badMessage);
 		assertNull(this.fooChannel.receive(0));
 		assertNull(this.barChannel.receive(0));
-		Message<?> result3c = this.defaultOutputChannel.receive(2000);
-		assertNotNull(result3c);
-		assertEquals("bad", result3c.getPayload());
-
+		assertNull(this.recipientListSubFlow1Result.receive(0));
+		assertNull(this.recipientListSubFlow2Result.receive(0));
+		Message<?> resultD = this.defaultOutputChannel.receive(2000);
+		assertNotNull(resultD);
+		assertEquals("bad", resultD.getPayload());
 	}
 
 	@Test
@@ -990,10 +1017,17 @@ public class IntegrationFlowTests {
 		public IntegrationFlow recipientListFlow() {
 			return IntegrationFlows.from("recipientListInput")
 					.<String, String>transform(p -> p.replaceFirst("Payload", ""))
-					.routeToRecipients(r -> r.recipient("foo-channel", "'foo' == payload")
+					.routeToRecipients(r -> r
+							.recipient("foo-channel", "'foo' == payload")
 							.recipient("bar-channel", m ->
 									m.getHeaders().containsKey("recipient")
-											&& (boolean) m.getHeaders().get("recipient")))
+											&& (boolean) m.getHeaders().get("recipient"))
+							.recipientFlow("'foo' == payload or 'bar' == payload or 'baz' == payload",
+									f -> f.transform(String.class, p -> p.toUpperCase())
+											.channel(c -> c.queue("recipientListSubFlow1Result")))
+							.recipientFlow(m -> "baz".equals(m.getPayload()),
+									f -> f.transform("Hello "::concat)
+											.channel(c -> c.queue("recipientListSubFlow2Result"))))
 					.channel("defaultOutputChannel")
 					.get();
 		}

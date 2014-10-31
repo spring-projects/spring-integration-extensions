@@ -39,6 +39,11 @@ class DslRecipientListRouter extends RecipientListRouter {
 
 	private final Map<String, MessageSelector> selectorRecipientMap = new HashMap<String, MessageSelector>();
 
+	private final Map<MessageChannel, String> channelExpressionRecipientMap = new HashMap<MessageChannel, String>();
+
+	private final Map<MessageChannel, MessageSelector> channelSelectorRecipientMap =
+			new HashMap<MessageChannel, MessageSelector>();
+
 	void add(String channelName, String expression) {
 		this.expressionRecipientMap.put(channelName, expression);
 	}
@@ -47,12 +52,12 @@ class DslRecipientListRouter extends RecipientListRouter {
 		this.selectorRecipientMap.put(channelName, selector);
 	}
 
-	Map<String, Object> get() {
-		Map<String, Object> recipients =
-				new HashMap<String, Object>(this.expressionRecipientMap.size() + this.selectorRecipientMap.size());
-		recipients.putAll(this.expressionRecipientMap);
-		recipients.putAll(this.selectorRecipientMap);
-		return recipients;
+	void add(MessageChannel channel, String expression) {
+		this.channelExpressionRecipientMap.put(channel, expression);
+	}
+
+	void add(MessageChannel channel, MessageSelector selector) {
+		this.channelSelectorRecipientMap.put(channel, selector);
 	}
 
 	@Override
@@ -67,13 +72,28 @@ class DslRecipientListRouter extends RecipientListRouter {
 			this.selectorRecipientMap.put(recipient.getKey(), selector);
 		}
 
-		List<Recipient> recipients = new ArrayList<Recipient>(this.selectorRecipientMap.size());
+		for (Map.Entry<MessageChannel, String> recipient : this.channelExpressionRecipientMap.entrySet()) {
+			ExpressionEvaluatingSelector selector = null;
+			String expression = recipient.getValue();
+			if (StringUtils.hasText(expression)) {
+				selector = new ExpressionEvaluatingSelector(expression);
+				selector.setBeanFactory(this.getBeanFactory());
+			}
+			this.channelSelectorRecipientMap.put(recipient.getKey(), selector);
+		}
+
+		List<Recipient> recipients = new ArrayList<Recipient>(this.selectorRecipientMap.size()
+				+ this.channelSelectorRecipientMap.size());
 
 		for (Map.Entry<String, MessageSelector> entry : selectorRecipientMap.entrySet()) {
 			recipients.add(new DslRecipient(new MessageChannelReference(entry.getKey()), entry.getValue()));
 		}
 
-		this.setRecipients(recipients);
+		for (Map.Entry<MessageChannel, MessageSelector> entry : channelSelectorRecipientMap.entrySet()) {
+			recipients.add(new Recipient(entry.getKey(), entry.getValue()));
+		}
+
+		setRecipients(recipients);
 		super.onInit();
 	}
 
