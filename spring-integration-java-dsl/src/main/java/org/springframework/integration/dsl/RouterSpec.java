@@ -90,7 +90,6 @@ public final class RouterSpec<R extends AbstractMappingMessageRouter> extends Ab
 
 		if (this.mappingProvider == null) {
 			this.mappingProvider = new RouterSubFlowMappingProvider(this.target);
-			this.subFlows.add(this.mappingProvider);
 		}
 		this.mappingProvider.addMapping(key, channel);
 		return _this();
@@ -98,6 +97,9 @@ public final class RouterSpec<R extends AbstractMappingMessageRouter> extends Ab
 
 	@Override
 	public Collection<Object> getComponentsToRegister() {
+		if (this.mappingProvider != null) {
+			this.subFlows.add(this.mappingProvider);
+		}
 		return this.subFlows;
 	}
 
