@@ -18,6 +18,7 @@ package org.springframework.integration.dsl.test.flows;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -563,7 +564,27 @@ public class IntegrationFlowTests {
 			assertNotNull(receive);
 			assertEquals(payloads[i * 2 + 1], receive.getPayload());
 		}
+	}
 
+	@Autowired
+	@Qualifier("routerTwoSubFlows.input")
+	private MessageChannel routerTwoSubFlowsInput;
+
+	@Autowired
+	@Qualifier("routerTwoSubFlowsOutput")
+	private PollableChannel routerTwoSubFlowsOutput;
+
+	@Test
+	public void testRouterWithTwoSubflows() {
+		this.routerTwoSubFlowsInput.send(new GenericMessage<Object>(Arrays.asList(1, 2, 3, 4, 5, 6)));
+		Message<?> receive = this.routerTwoSubFlowsOutput.receive(5000);
+		assertNotNull(receive);
+		Object payload = receive.getPayload();
+		assertThat(payload, instanceOf(List.class));
+		@SuppressWarnings("unchecked")
+		List<Integer> results = (List<Integer>) payload;
+
+		assertArrayEquals(new Integer[] {3, 4, 9, 8, 15, 12}, results.toArray(new Integer[results.size()]));
 	}
 
 	@Test
@@ -1189,6 +1210,18 @@ public class IntegrationFlowTests {
 											f.<Integer>handle((p, h) -> p * 3)))
 					.channel(c -> c.queue("oddChannel"))
 					.get();
+		}
+
+
+		@Bean
+		public IntegrationFlow routerTwoSubFlows() {
+			return f -> f
+					.split()
+					.<Integer, Boolean>route(p -> p % 2 == 0, m -> m
+							.subFlowMapping("true", sf -> sf.<Integer>handle((p, h) -> p * 2))
+							.subFlowMapping("false", sf -> sf.<Integer>handle((p, h) -> p * 3)))
+					.aggregate()
+					.channel(c -> c.queue("routerTwoSubFlowsOutput"));
 		}
 
 		@Bean
