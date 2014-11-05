@@ -45,6 +45,7 @@ import org.springframework.util.StringUtils;
  * be checked against the
  *
  * @author Amol Nayak
+ * @author Christos Kapasakalidis
  *
  * @since 0.5
  *
@@ -140,11 +141,20 @@ public class InboundFileSynchronizationImpl implements InboundFileSynchronizer,I
 						if(!filter.accept(key))
 							continue;
 						//The folder is the root as the key is relative to bucket
-						AmazonS3Object s3Object = client.getObject(bucketName, "/", key);
-						synchronizeObjectWithFile(localDirectory,summary,s3Object);
+						AmazonS3Object s3Object = null;
+						try {
+							s3Object = client.getObject(bucketName, "/", key);
+							synchronizeObjectWithFile(localDirectory,summary,s3Object);
+						} finally {
+							if(s3Object != null && s3Object.getInputStream() != null) {
+								s3Object.getInputStream().close();
+							}
+						}
 					}
 				} while(nextMarker != null);
 
+			} catch (IOException e) {
+				logger.error("Caught Exception while trying to close s3object InputStream", e);
 			} finally {
 				lock.unlock();
 				if(logger.isInfoEnabled()) {
