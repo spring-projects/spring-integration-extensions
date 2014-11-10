@@ -40,6 +40,9 @@ public class AmqpOutboundEndpointSpec extends MessageHandlerSpec<AmqpOutboundEnd
 		this.endpoint = new AmqpOutboundEndpoint(amqpTemplate);
 		this.expectReply = expectReply;
 		this.endpoint.setExpectReply(expectReply);
+		if (expectReply) {
+			this.endpoint.setRequiresReply(true);
+		}
 		this.endpoint.setHeaderMapper(this.headerMapper);
 	}
 

@@ -16,8 +16,11 @@
 
 package org.springframework.integration.dsl.test.amqp;
 
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,19 +29,23 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.MessageProducers;
 import org.springframework.integration.dsl.amqp.Amqp;
+import org.springframework.integration.handler.ReplyRequiredException;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -58,19 +65,22 @@ public class AmqpTests {
 	@Qualifier("queue")
 	private Queue amqpQueue;
 
+	@Autowired
+	@Qualifier("amqpOutboundInput")
+	private MessageChannel amqpOutboundInput;
+	@Autowired
+	@Qualifier("amqpReplyChannel.channel")
+	private PollableChannel amqpReplyChannel;
+
+	@Autowired
+	@Qualifier("amqpOutboundGatewayFlow.input")
+	private MessageChannel amqpOutboundGatewayFlowInput;
+
 	@Test
 	public void testAmqpInboundGatewayFlow() throws Exception {
 		Object result = this.amqpTemplate.convertSendAndReceive(this.amqpQueue.getName(), "world");
 		assertEquals("HELLO WORLD", result);
 	}
-
-	@Autowired
-	@Qualifier("amqpOutboundInput")
-	private MessageChannel amqpOutboundInput;
-
-	@Autowired
-	@Qualifier("amqpReplyChannel.channel")
-	private PollableChannel amqpReplyChannel;
 
 	@Test
 	public void testAmqpOutboundFlow() throws Exception {
@@ -92,6 +102,17 @@ public class AmqpTests {
 		assertEquals("HELLO THROUGH THE AMQP", receive.getPayload());
 	}
 
+	@Test
+	public void testAmqpOutboundGatewayRequiresReply() {
+		try {
+			this.amqpOutboundGatewayFlowInput.send(new GenericMessage<>("foo"));
+			fail("ReplyRequiredException expected");
+		}
+		catch (Exception e) {
+			assertThat(e, instanceOf(ReplyRequiredException.class));
+		}
+	}
+
 	@Configuration
 	@EnableAutoConfiguration
 	public static class ContextConfiguration {
@@ -99,8 +120,12 @@ public class AmqpTests {
 		@Autowired
 		private ConnectionFactory rabbitConnectionFactory;
 
-		@Autowired
-		private AmqpTemplate amqpTemplate;
+		@Bean
+		public RabbitTemplate rabbitTemplate() {
+			RabbitTemplate rabbitTemplate = new RabbitTemplate(this.rabbitConnectionFactory);
+			rabbitTemplate.setReplyTimeout(1000);
+			return rabbitTemplate;
+		}
 
 		@Bean
 		public Queue queue() {
@@ -118,7 +143,7 @@ public class AmqpTests {
 		@Bean
 		public IntegrationFlow amqpOutboundFlow() {
 			return IntegrationFlows.from(Amqp.channel("amqpOutboundInput", this.rabbitConnectionFactory))
-					.handle(Amqp.outboundAdapter(this.amqpTemplate).routingKeyExpression("headers.routingKey"))
+					.handle(Amqp.outboundAdapter(rabbitTemplate()).routingKeyExpression("headers.routingKey"))
 					.get();
 		}
 
@@ -140,6 +165,11 @@ public class AmqpTests {
 							.queueName("amqpReplyChannel")
 							.channelTransacted(true))
 					.get();
+		}
+
+		@Bean
+		public IntegrationFlow amqpOutboundGatewayFlow() {
+			return f -> f.handleWithAdapter(a -> a.amqpGateway(rabbitTemplate()).routingKey("bar"));
 		}
 
 	}

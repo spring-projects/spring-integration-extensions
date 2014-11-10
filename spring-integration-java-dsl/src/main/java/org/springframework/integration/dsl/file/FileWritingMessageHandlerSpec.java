@@ -55,28 +55,31 @@ public class FileWritingMessageHandlerSpec
 	}
 
 	FileWritingMessageHandlerSpec expectReply(boolean expectReply) {
-		target.setExpectReply(expectReply);
+		this.target.setExpectReply(expectReply);
+		if (expectReply) {
+			this.target.setRequiresReply(true);
+		}
 		return _this();
 	}
 
 	public FileWritingMessageHandlerSpec autoCreateDirectory(boolean autoCreateDirectory) {
-		target.setAutoCreateDirectory(autoCreateDirectory);
+		this.target.setAutoCreateDirectory(autoCreateDirectory);
 		return _this();
 	}
 
 	public FileWritingMessageHandlerSpec temporaryFileSuffix(String temporaryFileSuffix) {
-		target.setTemporaryFileSuffix(temporaryFileSuffix);
+		this.target.setTemporaryFileSuffix(temporaryFileSuffix);
 		return _this();
 	}
 
 	public FileWritingMessageHandlerSpec fileExistsMode(FileExistsMode fileExistsMode) {
-		target.setFileExistsMode(fileExistsMode);
+		this.target.setFileExistsMode(fileExistsMode);
 		return _this();
 	}
 
 	public FileWritingMessageHandlerSpec fileNameGenerator(FileNameGenerator fileNameGenerator) {
 		this.fileNameGenerator = fileNameGenerator;
-		target.setFileNameGenerator(fileNameGenerator);
+		this.target.setFileNameGenerator(fileNameGenerator);
 		return _this();
 	}
 
@@ -90,12 +93,12 @@ public class FileWritingMessageHandlerSpec
 
 
 	public FileWritingMessageHandlerSpec deleteSourceFiles(boolean deleteSourceFiles) {
-		target.setDeleteSourceFiles(deleteSourceFiles);
+		this.target.setDeleteSourceFiles(deleteSourceFiles);
 		return _this();
 	}
 
 	public FileWritingMessageHandlerSpec charset(String charset) {
-		target.setCharset(charset);
+		this.target.setCharset(charset);
 		return _this();
 	}
 
