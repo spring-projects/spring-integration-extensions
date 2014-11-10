@@ -42,7 +42,6 @@ import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec;
 import org.springframework.integration.dsl.StandardIntegrationFlow;
 import org.springframework.integration.dsl.core.ConsumerEndpointSpec;
 import org.springframework.integration.dsl.support.MessageChannelReference;
-import org.springframework.integration.event.inbound.ApplicationEventListeningMessageProducer;
 import org.springframework.integration.support.context.NamedComponent;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
@@ -181,7 +180,7 @@ public class IntegrationFlowBeanPostProcessor implements BeanPostProcessor, Bean
 						.values()
 						.contains(component)) {
 					registerComponent(component, generateBeanName(component));
-					if (ApplicationEventListeningMessageProducer.class.isAssignableFrom(
+					if (ApplicationListener.class.isAssignableFrom(
 							AopUtils.getTargetClass(component))
 							&& this.beanFactory.containsBean(
 							AbstractApplicationContext.APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
