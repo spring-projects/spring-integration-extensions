@@ -19,54 +19,58 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.*;
 import org.springframework.messaging.Message;
 
 /**
  * @author Soby Chacko
  * @author Rajasekar Elango
+ * @author Ilayaperumal Gopinathan
  * @since 0.5
  */
-public class KafkaProducerContext<K,V> implements BeanFactoryAware {
+public class KafkaProducerContext<K, V> {
 	private static final Log LOGGER = LogFactory.getLog(KafkaProducerContext.class);
-	private Map<String, ProducerConfiguration<K,V>> topicsConfiguration;
+	private Map<String, ProducerConfiguration<K, V>> producerConfigurations;
 	private Properties producerProperties;
 
 	public void send(final Message<?> message) throws Exception {
-		final ProducerConfiguration<K,V> producerConfiguration =
-						getTopicConfiguration(message.getHeaders().get("topic", String.class));
-
-		if (producerConfiguration != null) {
-			producerConfiguration.send(message);
+		if (message.getHeaders().containsKey("topic")) {
+			final ProducerConfiguration<K, V> producerConfiguration = getTopicConfiguration(message
+					.getHeaders().get("topic", String.class));
+			if (producerConfiguration != null) {
+				producerConfiguration.send(message);
+			}
+		}
+		// if there is a single producer configuration then use that config to send message.
+		else if (producerConfigurations.size() == 1) {
+			producerConfigurations.get(producerConfigurations.keySet().iterator().next()).send(message);
+		}
+		else {
+			throw new IllegalStateException("Could not send messages as there are multiple producer configurations" +
+					"with no topic information found from the message header.");
 		}
 	}
 
 	public ProducerConfiguration<K, V> getTopicConfiguration(final String topic) {
-		final Collection<ProducerConfiguration<K,V>> topics = topicsConfiguration.values();
+		final Collection<ProducerConfiguration<K, V>> topics = producerConfigurations.values();
 
-		for (final ProducerConfiguration<K,V> producerConfiguration : topics){
-			if (topic.matches(producerConfiguration.getProducerMetadata().getTopic())){
+		for (final ProducerConfiguration<K, V> producerConfiguration : topics) {
+			if (topic.matches(producerConfiguration.getProducerMetadata().getTopic())) {
 				return producerConfiguration;
 			}
 		}
-		LOGGER.error("No producer-configuration defined for topic " + topic + ". cannot send message");
+		LOGGER.error("No producer-configuration defined for topic " + topic+ ". cannot send message");
 		return null;
 	}
 
-	public Map<String, ProducerConfiguration<K,V>> getTopicsConfiguration() {
-		return topicsConfiguration;
+	public Map<String, ProducerConfiguration<K, V>> getProducerConfigurations() {
+		return producerConfigurations;
 	}
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
-		topicsConfiguration =
-				(Map<String, ProducerConfiguration<K,V>>) (Object)
-				((ListableBeanFactory)beanFactory).getBeansOfType(ProducerConfiguration.class);
+	public void setProducerConfigurations(
+			Map<String, ProducerConfiguration<K, V>> producerConfigurations) {
+		this.producerConfigurations = producerConfigurations;
 	}
 
 	/**

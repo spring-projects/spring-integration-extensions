@@ -21,6 +21,7 @@ import org.springframework.messaging.Message;
 /**
  * @author Soby Chacko
  * @author Rajasekar Elango
+ * @author Ilayaperumal Gopinathan
  * @since 0.5
  */
 public class ProducerConfiguration<K, V> {
@@ -36,14 +37,17 @@ public class ProducerConfiguration<K, V> {
 		return producerMetadata;
 	}
 
+	public Producer<K, V> getProducer() {
+		return this.producer;
+	}
+
 	public void send(final Message<?> message) throws Exception {
 		final V v = getPayload(message);
-
-		String topic = message.getHeaders().get("topic", String.class);
+		String topic = (message.getHeaders().containsKey("topic")) ? message.getHeaders().get("topic", String.class)
+				: producerMetadata.getTopic();
 		if (message.getHeaders().containsKey("messageKey")) {
 			producer.send(new KeyedMessage<K, V>(topic, getKey(message), v));
-		}
-		else {
+		} else {
 			producer.send(new KeyedMessage<K, V>(topic, v));
 		}
 	}
@@ -52,11 +56,9 @@ public class ProducerConfiguration<K, V> {
 	private V getPayload(final Message<?> message) throws Exception {
 		if (producerMetadata.getValueEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
 			return (V) getByteStream(message.getPayload());
-		}
-		else if (message.getPayload().getClass().isAssignableFrom(producerMetadata.getValueClassType())) {
+		} else if (message.getPayload().getClass().isAssignableFrom(producerMetadata.getValueClassType())) {
 			return producerMetadata.getValueClassType().cast(message.getPayload());
 		}
-
 		throw new Exception("Message payload type is not matching with what is configured");
 	}
 
@@ -67,8 +69,7 @@ public class ProducerConfiguration<K, V> {
 		if (producerMetadata.getKeyEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
 			return (K) getByteStream(key);
 		}
-
-		return message.getHeaders().get("messageKey", producerMetadata.getKeyClassType());
+		return message.getHeaders().get("messageKey",producerMetadata.getKeyClassType());
 	}
 
 	private static boolean isRawByteArray(final Object obj) {
@@ -79,11 +80,9 @@ public class ProducerConfiguration<K, V> {
 		if (isRawByteArray(obj)) {
 			return (byte[]) obj;
 		}
-
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectOutputStream os = new ObjectOutputStream(out);
 		os.writeObject(obj);
-
 		return out.toByteArray();
 	}
 
