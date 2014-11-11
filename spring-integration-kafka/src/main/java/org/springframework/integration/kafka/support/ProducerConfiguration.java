@@ -21,13 +21,15 @@ import org.springframework.messaging.Message;
 /**
  * @author Soby Chacko
  * @author Rajasekar Elango
+ * @author Ilayaperumal Gopinathan
  * @since 0.5
  */
 public class ProducerConfiguration<K, V> {
 	private final Producer<K, V> producer;
 	private final ProducerMetadata<K, V> producerMetadata;
 
-	public ProducerConfiguration(final ProducerMetadata<K, V> producerMetadata, final Producer<K, V> producer) {
+	public ProducerConfiguration(final ProducerMetadata<K, V> producerMetadata,
+			final Producer<K, V> producer) {
 		this.producerMetadata = producerMetadata;
 		this.producer = producer;
 	}
@@ -36,39 +38,49 @@ public class ProducerConfiguration<K, V> {
 		return producerMetadata;
 	}
 
+	public Producer<K, V> getProducer() {
+		return this.producer;
+	}
+
 	public void send(final Message<?> message) throws Exception {
 		final V v = getPayload(message);
 
-		String topic = message.getHeaders().get("topic", String.class);
+		String topic = (message.getHeaders().containsKey("topic")) ? message
+				.getHeaders().get("topic", String.class) : producerMetadata
+				.getTopic();
 		if (message.getHeaders().containsKey("messageKey")) {
 			producer.send(new KeyedMessage<K, V>(topic, getKey(message), v));
-		}
-		else {
+		} else {
 			producer.send(new KeyedMessage<K, V>(topic, v));
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private V getPayload(final Message<?> message) throws Exception {
-		if (producerMetadata.getValueEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
+		if (producerMetadata.getValueEncoder().getClass()
+				.isAssignableFrom(DefaultEncoder.class)) {
 			return (V) getByteStream(message.getPayload());
-		}
-		else if (message.getPayload().getClass().isAssignableFrom(producerMetadata.getValueClassType())) {
-			return producerMetadata.getValueClassType().cast(message.getPayload());
+		} else if (message.getPayload().getClass()
+				.isAssignableFrom(producerMetadata.getValueClassType())) {
+			return producerMetadata.getValueClassType().cast(
+					message.getPayload());
 		}
 
-		throw new Exception("Message payload type is not matching with what is configured");
+		throw new Exception(
+				"Message payload type is not matching with what is configured");
 	}
 
 	@SuppressWarnings("unchecked")
 	private K getKey(final Message<?> message) throws Exception {
 		final Object key = message.getHeaders().get("messageKey");
 
-		if (producerMetadata.getKeyEncoder().getClass().isAssignableFrom(DefaultEncoder.class)) {
+		if (producerMetadata.getKeyEncoder().getClass()
+				.isAssignableFrom(DefaultEncoder.class)) {
 			return (K) getByteStream(key);
 		}
 
-		return message.getHeaders().get("messageKey", producerMetadata.getKeyClassType());
+		return message.getHeaders().get("messageKey",
+				producerMetadata.getKeyClassType());
 	}
 
 	private static boolean isRawByteArray(final Object obj) {
@@ -100,7 +112,8 @@ public class ProducerConfiguration<K, V> {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ProducerConfiguration [producerMetadata=").append(producerMetadata).append("]");
+		builder.append("ProducerConfiguration [producerMetadata=")
+				.append(producerMetadata).append("]");
 		return builder.toString();
 	}
 }

@@ -15,10 +15,12 @@
  */
 package org.springframework.integration.kafka.config.xml;
 
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import java.util.Map;
+
+import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
@@ -32,6 +34,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author Soby Chacko
+ * @author Ilayaperumal Gopinathan
  * @since 0.5
  */
 public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionParser {
@@ -51,6 +54,7 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 
 	private void parseProducerConfigurations(final Element topics, final ParserContext parserContext,
 			final BeanDefinitionBuilder builder, final Element parentElem) {
+		Map<String, BeanMetadataElement> producerConfigurationsMap = new ManagedMap<String, BeanMetadataElement>();
 		for (final Element producerConfiguration : DomUtils.getChildElementsByTagName(topics, "producer-configuration")){
 			final BeanDefinitionBuilder producerConfigurationBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerConfiguration.class);
 
@@ -65,14 +69,12 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(producerMetadataBuilder, producerConfiguration, "async");
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(producerMetadataBuilder, producerConfiguration, "batch-num-messages");
 
-			final BeanDefinition producerMetadataBeanDef = producerMetadataBuilder.getBeanDefinition();
-			registerBeanDefinition(new BeanDefinitionHolder(producerMetadataBeanDef, "producerMetadata_" + producerConfiguration.getAttribute("topic")),
-										parserContext.getRegistry());
+			final AbstractBeanDefinition producerMetadataBeanDefinition = producerMetadataBuilder.getBeanDefinition();
 
 			final String producerPropertiesBean = parentElem.getAttribute("producer-properties");
 
 			final BeanDefinitionBuilder producerFactoryBuilder = BeanDefinitionBuilder.genericBeanDefinition(ProducerFactoryBean.class);
-			producerFactoryBuilder.addConstructorArgReference("producerMetadata_" + producerConfiguration.getAttribute("topic"));
+			producerFactoryBuilder.addConstructorArgValue(producerMetadataBeanDefinition);
 
 			final String brokerList = producerConfiguration.getAttribute("broker-list");
 			if (StringUtils.hasText(brokerList)) {
@@ -83,16 +85,14 @@ public class KafkaProducerContextParser extends AbstractSimpleBeanDefinitionPars
 				producerFactoryBuilder.addConstructorArgReference(producerPropertiesBean);
 			}
 
-			final BeanDefinition producerfactoryBeanDefinition = producerFactoryBuilder.getBeanDefinition();
-			registerBeanDefinition(new BeanDefinitionHolder(producerfactoryBeanDefinition, "prodFactory_" + producerConfiguration.getAttribute("topic")), parserContext.getRegistry());
+			final AbstractBeanDefinition producerfactoryBeanDefinition = producerFactoryBuilder.getBeanDefinition();
 
-			producerConfigurationBuilder.addConstructorArgReference("producerMetadata_" + producerConfiguration.getAttribute("topic"));
-			producerConfigurationBuilder.addConstructorArgReference("prodFactory_" + producerConfiguration.getAttribute("topic"));
+			producerConfigurationBuilder.addConstructorArgValue(producerMetadataBeanDefinition);
+			producerConfigurationBuilder.addConstructorArgValue(producerfactoryBeanDefinition);
 
 			final AbstractBeanDefinition producerConfigurationBeanDefinition = producerConfigurationBuilder.getBeanDefinition();
-			final String producerConfigurationBeanName = "producerConfiguration_" + producerConfiguration.getAttribute("topic");
-			registerBeanDefinition(new BeanDefinitionHolder(producerConfigurationBeanDefinition, producerConfigurationBeanName),
-					parserContext.getRegistry());
+			producerConfigurationsMap.put(producerConfiguration.getAttribute("topic"), producerConfigurationBeanDefinition);
 		}
+		builder.addPropertyValue("producerConfigurations", producerConfigurationsMap);
 	}
 }
