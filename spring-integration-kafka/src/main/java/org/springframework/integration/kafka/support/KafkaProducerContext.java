@@ -38,32 +38,29 @@ public class KafkaProducerContext<K, V> {
 		if (message.getHeaders().containsKey("topic")) {
 			final ProducerConfiguration<K, V> producerConfiguration = getTopicConfiguration(message
 					.getHeaders().get("topic", String.class));
-
 			if (producerConfiguration != null) {
 				producerConfiguration.send(message);
 			}
 		}
-		// if there is a single producer configuration then use that config to
-		// send message.
+		// if there is a single producer configuration then use that config to send message.
 		else if (producerConfigurations.size() == 1) {
-			producerConfigurations.get(
-					producerConfigurations.keySet().iterator().next()).send(
-					message);
+			producerConfigurations.get(producerConfigurations.keySet().iterator().next()).send(message);
+		}
+		else {
+			throw new IllegalStateException("Could not send messages as there are multiple producer configurations" +
+					"with no topic information found from the message header.");
 		}
 	}
 
 	public ProducerConfiguration<K, V> getTopicConfiguration(final String topic) {
-		final Collection<ProducerConfiguration<K, V>> topics = producerConfigurations
-				.values();
+		final Collection<ProducerConfiguration<K, V>> topics = producerConfigurations.values();
 
 		for (final ProducerConfiguration<K, V> producerConfiguration : topics) {
-			if (topic.matches(producerConfiguration.getProducerMetadata()
-					.getTopic())) {
+			if (topic.matches(producerConfiguration.getProducerMetadata().getTopic())) {
 				return producerConfiguration;
 			}
 		}
-		LOGGER.error("No producer-configuration defined for topic " + topic
-				+ ". cannot send message");
+		LOGGER.error("No producer-configuration defined for topic " + topic+ ". cannot send message");
 		return null;
 	}
 
