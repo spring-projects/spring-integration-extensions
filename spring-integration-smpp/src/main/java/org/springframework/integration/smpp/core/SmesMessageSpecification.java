@@ -708,7 +708,7 @@ public class SmesMessageSpecification {
 	}
 
     private List<String> splitToLength(String text, int subStringSize) {
-        List<String> substrings = new ArrayList<String>(text.length() + subStringSize -1 / subStringSize);
+        List<String> substrings = new ArrayList<String>((text.length() + subStringSize -1) / subStringSize);
         for (int idx = 0; idx < text.length(); idx += subStringSize) {
             String substring = text.substring(idx, Math.min(text.length(), idx + subStringSize));
             substrings.add(substring);
