@@ -26,22 +26,25 @@ import kafka.utils.VerifiableProperties;
  * The Default decoder returns the same byte array it takes in.
  *
  * @author Soby Chacko
+ * @author Ilayaperumal Gopinathan
  */
 public class StringDecoder implements Decoder<String> {
 
-	private String encoding = "UTF8";
+	private final kafka.serializer.StringDecoder stringDecoder;
 
-	public void setEncoding(final String encoding) {
-		this.encoding = encoding;
+	public StringDecoder() {
+		this("UTF8");
+	}
+
+	public StringDecoder(final String encoding) {
+		final Properties props = new Properties();
+		props.put("serializer.encoding", encoding);
+		this.stringDecoder = new kafka.serializer.StringDecoder(new VerifiableProperties(props));
 	}
 
 	@Override
 	public String fromBytes(byte[] bytes) {
-		final Properties props = new Properties();
-		props.put("serializer.encoding", encoding);
-
-		final VerifiableProperties verifiableProperties = new VerifiableProperties(props);
-		return new kafka.serializer.StringDecoder(verifiableProperties).fromBytes(bytes);
+		return this.stringDecoder.fromBytes(bytes);
 	}
 
 }
