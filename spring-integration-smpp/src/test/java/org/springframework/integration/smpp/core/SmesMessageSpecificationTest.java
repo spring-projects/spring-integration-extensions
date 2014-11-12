@@ -35,9 +35,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class SmesMessageSpecificationTest {
 
-    private static final int MULTISEGMENT_PREFIX_BYTES = 5;
+    private static final int PREFIX_BYTES = 5;
 
-    private static final String MULTILINE_PAYLOAD =
+    private static final String MULTI_LINE_PAYLOAD =
             "1: This is a message longer than 140 chars and it contains newlines and foreign characters - æøå. " +
                 "This is the first line. \n" +
             "2: This is the second line. \n" +
@@ -50,7 +50,7 @@ public class SmesMessageSpecificationTest {
             "9: Ninth line\n" +
             "The end";
 
-    private static final String SINGLELINE_PAYLOAD = "1: This is a line that is longer than what can be sent in a " +
+    private static final String SINGLE_LINE_PAYLOAD = "1: This is a line that is longer than what can be sent in a " +
             "single segment. It also has foreign characters æøå. Lorem ipsum dolor sit amet, atqui iudico epicuri mel" +
             " eu. Cu quaestio voluptatum ullamcorper quo, nec ut numquam habemus, summo nostrum est ut. Nominati " +
             "praesent repudiare at sit, ut tibique suscipit has, nec eu odio erat qualisque. Soleat ridens ut nec, eu" +
@@ -88,12 +88,12 @@ public class SmesMessageSpecificationTest {
 
     @Test
     public void singleLineSplitsCorrectlyForDefault() throws Exception {
-        verifyMessageSplitCorrectlyForDataCoding(SINGLELINE_PAYLOAD, null, null);
+        verifyMessageSplitCorrectlyForDataCoding(SINGLE_LINE_PAYLOAD, null, null);
     }
 
     @Test
     public void singleLineSplitsCorrectlyForCustomMaxCharacters() throws Exception {
-        verifyMessageSplitCorrectlyForDataCoding(SINGLELINE_PAYLOAD, null, 99);
+        verifyMessageSplitCorrectlyForDataCoding(SINGLE_LINE_PAYLOAD, null, 99);
     }
 
     /* ********** Multi line tests ************* */
@@ -128,24 +128,24 @@ public class SmesMessageSpecificationTest {
 
     @Test
     public void multiLineSplitsCorrectlyForDefault() throws Exception {
-        verifyMessageSplitCorrectlyForDataCoding(MULTILINE_PAYLOAD, null, null);
+        verifyMessageSplitCorrectlyForDataCoding(MULTI_LINE_PAYLOAD, null, null);
     }
 
     @Test
     public void multiLineSplitsCorrectlyForCustomMaxCharacters() throws Exception {
-        verifyMessageSplitCorrectlyForDataCoding(MULTILINE_PAYLOAD, null, 99);
+        verifyMessageSplitCorrectlyForDataCoding(MULTI_LINE_PAYLOAD, null, 99);
     }
 
     /* ***************** Helper methods ****************** */
 
     private void verifySingleLineMessageSplitCorrectlyForDataCoding(DataCoding dataCoding)
             throws UnsupportedEncodingException {
-        verifyMessageSplitCorrectlyForDataCoding(SINGLELINE_PAYLOAD, dataCoding, null);
+        verifyMessageSplitCorrectlyForDataCoding(SINGLE_LINE_PAYLOAD, dataCoding, null);
     }
 
     private void verifyMultilineMessageSplitCorrectlyForDataCoding(DataCoding dataCoding)
             throws UnsupportedEncodingException {
-        verifyMessageSplitCorrectlyForDataCoding(MULTILINE_PAYLOAD, dataCoding, null);
+        verifyMessageSplitCorrectlyForDataCoding(MULTI_LINE_PAYLOAD, dataCoding, null);
     }
 
     private void verifyMessageSplitCorrectlyForDataCoding(String payload, DataCoding dataCoding, Integer maxMessageSize) throws UnsupportedEncodingException {
@@ -164,7 +164,7 @@ public class SmesMessageSpecificationTest {
             maxCharacters = maxMessageSize;
         }
 
-        int maxCharactersWithRoomForPrefix = maxCharacters - MULTISEGMENT_PREFIX_BYTES;
+        int maxCharactersWithRoomForPrefix = maxCharacters - PREFIX_BYTES;
         String charsetName = DataCodingSpecification.getCharsetName(dataCoding.toByte());
 
         List<byte[]> messageParts = (List<byte[]>) ReflectionTestUtils.getField(smesMessageSpecification,
