@@ -56,6 +56,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Josh Long
  * @author Edge Dalmacio
+ * @author Flemming Jønsson
  * @since 1.0
  */
 public class SmesMessageSpecification {
@@ -695,7 +696,7 @@ public class SmesMessageSpecification {
 		}
 		else {
 			if (s.length() > this.maxLengthSmsMessages) {
-				for (String split : s.split("(?<=\\G.{" + String.valueOf(this.maxLengthSmsMessages - 5) + "})")) {
+				for (String split : splitToLength(s, this.maxLengthSmsMessages - 5)) {
 					this.shortMessageParts.add(DataCodingSpecification.getMessageInBytes(split, dataCoding.toByte()));
 				}
 			}
@@ -705,6 +706,15 @@ public class SmesMessageSpecification {
 		}
 		return this;
 	}
+
+    private List<String> splitToLength(String text, int subStringSize) {
+        List<String> substrings = new ArrayList<String>(text.length() + subStringSize -1 / subStringSize);
+        for (int idx = 0; idx < text.length(); idx += subStringSize) {
+            String substring = text.substring(idx, Math.min(text.length(), idx + subStringSize));
+            substrings.add(substring);
+        }
+        return substrings;
+    }
 
 	/**
 	 * Setting short message using message_payload ({@link org.jsmpp.bean.OptionalParameter.Tag#MESSAGE_PAYLOAD})
