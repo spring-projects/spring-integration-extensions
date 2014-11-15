@@ -13,9 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smpp.core;
 
-import static org.springframework.integration.smpp.core.SmppConstants.*;
+import static org.springframework.integration.smpp.core.SmppConstants.DATA_CODING;
+import static org.springframework.integration.smpp.core.SmppConstants.DST_ADDR;
+import static org.springframework.integration.smpp.core.SmppConstants.DST_NPI;
+import static org.springframework.integration.smpp.core.SmppConstants.DST_TON;
+import static org.springframework.integration.smpp.core.SmppConstants.ESM_CLASS;
+import static org.springframework.integration.smpp.core.SmppConstants.MAXIMUM_CHARACTERS;
+import static org.springframework.integration.smpp.core.SmppConstants.PRIORITY_FLAG;
+import static org.springframework.integration.smpp.core.SmppConstants.PROTOCOL_ID;
+import static org.springframework.integration.smpp.core.SmppConstants.REGISTERED_DELIVERY_MODE;
+import static org.springframework.integration.smpp.core.SmppConstants.REPLACE_IF_PRESENT_FLAG;
+import static org.springframework.integration.smpp.core.SmppConstants.SCHEDULED_DELIVERY_TIME;
+import static org.springframework.integration.smpp.core.SmppConstants.SERVICE_TYPE;
+import static org.springframework.integration.smpp.core.SmppConstants.SMS_MSG;
+import static org.springframework.integration.smpp.core.SmppConstants.SM_DEFAULT_MSG_ID;
+import static org.springframework.integration.smpp.core.SmppConstants.SRC_ADDR;
+import static org.springframework.integration.smpp.core.SmppConstants.SRC_NPI;
+import static org.springframework.integration.smpp.core.SmppConstants.SRC_TON;
+import static org.springframework.integration.smpp.core.SmppConstants.VALIDITY_PERIOD;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +74,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Josh Long
  * @author Edge Dalmacio
+ * @author Flemming Jønsson
  * @since 1.0
  */
 public class SmesMessageSpecification {
@@ -387,8 +406,7 @@ public class SmesMessageSpecification {
 	 *         the {@link TypeOfNumber}
 	 * @return this
 	 */
-	public
-	SmesMessageSpecification setSourceAddressTypeOfNumberIfRequired(TypeOfNumber sourceAddressTypeOfNumberIfRequired) {
+	public SmesMessageSpecification setSourceAddressTypeOfNumberIfRequired(TypeOfNumber sourceAddressTypeOfNumberIfRequired) {
 		if (this.sourceAddressTypeOfNumber == null) {
 			this.sourceAddressTypeOfNumber = sourceAddressTypeOfNumberIfRequired;
 		}
@@ -695,7 +713,7 @@ public class SmesMessageSpecification {
 		}
 		else {
 			if (s.length() > this.maxLengthSmsMessages) {
-				for (String split : s.split("(?<=\\G.{" + String.valueOf(this.maxLengthSmsMessages - 5) + "})")) {
+				for (String split : splitToLength(s, this.maxLengthSmsMessages - 5)) {
 					this.shortMessageParts.add(DataCodingSpecification.getMessageInBytes(split, dataCoding.toByte()));
 				}
 			}
@@ -704,6 +722,15 @@ public class SmesMessageSpecification {
 			}
 		}
 		return this;
+	}
+
+	private List<String> splitToLength(String text, int subStringSize) {
+		List<String> substrings = new ArrayList<String>((text.length() + subStringSize - 1) / subStringSize);
+		for (int idx = 0; idx < text.length(); idx += subStringSize) {
+			String substring = text.substring(idx, Math.min(text.length(), idx + subStringSize));
+			substrings.add(substring);
+		}
+		return substrings;
 	}
 
 	/**
