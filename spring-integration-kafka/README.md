@@ -34,8 +34,8 @@ The Outbound channel adapter is used to send messages to Kafka. Messages are rea
 this in the application where messages are sent to kafka.
 
 Once a channel is configured, then messages can be sent to Kafka through this channel. Obviously, Spring Integration specific messages are sent to the adapter and then it will
-internally get converted into Kafka messages before sending. In the current version of the outbound adapter,
-you have to specify a message key and the topic as header values and the message to send as the payload.
+internally get converted into Kafka messages before sending. You can specify a `message key` and the `topic` as 
+header values and the message to send as the payload.
 Here is an example.
 
 ```java
@@ -50,13 +50,20 @@ Here is an example.
 This would create a message with a payload. In addition to this, it also creates two header entries as key/value pairs - one for
 the message key and another for the topic that this message belongs to.
 
+In addition `<int-kafka:outbound-channel-adapter>` provides `topic` (`topic-expression`) and
+ `message-key` (`message-key-expression`) mutually exclusive optional pairs of attributes to allow to specify
+ `topic` and/or `message-key` statically on the adapter or dynamically evaluate their values at runtime against 
+ the request message.
+
 Here is how kafka outbound channel adapter is configured:
 
 ```xml
 	<int-kafka:outbound-channel-adapter id="kafkaOutboundChannelAdapter"
 										kafka-producer-context-ref="kafkaProducerContext"
 										auto-startup="false"
-										channel="inputToKafka">
+										channel="inputToKafka"
+										topic="foo"
+										message-key-expression="header.messageKey">
 		<int:poller fixed-delay="1000" time-unit="MILLISECONDS" receive-timeout="0" task-executor="taskExecutor"/>
 	</int-kafka:outbound-channel-adapter>
 ```

@@ -41,17 +41,15 @@ public class KafkaProducerContext<K, V> {
 
 	private Properties producerProperties;
 
-	public void send(final Message<?> message) throws Exception {
-		if (message.getHeaders().containsKey("topic")) {
-			ProducerConfiguration<K, V> producerConfiguration =
-					getTopicConfiguration(message.getHeaders().get("topic", String.class));
-			if (producerConfiguration != null) {
-				producerConfiguration.send(message);
-			}
+	public void send(String topic, Object messageKey, final Message<?> message) throws Exception {
+		final ProducerConfiguration<K,V> producerConfiguration = getTopicConfiguration(topic);
+
+		if (producerConfiguration != null) {
+			producerConfiguration.send(topic, messageKey, message);
 		}
 		// if there is a single producer configuration then use that config to send message.
 		else if (this.theProducerConfiguration != null) {
-			this.theProducerConfiguration.send(message);
+			this.theProducerConfiguration.send(null, messageKey, message);
 		}
 		else {
 			throw new IllegalStateException("Could not send messages as there are multiple producer configurations " +

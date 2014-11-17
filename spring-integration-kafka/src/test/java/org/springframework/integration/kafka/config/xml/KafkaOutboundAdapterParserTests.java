@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.kafka.config.xml;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -24,11 +27,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.integration.endpoint.PollingConsumer;
 import org.springframework.integration.kafka.outbound.KafkaProducerMessageHandler;
 import org.springframework.integration.kafka.support.KafkaProducerContext;
+import org.springframework.integration.test.util.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Soby Chacko
+ * @author Artem Bilan
  * @since 0.5
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -41,15 +46,16 @@ public class KafkaOutboundAdapterParserTests<K, V> {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testOutboundAdapterConfiguration() {
-		final PollingConsumer pollingConsumer =
-				appContext.getBean("kafkaOutboundChannelAdapter", PollingConsumer.class);
-		final KafkaProducerMessageHandler<K, V> messageHandler = appContext.getBean(KafkaProducerMessageHandler.class);
-		Assert.assertNotNull(pollingConsumer);
-		Assert.assertNotNull(messageHandler);
-		Assert.assertEquals(messageHandler.getOrder(), 3);
-		final KafkaProducerContext<K, V> producerContext = messageHandler.getKafkaProducerContext();
-		Assert.assertNotNull(producerContext);
-		Assert.assertEquals(producerContext.getProducerConfigurations().size(), 2);
+		PollingConsumer pollingConsumer = this.appContext.getBean("kafkaOutboundChannelAdapter", PollingConsumer.class);
+		KafkaProducerMessageHandler<K, V> messageHandler = this.appContext.getBean(KafkaProducerMessageHandler.class);
+		assertNotNull(pollingConsumer);
+		assertNotNull(messageHandler);
+		assertEquals(messageHandler.getOrder(), 3);
+		assertEquals("foo", TestUtils.getPropertyValue(messageHandler, "topicExpression.literalValue"));
+		assertEquals("'bar'", TestUtils.getPropertyValue(messageHandler, "messageKeyExpression.expression"));
+		KafkaProducerContext<K, V> producerContext = messageHandler.getKafkaProducerContext();
+		assertNotNull(producerContext);
+		assertEquals(producerContext.getProducerConfigurations().size(), 2);
 	}
 
 }
