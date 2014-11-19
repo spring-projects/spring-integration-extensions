@@ -3,6 +3,9 @@ Spring Integration IP Extensions
 
 Welcome to the Spring Integration IP Extensions project. It is intended to supplement the spring-integration-ip module with, for example, custom serializers/deserializers.
 
+__There are currently no extensions in this project. The previous experimental WebSocket support has been superceded by the support in spring-messaging.__
+
+
 # Building
 
 If you encounter out of memory errors during the build, increase available heap and permgen for Gradle:
@@ -48,20 +51,3 @@ To generate IDEA metadata (.iml and .ipr files), do the following:
 For more information, please visit the Spring Integration website at:
 [http://www.springsource.org/spring-integration](http://www.springsource.org/spring-integration)
 
-# WebSocket Server Demo
-
-This demonstrates how to use the TCP adapters to provide a very lightweight websocket server.
-
-Run WebSocketServerTests as a Java Application (main) and open
-
-`file:///.../spring-integration-extensions/spring-integration-ip-extensions/src/test/java/org/springframework/integration/ip/extensions/sockjs/ws.html`
-
-in a browser. Opening the page opens the WebSocket.
-
-Sending 'start' begins sending an incrementing # once per second. 'stop' stops the stream (leaving the socket open), 'start' resumes again. Multiple browser instances get their own sequence #.
-
-# Bitcoin Sample
-
-The [bitcoin-rt project](https://github.com/cbeams/bitcoin-rt) provides a sample using the Spring Integration IP extensions:
- 
-[https://github.com/cbeams/bitcoin-rt/tree/master/java-spring-integration](https://github.com/cbeams/bitcoin-rt/tree/master/java-spring-integration)

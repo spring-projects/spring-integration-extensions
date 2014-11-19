@@ -5,7 +5,7 @@ buildscript {
 		maven { url 'https://repo.springsource.org/plugins-snapshot' }
 	}
 	dependencies {
-		classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.1.5'
+//		classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.1.5'
 	}
 }
 
