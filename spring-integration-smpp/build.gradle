@@ -29,7 +29,7 @@ ext {
 	slf4jVersion = '1.7.7'
 	commonsLangVersion = '2.6'
 	commonsBeanUtilsVersion = '1.8.3'
-	springIntegrationVersion = '4.0.2.RELEASE'
+	springIntegrationVersion = '4.0.5.RELEASE'
 
 	idPrefix = 'smpp'
 
