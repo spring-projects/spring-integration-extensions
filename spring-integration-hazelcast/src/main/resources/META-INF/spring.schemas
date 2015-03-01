@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast-4.2.xsd=org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd
+http\://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd=org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd

@@ -1,0 +1,29 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.onlinetechvision'
+version = '0.0.1-SNAPSHOT'
+
+description = """"""
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+
+
+repositories {
+        
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.springframework', name: 'spring-context', version:'4.1.5.RELEASE'
+    compile group: 'org.springframework.integration', name: 'spring-integration-core', version:'4.1.2.RELEASE'
+    compile group: 'com.hazelcast', name: 'hazelcast', version:'3.4.1'
+    compile group: 'com.hazelcast', name: 'hazelcast-spring', version:'3.4.1'
+    compile group: 'com.hazelcast', name: 'hazelcast-client', version:'3.4.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.7'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.1.2'
+    compile group: 'ch.qos.logback', name: 'logback-core', version:'1.1.2'
+    compile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.springframework', name: 'spring-test', version:'4.1.5.RELEASE'
+}
