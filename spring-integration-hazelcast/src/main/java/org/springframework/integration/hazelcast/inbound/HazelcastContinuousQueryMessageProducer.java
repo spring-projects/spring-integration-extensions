@@ -18,6 +18,7 @@ package org.springframework.integration.hazelcast.inbound;
 import org.springframework.integration.hazelcast.listener.HazelcastEntryListener;
 
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ReplicatedMap;
 import com.hazelcast.query.SqlPredicate;
 
 /**
@@ -33,7 +34,11 @@ public class HazelcastContinuousQueryMessageProducer extends HazelcastMessagePro
 	
 	@Override
 	protected void doStart() {
-		((IMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), new SqlPredicate(predicate), true);
+		if(getDistributedObject() instanceof IMap) {
+			((IMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), new SqlPredicate(predicate), true);
+		} else if(getDistributedObject() instanceof ReplicatedMap) {
+			((ReplicatedMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), new SqlPredicate(predicate));
+		}
 	}
 
 	public void setPredicate(String predicate) {

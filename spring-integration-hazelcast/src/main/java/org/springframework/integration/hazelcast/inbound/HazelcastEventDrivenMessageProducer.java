@@ -25,6 +25,7 @@ import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
+import com.hazelcast.core.ReplicatedMap;
 
 /**
  * HazelcastEventDrivenMessageProducer
@@ -49,6 +50,8 @@ public class HazelcastEventDrivenMessageProducer extends HazelcastMessageProduce
 			((IQueue<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(this), true);
 		} else if(getDistributedObject() instanceof ITopic) {
 			((ITopic<?>)getDistributedObject()).addMessageListener(new HazelcastMessageListener(this));
+		} else if(getDistributedObject() instanceof ReplicatedMap) {
+			((ReplicatedMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this));
 		} 
 	}
 

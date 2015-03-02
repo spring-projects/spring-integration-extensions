@@ -16,17 +16,15 @@
 package org.springframework.integration.hazelcast.common;
 
 /**
- * DistributedSQLIterationType
+ * CacheListeningPolicyType
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
  */
-public enum DistributedSQLIterationType {
+public enum CacheListeningPolicyType {
 
-	ENTRY,
-	KEY,
-	LOCAL_KEY,
-	VALUE
+	SINGLE,
+    ALL;
 	
 }

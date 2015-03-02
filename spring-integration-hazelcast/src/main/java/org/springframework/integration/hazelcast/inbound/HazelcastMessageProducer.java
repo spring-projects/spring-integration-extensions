@@ -23,6 +23,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.integration.context.ApplicationContextStartEventHandler;
 import org.springframework.integration.endpoint.MessageProducerSupport;
+import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationUtil;
 import org.springframework.messaging.Message;
@@ -42,6 +43,7 @@ public class HazelcastMessageProducer extends MessageProducerSupport implements 
 
 	private DistributedObject distributedObject;
 	private String cacheEventTypes;
+	private CacheListeningPolicyType cacheListeningPolicy;
 	
 	@Override
 	protected void onInit() {
@@ -87,4 +89,12 @@ public class HazelcastMessageProducer extends MessageProducerSupport implements 
 		this.cacheEventTypes = cacheEventTypes;
 	}
 
+	public CacheListeningPolicyType getCacheListeningPolicy() {
+		return cacheListeningPolicy;
+	}
+
+	public void setCacheListeningPolicy(CacheListeningPolicyType cacheListeningPolicy) {
+		this.cacheListeningPolicy = cacheListeningPolicy;
+	}
+	
 }

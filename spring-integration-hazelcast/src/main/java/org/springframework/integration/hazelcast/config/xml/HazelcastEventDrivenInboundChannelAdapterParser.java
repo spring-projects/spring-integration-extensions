@@ -36,12 +36,15 @@ import reactor.util.StringUtils;
  */
 public class HazelcastEventDrivenInboundChannelAdapterParser extends AbstractSingleBeanDefinitionParser {
 	
-	private static final String CHANNEL = "channel";
-	private static final String CACHE = "cache";
-	private static final String CACHE_EVENTS = "cache-events";
+	private static final String CHANNEL_ATTRIBUTE = "channel";
+	private static final String CACHE_ATTRIBUTE = "cache";
+	private static final String CACHE_EVENTS_ATTRIBUTE = "cache-events";
+	private static final String CACHE_LISTENING_POLICY_ATTRIBUTE = "cache-listening-policy";
+	
 	private static final String OUTPUT_CHANNEL = "outputChannel";
 	private static final String DISTRIBUTED_OBJECT = "distributedObject";
 	private static final String CACHE_EVENT_TYPES = "cacheEventTypes";
+	private static final String CACHE_LISTENING_POLICY = "cacheListeningPolicy";
 	
 	@Override
 	protected String getBeanClassName(Element element) {
@@ -60,19 +63,22 @@ public class HazelcastEventDrivenInboundChannelAdapterParser extends AbstractSin
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		if (!StringUtils.hasText(element.getAttribute(CHANNEL))) {
-			parserContext.getReaderContext().error("'" + CHANNEL + "' attribute is required.", element);
-		} else if (!StringUtils.hasText(element.getAttribute(CACHE))) {
-			parserContext.getReaderContext().error("'" + CACHE + "' attribute is required.", element);
-		} else if (!StringUtils.hasText(element.getAttribute(CACHE_EVENTS))) {
-			parserContext.getReaderContext().error("'" + CACHE_EVENTS + "' attribute is required.", element);
+		if (!StringUtils.hasText(element.getAttribute(CHANNEL_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CHANNEL_ATTRIBUTE + "' attribute is required.", element);
+		} else if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
+		} else if (!StringUtils.hasText(element.getAttribute(CACHE_EVENTS_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CACHE_EVENTS_ATTRIBUTE + "' attribute is required.", element);
+		} else if (!StringUtils.hasText(element.getAttribute(CACHE_LISTENING_POLICY_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CACHE_LISTENING_POLICY_ATTRIBUTE + "' attribute is required.", element);
 		}
 		
-		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, element.getAttribute(CACHE_EVENTS)));
+		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, element.getAttribute(CACHE_EVENTS_ATTRIBUTE)));
 		
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, CHANNEL, OUTPUT_CHANNEL);
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, CACHE, DISTRIBUTED_OBJECT);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_EVENTS, CACHE_EVENT_TYPES);
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, CHANNEL_ATTRIBUTE, OUTPUT_CHANNEL);
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, CACHE_ATTRIBUTE, DISTRIBUTED_OBJECT);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_EVENTS_ATTRIBUTE, CACHE_EVENT_TYPES);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_LISTENING_POLICY_ATTRIBUTE, CACHE_LISTENING_POLICY);
 	}
 	
 }

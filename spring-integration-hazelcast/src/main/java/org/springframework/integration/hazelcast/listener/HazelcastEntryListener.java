@@ -16,9 +16,7 @@
 package org.springframework.integration.hazelcast.listener;
 
 import java.io.Serializable;
-import java.net.SocketAddress;
 import java.util.EventObject;
-import java.util.Set;
 
 import org.springframework.integration.hazelcast.inbound.HazelcastMessageProducer;
 
@@ -73,14 +71,7 @@ public class HazelcastEntryListener<K, V> extends AbstractHazelcastEventListener
 	@Override
 	protected void processEvent(EventObject event) {
 		if(getHazelcastInboundChannelAdapter().getCacheEventTypeSet().contains(((AbstractIMapEvent)event).getEventType().toString())) {
-			Set<SocketAddress> localSocketAddressesSet = getLocalSocketAddresses();
-			if((!localSocketAddressesSet.isEmpty()) 
-					&& (localSocketAddressesSet.contains(((AbstractIMapEvent)event).getMember().getSocketAddress())
-							|| isEventAcceptable(localSocketAddressesSet, ((AbstractIMapEvent)event).getMember().getSocketAddress()))) {
-				
-				createAndSendMessage(event);
-	
-			}
+			sendMessage(event, ((AbstractIMapEvent)event).getMember().getSocketAddress(), getHazelcastInboundChannelAdapter().getCacheListeningPolicy());
 		}
 	}
 

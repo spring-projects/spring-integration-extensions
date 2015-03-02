@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.integration.context.ApplicationContextStartEventHandler;
+import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
 import org.springframework.integration.hazelcast.inbound.HazelcastMessageProducer;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 
 import com.hazelcast.core.Hazelcast;
@@ -60,7 +60,27 @@ public abstract class AbstractHazelcastEventListener {
 		return localSocketAddressesSet;
 	}
 	
-	protected boolean isEventAcceptable(Set<SocketAddress> localSocketAddressesSet, InetSocketAddress socketAddressOfEvent) {
+	protected void sendMessage(EventObject event, InetSocketAddress socketAddress, CacheListeningPolicyType cacheListeningPolicyType) {
+		if(CacheListeningPolicyType.ALL == cacheListeningPolicyType 
+				|| isEventAcceptable(socketAddress)) {
+			
+			getHazelcastInboundChannelAdapter().sendMessage(MessageBuilder.withPayload(event).build());
+
+		}
+	}
+	
+	private boolean isEventAcceptable(InetSocketAddress socketAddress) {
+		Set<SocketAddress> localSocketAddressesSet = getLocalSocketAddresses();
+		if((!localSocketAddressesSet.isEmpty()) 
+				&& (localSocketAddressesSet.contains(socketAddress)
+						|| isEventAcceptable(localSocketAddressesSet, socketAddress))) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private boolean isEventAcceptable(Set<SocketAddress> localSocketAddressesSet, InetSocketAddress socketAddressOfEvent) {
 		HazelcastInstance hazelcastInstance = Hazelcast.getAllHazelcastInstances().iterator().next();
 		MultiMap<SocketAddress, SocketAddress> configMultiMap = hazelcastInstance.getMultiMap(ApplicationContextStartEventHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP);
 		if (configMultiMap.size() > 0 
@@ -72,8 +92,4 @@ public abstract class AbstractHazelcastEventListener {
 		return false;
 	}
 	
-	protected void createAndSendMessage(Object payload) {
-		Message<?> message = MessageBuilder.withPayload(payload).build();
-		getHazelcastInboundChannelAdapter().sendMessage(message);
-	}
 }

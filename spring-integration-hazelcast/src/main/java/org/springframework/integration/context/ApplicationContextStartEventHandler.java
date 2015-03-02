@@ -36,8 +36,8 @@ import com.hazelcast.core.MultiMap;
  */
 public class ApplicationContextStartEventHandler implements ApplicationListener<ContextRefreshedEvent> {
 
-	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP = "SI_HZ_INTERNAL_CONFIGURATION_MULTI_MAP";
-	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK = "SI_HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK";
+	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP = "HZ_INTERNAL_CONFIGURATION_MULTI_MAP";
+	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK = "HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK";
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {

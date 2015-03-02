@@ -41,9 +41,9 @@ import com.hazelcast.core.IMap;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/HazelcastEventDrivenInboundChannelAdapterTest-context.xml"})
+@ContextConfiguration(locations={"/HazelcastDistributedMapEventDrivenInboundChannelAdapterTest-context.xml"})
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
-public class HazelcastEventDrivenInboundChannelAdapterTest {
+public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTest {
 
 	@Autowired
 	private PollableChannel edMapChannel1;
