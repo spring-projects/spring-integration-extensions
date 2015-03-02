@@ -41,9 +41,9 @@ import com.hazelcast.core.IMap;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/HazelcastContinuousQueryInboundChannelAdapterTest-context.xml"})
+@ContextConfiguration(locations={"/HazelcastCQDistributedMapInboundChannelAdapterTest-context.xml"})
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
-public class HazelcastContinuousQueryInboundChannelAdapterTest {
+public class HazelcastCQDistributedMapInboundChannelAdapterTest {
 
 	@Autowired
 	private PollableChannel cqMapChannel1;

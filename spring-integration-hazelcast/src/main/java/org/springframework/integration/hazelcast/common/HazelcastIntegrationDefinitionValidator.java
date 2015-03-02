@@ -66,8 +66,6 @@ public class HazelcastIntegrationDefinitionValidator {
 				}
 			}
 		
-		} else if((distributedObject instanceof ITopic) && !cacheEventTypeSet.isEmpty()) {
-			throw new IllegalStateException("'cache-events' attribute is not required for ITopic.");
 		} 
 		
 		return true;

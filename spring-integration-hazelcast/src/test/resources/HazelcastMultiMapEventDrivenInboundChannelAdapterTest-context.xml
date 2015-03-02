@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:int="http://www.springframework.org/schema/integration"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:int-hazelcast="http://www.springframework.org/schema/integration/hazelcast"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/integration/hazelcast
+	classpath:org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd">
+
+	<int:channel id="edMultiMapChannel1">
+		<int:queue />
+	</int:channel>
+		
+	<int:channel id="edMultiMapChannel2">
+		<int:queue />
+	</int:channel>
+	
+	<int:channel id="edMultiMapChannel3">
+		<int:queue />
+	</int:channel>
+	
+	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel1" cache="edMultiMap1" />
+	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel2" cache="edMultiMap2" cache-events="REMOVED" />
+	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel3" cache="edMultiMap3" cache-events="ADDED,REMOVED,UPDATED,CLEAR_ALL" />
+	
+	<bean id="edMultiMap1" factory-bean="edMultiMapInstance" factory-method="getMultiMap">
+	  <constructor-arg value="edMultiMap1"/>
+	</bean>
+	
+	<bean id="edMultiMap2" factory-bean="edMultiMapInstance" factory-method="getMultiMap">
+	  <constructor-arg value="edMultiMap2"/>
+	</bean>
+	
+	<bean id="edMultiMap3" factory-bean="edMultiMapInstance" factory-method="getMultiMap">
+	  <constructor-arg value="edMultiMap3"/>
+	</bean>
+			
+	<bean id="edMultiMapInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+	  <constructor-arg>
+	    <bean class="com.hazelcast.config.Config" />
+	  </constructor-arg>
+	</bean>
+	
+</beans>

@@ -34,23 +34,23 @@
 	<int-hazelcast:inbound-channel-adapter channel="edMapChannel3" cache="edDistributedMap3" cache-events="REMOVED" />
 	<int-hazelcast:inbound-channel-adapter channel="edMapChannel4" cache="edDistributedMap4" cache-events="ADDED,REMOVED,UPDATED,CLEAR_ALL" />
 	
-	<bean id="edDistributedMap1" factory-bean="edInstance" factory-method="getMap">
+	<bean id="edDistributedMap1" factory-bean="edMapInstance" factory-method="getMap">
 	  <constructor-arg value="edDistributedMap1"/>
 	</bean>
 	
-	<bean id="edDistributedMap2" factory-bean="edInstance" factory-method="getMap">
+	<bean id="edDistributedMap2" factory-bean="edMapInstance" factory-method="getMap">
 	  <constructor-arg value="edDistributedMap2"/>
 	</bean>
 	
-	<bean id="edDistributedMap3" factory-bean="edInstance" factory-method="getMap">
+	<bean id="edDistributedMap3" factory-bean="edMapInstance" factory-method="getMap">
 	  <constructor-arg value="edDistributedMap3"/>
 	</bean>
 	
-	<bean id="edDistributedMap4" factory-bean="edInstance" factory-method="getMap">
+	<bean id="edDistributedMap4" factory-bean="edMapInstance" factory-method="getMap">
 	  <constructor-arg value="edDistributedMap4"/>
 	</bean>
 		
-	<bean id="edInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+	<bean id="edMapInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
 	  <constructor-arg>
 	    <bean class="com.hazelcast.config.Config" />
 	  </constructor-arg>
