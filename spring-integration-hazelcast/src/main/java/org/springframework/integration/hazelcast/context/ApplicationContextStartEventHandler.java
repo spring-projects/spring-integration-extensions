@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.context;
-
+package org.springframework.integration.hazelcast.context;
 
 import java.net.SocketAddress;
 import java.util.concurrent.locks.Lock;
@@ -28,7 +27,10 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 
 /**
- * ApplicationContextStartEventHandler
+ * This class handles ApplicationContext initialization or refresh events and
+ * enables a Hazelcast MembershipListener to listen for membership updates. It
+ * also creates a multi-map for hazelcast instances' socket address information
+ * which used hazelcast event-driven inbound channel adapter.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

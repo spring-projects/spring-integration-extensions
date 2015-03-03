@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.onlinetechvision.integration.hazelcast.inbound;
+package org.springframework.integration.hazelcast.inbound;
 
 import java.io.Serializable;
 
 /**
- * User
+ * User Bean for Unit Tests
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

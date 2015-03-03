@@ -134,7 +134,7 @@
 				<xsd:annotation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
-							<tool:expected-type type="com.hazelcast.core.DistributedObject" />
+							<tool:expected-type type="com.hazelcast.core.IMap" />
 						</tool:annotation>
 					</xsd:appinfo>
 					<xsd:documentation>

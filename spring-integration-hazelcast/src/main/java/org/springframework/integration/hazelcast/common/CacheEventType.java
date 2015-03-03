@@ -16,7 +16,7 @@
 package org.springframework.integration.hazelcast.common;
 
 /**
- * CacheEventType
+ * Enumeration of Cache Event Types of Hazelcast Inbound Channel Adapter 
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

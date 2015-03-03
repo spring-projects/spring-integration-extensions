@@ -19,7 +19,7 @@ import java.net.SocketAddress;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
-import org.springframework.integration.context.ApplicationContextStartEventHandler;
+import org.springframework.integration.hazelcast.context.ApplicationContextStartEventHandler;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -29,7 +29,7 @@ import com.hazelcast.core.MembershipListener;
 import com.hazelcast.core.MultiMap;
 
 /**
- * HazelcastMembershipListener
+ * This is a hazelcast cluster membership listener in order to listen for membership updates.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

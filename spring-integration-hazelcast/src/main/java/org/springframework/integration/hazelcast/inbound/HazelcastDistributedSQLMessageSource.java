@@ -28,10 +28,11 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.query.SqlPredicate;
 
 /**
- * HazelcastDistributedSQLMessageSource
+ * Hazelcast Distributed SQL Message Source is a message source which runs
+ * defined distributed query in the cluster and returns results in the light of
+ * iteration type.
  * 
  * @author Eren Avsarogullari
- * @param <E>
  * @since 1.0.0
  *
  */

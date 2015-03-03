@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.onlinetechvision.integration.hazelcast.inbound;
+package org.springframework.integration.hazelcast.inbound;
 
 import java.util.Collection;
 import java.util.Map;
@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.hazelcast.core.IMap;
 
 /**
- * HazelcastDistributedSQLInboundChannelAdapterTest
+ * Hazelcast Distributed SQL Inbound Channel Adapter Test
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

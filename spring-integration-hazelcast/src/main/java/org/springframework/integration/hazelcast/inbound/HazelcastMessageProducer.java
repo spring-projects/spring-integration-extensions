@@ -21,11 +21,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.integration.context.ApplicationContextStartEventHandler;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationUtil;
+import org.springframework.integration.hazelcast.context.ApplicationContextStartEventHandler;
 import org.springframework.messaging.Message;
 
 import reactor.util.StringUtils;
@@ -33,7 +33,7 @@ import reactor.util.StringUtils;
 import com.hazelcast.core.DistributedObject;
 
 /**
- * HazelcastMessageProducer
+ * This is a base class for Hazelcast Event-Driven Message Producers. 
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

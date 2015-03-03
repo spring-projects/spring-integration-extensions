@@ -35,7 +35,9 @@ import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
 
 /**
- * HazelcastCacheWritingMessageHandler
+ * This listens defined channel, handles messages and write defined cache
+ * objects. Currently it supports java.util.Map, List, Set and Queue data
+ * strctures.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

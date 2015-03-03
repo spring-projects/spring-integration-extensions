@@ -27,7 +27,7 @@
 	
 	<int-hazelcast:inbound-channel-adapter channel="edSetChannel1" cache="edDistributedSet1" />
 	<int-hazelcast:inbound-channel-adapter channel="edSetChannel2" cache="edDistributedSet2" cache-events="REMOVED" />
-	<int-hazelcast:inbound-channel-adapter channel="edSetChannel3" cache="edDistributedSet3" cache-events="ADDED,REMOVED" />
+	<int-hazelcast:inbound-channel-adapter channel="edSetChannel3" cache="edDistributedSet3" cache-events="ADDED,REMOVED" cache-listening-policy="SINGLE" />
 	
 	<bean id="edDistributedSet1" factory-bean="edSetInstance" factory-method="getSet">
 	  <constructor-arg value="edDistributedSet1"/>

@@ -26,7 +26,7 @@
 	</int:channel>
 	
 	<int-hazelcast:inbound-channel-adapter channel="edListChannel1" cache="edDistributedList1" />
-	<int-hazelcast:inbound-channel-adapter channel="edListChannel2" cache="edDistributedList2" cache-events="REMOVED" />
+	<int-hazelcast:inbound-channel-adapter channel="edListChannel2" cache="edDistributedList2" cache-events="REMOVED" cache-listening-policy="SINGLE"/>
 	<int-hazelcast:inbound-channel-adapter channel="edListChannel3" cache="edDistributedList3" cache-events="ADDED,REMOVED" />
 	
 	<bean id="edDistributedList1" factory-bean="edListInstance" factory-method="getList">

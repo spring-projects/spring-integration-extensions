@@ -18,11 +18,13 @@ package org.springframework.integration.hazelcast.inbound;
 import org.springframework.integration.hazelcast.listener.HazelcastEntryListener;
 
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.ReplicatedMap;
 import com.hazelcast.query.SqlPredicate;
 
 /**
- * HazelcastContinuousQueryMessageProducer
+ * Hazelcast Continuous Query Message Producer is a message producer which
+ * enables HazelcastEntryListener with a SqlPredicate in order to listen related
+ * distributed map events in the light of defined predicate and sends events to related
+ * channel.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
@@ -36,8 +38,8 @@ public class HazelcastContinuousQueryMessageProducer extends HazelcastMessagePro
 	protected void doStart() {
 		if(getDistributedObject() instanceof IMap) {
 			((IMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), new SqlPredicate(predicate), true);
-		} else if(getDistributedObject() instanceof ReplicatedMap) {
-			((ReplicatedMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), new SqlPredicate(predicate));
+		} else {
+			throw new IllegalStateException("Invalid 'cache' type is set. Only IMap cache object is acceptable for continuous query.");
 		}
 	}
 

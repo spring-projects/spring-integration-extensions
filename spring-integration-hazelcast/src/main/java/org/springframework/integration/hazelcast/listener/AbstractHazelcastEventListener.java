@@ -21,8 +21,8 @@ import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.integration.context.ApplicationContextStartEventHandler;
 import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
+import org.springframework.integration.hazelcast.context.ApplicationContextStartEventHandler;
 import org.springframework.integration.hazelcast.inbound.HazelcastMessageProducer;
 import org.springframework.messaging.support.MessageBuilder;
 
@@ -31,7 +31,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 
 /**
- * AbstractHazelcastEventListener
+ * This is a base hazelcast event listener for entry/item/message events.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

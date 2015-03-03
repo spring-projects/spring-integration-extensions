@@ -26,7 +26,7 @@
 	</int:channel>
 	
 	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel1" cache="edMultiMap1" />
-	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel2" cache="edMultiMap2" cache-events="REMOVED" />
+	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel2" cache="edMultiMap2" cache-events="REMOVED" cache-listening-policy="SINGLE" />
 	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel3" cache="edMultiMap3" cache-events="ADDED,REMOVED,UPDATED,CLEAR_ALL" />
 	
 	<bean id="edMultiMap1" factory-bean="edMultiMapInstance" factory-method="getMultiMap">

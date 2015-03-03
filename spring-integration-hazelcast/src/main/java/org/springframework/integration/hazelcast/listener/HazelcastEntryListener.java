@@ -26,7 +26,9 @@ import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.MapEvent;
 
 /**
- * HazelcastEntryListener
+ * This is a DistributedMap/MultiMap/ReplicatedMap Entry listener to get
+ * notified when a map entry is added, removed, updated or evicted. It listens
+ * events, checks and sends to related channel.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

@@ -19,7 +19,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 /**
- * HazelcastIntegrationUtil
+ * This is common utility class for SI-Hazelcast Support.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

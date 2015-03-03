@@ -31,7 +31,7 @@
 	
 	<int-hazelcast:inbound-channel-adapter channel="edMapChannel1" cache="edDistributedMap1" />
 	<int-hazelcast:inbound-channel-adapter channel="edMapChannel2" cache="edDistributedMap2" cache-events="UPDATED" />
-	<int-hazelcast:inbound-channel-adapter channel="edMapChannel3" cache="edDistributedMap3" cache-events="REMOVED" />
+	<int-hazelcast:inbound-channel-adapter channel="edMapChannel3" cache="edDistributedMap3" cache-events="REMOVED" cache-listening-policy="SINGLE" />
 	<int-hazelcast:inbound-channel-adapter channel="edMapChannel4" cache="edDistributedMap4" cache-events="ADDED,REMOVED,UPDATED,CLEAR_ALL" />
 	
 	<bean id="edDistributedMap1" factory-bean="edMapInstance" factory-method="getMap">

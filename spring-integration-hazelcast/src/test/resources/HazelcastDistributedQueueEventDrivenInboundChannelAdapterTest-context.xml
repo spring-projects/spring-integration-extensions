@@ -25,7 +25,7 @@
 		<int:queue />
 	</int:channel>
 	
-	<int-hazelcast:inbound-channel-adapter channel="edQueueChannel1" cache="edDistributedQueue1" />
+	<int-hazelcast:inbound-channel-adapter channel="edQueueChannel1" cache="edDistributedQueue1" cache-listening-policy="SINGLE" />
 	<int-hazelcast:inbound-channel-adapter channel="edQueueChannel2" cache="edDistributedQueue2" cache-events="REMOVED" />
 	<int-hazelcast:inbound-channel-adapter channel="edQueueChannel3" cache="edDistributedQueue3" cache-events="ADDED,REMOVED" />
 	

@@ -32,7 +32,7 @@
 	<int-hazelcast:inbound-channel-adapter channel="edReplicatedMapChannel1" cache="edReplicatedMap1" />
 	<int-hazelcast:inbound-channel-adapter channel="edReplicatedMapChannel2" cache="edReplicatedMap2" cache-events="UPDATED" />
 	<int-hazelcast:inbound-channel-adapter channel="edReplicatedMapChannel3" cache="edReplicatedMap3" cache-events="REMOVED" />
-	<int-hazelcast:inbound-channel-adapter channel="edReplicatedMapChannel4" cache="edReplicatedMap4" cache-events="ADDED,REMOVED,UPDATED,CLEAR_ALL" />
+	<int-hazelcast:inbound-channel-adapter channel="edReplicatedMapChannel4" cache="edReplicatedMap4" cache-events="ADDED,REMOVED,UPDATED" />
 	
 	<bean id="edReplicatedMap1" factory-bean="edReplicatedMapInstance" factory-method="getReplicatedMap">
 	  <constructor-arg value="edReplicatedMap1"/>

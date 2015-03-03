@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.onlinetechvision.integration.hazelcast.inbound;
+package org.springframework.integration.hazelcast.inbound;
 
 import javax.annotation.Resource;
 
@@ -34,7 +34,7 @@ import com.hazelcast.core.EntryEventType;
 import com.hazelcast.core.IMap;
 
 /**
- * HazelcastContinuousQueryInboundChannelAdapterTest
+ * Hazelcast Continuous Query Inbound Channel Adapter Unit Test Class 
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
@@ -152,7 +152,5 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTest {
 		Assert.assertEquals(cacheName, ((AbstractIMapEvent)msg.getPayload()).getName());
 		Assert.assertEquals(type, ((AbstractIMapEvent)msg.getPayload()).getEventType());
 	}
-	
-	
 	
 }

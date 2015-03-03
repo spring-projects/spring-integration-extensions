@@ -29,7 +29,8 @@ import reactor.util.Assert;
 import reactor.util.StringUtils;
 
 /**
- * HazelcastDistributedSQLInboundChannelAdapterParser
+ * Hazelcast Distributed SQL Inbound Channel Adapter Parser parses
+ * int-hazelcast:ds-inbound-channel-adapter xml definition.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
@@ -37,29 +38,29 @@ import reactor.util.StringUtils;
  */
 public class HazelcastDistributedSQLInboundChannelAdapterParser extends AbstractPollingInboundChannelAdapterParser {
 	
+	private static final String CACHE_ATTRIBUTE = "cache";
+	private static final String DISTRIBUTED_SQL_ATTRIBUTE = "distributed-sql";
+	private static final String ITERATION_TYPE_ATTRIBUTE = "iteration-type";
 	private static final String DISTRIBUTED_MAP = "distributedMap";
 	private static final String DISTRIBUTED_SQL_PROPERTY = "distributedSQL";
 	private static final String ITERATION_TYPE_PROPERTY = "iterationType";
-	private static final String CACHE = "cache";
-	private static final String DISTRIBUTED_SQL = "distributed-sql";
-	private static final String ITERATION_TYPE = "iteration-type";
 	
 	@Override
 	protected BeanMetadataElement parseSource(Element element, ParserContext parserContext) {
-		if (!StringUtils.hasText(element.getAttribute(CACHE))) {
-			parserContext.getReaderContext().error("'" + CACHE + "' attribute is required.", element);
-		} else if (!StringUtils.hasText(element.getAttribute(DISTRIBUTED_SQL))) {
-			parserContext.getReaderContext().error("'" + DISTRIBUTED_SQL + "' attribute is required.", element);
-		} else if (!StringUtils.hasText(element.getAttribute(ITERATION_TYPE))) {
-			parserContext.getReaderContext().error("'" + ITERATION_TYPE + "' attribute is required.", element);
+		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
+		} else if (!StringUtils.hasText(element.getAttribute(DISTRIBUTED_SQL_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + DISTRIBUTED_SQL_ATTRIBUTE + "' attribute is required.", element);
+		} else if (!StringUtils.hasText(element.getAttribute(ITERATION_TYPE_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + ITERATION_TYPE_ATTRIBUTE + "' attribute is required.", element);
 		}
 		
-		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(DistributedSQLIterationType.class, element.getAttribute(ITERATION_TYPE)));
+		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(DistributedSQLIterationType.class, element.getAttribute(ITERATION_TYPE_ATTRIBUTE)));
 		
 		BeanDefinitionBuilder sourceBuilder = BeanDefinitionBuilder.genericBeanDefinition(HazelcastDistributedSQLMessageSource.class.getName());
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(sourceBuilder, element, CACHE, DISTRIBUTED_MAP);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(sourceBuilder, element, DISTRIBUTED_SQL, DISTRIBUTED_SQL_PROPERTY);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(sourceBuilder, element, ITERATION_TYPE, ITERATION_TYPE_PROPERTY);
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(sourceBuilder, element, CACHE_ATTRIBUTE, DISTRIBUTED_MAP);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(sourceBuilder, element, DISTRIBUTED_SQL_ATTRIBUTE, DISTRIBUTED_SQL_PROPERTY);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(sourceBuilder, element, ITERATION_TYPE_ATTRIBUTE, ITERATION_TYPE_PROPERTY);
 		
 		return sourceBuilder.getBeanDefinition();
 	}

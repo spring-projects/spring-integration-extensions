@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.onlinetechvision.integration.hazelcast.inbound;
+package org.springframework.integration.hazelcast.inbound;
 
 import javax.annotation.Resource;
 
@@ -31,7 +31,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.hazelcast.core.ITopic;
 
 /**
- * HazelcastDistributedTopicEventDrivenInboundChannelAdapterTest
+ * Hazelcast Distributed Topic Event Driven Inbound Channel Adapter Test
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

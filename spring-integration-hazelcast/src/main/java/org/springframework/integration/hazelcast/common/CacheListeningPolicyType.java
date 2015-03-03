@@ -16,7 +16,7 @@
 package org.springframework.integration.hazelcast.common;
 
 /**
- * CacheListeningPolicyType
+ * Enumeration of Cache Listening Policy Type of Hazelcast Inbound Channel Adapter
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

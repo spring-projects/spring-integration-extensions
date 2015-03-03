@@ -28,7 +28,9 @@ import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
 
 /**
- * HazelcastEventDrivenMessageProducer
+ * Hazelcast Event Driven Message Producer is a message producer which enables
+ * Hazelcast Entry/Item/Message Listeners in order to listen related cache events and
+ * sends events to related channel.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

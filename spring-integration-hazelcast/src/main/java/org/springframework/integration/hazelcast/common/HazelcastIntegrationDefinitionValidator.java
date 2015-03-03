@@ -24,10 +24,9 @@ import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
-import com.hazelcast.core.ITopic;
 
 /**
- * HazelcastIntegrationDefinitionValidator
+ * This is common validator class for SI-Hazelcast Support. It validates cache events and types.  
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

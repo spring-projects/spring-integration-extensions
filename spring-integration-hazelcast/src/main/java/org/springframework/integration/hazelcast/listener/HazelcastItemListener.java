@@ -23,7 +23,8 @@ import com.hazelcast.core.ItemEvent;
 import com.hazelcast.core.ItemListener;
 
 /**
- * HazelcastItemListener
+ * This is a listener for IQueue/ISet/IList to get notified when an item is
+ * added or removed. It listens events, checks and sends to related channel.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

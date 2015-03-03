@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.onlinetechvision.integration.hazelcast.outbound;
+package org.springframework.integration.hazelcast.outbound;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -182,6 +182,7 @@ public class HazelcastOutboundChannelAdapterTest {
 		}
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void verifyDistributedSet() {
 		Assert.assertEquals(true, distributedSet.size() == DATA_COUNT);
 		List list = new ArrayList(distributedSet);

@@ -25,7 +25,9 @@ import org.w3c.dom.Element;
 import reactor.util.StringUtils;
 
 /**
- * HazelcastOutboundChannelAdapterParser
+ * Hazelcast Outbound Channel Adapter Parser parses
+ * int-hazelcast:outbound-channel-adapter xml definition. It also validates and
+ * returns the created BeanDefinition object.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
@@ -33,18 +35,18 @@ import reactor.util.StringUtils;
  */
 public class HazelcastOutboundChannelAdapterParser extends AbstractOutboundChannelAdapterParser {
 
-	private static final String CACHE = "cache";
+	private static final String CACHE_ATTRIBUTE = "cache";
 	private static final String DISTRIBUTED_OBJECT = "distributedObject";
 	
 	@Override
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
 		BeanDefinitionBuilder hazelcastOutboundChannelAdapter = BeanDefinitionBuilder.genericBeanDefinition(HazelcastCacheWritingMessageHandler.class);
 		
-		if (!StringUtils.hasText(element.getAttribute(CACHE))) {
-			parserContext.getReaderContext().error("'" + CACHE + "' attribute is required.", element);
+		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
 		}
 
-		hazelcastOutboundChannelAdapter.addPropertyReference(DISTRIBUTED_OBJECT, element.getAttribute(CACHE));
+		hazelcastOutboundChannelAdapter.addPropertyReference(DISTRIBUTED_OBJECT, element.getAttribute(CACHE_ATTRIBUTE));
 		
 		return hazelcastOutboundChannelAdapter.getBeanDefinition();
 	}

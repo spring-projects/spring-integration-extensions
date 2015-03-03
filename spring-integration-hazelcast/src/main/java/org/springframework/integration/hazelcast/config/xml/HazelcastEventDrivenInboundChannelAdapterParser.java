@@ -28,7 +28,10 @@ import reactor.util.Assert;
 import reactor.util.StringUtils;
 
 /**
- * HazelcastEventDrivenInboundChannelAdapterParser
+ * Hazelcast Event Driven Inbound Channel Adapter Parser is a
+ * BeanDefinitionParser implementation. It parses
+ * int-hazelcast:inbound-channel-adapter xml definition and defines
+ * just a single BeanDefinition.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
@@ -40,7 +43,6 @@ public class HazelcastEventDrivenInboundChannelAdapterParser extends AbstractSin
 	private static final String CACHE_ATTRIBUTE = "cache";
 	private static final String CACHE_EVENTS_ATTRIBUTE = "cache-events";
 	private static final String CACHE_LISTENING_POLICY_ATTRIBUTE = "cache-listening-policy";
-	
 	private static final String OUTPUT_CHANNEL = "outputChannel";
 	private static final String DISTRIBUTED_OBJECT = "distributedObject";
 	private static final String CACHE_EVENT_TYPES = "cacheEventTypes";

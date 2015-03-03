@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.onlinetechvision.integration.hazelcast.inbound;
+package org.springframework.integration.hazelcast.inbound;
 
 import javax.annotation.Resource;
 
@@ -29,43 +29,43 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.EntryEventType;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ItemEvent;
 
 /**
- * HazelcastDistributedListEventDrivenInboundChannelAdapterTest
+ * Hazelcast Distributed Queue Event Driven Inbound Channel Adapter Test
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"/HazelcastDistributedListEventDrivenInboundChannelAdapterTest-context.xml"})
+@ContextConfiguration(locations={"/HazelcastDistributedQueueEventDrivenInboundChannelAdapterTest-context.xml"})
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
-public class HazelcastDistributedListEventDrivenInboundChannelAdapterTest {
+public class HazelcastDistributedQueueEventDrivenInboundChannelAdapterTest {
 
 	@Autowired
-	private PollableChannel edListChannel1;
+	private PollableChannel edQueueChannel1;
 	
 	@Autowired
-	private PollableChannel edListChannel2;
+	private PollableChannel edQueueChannel2;
 	
 	@Autowired
-	private PollableChannel edListChannel3;
+	private PollableChannel edQueueChannel3;
 			
 	@Resource
-	private IList<User> edDistributedList1;
+	private IQueue<User> edDistributedQueue1;
 	
 	@Resource
-	private IList<User> edDistributedList2;
+	private IQueue<User> edDistributedQueue2;
 	
 	@Resource
-	private IList<User> edDistributedList3;
+	private IQueue<User> edDistributedQueue3;
 		
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {
-		edDistributedList1.add(new User(1, "TestName1", "TestSurname1"));
-		Message<?> msg = edListChannel1.receive(2_000);
+		edDistributedQueue1.add(new User(1, "TestName1", "TestSurname1"));
+		Message<?> msg = edQueueChannel1.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof ItemEvent);
@@ -78,9 +78,9 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTest {
 	@Test
 	public void testEventDrivenForOnlyREMOVEDEntryEvent() {
 		User user = new User(2, "TestName2", "TestSurname2");
-		edDistributedList2.add(user);
-		edDistributedList2.remove(user);
-		Message<?> msg = edListChannel2.receive(2_000);
+		edDistributedQueue2.add(user);
+		edDistributedQueue2.remove(user);
+		Message<?> msg = edQueueChannel2.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof ItemEvent);
@@ -93,17 +93,17 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTest {
 	@Test
 	public void testEventDrivenForALLEntryEvent() {
 		User user = new User(1, "TestName1", "TestSurname1");
-		edDistributedList3.add(user);
-		Message<?> msg = edListChannel3.receive(2_000);
+		edDistributedQueue3.add(user);
+		Message<?> msg = edQueueChannel3.receive(2_000);
 		verify(msg, EntryEventType.ADDED);
 		
-		edDistributedList3.remove(user);
-		msg = edListChannel3.receive(2_000);
+		edDistributedQueue3.remove(user);
+		msg = edQueueChannel3.receive(2_000);
 		verify(msg, EntryEventType.REMOVED);
 		
 		user = new User(2, "TestName2", "TestSurname2");
-		edDistributedList3.add(user);
-		msg = edListChannel3.receive(2_000);
+		edDistributedQueue3.add(user);
+		msg = edQueueChannel3.receive(2_000);
 		verify(msg, EntryEventType.ADDED);
 	}
 		

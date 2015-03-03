@@ -23,7 +23,8 @@ import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 
 /**
- * HazelcastMessageListener
+ * This is a listener for ITopic to get notified when a message is published. It
+ * listens message events and sends to related channel
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

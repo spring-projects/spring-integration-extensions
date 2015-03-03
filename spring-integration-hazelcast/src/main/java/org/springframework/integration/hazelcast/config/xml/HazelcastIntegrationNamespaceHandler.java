@@ -18,7 +18,7 @@ package org.springframework.integration.hazelcast.config.xml;
 import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHandler;
 
 /**
- * HazelcastIntegrationNamespaceHandler
+ * SI - Hazelcast Integration base NamespaceHandler class.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

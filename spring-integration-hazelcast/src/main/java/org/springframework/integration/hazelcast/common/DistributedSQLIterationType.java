@@ -16,7 +16,7 @@
 package org.springframework.integration.hazelcast.common;
 
 /**
- * DistributedSQLIterationType
+ * Enumeration of Distributed SQL Iteration Type
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
