@@ -293,7 +293,7 @@ Basically, it requires two attributes as follows :
 ```
 <int:channel id="queueChannel"/> 
 		 
-<int-hazelcast:outbound-channel-adapter  channel="queueChannel" 										 cache="distributedQueue" /> 
+<int-hazelcast:outbound-channel-adapter  channel="queueChannel" cache="distributedQueue" /> 
 		 
 <bean id="distributedQueue" factory-bean="instance" factory-method="getQueue"> 
 	<constructor-arg value="distributedQueue"/> 
