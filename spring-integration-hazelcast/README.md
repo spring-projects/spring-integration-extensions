@@ -28,16 +28,16 @@ Hazecast Event-Driven Inbound Channel Adapter listens related cache events and s
 ```
 Basically, Hazecast Event-Driven Inbound Channel Adapter requires following attributes : 
 
-**channel :** Specifies channel which message is sent. It is mandatory attribute. 
-**cache :** Specifies the distributed Object reference which is listened. It is mandatory attribute. 
-**cache-events :** Specifies cache events which are listened. It is optional attribute and its default value is ADDED. Its supported values are as follows : 
+* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **cache :** Specifies the distributed Object reference which is listened. It is mandatory attribute.
+* **cache-events :** Specifies cache events which are listened. It is optional attribute and its default value is ADDED. Its supported values are as follows : 
 
 1. Supported cache event types for IMap and MultiMap : ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
 2. Supported cache event types for ReplicatedMap : ADDED, REMOVED, UPDATED, EVICTED. 
 3. Supported cache event types for IList, ISet and IQueue : ADDED, REMOVED. 
 4. There is no need to cache event type definition for ITopic. 
 
-**cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast inbound channel adapter which listens same cache object with same cache-events attribute, can receive a single event message or all event messages. If this is ALL, all Hazelcast inbound channel adapters which listens same cache object with same cache-events attribute, will receive same event messages. If this is SINGLE, they will receive unique event messages.
+* **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast inbound channel adapter which listens same cache object with same cache-events attribute, can receive a single event message or all event messages. If this is ALL, all Hazelcast inbound channel adapters which listens same cache object with same cache-events attribute, will receive same event messages. If this is SINGLE, they will receive unique event messages.
 
 Sample namespace and schemaLocation definitions are as follows : 
 ```
@@ -167,10 +167,10 @@ Hazelcast Continuous Query enables to listen to the modifications performed on s
 ```
 Basically, it requires four attributes as follows : 
 
-**channel :** Specifies channel which message is sent. It is mandatory attribute. 
-**cache :** Specifies distributed Map reference which is listened. It is mandatory attribute. 
-**cache-events :** Specifies cache events which are listened. It is optional attribute with ADDED default value. Supported values are ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
-**predicate :** Specifies predicate to listen to the modifications performed on specific map entries. It is mandatory attribute. 
+* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **cache :** Specifies distributed Map reference which is listened. It is mandatory attribute. 
+* **cache-events :** Specifies cache events which are listened. It is optional attribute with ADDED default value. Supported values are ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
+* **predicate :** Specifies predicate to listen to the modifications performed on specific map entries. It is mandatory attribute. 
 
 Sample definition is as follows : 
 ```
@@ -210,10 +210,10 @@ Hazelcast allows to run distributed queries on the distributed map. Hazelcast Di
 ```
 Basically, it requires a poller and four attributes such as 
 
-**channel :** Specifies channel which message is sent. It is mandatory attribute. 
-**cache :** Specifies distributed Map reference which is queried. It is mandatory attribute. 
-**iteration-type :** Specifies result type. Distributed SQL can be run on EntrySet, KeySet, LocalKeySet or Values. It is optional attribute with VALUE default value. Supported values are ENTRY, KEY, LOCAL_KEY and VALUE. 
-**distributed-sql :** Specifies where clause of sql statement. It is mandatory attribute. 
+* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **cache :** Specifies distributed Map reference which is queried. It is mandatory attribute. 
+* **iteration-type :** Specifies result type. Distributed SQL can be run on EntrySet, KeySet, LocalKeySet or Values. It is optional attribute with VALUE default value. Supported values are ENTRY, KEY, LOCAL_KEY and VALUE. 
+* **distributed-sql :** Specifies where clause of sql statement. It is mandatory attribute. 
 
 Sample definition is as follows : 
 ```
@@ -249,8 +249,8 @@ Hazelcast Outbound Channel Adapter listens its defined channel and writes incomi
 ```
 Basically, it requires two attributes as follows : 
 
-**channel :** Specifies channel which message is sent. It is mandatory attribute. 
-**cache :** Specifies distributed Map reference which is queried. It is mandatory attribute. 
+* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **cache :** Specifies distributed Map reference which is queried. It is mandatory attribute. 
 
 **Case 1-** If incoming messages need to be written to distributed map(com.hazelcast.core.IMap), Message should have java.util.Map payload. Sample definition should be as follows : 
 ```
