@@ -170,21 +170,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
-			<xsd:attribute name="cache-listening-policy" type="xsd:string" use="optional" default="SINGLE">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="value">
-							<tool:expected-type
-								type="com.onlinetechvision.integration.hazelcast.common.CacheListeningPolicyType" />
-						</tool:annotation>
-					</xsd:appinfo>
-					<xsd:documentation>
-						<![CDATA[ Specifies cache listening policy ]]>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-		
+					
 		</xsd:complexType>
 	</xsd:element>
 	
