@@ -30,7 +30,7 @@ Basically, Hazecast Event-Driven Inbound Channel Adapter requires following attr
 
 * **channel :** Specifies channel which message is sent. It is mandatory attribute. 
 * **cache :** Specifies the distributed Object reference which is listened. It is mandatory attribute.
-* * **cache-events :** Specifies cache events which are listened. It is optional attribute and its default value is ADDED. Its supported values are as follows : 
+* **cache-events :** Specifies cache events which are listened. It is optional attribute and its default value is ADDED. Its supported values are as follows : 
 
 1. Supported cache event types for IMap and MultiMap : ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
 2. Supported cache event types for ReplicatedMap : ADDED, REMOVED, UPDATED, EVICTED. 
