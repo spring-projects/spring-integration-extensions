@@ -1,4 +1,5 @@
-## SPRING INTEGRATION HAZELCAST SUPPORT
+SPRING INTEGRATION HAZELCAST SUPPORT
+====================================
 
 ## HAZELCAST EVENT-DRIVEN INBOUND CHANNEL ADAPTER 
 
@@ -19,12 +20,12 @@ It also provides event listeners in order to listen to the modifications perform
 * com.hazelcast.core.MessageListener<E>
 
 Hazecast Event-Driven Inbound Channel Adapter listens related cache events and sends event messages to defined channel. Its basic definition is as follows : 
-
+```
    <int-hazelcast:inbound-channel-adapter channel="mapChannel" 
-					             cache="map" 
-					             cache-events="UPDATED, REMOVED"
-						 cache-listening-policy="SINGLE" /> 
-
+					  cache="map" 
+					  cache-events="UPDATED, REMOVED"
+					  cache-listening-policy="SINGLE" /> 
+```
 Basically, Hazecast Event-Driven Inbound Channel Adapter requires following attributes : 
 
 **channel :** Specifies channel which message is sent. It is mandatory attribute. 
@@ -39,16 +40,15 @@ Basically, Hazecast Event-Driven Inbound Channel Adapter requires following attr
 **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast inbound channel adapter which listens same cache object with same cache-events attribute, can receive a single event message or all event messages. If this is ALL, all Hazelcast inbound channel adapters which listens same cache object with same cache-events attribute, will receive same event messages. If this is SINGLE, they will receive unique event messages.
 
 Sample namespace and schemaLocation definitions are as follows : 
-
+```
 xmlns:int-hazelcast= “http://www.springframework.org/schema/integration/hazelcast”
 
-xsi:schemaLocation="
-http://www.springframework.org/schema/integration/hazelcast
-classpath:org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd”
-
+xsi:schemaLocation="http://www.springframework.org/schema/integration/hazelcast
+		  classpath:org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd”
+```
 Sample definitions are as follows : 
 
-**1- IMap :** 
+**Distributed Map :** 
 ```
 <int:channel id="mapChannel"/> 
 
@@ -68,7 +68,7 @@ Sample definitions are as follows :
 </bean> 
 ```
 
-**2- MultiMap :** 
+**Distributed MultiMap :** 
 ```
 <int:channel id="multiMapChannel"/> 
 
@@ -83,7 +83,7 @@ Sample definitions are as follows :
 </bean> 
 ```
 
-**3- IList :** 
+**Distributed List :** 
 ```
 <int:channel id="listChannel"/> 
 
@@ -97,7 +97,7 @@ Sample definitions are as follows :
 </bean> 
 ```
 
-**4- ISet :** 
+**Distributed Set :** 
 ```
 <int:channel id="setChannel"/> 
 
@@ -108,7 +108,7 @@ Sample definitions are as follows :
 </bean> 
 ```
 
-**5- IQueue :**
+**Distributed Queue :**
 ```
 <int:channel id="queueChannel"/> 
 
@@ -122,7 +122,7 @@ Sample definitions are as follows :
 </bean>
 ```
 
-**6- ITopic :** 
+**Distributed Topic :** 
 ```
 <int:channel id="topicChannel"/> 
 
@@ -133,7 +133,7 @@ Sample definitions are as follows :
 </bean> 
 ```
 
-**7- ReplicatedMap :** 
+**Replicated Map :** 
 ```
 <int:channel id="replicatedMapChannel"/> 
 
@@ -158,13 +158,13 @@ Sample definitions are as follows :
 ## HAZELCAST CONTINUOUS QUERY INBOUND CHANNEL ADAPTER 
 
 Hazelcast Continuous Query enables to listen to the modifications performed on specific map entries. Hazelcast Continuous Query Inbound Channel Adapter is an event-driven inbound channel adapter and listens related distributed map events in the light of defined predicate. Its basic definition is as follows : 
-
+```
 <int-hazelcast:cq-inbound-channel-adapter 
 				channel="cqMapChannel" 
 				cache="cqMap" 
 				cache-events="UPDATED, REMOVED" 
 				predicate="name=TestName AND surname=TestSurname" /> 
-
+```
 Basically, it requires four attributes as follows : 
 
 **channel :** Specifies channel which message is sent. It is mandatory attribute. 
