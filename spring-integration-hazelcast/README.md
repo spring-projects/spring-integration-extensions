@@ -48,8 +48,8 @@ classpath:org/springframework/integration/hazelcast/config/xml/spring-integratio
 
 Sample definitions are as follows : 
 
-** 1- IMap :** 
-
+**1- IMap :** 
+```
 <int:channel id="mapChannel"/> 
 
 <int-hazelcast:inbound-channel-adapter channel="mapChannel" 
@@ -66,10 +66,10 @@ Sample definitions are as follows :
 		<bean class="com.hazelcast.config.Config" /> 
 	</constructor-arg> 
 </bean> 
-
+```
 
 **2- MultiMap :** 
-
+```
 <int:channel id="multiMapChannel"/> 
 
 <int-hazelcast:inbound-channel-adapter channel="multiMapChannel" 
@@ -81,10 +81,10 @@ Sample definitions are as follows :
 <bean id="multiMap" factory-bean="instance" factory-method="getMultiMap"> 
 	<constructor-arg value="multiMap"/> 
 </bean> 
-
+```
 
 **3- IList :** 
-
+```
 <int:channel id="listChannel"/> 
 
 <int-hazelcast:inbound-channel-adapter  channel="listChannel" 
@@ -95,10 +95,10 @@ Sample definitions are as follows :
 <bean id="list" factory-bean="instance" factory-method="getList"> 
 	<constructor-arg value="list"/> 
 </bean> 
-
+```
 
 **4- ISet :** 
-
+```
 <int:channel id="setChannel"/> 
 
 <int-hazelcast:inbound-channel-adapter channel="setChannel" cache="set" /> 
@@ -106,10 +106,10 @@ Sample definitions are as follows :
 <bean id="set" factory-bean="instance" factory-method="getSet"> 
 	<constructor-arg value="set"/> 
 </bean> 
-
+```
 
 **5- IQueue :**
-
+```
 <int:channel id="queueChannel"/> 
 
 <int-hazelcast:inbound-channel-adapter  channel="queueChannel" 
@@ -120,10 +120,10 @@ Sample definitions are as follows :
 <bean id="queue" factory-bean="instance" factory-method="getQueue"> 
 	<constructor-arg value="queue"/> 
 </bean>
-
+```
 
 **6- ITopic :** 
-
+```
 <int:channel id="topicChannel"/> 
 
 <int-hazelcast:inbound-channel-adapter channel="topicChannel" cache="topic" /> 
@@ -131,10 +131,10 @@ Sample definitions are as follows :
 <bean id="topic" factory-bean="instance" factory-method="getTopic"> 
 	<constructor-arg value="topic"/> 
 </bean> 
-
+```
 
 **7- ReplicatedMap :** 
-
+```
 <int:channel id="replicatedMapChannel"/> 
 
 <int-hazelcast:inbound-channel-adapter channel="replicatedMapChannel" 
@@ -151,7 +151,7 @@ Sample definitions are as follows :
 		<bean class="com.hazelcast.config.Config" /> 
 	</constructor-arg> 
 </bean> 
-
+```
 **Reference :** http://docs.hazelcast.org/docs/3.4/manual/html-single/hazelcast-documentation.html#distributed-data-structures 
 
 
@@ -173,7 +173,7 @@ Basically, it requires four attributes as follows :
 **predicate :** Specifies predicate to listen to the modifications performed on specific map entries. It is mandatory attribute. 
 
 Sample definition is as follows : 
-
+```
 <int:channel id="cqMapChannel"/> 
 
 <int-hazelcast:cq-inbound-channel-adapter  
@@ -192,14 +192,14 @@ Sample definition is as follows :
 		<bean class="com.hazelcast.config.Config" /> 
 	</constructor-arg> 
 </bean> 
-
+```
 **Reference :** http://docs.hazelcast.org/docs/3.4/manual/html-single/hazelcast-documentation.html#continuous-query 
 
 
 ## HAZELCAST DISTRIBUTED-SQL INBOUND CHANNEL ADAPTER 
 
 Hazelcast allows to run distributed queries on the distributed map. Hazelcast Distributed SQL Inbound Channel Adapter is a poller-driven inbound channel adapter. It runs defined distributed-sql and returns results in the light of iteration type. Its basic definition is as follows : 
-
+```
 <int-hazelcast:ds-inbound-channel-adapter  
 			     channel="dsMapChannel" 
 			     cache="dsMap"
@@ -207,7 +207,7 @@ Hazelcast allows to run distributed queries on the distributed map. Hazelcast Di
                  distributed-sql="active=false OR age >= 25 OR name = 'TestName'"> 
 	<int:poller cron="*/10 * * * * *"/> 
 </int-hazelcast:ds-inbound-channel-adapter> 
-
+```
 Basically, it requires a poller and four attributes such as 
 
 **channel :** Specifies channel which message is sent. It is mandatory attribute. 
@@ -216,7 +216,7 @@ Basically, it requires a poller and four attributes such as
 **distributed-sql :** Specifies where clause of sql statement. It is mandatory attribute. 
 
 Sample definition is as follows : 
-
+```
 <int:channel id="dsMapChannel"/> 
 
 <int-hazelcast:ds-inbound-channel-adapter  
@@ -237,23 +237,23 @@ Sample definition is as follows :
 		<bean class="com.hazelcast.config.Config" /> 
 	</constructor-arg> 
 </bean> 
-
+```
 **Reference :** http://docs.hazelcast.org/docs/3.4/manual/html-single/hazelcast-documentation.html#query-overview 
 
 
 ## HAZELCAST OUTBOUND CHANNEL ADAPTER 
 
 Hazelcast Outbound Channel Adapter listens its defined channel and writes incoming messages to related distributed cache. It expects  one of java.util.Map, List, Set and Queue data structures in incoming message's payload. Its definition is as follows : 
-
+```
 <int-hazelcast:outbound-channel-adapter  channel="mapChannel" cache="distributedMap" /> 
-
+```
 Basically, it requires two attributes as follows : 
 
 **channel :** Specifies channel which message is sent. It is mandatory attribute. 
 **cache :** Specifies distributed Map reference which is queried. It is mandatory attribute. 
 
 **Case 1-** If incoming messages need to be written to distributed map(com.hazelcast.core.IMap), Message should have java.util.Map payload. Sample definition should be as follows : 
-
+```
 <int:channel id="mapChannel"/> 
 
 <int-hazelcast:outbound-channel-adapter  channel="mapChannel" cache="distributedMap" /> 
@@ -268,9 +268,9 @@ Basically, it requires two attributes as follows :
 		<bean class="com.hazelcast.config.Config" /> 
 	</constructor-arg> 
 </bean> 
-
+```
 **Case 2-** If incoming messages need to be written to distributed list(com.hazelcast.core.IList), Message should have java.util.List payload. Sample definition should be as follows : 
-
+```
 <int:channel id="listChannel"/> 
 	 
 <int-hazelcast:outbound-channel-adapter channel="listChannel" cache="distributedList" /> 
@@ -278,9 +278,9 @@ Basically, it requires two attributes as follows :
 <bean id="distributedList" factory-bean="instance" factory-method="getList"> 
 	<constructor-arg value="distributedList"/> 
 </bean> 
-
+```
 **Case 3-** If incoming messages need to be written to distributed set(com.hazelcast.core.ISet), Message should have java.util.Set payload. Sample definition should be as follows : 
-
+```
 <int:channel id="setChannel"/> 
 
 <int-hazelcast:outbound-channel-adapter channel="setChannel" cache="distributedSet" /> 
@@ -288,9 +288,9 @@ Basically, it requires two attributes as follows :
 <bean id="distributedSet" factory-bean="instance" factory-method="getSet"> 
 	<constructor-arg value="distributedSet"/> 
 </bean> 
-
+```
 **Case 4-** If incoming messages need to be written to distributed queue(com.hazelcast.core.IQueue), Message should have java.util.Queue payload. Sample definition should be as follows : 
-
+```
 <int:channel id="queueChannel"/> 
 		 
 <int-hazelcast:outbound-channel-adapter  channel="queueChannel" 										 cache="distributedQueue" /> 
@@ -298,4 +298,4 @@ Basically, it requires two attributes as follows :
 <bean id="distributedQueue" factory-bean="instance" factory-method="getQueue"> 
 	<constructor-arg value="distributedQueue"/> 
 </bean> 
-	
+```	
