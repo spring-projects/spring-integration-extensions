@@ -31,7 +31,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 
 /**
- * This is a base hazelcast event listener for entry/item/message events.
+ * This is a base Hazelcast event listener for entry/item/message events.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0

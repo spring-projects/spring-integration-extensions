@@ -29,7 +29,7 @@ import com.hazelcast.core.MembershipListener;
 import com.hazelcast.core.MultiMap;
 
 /**
- * This is a hazelcast cluster membership listener in order to listen for membership updates.
+ * This is a Hazelcast cluster membership listener in order to listen for membership updates.
  * 
  * @author Eren Avsarogullari
  * @since 1.0.0
