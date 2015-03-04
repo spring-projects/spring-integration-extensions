@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:int="http://www.springframework.org/schema/integration"
+  xmlns:int-hazelcast="http://www.springframework.org/schema/integration/hazelcast"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/hazelcast
+	classpath:org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd">
+
+	<int:channel id="edTopicChannel1">
+		<int:queue />
+	</int:channel>
+		
+	<int-hazelcast:inbound-channel-adapter channel="edTopicChannel1" cache="edDistributedTopic1" />
+	
+	<bean id="edDistributedTopic1" factory-bean="edTopicInstance" factory-method="getTopic">
+	  <constructor-arg value="edDistributedTopic1"/>
+	</bean>
+			
+	<bean id="edTopicInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+	  <constructor-arg>
+	    <bean class="com.hazelcast.config.Config" />
+	  </constructor-arg>
+	</bean>
+	
+</beans>
