@@ -53,7 +53,7 @@
 					<xsd:appinfo>
 						<tool:annotation kind="value">
 							<tool:expected-type
-								type="com.onlinetechvision.integration.hazelcast.common.CacheEventType" />
+								type="org.springframework.integration.hazelcast.common.CacheEventType" />
 						</tool:annotation>
 					</xsd:appinfo>
 					<xsd:documentation>
@@ -67,7 +67,7 @@
 					<xsd:appinfo>
 						<tool:annotation kind="value">
 							<tool:expected-type
-								type="com.onlinetechvision.integration.hazelcast.common.CacheListeningPolicyType" />
+								type="org.springframework.integration.hazelcast.common.CacheListeningPolicyType" />
 						</tool:annotation>
 					</xsd:appinfo>
 					<xsd:documentation>
@@ -148,7 +148,7 @@
 					<xsd:appinfo>
 						<tool:annotation kind="value">
 							<tool:expected-type
-								type="com.onlinetechvision.integration.hazelcast.common.CacheEventType" />
+								type="org.springframework.integration.hazelcast.common.CacheEventType" />
 						</tool:annotation>
 					</xsd:appinfo>
 					<xsd:documentation>
@@ -219,7 +219,7 @@
 					<xsd:appinfo>
 						<tool:annotation kind="value">
 							<tool:expected-type
-								type="com.onlinetechvision.integration.hazelcast.common.DistributedSQLIterationType" />
+								type="org.springframework.integration.hazelcast.common.DistributedSQLIterationType" />
 						</tool:annotation>
 					</xsd:appinfo>
 					<xsd:documentation>
