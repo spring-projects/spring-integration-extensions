@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:int="http://www.springframework.org/schema/integration"
+	   xmlns:int-hazelcast="http://www.springframework.org/schema/integration/hazelcast"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/hazelcast
+	http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
+
+	<int:channel id="edListChannel1">
+		<int:queue/>
+	</int:channel>
+
+	<int:channel id="edListChannel2">
+		<int:queue/>
+	</int:channel>
+
+	<int:channel id="edListChannel3">
+		<int:queue/>
+	</int:channel>
+
+	<int-hazelcast:inbound-channel-adapter channel="edListChannel1" cache="edDistributedList1"/>
+	<int-hazelcast:inbound-channel-adapter channel="edListChannel2" cache="edDistributedList2" cache-events="REMOVED"
+										   cache-listening-policy="SINGLE"/>
+	<int-hazelcast:inbound-channel-adapter channel="edListChannel3" cache="edDistributedList3"
+										   cache-events="ADDED,REMOVED"/>
+
+	<bean id="edDistributedList1" factory-bean="edListInstance" factory-method="getList">
+		<constructor-arg value="edDistributedList1"/>
+	</bean>
+
+	<bean id="edDistributedList2" factory-bean="edListInstance" factory-method="getList">
+		<constructor-arg value="edDistributedList2"/>
+	</bean>
+
+	<bean id="edDistributedList3" factory-bean="edListInstance" factory-method="getList">
+		<constructor-arg value="edDistributedList3"/>
+	</bean>
+
+	<bean id="edListInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
+		  destroy-method="shutdown">
+		<constructor-arg>
+			<bean class="com.hazelcast.config.Config"/>
+		</constructor-arg>
+	</bean>
+
+</beans>

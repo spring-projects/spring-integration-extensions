@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:int="http://www.springframework.org/schema/integration"
+	   xmlns:int-hazelcast="http://www.springframework.org/schema/integration/hazelcast"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/hazelcast
+	http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
+
+	<int:channel id="edSetChannel1">
+		<int:queue/>
+	</int:channel>
+
+	<int:channel id="edSetChannel2">
+		<int:queue/>
+	</int:channel>
+
+	<int:channel id="edSetChannel3">
+		<int:queue/>
+	</int:channel>
+
+	<int-hazelcast:inbound-channel-adapter channel="edSetChannel1" cache="edDistributedSet1"/>
+	<int-hazelcast:inbound-channel-adapter channel="edSetChannel2" cache="edDistributedSet2" cache-events="REMOVED"/>
+	<int-hazelcast:inbound-channel-adapter channel="edSetChannel3" cache="edDistributedSet3"
+										   cache-events="ADDED,REMOVED" cache-listening-policy="SINGLE"/>
+
+	<bean id="edDistributedSet1" factory-bean="edSetInstance" factory-method="getSet">
+		<constructor-arg value="edDistributedSet1"/>
+	</bean>
+
+	<bean id="edDistributedSet2" factory-bean="edSetInstance" factory-method="getSet">
+		<constructor-arg value="edDistributedSet2"/>
+	</bean>
+
+	<bean id="edDistributedSet3" factory-bean="edSetInstance" factory-method="getSet">
+		<constructor-arg value="edDistributedSet3"/>
+	</bean>
+
+	<bean id="edSetInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
+		  destroy-method="shutdown">
+		<constructor-arg>
+			<bean class="com.hazelcast.config.Config"/>
+		</constructor-arg>
+	</bean>
+
+</beans>
