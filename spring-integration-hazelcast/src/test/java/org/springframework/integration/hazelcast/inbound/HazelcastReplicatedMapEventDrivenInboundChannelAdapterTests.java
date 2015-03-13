@@ -36,8 +36,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * Hazelcast Replicated Map Event Driven Inbound Channe lAdapter Test
- * 
+ * Hazelcast Replicated Map Event Driven Inbound Channel Adapter Test
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *

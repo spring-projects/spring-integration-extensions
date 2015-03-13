@@ -23,9 +23,10 @@ import org.springframework.integration.hazelcast.listener.HazelcastEntryListener
 
 /**
  * Hazelcast Continuous Query Message Producer is a message producer which enables
- * HazelcastEntryListener with a SqlPredicate in order to listen related distributed map
- * events in the light of defined predicate and sends events to related channel.
- * 
+ * {@link HazelcastEntryListener} with a {@link SqlPredicate} in order to listen related
+ * distributed map events in the light of defined predicate and sends events to related
+ * channel.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *

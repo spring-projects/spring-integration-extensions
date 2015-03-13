@@ -37,8 +37,9 @@ import org.springframework.messaging.Message;
 
 /**
  * This listens defined channel, handles messages and write defined cache objects.
- * Currently it supports java.util.Map, List, Set and Queue data strctures.
- * 
+ * Currently it supports {@link java.util.Map}, {@link java.util.List},
+ * {@link java.util.Set} and {@link java.util.Queue} data structures.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *

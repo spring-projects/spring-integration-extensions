@@ -30,10 +30,11 @@ import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefi
 import org.springframework.integration.hazelcast.inbound.HazelcastEventDrivenMessageProducer;
 
 /**
- * Hazelcast Event Driven Inbound Channel Adapter Parser is a BeanDefinitionParser
- * implementation. It parses int-hazelcast:inbound-channel-adapter xml definition and
- * defines just a single BeanDefinition.
- * 
+ * Hazelcast Event Driven Inbound Channel Adapter Parser is a
+ * {@link org.springframework.beans.factory.xml.BeanDefinitionParser} implementation. It
+ * parses int-hazelcast:inbound-channel-adapter xml definition and defines just a single
+ * {@link org.springframework.beans.factory.config.BeanDefinition}.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *

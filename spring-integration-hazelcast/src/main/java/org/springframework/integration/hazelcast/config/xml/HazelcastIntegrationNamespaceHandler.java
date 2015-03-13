@@ -19,30 +19,23 @@ package org.springframework.integration.hazelcast.config.xml;
 import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHandler;
 
 /**
- * SI - Hazelcast Integration base NamespaceHandler class.
- * 
+ * Namespace handler for the Hazelcast schema.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
  */
 public class HazelcastIntegrationNamespaceHandler extends AbstractIntegrationNamespaceHandler {
 
-	private static final String INBOUND_CHANNEL_ADAPTER = "inbound-channel-adapter";
-
-	private static final String OUTBOUND_CHANNEL_ADAPTER = "outbound-channel-adapter";
-
-	private static final String CQ_INBOUND_CHANNEL_ADAPTER = "cq-inbound-channel-adapter";
-
-	private static final String DS_INBOUND_CHANNEL_ADAPTER = "ds-inbound-channel-adapter";
-
+	@Override
 	public void init() {
-		registerBeanDefinitionParser(INBOUND_CHANNEL_ADAPTER,
+		registerBeanDefinitionParser("inbound-channel-adapter",
 				new HazelcastEventDrivenInboundChannelAdapterParser());
-		registerBeanDefinitionParser(OUTBOUND_CHANNEL_ADAPTER,
+		registerBeanDefinitionParser("outbound-channel-adapter",
 				new HazelcastOutboundChannelAdapterParser());
-		registerBeanDefinitionParser(CQ_INBOUND_CHANNEL_ADAPTER,
+		registerBeanDefinitionParser("cq-inbound-channel-adapter",
 				new HazelcastContinuousQueryInboundChannelAdapterParser());
-		registerBeanDefinitionParser(DS_INBOUND_CHANNEL_ADAPTER,
+		registerBeanDefinitionParser("ds-inbound-channel-adapter",
 				new HazelcastDistributedSQLInboundChannelAdapterParser());
 	}
 

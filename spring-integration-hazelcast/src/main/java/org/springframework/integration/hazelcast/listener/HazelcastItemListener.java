@@ -24,9 +24,11 @@ import com.hazelcast.core.ItemListener;
 import org.springframework.integration.hazelcast.inbound.HazelcastEventDrivenMessageProducer;
 
 /**
- * This is a listener for IQueue/ISet/IList to get notified when an item is added or
- * removed. It listens events, checks and sends to related channel.
- * 
+ * This is an Item listener for {@link com.hazelcast.core.IList},
+ * {@link com.hazelcast.core.ISet} and {@link com.hazelcast.core.IQueue} to get notified
+ * when an item is added or removed. It listens events, checks and sends to related
+ * channel.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
@@ -52,7 +54,7 @@ public class HazelcastItemListener<E> extends AbstractHazelcastEventListener imp
 		if (getHazelcastInboundChannelAdapter().getCacheEventTypeSet().contains(
 				((ItemEvent<E>) event).getEventType().toString())) {
 
-			sendMessage(event, 
+			sendMessage(event,
 					((ItemEvent<E>) event).getMember().getSocketAddress(),
 					getHazelcastInboundChannelAdapter().getCacheListeningPolicy());
 

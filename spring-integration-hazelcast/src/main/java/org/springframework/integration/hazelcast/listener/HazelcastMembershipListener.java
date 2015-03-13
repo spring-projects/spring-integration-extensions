@@ -30,9 +30,9 @@ import com.hazelcast.core.MultiMap;
 import org.springframework.integration.hazelcast.context.ApplicationContextStartEventHandler;
 
 /**
- * This is a Hazelcast cluster membership listener in order to listen for membership
- * updates.
- * 
+ * This is a Hazelcast cluster {@link MembershipListener} in order to listen for
+ * membership updates.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
@@ -51,7 +51,7 @@ public class HazelcastMembershipListener implements MembershipListener {
 			try {
 				MultiMap<SocketAddress, SocketAddress> configMultiMap = hazelcastInstance
 						.getMultiMap(ApplicationContextStartEventHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP);
-				
+
 				if (configMultiMap.keySet().contains(removedMemberSocketAddress)) {
 					SocketAddress newAdminSocketAddress = getNewAdminInstanceSocketAddress(
 							configMultiMap, removedMemberSocketAddress);
@@ -61,7 +61,7 @@ public class HazelcastMembershipListener implements MembershipListener {
 						}
 					}
 					configMultiMap.remove(removedMemberSocketAddress);
-				} 
+				}
 				else {
 					configMultiMap.remove(configMultiMap.keySet().iterator().next(), removedMemberSocketAddress);
 				}

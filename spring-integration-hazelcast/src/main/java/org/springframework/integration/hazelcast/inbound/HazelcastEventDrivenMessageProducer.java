@@ -30,38 +30,39 @@ import org.springframework.integration.hazelcast.listener.HazelcastMessageListen
 
 /**
  * Hazelcast Event Driven Message Producer is a message producer which enables
- * Hazelcast Entry/Item/Message Listeners in order to listen related cache events and
+ * {@link HazelcastEntryListener}, {@link HazelcastItemListener} and
+ * {@link HazelcastMessageListener} listeners in order to listen related cache events and
  * sends events to related channel.
- * 
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
  */
 public class HazelcastEventDrivenMessageProducer extends HazelcastMessageProducer {
-		
+
 	@Override
 	protected void doStart() {
 		if(getDistributedObject() instanceof IMap) {
 			((IMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), true);
-		} 
+		}
 		else if(getDistributedObject() instanceof MultiMap) {
 			((MultiMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), true);
-		} 
+		}
 		else if(getDistributedObject() instanceof IList) {
 			((IList<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(this), true);
-		} 
+		}
 		else if(getDistributedObject() instanceof ISet) {
 			((ISet<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(this), true);
-		} 
+		}
 		else if(getDistributedObject() instanceof IQueue) {
 			((IQueue<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(this), true);
-		} 
+		}
 		else if(getDistributedObject() instanceof ITopic) {
 			((ITopic<?>)getDistributedObject()).addMessageListener(new HazelcastMessageListener(this));
-		} 
+		}
 		else if(getDistributedObject() instanceof ReplicatedMap) {
 			((ReplicatedMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this));
-		} 
+		}
 	}
 
 }

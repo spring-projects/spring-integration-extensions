@@ -28,8 +28,9 @@ import org.springframework.integration.hazelcast.outbound.HazelcastCacheWritingM
 
 /**
  * Hazelcast Outbound Channel Adapter Parser parses int-hazelcast:outbound-channel-adapter
- * xml definition. It also validates and returns the created BeanDefinition object.
- * 
+ * xml definition. It also validates and returns the created
+ * {@link org.springframework.beans.factory.config.BeanDefinition} object.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *

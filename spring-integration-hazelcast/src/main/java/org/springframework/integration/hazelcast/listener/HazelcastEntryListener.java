@@ -27,10 +27,11 @@ import com.hazelcast.core.MapEvent;
 import org.springframework.integration.hazelcast.inbound.HazelcastMessageProducer;
 
 /**
- * This is a DistributedMap/MultiMap/ReplicatedMap Entry listener to get notified when a
- * map entry is added, removed, updated or evicted. It listens events, checks and sends to
- * related channel.
- * 
+ * This is an Entry listener for {@link com.hazelcast.core.IMap},
+ * {@link com.hazelcast.core.MultiMap} and {@link com.hazelcast.core.ReplicatedMap} to get
+ * notified when a map entry is added, removed, updated or evicted. It listens events,
+ * checks and sends to related channel.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *

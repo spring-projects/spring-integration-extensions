@@ -8,7 +8,7 @@
     http://www.springframework.org/schema/integration
     http://www.springframework.org/schema/integration/spring-integration.xsd
     http://www.springframework.org/schema/integration/hazelcast
-	classpath:org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd">
+	http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
 	<int:channel id="edListChannel1">
 		<int:queue />

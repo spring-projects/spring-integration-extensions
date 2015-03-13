@@ -29,7 +29,7 @@ import com.hazelcast.core.ISet;
 /**
  * This is common validator class for SI-Hazelcast Support. It validates cache events and
  * types.
- * 
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
@@ -46,24 +46,20 @@ public class HazelcastIntegrationDefinitionValidator {
 	}
 
 	public static boolean validateCacheType(DistributedObject distributedObject) {
-		if (distributedObject instanceof IMap 
+		return distributedObject instanceof IMap
 				|| distributedObject instanceof IList
 				|| distributedObject instanceof ISet
-				|| distributedObject instanceof IQueue) {
-			return true;
-		}
-
-		return false;
+				|| distributedObject instanceof IQueue;
 	}
 
 	public static boolean validateCacheEventByDistributedObject(
 			DistributedObject distributedObject, Set<String> cacheEventTypeSet) {
-		if ((distributedObject instanceof IList) 
+		if ((distributedObject instanceof IList)
 				|| (distributedObject instanceof ISet)
 				|| (distributedObject instanceof IQueue)) {
 
 			for (String cacheEventType : cacheEventTypeSet) {
-				if (!(CacheEventType.ADDED.toString().equals(cacheEventType) 
+				if (!(CacheEventType.ADDED.toString().equals(cacheEventType)
 						|| CacheEventType.REMOVED.toString().equals(cacheEventType))) {
 					throw new IllegalStateException(
 							"'cache-events' attribute of IList, ISet or IQueue can be set as only "

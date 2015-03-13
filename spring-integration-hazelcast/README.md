@@ -19,14 +19,14 @@ It also provides event listeners in order to listen to the modifications perform
 * com.hazelcast.core.ItemListener<E>
 * com.hazelcast.core.MessageListener<E>
 
-Hazecast Event-Driven Inbound Channel Adapter listens related cache events and sends event messages to defined channel. Its basic definition is as follows : 
+Hazelcast Event-Driven Inbound Channel Adapter listens related cache events and sends event messages to defined channel. Its basic definition is as follows : 
 ```
    <int-hazelcast:inbound-channel-adapter channel="mapChannel" 
 					  cache="map" 
 					  cache-events="UPDATED, REMOVED"
 					  cache-listening-policy="SINGLE" /> 
 ```
-Basically, Hazecast Event-Driven Inbound Channel Adapter requires following attributes : 
+Basically, Hazelcast Event-Driven Inbound Channel Adapter requires following attributes : 
 
 * **channel :** Specifies channel which message is sent. It is mandatory attribute. 
 * **cache :** Specifies the distributed Object reference which is listened. It is mandatory attribute.
@@ -44,7 +44,7 @@ Sample namespace and schemaLocation definitions are as follows :
 xmlns:int-hazelcast= “http://www.springframework.org/schema/integration/hazelcast”
 
 xsi:schemaLocation="http://www.springframework.org/schema/integration/hazelcast
-		  classpath:org/springframework/integration/hazelcast/config/xml/spring-integration-hazelcast-4.2.xsd”
+		  http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd”
 ```
 Sample definitions are as follows : 
 
