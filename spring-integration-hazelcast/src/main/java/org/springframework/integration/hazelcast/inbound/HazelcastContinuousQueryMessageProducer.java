@@ -16,10 +16,12 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
+import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.SqlPredicate;
 
-import org.springframework.integration.hazelcast.listener.HazelcastEntryListener;
+import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
+import org.springframework.util.Assert;
 
 /**
  * Hazelcast Continuous Query Message Producer is a message producer which enables
@@ -31,24 +33,34 @@ import org.springframework.integration.hazelcast.listener.HazelcastEntryListener
  * @since 1.0.0
  *
  */
-public class HazelcastContinuousQueryMessageProducer extends HazelcastMessageProducer {
+public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMessageProducer {
 
-	private String predicate;
+	private final String predicate;
+
+	public HazelcastContinuousQueryMessageProducer(DistributedObject distributedObject, String predicate) {
+		super(distributedObject);
+		Assert.notNull(predicate, "predicate must not be null");
+		this.predicate = predicate;
+	}
+
+	@Override
+	protected void onInit() {
+		super.onInit();
+		HazelcastIntegrationDefinitionValidator.validateCacheTypeForContinuousQueryMessageProducer(getDistributedObject());
+	}
 
 	@Override
 	protected void doStart() {
-		if (getDistributedObject() instanceof IMap) {
-			((IMap<?, ?>) getDistributedObject()).addEntryListener(
-					new HazelcastEntryListener(this), new SqlPredicate(this.predicate), true);
-		}
-		else {
-			throw new IllegalStateException(
-					"Invalid 'cache' type is set. Only IMap cache object is acceptable for continuous query.");
-		}
+		IMap<?, ?> distributedMap = (IMap<?, ?>) getDistributedObject();
+		String hazelcastRegisteredEventListenerId = distributedMap.addEntryListener(new HazelcastEntryListener(),
+																					new SqlPredicate(this.predicate),
+																					true);
+		setHazelcastRegisteredEventListenerId(hazelcastRegisteredEventListenerId);
 	}
 
-	public void setPredicate(String predicate) {
-		this.predicate = predicate;
+	@Override
+	protected void doStop() {
+		((IMap<?, ?>) getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
 	}
 
 }

@@ -23,19 +23,7 @@
 		</xsd:annotation>
 		
 		<xsd:complexType>
-		
-			<xsd:attribute name="channel" use="required" type="xsd:string">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="ref">
-							<tool:expected-type type="org.springframework.integration.core.MessageChannel" />
-						</tool:annotation>
-					</xsd:appinfo>
-					<xsd:documentation>
-						<![CDATA[ Specifies channel reference ]]>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
+			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
 			
 			<xsd:attribute name="cache" use="required" type="xsd:string">
 				<xsd:annotation>
@@ -77,7 +65,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-		
+					
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -118,19 +106,8 @@
 		</xsd:annotation>
 		
 		<xsd:complexType>
-			
-			<xsd:attribute name="channel" use="required" type="xsd:string">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="ref">
-							<tool:expected-type type="org.springframework.integration.core.MessageChannel" />
-						</tool:annotation>
-					</xsd:appinfo>
-					<xsd:documentation>
-						<![CDATA[ Specifies channel reference ]]>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
+
+			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
 			
 			<xsd:attribute name="cache" use="required" type="xsd:string">
 				<xsd:annotation>
@@ -189,20 +166,9 @@
 			<xsd:sequence>
 				<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
 			</xsd:sequence>
-				
-			<xsd:attribute name="channel" use="required" type="xsd:string">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="ref">
-							<tool:expected-type type="org.springframework.integration.core.MessageChannel" />
-						</tool:annotation>
-					</xsd:appinfo>
-					<xsd:documentation>
-						<![CDATA[ Specifies channel reference ]]>
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
 			
+			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
+
 			<xsd:attribute name="cache" use="required" type="xsd:string">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -230,7 +196,13 @@
 				</xsd:annotation>
 			</xsd:attribute>
 			
-			<xsd:attribute name="distributed-sql" type="xsd:string" use="required" />
+			<xsd:attribute name="distributed-sql" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation>
+						<![CDATA[ Specifies Distributed-SQL ]]>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		
 		</xsd:complexType>
 		

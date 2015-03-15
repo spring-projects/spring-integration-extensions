@@ -27,26 +27,37 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationUtils;
 import org.springframework.messaging.Message;
+import org.springframework.util.Assert;
 
 /**
- * This listens defined channel, handles messages and write defined cache objects.
- * Currently it supports {@link java.util.Map}, {@link java.util.List},
- * {@link java.util.Set} and {@link java.util.Queue} data structures.
+ * MessageHandler implementation that writes {@link Message} payload to defined Hazelcast
+ * distributed cache object. Currently, it supports {@link java.util.Map},
+ * {@link java.util.List}, {@link java.util.Set} and {@link java.util.Queue} data
+ * structures.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
  */
-public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler implements BeanPostProcessor, DisposableBean {
+public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler implements DisposableBean {
 
-	private DistributedObject distributedObject;
+	private final DistributedObject distributedObject;
+
+	public HazelcastCacheWritingMessageHandler(DistributedObject distributedObject) {
+		Assert.notNull(distributedObject, "cache must not be null");
+		this.distributedObject = distributedObject;
+	}
+
+	@Override
+	protected void onInit() throws Exception {
+		super.onInit();
+		HazelcastIntegrationDefinitionValidator.validateCacheTypeForCacheWritingMessageHandler(this.distributedObject);
+	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
@@ -69,27 +80,8 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 	}
 
 	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		if (!HazelcastIntegrationDefinitionValidator.validateCacheType(this.distributedObject)) {
-			throw new IllegalStateException(
-					"Invalid 'cache' type is set. Only IMap, IList, ISet and IQueue cache objects are acceptable.");
-		}
-
-		return bean;
-	}
-
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		return bean;
-	}
-
-	@Override
 	public void destroy() throws Exception {
 		HazelcastIntegrationUtils.shutdownAllHazelcastInstances();
-	}
-
-	public void setDistributedObject(DistributedObject distributedObject) {
-		this.distributedObject = distributedObject;
 	}
 
 }

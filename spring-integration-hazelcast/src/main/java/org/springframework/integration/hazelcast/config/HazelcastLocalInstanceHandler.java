@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.context;
+package org.springframework.integration.hazelcast.config;
 
 import java.net.SocketAddress;
 import java.util.concurrent.locks.Lock;
@@ -23,33 +23,32 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.integration.hazelcast.listener.HazelcastMembershipListener;
 
 /**
- * This class handles ApplicationContext initialization or refresh events and enables a
- * Hazelcast MembershipListener to listen for membership updates. It also creates a
- * multi-map for hazelcast instances' socket address information which used hazelcast
- * event-driven inbound channel adapter.
- * 
+ * This class creates an internal configuration {@link MultiMap} to cache Hazelcast instances' socket
+ * address information which used Hazelcast event-driven inbound channel adapter(s). It
+ * also enables a Hazelcast {@link com.hazelcast.core.MembershipListener} to listen for
+ * membership updates.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
  */
-public class ApplicationContextStartEventHandler implements ApplicationListener<ContextRefreshedEvent> {
+public class HazelcastLocalInstanceHandler implements SmartInitializingSingleton {
 
 	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP = "HZ_INTERNAL_CONFIGURATION_MULTI_MAP";
 
 	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK = "HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK";
 
 	@Override
-	public void onApplicationEvent(ContextRefreshedEvent event) {
+	public void afterSingletonsInstantiated() {
 		if (!Hazelcast.getAllHazelcastInstances().isEmpty()) {
 			HazelcastInstance hazelcastInstance = Hazelcast.getAllHazelcastInstances().iterator().next();
 			hazelcastInstance.getCluster().addMembershipListener(new HazelcastMembershipListener());
-			syncConfigurationMultiMap(hazelcastInstance);
-		} 
+			this.syncConfigurationMultiMap(hazelcastInstance);
+		}
 		else {
 			throw new IllegalStateException("No Active Local Hazelcast Instance found.");
 		}
@@ -65,7 +64,7 @@ public class ApplicationContextStartEventHandler implements ApplicationListener<
 				SocketAddress localInstanceSocketAddress = localInstance.getLocalEndpoint().getSocketAddress();
 				if (multiMap.size() == 0) {
 					multiMap.put(localInstanceSocketAddress, localInstanceSocketAddress);
-				} 
+				}
 				else {
 					multiMap.put(multiMap.keySet().iterator().next(), localInstanceSocketAddress);
 				}

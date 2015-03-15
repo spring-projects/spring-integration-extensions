@@ -16,17 +16,23 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
+import java.util.EventObject;
+
+import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
 import com.hazelcast.core.ITopic;
+import com.hazelcast.core.ItemEvent;
+import com.hazelcast.core.ItemListener;
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
 
-import org.springframework.integration.hazelcast.listener.HazelcastEntryListener;
-import org.springframework.integration.hazelcast.listener.HazelcastItemListener;
-import org.springframework.integration.hazelcast.listener.HazelcastMessageListener;
+import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
+import org.springframework.util.Assert;
 
 /**
  * Hazelcast Event Driven Message Producer is a message producer which enables
@@ -38,31 +44,104 @@ import org.springframework.integration.hazelcast.listener.HazelcastMessageListen
  * @since 1.0.0
  *
  */
-public class HazelcastEventDrivenMessageProducer extends HazelcastMessageProducer {
+public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessageProducer {
+
+	public HazelcastEventDrivenMessageProducer(DistributedObject distributedObject) {
+		super(distributedObject);
+	}
+
+	@Override
+	protected void onInit() {
+		super.onInit();
+		HazelcastIntegrationDefinitionValidator.validateCacheTypeForEventDrivenMessageProducer(getDistributedObject());
+	}
 
 	@Override
 	protected void doStart() {
 		if(getDistributedObject() instanceof IMap) {
-			((IMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), true);
+			setHazelcastRegisteredEventListenerId(((IMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(), true));
 		}
 		else if(getDistributedObject() instanceof MultiMap) {
-			((MultiMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this), true);
-		}
-		else if(getDistributedObject() instanceof IList) {
-			((IList<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(this), true);
-		}
-		else if(getDistributedObject() instanceof ISet) {
-			((ISet<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(this), true);
-		}
-		else if(getDistributedObject() instanceof IQueue) {
-			((IQueue<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(this), true);
-		}
-		else if(getDistributedObject() instanceof ITopic) {
-			((ITopic<?>)getDistributedObject()).addMessageListener(new HazelcastMessageListener(this));
+			setHazelcastRegisteredEventListenerId(((MultiMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(), true));
 		}
 		else if(getDistributedObject() instanceof ReplicatedMap) {
-			((ReplicatedMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(this));
+			setHazelcastRegisteredEventListenerId(((ReplicatedMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener()));
 		}
+		else if(getDistributedObject() instanceof IList) {
+			setHazelcastRegisteredEventListenerId(((IList<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(), true));
+		}
+		else if(getDistributedObject() instanceof ISet) {
+			setHazelcastRegisteredEventListenerId(((ISet<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(), true));
+		}
+		else if(getDistributedObject() instanceof IQueue) {
+			setHazelcastRegisteredEventListenerId(((IQueue<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(), true));
+		}
+		else if(getDistributedObject() instanceof ITopic) {
+			setHazelcastRegisteredEventListenerId(((ITopic<?>)getDistributedObject()).addMessageListener(new HazelcastMessageListener()));
+		}
+	}
+
+	@Override
+	protected void doStop() {
+		if(getDistributedObject() instanceof IMap) {
+			((IMap<?, ?>)getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+		}
+		else if(getDistributedObject() instanceof MultiMap) {
+			((MultiMap<?, ?>)getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+		}
+		else if(getDistributedObject() instanceof ReplicatedMap) {
+			((ReplicatedMap<?, ?>)getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+		}
+		else if(getDistributedObject() instanceof IList) {
+			((IList<?>)getDistributedObject()).removeItemListener(getHazelcastRegisteredEventListenerId());
+		}
+		else if(getDistributedObject() instanceof ISet) {
+			((ISet<?>)getDistributedObject()).removeItemListener(getHazelcastRegisteredEventListenerId());
+		}
+		else if(getDistributedObject() instanceof IQueue) {
+			((IQueue<?>)getDistributedObject()).removeItemListener(getHazelcastRegisteredEventListenerId());
+		}
+		else if(getDistributedObject() instanceof ITopic) {
+			((ITopic<?>)getDistributedObject()).removeMessageListener(getHazelcastRegisteredEventListenerId());
+		}
+	}
+
+	private class HazelcastItemListener<E> extends AbstractHazelcastEventListener implements ItemListener<E> {
+
+		@Override
+		public void itemAdded(ItemEvent<E> item) {
+			this.processEvent(item);
+		}
+
+		@Override
+		public void itemRemoved(ItemEvent<E> item) {
+			this.processEvent(item);
+		}
+
+		@Override
+		protected void processEvent(EventObject event) {
+			Assert.notNull(event);
+
+			if (getCacheEventTypeSet().contains(((ItemEvent<E>) event).getEventType().toString())) {
+				sendMessage(event, ((ItemEvent<E>) event).getMember().getSocketAddress(), getCacheListeningPolicy());
+			}
+		}
+
+	}
+
+	private class HazelcastMessageListener<E> extends AbstractHazelcastEventListener implements MessageListener<E> {
+
+		@Override
+		public void onMessage(Message<E> message) {
+			this.processEvent(message);
+		}
+
+		@Override
+		protected void processEvent(EventObject event) {
+			Assert.notNull(event);
+			sendMessage(event, ((Message<E>) event).getPublishingMember().getSocketAddress(), null);
+		}
+
 	}
 
 }

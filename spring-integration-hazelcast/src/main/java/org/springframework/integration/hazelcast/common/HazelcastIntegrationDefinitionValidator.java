@@ -18,17 +18,19 @@ package org.springframework.integration.hazelcast.common;
 
 import java.util.Set;
 
-import reactor.util.StringUtils;
-
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
+import com.hazelcast.core.ITopic;
+import com.hazelcast.core.MultiMap;
+import com.hazelcast.core.ReplicatedMap;
+
+import reactor.util.StringUtils;
 
 /**
- * This is common validator class for SI-Hazelcast Support. It validates cache events and
- * types.
+ * Common Validator for Hazelcast Integration. It validates cache types and events.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
@@ -45,15 +47,40 @@ public class HazelcastIntegrationDefinitionValidator {
 		return true;
 	}
 
-	public static boolean validateCacheType(DistributedObject distributedObject) {
-		return distributedObject instanceof IMap
+	public static void validateCacheTypeForEventDrivenMessageProducer(DistributedObject distributedObject) {
+		if (!(distributedObject instanceof IMap
+				|| distributedObject instanceof MultiMap
+				|| distributedObject instanceof ReplicatedMap
 				|| distributedObject instanceof IList
 				|| distributedObject instanceof ISet
-				|| distributedObject instanceof IQueue;
+				|| distributedObject instanceof IQueue
+				|| distributedObject instanceof ITopic)) {
+			throw new IllegalArgumentException(
+					"Invalid 'cache' type is set. IMap, MultiMap, ReplicatedMap, IList, ISet, IQueue and ITopic cache object types "
+					+ "are acceptable for Hazelcast Inbound Channel Adapter.");
+		}
 	}
 
-	public static boolean validateCacheEventByDistributedObject(
-			DistributedObject distributedObject, Set<String> cacheEventTypeSet) {
+	public static void validateCacheTypeForCacheWritingMessageHandler(DistributedObject distributedObject) {
+		if (!(distributedObject instanceof IMap
+				|| distributedObject instanceof IList
+				|| distributedObject instanceof ISet
+				|| distributedObject instanceof IQueue)) {
+			throw new IllegalArgumentException(
+					"Invalid 'cache' type is set. IMap, IList, ISet and IQueue cache object types are acceptable "
+					+ "for Hazelcast Outbound Channel Adapter.");
+		}
+	}
+
+	public static void validateCacheTypeForContinuousQueryMessageProducer(DistributedObject distributedObject) {
+		if (!(distributedObject instanceof IMap)) {
+			throw new IllegalArgumentException(
+					"Invalid 'cache' type is set. Only IMap cache object type is acceptable "
+					+ "for Hazelcast Continuous Query Inbound Channel Adapter.");
+		}
+	}
+
+	public static void validateCacheEventsByDistributedObject(DistributedObject distributedObject, Set<String> cacheEventTypeSet) {
 		if ((distributedObject instanceof IList)
 				|| (distributedObject instanceof ISet)
 				|| (distributedObject instanceof IQueue)) {
@@ -61,16 +88,14 @@ public class HazelcastIntegrationDefinitionValidator {
 			for (String cacheEventType : cacheEventTypeSet) {
 				if (!(CacheEventType.ADDED.toString().equals(cacheEventType)
 						|| CacheEventType.REMOVED.toString().equals(cacheEventType))) {
-					throw new IllegalStateException(
+					throw new IllegalArgumentException(
 							"'cache-events' attribute of IList, ISet or IQueue can be set as only "
-									+ CacheEventType.ADDED.toString() + " and / or "
-									+ CacheEventType.REMOVED.toString());
+									+ CacheEventType.ADDED.toString() + " and / or " + CacheEventType.REMOVED.toString());
 				}
 			}
 
 		}
 
-		return true;
 	}
 
 }

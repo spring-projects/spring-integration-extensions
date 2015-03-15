@@ -27,8 +27,8 @@ import org.springframework.integration.config.xml.AbstractOutboundChannelAdapter
 import org.springframework.integration.hazelcast.outbound.HazelcastCacheWritingMessageHandler;
 
 /**
- * Hazelcast Outbound Channel Adapter Parser parses int-hazelcast:outbound-channel-adapter
- * xml definition. It also validates and returns the created
+ * Hazelcast Outbound Channel Adapter Parser parses {@code <int-hazelcast:inbound-channel-adapter />}
+ * configuration. It also validates and returns the created
  * {@link org.springframework.beans.factory.config.BeanDefinition} object.
  *
  * @author Eren Avsarogullari
@@ -39,22 +39,17 @@ public class HazelcastOutboundChannelAdapterParser extends AbstractOutboundChann
 
 	private static final String CACHE_ATTRIBUTE = "cache";
 
-	private static final String DISTRIBUTED_OBJECT = "distributedObject";
-
 	@Override
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
-		BeanDefinitionBuilder hazelcastOutboundChannelAdapter = BeanDefinitionBuilder
-				.genericBeanDefinition(HazelcastCacheWritingMessageHandler.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(HazelcastCacheWritingMessageHandler.class);
 
 		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
-			parserContext.getReaderContext().error(
-					"'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
+			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
 		}
 
-		hazelcastOutboundChannelAdapter.addPropertyReference(DISTRIBUTED_OBJECT,
-				element.getAttribute(CACHE_ATTRIBUTE));
+		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
 
-		return hazelcastOutboundChannelAdapter.getBeanDefinition();
+		return builder.getBeanDefinition();
 	}
 
 }

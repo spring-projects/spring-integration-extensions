@@ -32,8 +32,8 @@ import org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQL
 
 /**
  * Hazelcast Distributed SQL Inbound Channel Adapter Parser parses
- * int-hazelcast:ds-inbound-channel-adapter xml definition.
- * 
+ * {@code <int-hazelcast:cq-inbound-channel-adapter/>} configuration.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
@@ -46,42 +46,33 @@ public class HazelcastDistributedSQLInboundChannelAdapterParser extends Abstract
 
 	private static final String ITERATION_TYPE_ATTRIBUTE = "iteration-type";
 
-	private static final String DISTRIBUTED_MAP = "distributedMap";
-
-	private static final String DISTRIBUTED_SQL_PROPERTY = "distributedSQL";
-
 	private static final String ITERATION_TYPE_PROPERTY = "iterationType";
 
 	@Override
 	protected BeanMetadataElement parseSource(Element element, ParserContext parserContext) {
 		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
-			parserContext.getReaderContext().error(
-					"'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
+			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
 		}
 		else if (!StringUtils.hasText(element.getAttribute(DISTRIBUTED_SQL_ATTRIBUTE))) {
-			parserContext.getReaderContext()
-					.error("'" + DISTRIBUTED_SQL_ATTRIBUTE + "' attribute is required.",
-							element);
+			parserContext.getReaderContext().error("'" + DISTRIBUTED_SQL_ATTRIBUTE + "' attribute is required.", element);
 		}
 		else if (!StringUtils.hasText(element.getAttribute(ITERATION_TYPE_ATTRIBUTE))) {
-			parserContext.getReaderContext().error(
-					"'" + ITERATION_TYPE_ATTRIBUTE + "' attribute is required.", element);
+			parserContext.getReaderContext().error("'" + ITERATION_TYPE_ATTRIBUTE + "' attribute is required.", element);
 		}
 
 		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(
 				DistributedSQLIterationType.class,
 				element.getAttribute(ITERATION_TYPE_ATTRIBUTE)));
 
-		BeanDefinitionBuilder sourceBuilder = BeanDefinitionBuilder
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(HazelcastDistributedSQLMessageSource.class.getName());
-		
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(sourceBuilder,
-				element, CACHE_ATTRIBUTE, DISTRIBUTED_MAP);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(sourceBuilder,
-				element, DISTRIBUTED_SQL_ATTRIBUTE, DISTRIBUTED_SQL_PROPERTY);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(sourceBuilder,
+
+		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
+		builder.addConstructorArgValue(element.getAttribute(DISTRIBUTED_SQL_ATTRIBUTE));
+
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder,
 				element, ITERATION_TYPE_ATTRIBUTE, ITERATION_TYPE_PROPERTY);
 
-		return sourceBuilder.getBeanDefinition();
+		return builder.getBeanDefinition();
 	}
 }

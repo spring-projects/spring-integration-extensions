@@ -21,7 +21,10 @@ import org.w3c.dom.Element;
 import reactor.util.Assert;
 import reactor.util.StringUtils;
 
+import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
@@ -32,7 +35,7 @@ import org.springframework.integration.hazelcast.inbound.HazelcastContinuousQuer
 /**
  * Hazelcast Continuous Query Inbound Channel Adapter Parser is a
  * {@link org.springframework.beans.factory.xml.BeanDefinitionParser} implementation. It parses
- * int-hazelcast:cq-inbound-channel-adapter xml definition and defines just a single
+ * {@code <int-hazelcast:cq-inbound-channel-adapter/>} configuration and defines just a single
  * {@link org.springframework.beans.factory.config.BeanDefinition}.
  *
  * @author Eren Avsarogullari
@@ -51,55 +54,54 @@ public class HazelcastContinuousQueryInboundChannelAdapterParser extends Abstrac
 
 	private static final String OUTPUT_CHANNEL = "outputChannel";
 
-	private static final String DISTRIBUTED_OBJECT = "distributedObject";
-
 	private static final String CACHE_EVENT_TYPES = "cacheEventTypes";
 
 	@Override
-	protected String getBeanClassName(Element element) {
-		return HazelcastContinuousQueryMessageProducer.class.getName();
+	protected Class<?> getBeanClass(Element element) {
+		return HazelcastContinuousQueryMessageProducer.class;
 	}
 
 	@Override
-	protected boolean shouldGenerateIdAsFallback() {
-		return false;
-	}
+	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
+			throws BeanDefinitionStoreException {
+		String id = super.resolveId(element, definition, parserContext);
 
-	@Override
-	protected boolean shouldGenerateId() {
-		return true;
+		if (!element.hasAttribute(CHANNEL_ATTRIBUTE)) {
+			id = id + ".adapter";
+		}
+
+		if (!StringUtils.hasText(id)) {
+			id = BeanDefinitionReaderUtils.generateBeanName(definition, parserContext.getRegistry());
+		}
+
+		return id;
 	}
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		if (!StringUtils.hasText(element.getAttribute(CHANNEL_ATTRIBUTE))) {
-			parserContext.getReaderContext().error(
-					"'" + CHANNEL_ATTRIBUTE + "' attribute is required.", element);
+		String channelName = element.getAttribute(CHANNEL_ATTRIBUTE);
+		if (!StringUtils.hasText(channelName)) {
+			channelName = IntegrationNamespaceUtils.createDirectChannel(element, parserContext);
 		}
-		else if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
-			parserContext.getReaderContext().error(
-					"'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
+
+		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
 		}
 		else if (!StringUtils.hasText(element.getAttribute(CACHE_EVENTS_ATTRIBUTE))) {
-			parserContext.getReaderContext().error(
-					"'" + CACHE_EVENTS_ATTRIBUTE + "' attribute is required.", element);
+			parserContext.getReaderContext().error("'" + CACHE_EVENTS_ATTRIBUTE + "' attribute is required.", element);
 		}
 		else if (!StringUtils.hasText(element.getAttribute(PREDICATE_ATTRIBUTE))) {
-			parserContext.getReaderContext().error(
-					"'" + PREDICATE_ATTRIBUTE + "' attribute is required.", element);
+			parserContext.getReaderContext().error("'" + PREDICATE_ATTRIBUTE + "' attribute is required.", element);
 		}
 
-		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(
-				CacheEventType.class, element.getAttribute(CACHE_EVENTS_ATTRIBUTE)));
+		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, element.getAttribute(CACHE_EVENTS_ATTRIBUTE)));
 
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder,
-				element, CHANNEL_ATTRIBUTE, OUTPUT_CHANNEL);
-		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder,
-				element, CACHE_ATTRIBUTE, DISTRIBUTED_OBJECT);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
-				CACHE_EVENTS_ATTRIBUTE, CACHE_EVENT_TYPES);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
-				PREDICATE_ATTRIBUTE, PREDICATE_ATTRIBUTE);
+		builder.addPropertyReference(OUTPUT_CHANNEL, channelName);
+		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
+		builder.addConstructorArgValue(element.getAttribute(PREDICATE_ATTRIBUTE));
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_EVENTS_ATTRIBUTE, CACHE_EVENT_TYPES);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.AUTO_STARTUP);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.PHASE);
 	}
 
 }

@@ -22,22 +22,20 @@ import java.util.concurrent.locks.Lock;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MemberAttributeEvent;
+import com.hazelcast.core.MembershipAdapter;
 import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MembershipListener;
 import com.hazelcast.core.MultiMap;
 
-import org.springframework.integration.hazelcast.context.ApplicationContextStartEventHandler;
+import org.springframework.integration.hazelcast.config.HazelcastLocalInstanceHandler;
 
 /**
- * This is a Hazelcast cluster {@link MembershipListener} in order to listen for
- * membership updates.
+ * Hazelcast {@link MembershipAdapter} in order to listen for membership updates in the cluster.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
  *
  */
-public class HazelcastMembershipListener implements MembershipListener {
+public class HazelcastMembershipListener extends MembershipAdapter {
 
 	@Override
 	public void memberRemoved(MembershipEvent membershipEvent) {
@@ -46,13 +44,13 @@ public class HazelcastMembershipListener implements MembershipListener {
 		if (!hazelcastLocalInstanceSet.isEmpty()) {
 			HazelcastInstance hazelcastInstance = hazelcastLocalInstanceSet.iterator().next();
 			Lock lock = hazelcastInstance
-					.getLock(ApplicationContextStartEventHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK);
+					.getLock(HazelcastLocalInstanceHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK);
 			lock.lock();
 			try {
 				MultiMap<SocketAddress, SocketAddress> configMultiMap = hazelcastInstance
-						.getMultiMap(ApplicationContextStartEventHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP);
+						.getMultiMap(HazelcastLocalInstanceHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP);
 
-				if (configMultiMap.keySet().contains(removedMemberSocketAddress)) {
+				if (configMultiMap.containsKey(removedMemberSocketAddress)) {
 					SocketAddress newAdminSocketAddress = getNewAdminInstanceSocketAddress(
 							configMultiMap, removedMemberSocketAddress);
 					for (SocketAddress socketAddress : configMultiMap.values()) {
@@ -81,16 +79,6 @@ public class HazelcastMembershipListener implements MembershipListener {
 		}
 
 		throw new IllegalStateException("No Active Hazelcast Instance Found.");
-	}
-
-	@Override
-	public void memberAdded(MembershipEvent membershipEvent) {
-
-	}
-
-	@Override
-	public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
-
 	}
 
 }
