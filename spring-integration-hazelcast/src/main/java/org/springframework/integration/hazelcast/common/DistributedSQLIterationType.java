@@ -18,10 +18,10 @@ package org.springframework.integration.hazelcast.common;
 
 /**
  * Enumeration of Distributed SQL Iteration Type
- * 
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
+ * @see org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQLMessageSource
  */
 public enum DistributedSQLIterationType {
 

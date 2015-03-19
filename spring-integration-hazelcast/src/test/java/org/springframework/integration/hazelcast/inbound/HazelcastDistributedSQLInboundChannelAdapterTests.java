@@ -26,25 +26,23 @@ import com.hazelcast.core.IMap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Hazelcast Distributed SQL Inbound Channel Adapter Test
- * 
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/HazelcastDistributedSQLInboundChannelAdapterTests-context.xml" })
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+@ContextConfiguration
+@DirtiesContext
 public class HazelcastDistributedSQLInboundChannelAdapterTests {
 
 	@Autowired
@@ -60,115 +58,87 @@ public class HazelcastDistributedSQLInboundChannelAdapterTests {
 	private PollableChannel dsMapChannel4;
 
 	@Resource
-	private IMap<Integer, User> dsDistributedMap1;
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap1;
 
 	@Resource
-	private IMap<Integer, User> dsDistributedMap2;
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap2;
 
 	@Resource
-	private IMap<Integer, User> dsDistributedMap3;
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap3;
 
 	@Resource
-	private IMap<Integer, User> dsDistributedMap4;
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap4;
 
 	@Test
 	public void testDistributedSQLForOnlyENTRYIterationType() throws InterruptedException {
-		dsDistributedMap1.put(1, new User(1, "TestName1", "TestSurname1", 10));
-		dsDistributedMap1.put(2, new User(2, "TestName2", "TestSurname2", 20));
-		dsDistributedMap1.put(3, new User(3, "TestName3", "TestSurname3", 30));
-		dsDistributedMap1.put(4, new User(4, "TestName4", "TestSurname4", 40));
-		dsDistributedMap1.put(5, new User(5, "TestName5", "TestSurname5", 50));
+		dsDistributedMap1.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1", 10));
+		dsDistributedMap1.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2", 20));
+		dsDistributedMap1.put(3, new HazelcastIntegrationTestUser(3, "TestName3", "TestSurname3", 30));
+		dsDistributedMap1.put(4, new HazelcastIntegrationTestUser(4, "TestName4", "TestSurname4", 40));
+		dsDistributedMap1.put(5, new HazelcastIntegrationTestUser(5, "TestName5", "TestSurname5", 50));
 
-		Message<?> msg = null;
-		for (int i = 0; i < 10; i++) {
-			msg = dsMapChannel1.receive();
-			if (((Collection) msg.getPayload()).iterator().hasNext()) {
-				break;
-			}
-			Thread.sleep(1_000);
-		}
+		Message<?>	msg = dsMapChannel1.receive(2_000);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof Collection);
-		Assert.assertEquals(4, (((Map.Entry) ((Collection) msg.getPayload()).iterator()
+		Assert.assertEquals(4, (((Map.Entry<?,?>) ((Collection<?>) msg.getPayload()).iterator()
 				.next()).getKey()));
-		Assert.assertEquals(4, ((User) ((Map.Entry) ((Collection) msg.getPayload())
+		Assert.assertEquals(4, ((HazelcastIntegrationTestUser) ((Map.Entry<?,?>) ((Collection<?>) msg.getPayload())
 				.iterator().next()).getValue()).getId());
-		Assert.assertEquals("TestName4", ((User) ((Map.Entry) ((Collection) msg
+		Assert.assertEquals("TestName4", ((HazelcastIntegrationTestUser) ((Map.Entry<?,?>) ((Collection<?>) msg
 				.getPayload()).iterator().next()).getValue()).getName());
-		Assert.assertEquals("TestSurname4", ((User) ((Map.Entry) ((Collection) msg
+		Assert.assertEquals("TestSurname4", ((HazelcastIntegrationTestUser) ((Map.Entry<?,?>) ((Collection<?>) msg
 				.getPayload()).iterator().next()).getValue()).getSurname());
 	}
 
 	@Test
 	public void testDistributedSQLForOnlyKEYIterationType() throws InterruptedException {
-		dsDistributedMap2.put(1, new User(1, "TestName1", "TestSurname1", 10));
-		dsDistributedMap2.put(2, new User(2, "TestName2", "TestSurname2", 20));
-		dsDistributedMap2.put(3, new User(3, "TestName3", "TestSurname3", 30));
+		dsDistributedMap2.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1", 10));
+		dsDistributedMap2.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2", 20));
+		dsDistributedMap2.put(3, new HazelcastIntegrationTestUser(3, "TestName3", "TestSurname3", 30));
 
-		Message<?> msg = null;
-		for (int i = 0; i < 10; i++) {
-			msg = dsMapChannel2.receive();
-			if (((Collection) msg.getPayload()).iterator().hasNext()) {
-				break;
-			}
-			Thread.sleep(1_000);
-		}
+		Message<?>	msg = dsMapChannel2.receive(2_000);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof Collection);
-		Assert.assertEquals(1, ((Collection) msg.getPayload()).iterator().next());
+		Assert.assertEquals(1, ((Collection<?>) msg.getPayload()).iterator().next());
 	}
 
 	@Test
 	public void testDistributedSQLForOnlyLOCAL_KEYIterationType()
 			throws InterruptedException {
-		dsDistributedMap3.put(1, new User(1, "TestName1", "TestSurname1", 10));
-		dsDistributedMap3.put(2, new User(2, "TestName2", "TestSurname2", 20));
-		dsDistributedMap3.put(3, new User(3, "TestName3", "TestSurname3", 30));
+		dsDistributedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1", 10));
+		dsDistributedMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2", 20));
+		dsDistributedMap3.put(3, new HazelcastIntegrationTestUser(3, "TestName3", "TestSurname3", 30));
 
-		Message<?> msg = null;
-		for (int i = 0; i < 10; i++) {
-			msg = dsMapChannel3.receive();
-			if (((Collection) msg.getPayload()).iterator().hasNext()) {
-				break;
-			}
-			Thread.sleep(1_000);
-		}
+		Message<?>	msg = dsMapChannel3.receive(2_000);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof Collection);
-		Assert.assertEquals(2, ((Collection) msg.getPayload()).iterator().next());
+		Assert.assertEquals(2, ((Collection<?>) msg.getPayload()).iterator().next());
 	}
 
 	@Test
 	public void testDistributedSQLForOnlyVALUEIterationType() throws InterruptedException {
-		dsDistributedMap4.put(1, new User(1, "TestName1", "TestSurname1", 10));
-		dsDistributedMap4.put(2, new User(2, "TestName2", "TestSurname2", 20));
-		dsDistributedMap4.put(3, new User(3, "TestName3", "TestSurname3", 30));
-		dsDistributedMap4.put(4, new User(4, "TestName4", "TestSurname4", 40));
-		dsDistributedMap4.put(5, new User(5, "TestName5", "TestSurname5", 50));
+		dsDistributedMap4.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1", 10));
+		dsDistributedMap4.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2", 20));
+		dsDistributedMap4.put(3, new HazelcastIntegrationTestUser(3, "TestName3", "TestSurname3", 30));
+		dsDistributedMap4.put(4, new HazelcastIntegrationTestUser(4, "TestName4", "TestSurname4", 40));
+		dsDistributedMap4.put(5, new HazelcastIntegrationTestUser(5, "TestName5", "TestSurname5", 50));
 
-		Message<?> msg = null;
-		for (int i = 0; i < 10; i++) {
-			msg = dsMapChannel4.receive();
-			if (((Collection) msg.getPayload()).iterator().hasNext()) {
-				break;
-			}
-			Thread.sleep(1_000);
-		}
+		Message<?>	msg = dsMapChannel4.receive(2_000);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof Collection);
 		Assert.assertEquals(3,
-				((User) (((Collection) msg.getPayload()).iterator().next())).getId());
+				((HazelcastIntegrationTestUser) (((Collection<?>) msg.getPayload()).iterator().next())).getId());
 		Assert.assertEquals("TestName3",
-				((User) (((Collection) msg.getPayload()).iterator().next())).getName());
+				((HazelcastIntegrationTestUser) (((Collection<?>) msg.getPayload()).iterator().next())).getName());
 		Assert.assertEquals("TestSurname3",
-				((User) (((Collection) msg.getPayload()).iterator().next())).getSurname());
+				((HazelcastIntegrationTestUser) (((Collection<?>) msg.getPayload()).iterator().next())).getSurname());
 	}
 }

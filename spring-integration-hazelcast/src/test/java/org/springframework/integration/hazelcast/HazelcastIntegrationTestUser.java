@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.inbound;
+package org.springframework.integration.hazelcast;
 
 import java.io.Serializable;
 
 /**
- * User Bean for Unit Tests
- * 
+ * User Bean for Hazelcast Integration Unit Tests
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
-public class User implements Serializable {
+public class HazelcastIntegrationTestUser implements Serializable {
+
+	private static final long serialVersionUID = -5357485957528362705L;
 
 	private int id;
 
@@ -35,13 +36,13 @@ public class User implements Serializable {
 
 	private int age;
 
-	public User(int id, String name, String surname) {
+	public HazelcastIntegrationTestUser(int id, String name, String surname) {
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 	}
 
-	public User(int id, String name, String surname, int age) {
+	public HazelcastIntegrationTestUser(int id, String name, String surname, int age) {
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
@@ -105,7 +106,7 @@ public class User implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		User other = (User) obj;
+		HazelcastIntegrationTestUser other = (HazelcastIntegrationTestUser) obj;
 		if (age != other.age)
 			return false;
 		if (id != other.id)

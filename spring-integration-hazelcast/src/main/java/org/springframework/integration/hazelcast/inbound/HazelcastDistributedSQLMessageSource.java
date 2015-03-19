@@ -18,16 +18,14 @@ package org.springframework.integration.hazelcast.inbound;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.SqlPredicate;
 
 import org.springframework.integration.endpoint.AbstractMessageSource;
 import org.springframework.integration.hazelcast.common.DistributedSQLIterationType;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Hazelcast Distributed SQL Message Source is a message source which runs defined
@@ -35,17 +33,17 @@ import org.springframework.util.Assert;
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
-public class HazelcastDistributedSQLMessageSource<T> extends AbstractMessageSource<T> {
+@SuppressWarnings("rawtypes")
+public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource {
 
-	private final IMap distributedMap;
+	private final IMap<?,?> distributedMap;
 
 	private final String distributedSQL;
 
 	private DistributedSQLIterationType iterationType;
 
-	public HazelcastDistributedSQLMessageSource(IMap distributedMap, String distributedSQL) {
+	public HazelcastDistributedSQLMessageSource(IMap<?,?> distributedMap, String distributedSQL) {
 		Assert.notNull(distributedMap, "cache must not be null");
 		Assert.notNull(distributedSQL, "distributed-sql must not be null");
 		this.distributedMap = distributedMap;
@@ -54,27 +52,35 @@ public class HazelcastDistributedSQLMessageSource<T> extends AbstractMessageSour
 
 	@Override
 	public String getComponentType() {
-		return "ds-inbound-channel-adapter";
+		return "hazelcast:ds-inbound-channel-adapter";
 	}
 
 	@Override
-	protected Message<Collection<T>> doReceive() {
-		if (DistributedSQLIterationType.ENTRY == this.iterationType) {
-			Set<T> entrySet = this.distributedMap.entrySet(new SqlPredicate(this.distributedSQL));
-			return MessageBuilder.withPayload(Collections.unmodifiableCollection(entrySet)).build();
+	protected Collection<?> doReceive() {
+		switch (this.iterationType) {
+			case ENTRY:
+				return getDistributedSQLResultSet(Collections
+						.unmodifiableCollection(this.distributedMap.entrySet(new SqlPredicate(this.distributedSQL))));
+
+			case KEY:
+				return getDistributedSQLResultSet(Collections
+						.unmodifiableCollection(this.distributedMap.keySet(new SqlPredicate(this.distributedSQL))));
+
+			case LOCAL_KEY:
+				return getDistributedSQLResultSet(Collections
+						.unmodifiableCollection(this.distributedMap.localKeySet(new SqlPredicate(this.distributedSQL))));
+
+			default:
+				return getDistributedSQLResultSet(this.distributedMap.values(new SqlPredicate(this.distributedSQL)));
 		}
-		else if (DistributedSQLIterationType.KEY == this.iterationType) {
-			Set<T> keySet = this.distributedMap.keySet(new SqlPredicate(this.distributedSQL));
-			return MessageBuilder.withPayload(Collections.unmodifiableCollection(keySet)).build();
+	}
+
+	private Collection<?> getDistributedSQLResultSet(Collection<?> collection) {
+		if(CollectionUtils.isEmpty(collection)) {
+			return null;
 		}
-		else if (DistributedSQLIterationType.LOCAL_KEY == this.iterationType) {
-			Set<T> localKeySet = this.distributedMap.localKeySet(new SqlPredicate(this.distributedSQL));
-			return MessageBuilder.withPayload(Collections.unmodifiableCollection(localKeySet)).build();
-		}
-		else {
-			Collection<T> values = this.distributedMap.values(new SqlPredicate(this.distributedSQL));
-			return MessageBuilder.withPayload(values).build();
-		}
+
+		return collection;
 	}
 
 	public void setIterationType(DistributedSQLIterationType iterationType) {

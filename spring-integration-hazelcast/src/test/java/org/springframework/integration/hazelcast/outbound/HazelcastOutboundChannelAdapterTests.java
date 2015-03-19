@@ -34,29 +34,29 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.support.DefaultMessageBuilderFactory;
+import org.springframework.integration.support.MessageBuilderFactory;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandlingException;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Hazelcast Outbound Channel Adapter Test Class
- * 
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/HazelcastOutboundChannelAdapterTests-context.xml" })
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+@ContextConfiguration
+@DirtiesContext
 public class HazelcastOutboundChannelAdapterTests {
 
 	private static final int DATA_COUNT = 100;
+
+	private volatile MessageBuilderFactory messageBuilderFactory;
 
 	@Autowired
 	private MessageChannel mapChannel;
@@ -88,26 +88,28 @@ public class HazelcastOutboundChannelAdapterTests {
 		distributedList.clear();
 		distributedSet.clear();
 		distributedQueue.clear();
+
+		messageBuilderFactory = new DefaultMessageBuilderFactory();
 	}
 
 	@Test
 	public void testWriteDistributedMap() {
 		Map<Integer, String> map = createMapByEntryCount();
-		mapChannel.send(MessageBuilder.withPayload(map).build());
+		mapChannel.send(this.messageBuilderFactory.withPayload(map).build());
 		verifyDistributedMap();
 	}
 
 	@Test
 	public void testWriteDistributedList() {
 		List<Integer> list = (List<Integer>) fillCollectionByEntryCount(new ArrayList<Integer>());
-		listChannel.send(MessageBuilder.withPayload(list).build());
+		listChannel.send(this.messageBuilderFactory.withPayload(list).build());
 		verifyDistributedList();
 	}
 
 	@Test
 	public void testWriteDistributedSet() {
 		Set<Integer> set = (Set<Integer>) fillCollectionByEntryCount(new HashSet<Integer>());
-		setChannel.send(MessageBuilder.withPayload(set).build());
+		setChannel.send(this.messageBuilderFactory.withPayload(set).build());
 		verifyDistributedSet();
 	}
 
@@ -115,7 +117,7 @@ public class HazelcastOutboundChannelAdapterTests {
 	public void testWriteDistributedQueue() {
 		Queue<Integer> queue = (Queue<Integer>) fillCollectionByEntryCount(
 				new LinkedBlockingQueue<Integer>(DATA_COUNT));
-		queueChannel.send(MessageBuilder.withPayload(queue).build());
+		queueChannel.send(this.messageBuilderFactory.withPayload(queue).build());
 		verifyDistributedQueue();
 	}
 
@@ -123,28 +125,28 @@ public class HazelcastOutboundChannelAdapterTests {
 	public void testMapChannelWithIncorrectDataType() {
 		Set<Integer> set = new HashSet<>();
 		set.add(1);
-		mapChannel.send(MessageBuilder.withPayload(set).build());
+		mapChannel.send(this.messageBuilderFactory.withPayload(set).build());
 	}
 
 	@Test(expected = MessageHandlingException.class)
 	public void testListChannelWithIncorrectDataType() {
 		Set<Integer> set = new HashSet<>();
 		set.add(1);
-		listChannel.send(MessageBuilder.withPayload(set).build());
+		listChannel.send(this.messageBuilderFactory.withPayload(set).build());
 	}
 
 	@Test(expected = MessageHandlingException.class)
 	public void testSetChannelWithIncorrectDataType() {
 		List<Integer> list = new ArrayList<>();
 		list.add(1);
-		setChannel.send(MessageBuilder.withPayload(list).build());
+		setChannel.send(this.messageBuilderFactory.withPayload(list).build());
 	}
 
 	@Test(expected = MessageHandlingException.class)
 	public void testQueueChannelWithIncorrectDataType() {
 		Set<Integer> set = new HashSet<>();
 		set.add(1);
-		queueChannel.send(MessageBuilder.withPayload(set).build());
+		queueChannel.send(this.messageBuilderFactory.withPayload(set).build());
 	}
 
 	private Map<Integer, String> createMapByEntryCount() {

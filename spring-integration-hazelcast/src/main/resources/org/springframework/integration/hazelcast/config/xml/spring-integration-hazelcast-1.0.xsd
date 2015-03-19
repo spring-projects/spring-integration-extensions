@@ -47,23 +47,21 @@
 						</tool:annotation>
 					</xsd:appinfo>
 					<xsd:documentation>
-						<![CDATA[ Specifies cache events ]]>
+						<![CDATA[ Specifies cache entry event types ]]>
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			
-			<xsd:attribute name="cache-listening-policy" type="xsd:string" use="optional" default="SINGLE">
+			<xsd:attribute name="cache-listening-policy" default="SINGLE" use="optional">
 				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="value">
-							<tool:expected-type
-								type="org.springframework.integration.hazelcast.common.CacheListeningPolicyType" />
-						</tool:annotation>
-					</xsd:appinfo>
-					<xsd:documentation>
-						<![CDATA[ Specifies cache listening policy ]]>
-					</xsd:documentation>
+					<xsd:documentation><![CDATA[ Specifies cache listening policy. ]]></xsd:documentation>
 				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="SINGLE" />
+						<xsd:enumeration value="ALL" />
+					</xsd:restriction>
+				</xsd:simpleType>
 			</xsd:attribute>
 					
 		</xsd:complexType>
@@ -78,7 +76,11 @@
 		</xsd:annotation>
 		
 		<xsd:complexType>
-
+			<xsd:all>
+				<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType"
+							minOccurs="0" maxOccurs="1" />
+			</xsd:all>
+ 			
  			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
  	
 			<xsd:attribute name="cache" use="required" type="xsd:string">
@@ -93,6 +95,15 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			
+			<xsd:attribute name="order" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation><![CDATA[
+                    Specifies the order for invocation when this endpoint is connected as a
+                    subscriber to a SubscribableChannel.
+                ]]></xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
 		
 		</xsd:complexType>
 	</xsd:element>
@@ -138,12 +149,6 @@
 			
 			<xsd:attribute name="predicate" type="xsd:string" use="required">
 				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="value">
-							<tool:expected-type
-								type="java.lang.String" />
-						</tool:annotation>
-					</xsd:appinfo>
 					<xsd:documentation>
 						<![CDATA[ Specifies predicate for continuous query ]]>
 					</xsd:documentation>
@@ -182,18 +187,18 @@
 				</xsd:annotation>
 			</xsd:attribute>
 			
-			<xsd:attribute name="iteration-type" type="xsd:string" use="optional" default="VALUE">
+			<xsd:attribute name="iteration-type" default="VALUE" use="optional">
 				<xsd:annotation>
-					<xsd:appinfo>
-						<tool:annotation kind="value">
-							<tool:expected-type
-								type="org.springframework.integration.hazelcast.common.DistributedSQLIterationType" />
-						</tool:annotation>
-					</xsd:appinfo>
-					<xsd:documentation>
-						<![CDATA[ Specifies Distributed-SQL Iteration Types ]]>
-					</xsd:documentation>
+					<xsd:documentation><![CDATA[ Specifies Distributed-SQL Iteration Types. ]]></xsd:documentation>
 				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="ENTRY" />
+						<xsd:enumeration value="KEY" />
+						<xsd:enumeration value="LOCAL_KEY" />
+						<xsd:enumeration value="VALUE" />
+					</xsd:restriction>
+				</xsd:simpleType>
 			</xsd:attribute>
 			
 			<xsd:attribute name="distributed-sql" type="xsd:string" use="required">

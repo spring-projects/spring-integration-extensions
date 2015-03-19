@@ -34,17 +34,14 @@ import reactor.util.StringUtils;
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 public class HazelcastIntegrationDefinitionValidator {
 
-	public static <E extends Enum<E>> boolean validateEnumType(Class<E> enumType, String cacheEventTypes) {
+	public static <E extends Enum<E>> void validateEnumType(Class<E> enumType, String cacheEventTypes) {
 		Set<String> eventTypeSet = StringUtils.commaDelimitedListToSet(cacheEventTypes);
 		for (String eventType : eventTypeSet) {
 			Enum.valueOf(enumType, eventType);
 		}
-
-		return true;
 	}
 
 	public static void validateCacheTypeForEventDrivenMessageProducer(DistributedObject distributedObject) {
@@ -57,7 +54,7 @@ public class HazelcastIntegrationDefinitionValidator {
 				|| distributedObject instanceof ITopic)) {
 			throw new IllegalArgumentException(
 					"Invalid 'cache' type is set. IMap, MultiMap, ReplicatedMap, IList, ISet, IQueue and ITopic cache object types "
-					+ "are acceptable for Hazelcast Inbound Channel Adapter.");
+							+ "are acceptable for Hazelcast Inbound Channel Adapter.");
 		}
 	}
 
@@ -68,7 +65,7 @@ public class HazelcastIntegrationDefinitionValidator {
 				|| distributedObject instanceof IQueue)) {
 			throw new IllegalArgumentException(
 					"Invalid 'cache' type is set. IMap, IList, ISet and IQueue cache object types are acceptable "
-					+ "for Hazelcast Outbound Channel Adapter.");
+							+ "for Hazelcast Outbound Channel Adapter.");
 		}
 	}
 
@@ -76,7 +73,7 @@ public class HazelcastIntegrationDefinitionValidator {
 		if (!(distributedObject instanceof IMap)) {
 			throw new IllegalArgumentException(
 					"Invalid 'cache' type is set. Only IMap cache object type is acceptable "
-					+ "for Hazelcast Continuous Query Inbound Channel Adapter.");
+							+ "for Hazelcast Continuous Query Inbound Channel Adapter.");
 		}
 	}
 

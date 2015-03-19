@@ -18,7 +18,6 @@ package org.springframework.integration.hazelcast.config.xml;
 
 import org.w3c.dom.Element;
 
-import reactor.util.Assert;
 import reactor.util.StringUtils;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -28,8 +27,6 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.hazelcast.common.CacheEventType;
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.integration.hazelcast.inbound.HazelcastEventDrivenMessageProducer;
 
 /**
@@ -40,7 +37,6 @@ import org.springframework.integration.hazelcast.inbound.HazelcastEventDrivenMes
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 public class HazelcastEventDrivenInboundChannelAdapterParser extends AbstractSingleBeanDefinitionParser {
 
@@ -95,8 +91,6 @@ public class HazelcastEventDrivenInboundChannelAdapterParser extends AbstractSin
 		else if (!StringUtils.hasText(element.getAttribute(CACHE_LISTENING_POLICY_ATTRIBUTE))) {
 			parserContext.getReaderContext().error("'" + CACHE_LISTENING_POLICY_ATTRIBUTE + "' attribute is required.", element);
 		}
-
-		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, element.getAttribute(CACHE_EVENTS_ATTRIBUTE)));
 
 		builder.addPropertyReference(OUTPUT_CHANNEL, channelName);
 		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));

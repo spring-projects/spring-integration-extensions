@@ -34,20 +34,19 @@ import org.springframework.integration.hazelcast.listener.HazelcastMembershipLis
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
-public class HazelcastLocalInstanceHandler implements SmartInitializingSingleton {
+public class HazelcastLocalInstanceRegistrar implements SmartInitializingSingleton {
 
-	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP = "HZ_INTERNAL_CONFIGURATION_MULTI_MAP";
+	public static final String HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP = "HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP";
 
-	public static final String HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK = "HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK";
+	public static final String HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK = "HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK";
 
 	@Override
 	public void afterSingletonsInstantiated() {
 		if (!Hazelcast.getAllHazelcastInstances().isEmpty()) {
 			HazelcastInstance hazelcastInstance = Hazelcast.getAllHazelcastInstances().iterator().next();
 			hazelcastInstance.getCluster().addMembershipListener(new HazelcastMembershipListener());
-			this.syncConfigurationMultiMap(hazelcastInstance);
+			syncConfigurationMultiMap(hazelcastInstance);
 		}
 		else {
 			throw new IllegalStateException("No Active Local Hazelcast Instance found.");
@@ -55,11 +54,11 @@ public class HazelcastLocalInstanceHandler implements SmartInitializingSingleton
 	}
 
 	private void syncConfigurationMultiMap(HazelcastInstance hazelcastInstance) {
-		Lock lock = hazelcastInstance.getLock(HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK);
+		Lock lock = hazelcastInstance.getLock(HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK);
 		lock.lock();
 		try {
 			MultiMap<SocketAddress, SocketAddress> multiMap = hazelcastInstance
-					.getMultiMap(HZ_INTERNAL_CONFIGURATION_MULTI_MAP);
+					.getMultiMap(HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP);
 			for (HazelcastInstance localInstance : Hazelcast.getAllHazelcastInstances()) {
 				SocketAddress localInstanceSocketAddress = localInstance.getLocalEndpoint().getSocketAddress();
 				if (multiMap.size() == 0) {

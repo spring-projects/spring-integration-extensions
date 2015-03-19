@@ -18,7 +18,6 @@ package org.springframework.integration.hazelcast.config.xml;
 
 import org.w3c.dom.Element;
 
-import reactor.util.Assert;
 import reactor.util.StringUtils;
 
 import org.springframework.beans.BeanMetadataElement;
@@ -26,8 +25,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractPollingInboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.integration.hazelcast.common.DistributedSQLIterationType;
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQLMessageSource;
 
 /**
@@ -36,7 +33,6 @@ import org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQL
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 public class HazelcastDistributedSQLInboundChannelAdapterParser extends AbstractPollingInboundChannelAdapterParser {
 
@@ -59,10 +55,6 @@ public class HazelcastDistributedSQLInboundChannelAdapterParser extends Abstract
 		else if (!StringUtils.hasText(element.getAttribute(ITERATION_TYPE_ATTRIBUTE))) {
 			parserContext.getReaderContext().error("'" + ITERATION_TYPE_ATTRIBUTE + "' attribute is required.", element);
 		}
-
-		Assert.isTrue(HazelcastIntegrationDefinitionValidator.validateEnumType(
-				DistributedSQLIterationType.class,
-				element.getAttribute(ITERATION_TYPE_ATTRIBUTE)));
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(HazelcastDistributedSQLMessageSource.class.getName());

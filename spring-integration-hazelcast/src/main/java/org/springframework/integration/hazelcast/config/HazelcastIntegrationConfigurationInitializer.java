@@ -27,18 +27,17 @@ import org.springframework.integration.config.IntegrationConfigurationInitialize
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 public class HazelcastIntegrationConfigurationInitializer implements IntegrationConfigurationInitializer {
 
-	private static final String HAZELCAST_LOCAL_INSTANCE_HANDLER_BEAN_NAME = HazelcastLocalInstanceHandler.class.getName();
+	private static final String HAZELCAST_LOCAL_INSTANCE_REGISTRAR_BEAN_NAME = HazelcastLocalInstanceRegistrar.class.getName();
 
 	@Override
 	public void initialize(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		BeanDefinitionRegistry beanDefinitionRegistry = (BeanDefinitionRegistry) beanFactory;
-		if (!beanDefinitionRegistry.containsBeanDefinition(HAZELCAST_LOCAL_INSTANCE_HANDLER_BEAN_NAME)) {
-			beanDefinitionRegistry.registerBeanDefinition(HAZELCAST_LOCAL_INSTANCE_HANDLER_BEAN_NAME,
-															new RootBeanDefinition(HazelcastLocalInstanceHandler.class));
+		if (!beanDefinitionRegistry.containsBeanDefinition(HAZELCAST_LOCAL_INSTANCE_REGISTRAR_BEAN_NAME)) {
+			beanDefinitionRegistry.registerBeanDefinition(HAZELCAST_LOCAL_INSTANCE_REGISTRAR_BEAN_NAME,
+															new RootBeanDefinition(HazelcastLocalInstanceRegistrar.class));
 		}
 	}
 

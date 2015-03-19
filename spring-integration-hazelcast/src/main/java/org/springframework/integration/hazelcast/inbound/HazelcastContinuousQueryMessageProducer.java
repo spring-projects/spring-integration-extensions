@@ -16,7 +16,6 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.SqlPredicate;
 
@@ -25,20 +24,19 @@ import org.springframework.util.Assert;
 
 /**
  * Hazelcast Continuous Query Message Producer is a message producer which enables
- * {@link HazelcastEntryListener} with a {@link SqlPredicate} in order to listen related
- * distributed map events in the light of defined predicate and sends events to related
- * channel.
+ * {@link AbstractHazelcastMessageProducer.HazelcastEntryListener} with a
+ * {@link SqlPredicate} in order to listen related distributed map events in the light of
+ * defined predicate and sends events to related channel.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMessageProducer {
 
 	private final String predicate;
 
-	public HazelcastContinuousQueryMessageProducer(DistributedObject distributedObject, String predicate) {
-		super(distributedObject);
+	public HazelcastContinuousQueryMessageProducer(IMap<?, ?> distributedMap, String predicate) {
+		super(distributedMap);
 		Assert.notNull(predicate, "predicate must not be null");
 		this.predicate = predicate;
 	}
@@ -49,18 +47,21 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 		HazelcastIntegrationDefinitionValidator.validateCacheTypeForContinuousQueryMessageProducer(getDistributedObject());
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void doStart() {
-		IMap<?, ?> distributedMap = (IMap<?, ?>) getDistributedObject();
-		String hazelcastRegisteredEventListenerId = distributedMap.addEntryListener(new HazelcastEntryListener(),
-																					new SqlPredicate(this.predicate),
-																					true);
-		setHazelcastRegisteredEventListenerId(hazelcastRegisteredEventListenerId);
+		setHazelcastRegisteredEventListenerId(((IMap<?, ?>) getDistributedObject())
+				.addEntryListener(new HazelcastEntryListener(), new SqlPredicate(this.predicate), true));
 	}
 
 	@Override
 	protected void doStop() {
 		((IMap<?, ?>) getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+	}
+
+	@Override
+	public String getComponentType() {
+		return "hazelcast:cq-inbound-channel-adapter";
 	}
 
 }

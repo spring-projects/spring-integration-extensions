@@ -36,14 +36,15 @@ import org.springframework.util.Assert;
 
 /**
  * Hazelcast Event Driven Message Producer is a message producer which enables
- * {@link HazelcastEntryListener}, {@link HazelcastItemListener} and
- * {@link HazelcastMessageListener} listeners in order to listen related cache events and
- * sends events to related channel.
+ * {@link AbstractHazelcastMessageProducer.HazelcastEntryListener},
+ * {@link HazelcastEventDrivenMessageProducer.HazelcastItemListener} and
+ * {@link HazelcastEventDrivenMessageProducer.HazelcastMessageListener} listeners in order
+ * to listen related cache events and sends events to related channel.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessageProducer {
 
 	public HazelcastEventDrivenMessageProducer(DistributedObject distributedObject) {
@@ -106,21 +107,26 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		}
 	}
 
+	@Override
+	public String getComponentType() {
+		return "hazelcast:inbound-channel-adapter";
+	}
+
 	private class HazelcastItemListener<E> extends AbstractHazelcastEventListener implements ItemListener<E> {
 
 		@Override
 		public void itemAdded(ItemEvent<E> item) {
-			this.processEvent(item);
+			processEvent(item);
 		}
 
 		@Override
 		public void itemRemoved(ItemEvent<E> item) {
-			this.processEvent(item);
+			processEvent(item);
 		}
 
 		@Override
 		protected void processEvent(EventObject event) {
-			Assert.notNull(event);
+			Assert.notNull(event, "event must not be null");
 
 			if (getCacheEventTypeSet().contains(((ItemEvent<E>) event).getEventType().toString())) {
 				sendMessage(event, ((ItemEvent<E>) event).getMember().getSocketAddress(), getCacheListeningPolicy());
@@ -133,12 +139,12 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 
 		@Override
 		public void onMessage(Message<E> message) {
-			this.processEvent(message);
+			processEvent(message);
 		}
 
 		@Override
 		protected void processEvent(EventObject event) {
-			Assert.notNull(event);
+			Assert.notNull(event, "event must not be null");
 			sendMessage(event, ((Message<E>) event).getPublishingMember().getSocketAddress(), null);
 		}
 

@@ -23,45 +23,43 @@ import com.hazelcast.core.ITopic;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Hazelcast Distributed Topic Event Driven Inbound Channel Adapter Test
- * 
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/HazelcastDistributedTopicEventDrivenInboundChannelAdapterTests-context.xml" })
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+@ContextConfiguration
+@DirtiesContext
 public class HazelcastDistributedTopicEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
 	private PollableChannel edTopicChannel1;
 
 	@Resource
-	private ITopic<User> edDistributedTopic1;
+	private ITopic<HazelcastIntegrationTestUser> edDistributedTopic1;
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {
-		edDistributedTopic1.publish(new User(1, "TestName1", "TestSurname1"));
+		edDistributedTopic1.publish(new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		Message<?> msg = edTopicChannel1.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof com.hazelcast.core.Message);
-		Assert.assertEquals(1, ((User) ((com.hazelcast.core.Message<?>) msg.getPayload())
+		Assert.assertEquals(1, ((HazelcastIntegrationTestUser) ((com.hazelcast.core.Message<?>) msg.getPayload())
 				.getMessageObject()).getId());
-		Assert.assertEquals("TestName1", ((User) ((com.hazelcast.core.Message<?>) msg
+		Assert.assertEquals("TestName1", ((HazelcastIntegrationTestUser) ((com.hazelcast.core.Message<?>) msg
 				.getPayload()).getMessageObject()).getName());
-		Assert.assertEquals("TestSurname1", ((User) ((com.hazelcast.core.Message<?>) msg
+		Assert.assertEquals("TestSurname1", ((HazelcastIntegrationTestUser) ((com.hazelcast.core.Message<?>) msg
 				.getPayload()).getMessageObject()).getSurname());
 	}
 

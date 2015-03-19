@@ -26,25 +26,23 @@ import com.hazelcast.core.IMap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Hazelcast Distributed Map Event Driven Inbound Channel Adapter Test
- * 
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/HazelcastDistributedMapEventDrivenInboundChannelAdapterTests-context.xml" })
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+@ContextConfiguration
+@DirtiesContext
 public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
@@ -60,20 +58,20 @@ public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 	private PollableChannel edMapChannel4;
 
 	@Resource
-	private IMap<Integer, User> edDistributedMap1;
+	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap1;
 
 	@Resource
-	private IMap<Integer, User> edDistributedMap2;
+	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap2;
 
 	@Resource
-	private IMap<Integer, User> edDistributedMap3;
+	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap3;
 
 	@Resource
-	private IMap<Integer, User> edDistributedMap4;
+	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap4;
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {
-		edDistributedMap1.put(1, new User(1, "TestName1", "TestSurname1"));
+		edDistributedMap1.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		Message<?> msg = edMapChannel1.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
@@ -84,17 +82,17 @@ public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 				((EntryEvent<?, ?>) msg.getPayload()).getName());
 		Assert.assertEquals(1, ((EntryEvent<?, ?>) msg.getPayload()).getKey());
 		Assert.assertEquals(1,
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getId());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getId());
 		Assert.assertEquals("TestName1",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getName());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getName());
 		Assert.assertEquals("TestSurname1",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getSurname());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getSurname());
 	}
 
 	@Test
 	public void testEventDrivenForOnlyUPDATEDEntryEvent() {
-		edDistributedMap2.put(2, new User(1, "TestName1", "TestSurname1"));
-		edDistributedMap2.put(2, new User(2, "TestName2", "TestSurname2"));
+		edDistributedMap2.put(2, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
+		edDistributedMap2.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
 		Message<?> msg = edMapChannel2.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
@@ -105,23 +103,23 @@ public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 				((EntryEvent<?, ?>) msg.getPayload()).getName());
 		Assert.assertEquals(2, ((EntryEvent<?, ?>) msg.getPayload()).getKey());
 		Assert.assertEquals(1,
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getId());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getId());
 		Assert.assertEquals("TestName1",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getName());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getName());
 		Assert.assertEquals("TestSurname1",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getSurname());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getSurname());
 		Assert.assertEquals(2,
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getId());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getId());
 		Assert.assertEquals("TestName2",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getName());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getName());
 		Assert.assertEquals("TestSurname2",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getSurname());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getSurname());
 	}
 
 	@Test
 	public void testEventDrivenForOnlyREMOVEDEntryEvent() {
-		edDistributedMap3.put(1, new User(1, "TestName1", "TestSurname1"));
-		edDistributedMap3.put(2, new User(2, "TestName2", "TestSurname2"));
+		edDistributedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
+		edDistributedMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
 		edDistributedMap3.remove(2);
 		Message<?> msg = edMapChannel3.receive(2_000);
 		Assert.assertNotNull(msg);
@@ -133,20 +131,20 @@ public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 				((EntryEvent<?, ?>) msg.getPayload()).getName());
 		Assert.assertEquals(2, ((EntryEvent<?, ?>) msg.getPayload()).getKey());
 		Assert.assertEquals(2,
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getId());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getId());
 		Assert.assertEquals("TestName2",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getName());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getName());
 		Assert.assertEquals("TestSurname2",
-				((User) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getSurname());
+				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getOldValue()).getSurname());
 	}
 
 	@Test
 	public void testEventDrivenForALLEntryEvent() {
-		edDistributedMap4.put(1, new User(1, "TestName1", "TestSurname1"));
+		edDistributedMap4.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		Message<?> msg = edMapChannel4.receive(2_000);
 		verify(msg, "edDistributedMap4", EntryEventType.ADDED);
 
-		edDistributedMap4.put(1, new User(1, "TestName1", "TestSurnameUpdated"));
+		edDistributedMap4.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurnameUpdated"));
 		msg = edMapChannel4.receive(2_000);
 		verify(msg, "edDistributedMap4", EntryEventType.UPDATED);
 
@@ -154,7 +152,7 @@ public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 		msg = edMapChannel4.receive(2_000);
 		verify(msg, "edDistributedMap4", EntryEventType.REMOVED);
 
-		edDistributedMap4.put(2, new User(2, "TestName2", "TestSurname2"));
+		edDistributedMap4.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
 		msg = edMapChannel4.receive(2_000);
 		verify(msg, "edDistributedMap4", EntryEventType.ADDED);
 

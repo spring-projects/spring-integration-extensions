@@ -33,7 +33,6 @@ import org.springframework.integration.hazelcast.outbound.HazelcastCacheWritingM
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 public class HazelcastOutboundChannelAdapterParser extends AbstractOutboundChannelAdapterParser {
 
@@ -41,7 +40,8 @@ public class HazelcastOutboundChannelAdapterParser extends AbstractOutboundChann
 
 	@Override
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(HazelcastCacheWritingMessageHandler.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder
+				.genericBeanDefinition(HazelcastCacheWritingMessageHandler.class);
 
 		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
 			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);

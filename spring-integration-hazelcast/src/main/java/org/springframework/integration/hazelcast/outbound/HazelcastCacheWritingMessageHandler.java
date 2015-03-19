@@ -27,10 +27,8 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
 
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationUtils;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
@@ -42,9 +40,8 @@ import org.springframework.util.Assert;
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
-public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler implements DisposableBean {
+public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler {
 
 	private final DistributedObject distributedObject;
 
@@ -64,6 +61,7 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 		writeToCache(message);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void writeToCache(Message<?> message) {
 		if (this.distributedObject instanceof IMap) {
 			((IMap<?, ?>) this.distributedObject).putAll((Map) message.getPayload());
@@ -77,11 +75,6 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 		else if (this.distributedObject instanceof IQueue) {
 			((IQueue<?>) this.distributedObject).addAll((Queue) message.getPayload());
 		}
-	}
-
-	@Override
-	public void destroy() throws Exception {
-		HazelcastIntegrationUtils.shutdownAllHazelcastInstances();
 	}
 
 }

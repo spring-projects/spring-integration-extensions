@@ -26,14 +26,13 @@ import com.hazelcast.core.MembershipAdapter;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MultiMap;
 
-import org.springframework.integration.hazelcast.config.HazelcastLocalInstanceHandler;
+import org.springframework.integration.hazelcast.config.HazelcastLocalInstanceRegistrar;
 
 /**
  * Hazelcast {@link MembershipAdapter} in order to listen for membership updates in the cluster.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- *
  */
 public class HazelcastMembershipListener extends MembershipAdapter {
 
@@ -44,11 +43,11 @@ public class HazelcastMembershipListener extends MembershipAdapter {
 		if (!hazelcastLocalInstanceSet.isEmpty()) {
 			HazelcastInstance hazelcastInstance = hazelcastLocalInstanceSet.iterator().next();
 			Lock lock = hazelcastInstance
-					.getLock(HazelcastLocalInstanceHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP_LOCK);
+					.getLock(HazelcastLocalInstanceRegistrar.HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK);
 			lock.lock();
 			try {
 				MultiMap<SocketAddress, SocketAddress> configMultiMap = hazelcastInstance
-						.getMultiMap(HazelcastLocalInstanceHandler.HZ_INTERNAL_CONFIGURATION_MULTI_MAP);
+						.getMultiMap(HazelcastLocalInstanceRegistrar.HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP);
 
 				if (configMultiMap.containsKey(removedMemberSocketAddress)) {
 					SocketAddress newAdminSocketAddress = getNewAdminInstanceSocketAddress(
