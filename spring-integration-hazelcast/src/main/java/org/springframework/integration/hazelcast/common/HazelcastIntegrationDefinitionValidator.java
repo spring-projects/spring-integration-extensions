@@ -16,6 +16,8 @@
 
 package org.springframework.integration.hazelcast.common;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import com.hazelcast.core.DistributedObject;
@@ -27,6 +29,7 @@ import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
 
+import reactor.util.CollectionUtils;
 import reactor.util.StringUtils;
 
 /**
@@ -37,14 +40,14 @@ import reactor.util.StringUtils;
  */
 public class HazelcastIntegrationDefinitionValidator {
 
-	public static <E extends Enum<E>> void validateEnumType(Class<E> enumType, String cacheEventTypes) {
+	public static <E extends Enum<E>> void validateEnumType(final Class<E> enumType, final String cacheEventTypes) {
 		Set<String> eventTypeSet = StringUtils.commaDelimitedListToSet(cacheEventTypes);
 		for (String eventType : eventTypeSet) {
 			Enum.valueOf(enumType, eventType);
 		}
 	}
 
-	public static void validateCacheTypeForEventDrivenMessageProducer(DistributedObject distributedObject) {
+	public static void validateCacheTypeForEventDrivenMessageProducer(final DistributedObject distributedObject) {
 		if (!(distributedObject instanceof IMap
 				|| distributedObject instanceof MultiMap
 				|| distributedObject instanceof ReplicatedMap
@@ -58,7 +61,7 @@ public class HazelcastIntegrationDefinitionValidator {
 		}
 	}
 
-	public static void validateCacheTypeForCacheWritingMessageHandler(DistributedObject distributedObject) {
+	public static void validateCacheTypeForCacheWritingMessageHandler(final DistributedObject distributedObject) {
 		if (!(distributedObject instanceof IMap
 				|| distributedObject instanceof IList
 				|| distributedObject instanceof ISet
@@ -69,7 +72,7 @@ public class HazelcastIntegrationDefinitionValidator {
 		}
 	}
 
-	public static void validateCacheTypeForContinuousQueryMessageProducer(DistributedObject distributedObject) {
+	public static void validateCacheTypeForContinuousQueryMessageProducer(final DistributedObject distributedObject) {
 		if (!(distributedObject instanceof IMap)) {
 			throw new IllegalArgumentException(
 					"Invalid 'cache' type is set. Only IMap cache object type is acceptable "
@@ -77,22 +80,41 @@ public class HazelcastIntegrationDefinitionValidator {
 		}
 	}
 
-	public static void validateCacheEventsByDistributedObject(DistributedObject distributedObject, Set<String> cacheEventTypeSet) {
+	public static void validateCacheEventsByDistributedObject(
+			final DistributedObject distributedObject, final Set<String> cacheEventTypeSet) {
+		List<String> supportedCacheEventTypes = getSupportedCacheEventTypes(distributedObject);
+		if (!CollectionUtils.isEmpty(supportedCacheEventTypes)) {
+			validateCacheEventsByDistributedObject(distributedObject, cacheEventTypeSet, supportedCacheEventTypes);
+		}
+	}
+
+	private static List<String> getSupportedCacheEventTypes(final DistributedObject distributedObject) {
 		if ((distributedObject instanceof IList)
 				|| (distributedObject instanceof ISet)
 				|| (distributedObject instanceof IQueue)) {
-
-			for (String cacheEventType : cacheEventTypeSet) {
-				if (!(CacheEventType.ADDED.toString().equals(cacheEventType)
-						|| CacheEventType.REMOVED.toString().equals(cacheEventType))) {
-					throw new IllegalArgumentException(
-							"'cache-events' attribute of IList, ISet or IQueue can be set as only "
-									+ CacheEventType.ADDED.toString() + " and / or " + CacheEventType.REMOVED.toString());
-				}
-			}
-
+			return Arrays.asList(CacheEventType.ADDED.toString(), CacheEventType.REMOVED.toString());
+		}
+		else if (distributedObject instanceof MultiMap) {
+			return Arrays.asList(CacheEventType.ADDED.toString(),
+					CacheEventType.REMOVED.toString(),
+					CacheEventType.CLEAR_ALL.toString());
+		}
+		else if (distributedObject instanceof ReplicatedMap) {
+			return Arrays.asList(CacheEventType.ADDED.toString(),
+					CacheEventType.REMOVED.toString(),
+					CacheEventType.UPDATED.toString(),
+					CacheEventType.EVICTED.toString());
 		}
 
+		return null;
+	}
+
+	private static void validateCacheEventsByDistributedObject(
+			final DistributedObject distributedObject, final Set<String> cacheEventTypeSet, final List<String> supportedCacheEventTypes) {
+		if (!supportedCacheEventTypes.containsAll(cacheEventTypeSet)) {
+			throw new IllegalArgumentException("'cache-events' attribute of "
+					+ distributedObject.getName() + " can be set as " + supportedCacheEventTypes);
+		}
 	}
 
 }

@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
 public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMessageProducer {
 
 	private final String predicate;
+	private boolean includeValue;
 
 	public HazelcastContinuousQueryMessageProducer(IMap<?, ?> distributedMap, String predicate) {
 		super(distributedMap);
@@ -51,7 +52,7 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 	@Override
 	protected void doStart() {
 		setHazelcastRegisteredEventListenerId(((IMap<?, ?>) getDistributedObject())
-				.addEntryListener(new HazelcastEntryListener(), new SqlPredicate(this.predicate), true));
+				.addEntryListener(new HazelcastEntryListener(), new SqlPredicate(this.predicate), this.includeValue));
 	}
 
 	@Override
@@ -62,6 +63,10 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 	@Override
 	public String getComponentType() {
 		return "hazelcast:cq-inbound-channel-adapter";
+	}
+
+	public void setIncludeValue(boolean includeValue) {
+		this.includeValue = includeValue;
 	}
 
 }

@@ -26,10 +26,15 @@
 		<int:queue />
 	</int:channel>
 	
+	<int:channel id="cqMapChannel5">
+		<int:queue />
+	</int:channel>
+	
 	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel1" cache="cqDistributedMap1" predicate="name=TestName1"/>
-	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel2" cache="cqDistributedMap2" cache-events="REMOVED" predicate="name=TestName2"/>
+	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel2" cache="cqDistributedMap2" cache-events="REMOVED" predicate="name=TestName2" include-value="true"/>
 	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel3" cache="cqDistributedMap3" cache-events="ADDED,REMOVED,UPDATED,CLEAR_ALL" predicate="name=TestName1 OR name=TestName2"/>
-	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel4" cache="cqDistributedMap4" cache-events="UPDATED" predicate="surname=TestSurname2"/>
+	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel4" cache="cqDistributedMap4" cache-events="UPDATED" predicate="surname=TestSurname2" include-value="true"/>
+	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel5" cache="cqDistributedMap5" cache-events="UPDATED" predicate="surname=TestSurname2" include-value="false"/>
 	
 	<bean id="cqDistributedMap1" factory-bean="cqInstance" factory-method="getMap">
 	  <constructor-arg value="cqDistributedMap1"/>
@@ -45,6 +50,10 @@
 	
 	<bean id="cqDistributedMap4" factory-bean="cqInstance" factory-method="getMap">
 	  <constructor-arg value="cqDistributedMap4"/>
+	</bean>
+	
+	<bean id="cqDistributedMap5" factory-bean="cqInstance" factory-method="getMap">
+	  <constructor-arg value="cqDistributedMap5"/>
 	</bean>
 		
 	<bean id="cqInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
