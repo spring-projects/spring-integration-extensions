@@ -31,8 +31,6 @@ import com.hazelcast.core.MessageListener;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.util.Assert;
 
@@ -49,9 +47,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessageProducer {
 
-	private final Log logger = LogFactory.getLog(this.getClass());
-
-	private HazelcastEventDrivenMessageProducer(DistributedObject distributedObject) {
+	public HazelcastEventDrivenMessageProducer(DistributedObject distributedObject) {
 		super(distributedObject);
 	}
 
@@ -132,7 +128,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		protected void processEvent(EventObject event) {
 			Assert.notNull(event, "event must not be null");
 
-			if (getCacheEventSet().contains(((ItemEvent<E>) event).getEventType().toString())) {
+			if (getCacheEvents().contains(((ItemEvent<E>) event).getEventType().toString())) {
 				sendMessage(event, ((ItemEvent<E>) event).getMember().getSocketAddress(), getCacheListeningPolicy());
 			}
 

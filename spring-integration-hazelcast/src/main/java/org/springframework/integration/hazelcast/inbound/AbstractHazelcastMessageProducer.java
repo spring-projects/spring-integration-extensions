@@ -33,8 +33,6 @@ import com.hazelcast.core.MultiMap;
 
 import reactor.util.StringUtils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.hazelcast.common.CacheEventType;
 import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
@@ -58,15 +56,15 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 	private String hazelcastRegisteredEventListenerId;
 
-	private Set<String> cacheEventSet;
+	private Set<String> cacheEvents;
 
 	protected AbstractHazelcastMessageProducer(DistributedObject distributedObject) {
 		Assert.notNull(distributedObject, "cache must not be null");
 		this.distributedObject = distributedObject;
 	}
 
-	protected Set<String> getCacheEventSet() {
-		return cacheEventSet;
+	protected Set<String> getCacheEvents() {
+		return cacheEvents;
 	}
 
 	protected DistributedObject getDistributedObject() {
@@ -97,9 +95,9 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	@Override
 	protected void onInit() {
 		super.onInit();
-		this.cacheEventSet = StringUtils.commaDelimitedListToSet(this.cacheEventTypes);
+		this.cacheEvents = StringUtils.commaDelimitedListToSet(this.cacheEventTypes);
 		HazelcastIntegrationDefinitionValidator.validateCacheEventsByDistributedObject(
-				getDistributedObject(), this.cacheEventSet);
+				getDistributedObject(), this.cacheEvents);
 	}
 
 	protected abstract class AbstractHazelcastEventListener {
@@ -139,7 +137,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 														final Set<SocketAddress> localSocketAddressesSet,
 														final InetSocketAddress socketAddressOfEvent) {
 			final MultiMap<SocketAddress, SocketAddress> configMultiMap = hazelcastInstance
-					.getMultiMap(HazelcastLocalInstanceRegistrar.HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP);
+					.getMultiMap(HazelcastLocalInstanceRegistrar.SPRING_INTEGRATION_INTERNAL_CLUSTER_MULTIMAP);
 			if (configMultiMap.size() > 0
 					&& !configMultiMap.values().contains(socketAddressOfEvent)
 					&& localSocketAddressesSet.contains(configMultiMap.keySet().iterator().next())) {
@@ -153,8 +151,6 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 	protected final class HazelcastEntryListener<K, V> extends
 			AbstractHazelcastEventListener implements EntryListener<K, V> {
-
-		private final Log logger = LogFactory.getLog(this.getClass());
 
 		@Override
 		public void entryAdded(EntryEvent<K, V> event) {
@@ -190,7 +186,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		protected void processEvent(EventObject event) {
 			Assert.notNull(event, "event must not be null");
 
-			if (getCacheEventSet().contains(((AbstractIMapEvent) event).getEventType().toString())) {
+			if (getCacheEvents().contains(((AbstractIMapEvent) event).getEventType().toString())) {
 				sendMessage(event, ((AbstractIMapEvent) event).getMember().getSocketAddress(), getCacheListeningPolicy());
 			}
 

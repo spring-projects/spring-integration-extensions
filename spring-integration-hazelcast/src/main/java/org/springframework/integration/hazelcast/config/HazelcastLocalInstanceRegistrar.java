@@ -37,9 +37,9 @@ import org.springframework.integration.hazelcast.listener.HazelcastMembershipLis
  */
 public class HazelcastLocalInstanceRegistrar implements SmartInitializingSingleton {
 
-	public static final String HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP = "HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP";
+	public static final String SPRING_INTEGRATION_INTERNAL_CLUSTER_MULTIMAP = "SPRING_INTEGRATION_INTERNAL_CLUSTER_MULTIMAP";
 
-	public static final String HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK = "HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK";
+	public static final String SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK = "SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK";
 
 	@Override
 	public void afterSingletonsInstantiated() {
@@ -54,11 +54,11 @@ public class HazelcastLocalInstanceRegistrar implements SmartInitializingSinglet
 	}
 
 	private void syncConfigurationMultiMap(HazelcastInstance hazelcastInstance) {
-		Lock lock = hazelcastInstance.getLock(HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK);
+		Lock lock = hazelcastInstance.getLock(SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK);
 		lock.lock();
 		try {
 			MultiMap<SocketAddress, SocketAddress> multiMap = hazelcastInstance
-					.getMultiMap(HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP);
+					.getMultiMap(SPRING_INTEGRATION_INTERNAL_CLUSTER_MULTIMAP);
 			for (HazelcastInstance localInstance : Hazelcast.getAllHazelcastInstances()) {
 				SocketAddress localInstanceSocketAddress = localInstance.getLocalEndpoint().getSocketAddress();
 				if (multiMap.size() == 0) {

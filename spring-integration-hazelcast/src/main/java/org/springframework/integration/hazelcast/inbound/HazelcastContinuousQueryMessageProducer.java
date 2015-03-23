@@ -36,7 +36,7 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 	private final String predicate;
 	private boolean includeValue;
 
-	private HazelcastContinuousQueryMessageProducer(IMap<?, ?> distributedMap, String predicate) {
+	public HazelcastContinuousQueryMessageProducer(IMap<?, ?> distributedMap, String predicate) {
 		super(distributedMap);
 		Assert.hasText(predicate, "predicate must not be null");
 		this.predicate = predicate;

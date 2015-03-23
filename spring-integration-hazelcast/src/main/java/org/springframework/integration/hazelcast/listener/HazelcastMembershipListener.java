@@ -43,11 +43,11 @@ public class HazelcastMembershipListener extends MembershipAdapter {
 		if (!hazelcastLocalInstanceSet.isEmpty()) {
 			HazelcastInstance hazelcastInstance = hazelcastLocalInstanceSet.iterator().next();
 			Lock lock = hazelcastInstance
-					.getLock(HazelcastLocalInstanceRegistrar.HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP_LOCK);
+					.getLock(HazelcastLocalInstanceRegistrar.SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK);
 			lock.lock();
 			try {
 				MultiMap<SocketAddress, SocketAddress> configMultiMap = hazelcastInstance
-						.getMultiMap(HazelcastLocalInstanceRegistrar.HZ_CLUSTER_WIDE_CONFIG_MULTI_MAP);
+						.getMultiMap(HazelcastLocalInstanceRegistrar.SPRING_INTEGRATION_INTERNAL_CLUSTER_MULTIMAP);
 
 				if (configMultiMap.containsKey(removedMemberSocketAddress)) {
 					SocketAddress newAdminSocketAddress = getNewAdminInstanceSocketAddress(
