@@ -31,6 +31,8 @@ import com.hazelcast.core.MessageListener;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.util.Assert;
 
@@ -47,7 +49,9 @@ import org.springframework.util.Assert;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessageProducer {
 
-	public HazelcastEventDrivenMessageProducer(DistributedObject distributedObject) {
+	private final Log logger = LogFactory.getLog(this.getClass());
+
+	private HazelcastEventDrivenMessageProducer(DistributedObject distributedObject) {
 		super(distributedObject);
 	}
 
@@ -128,8 +132,12 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		protected void processEvent(EventObject event) {
 			Assert.notNull(event, "event must not be null");
 
-			if (getCacheEventTypeSet().contains(((ItemEvent<E>) event).getEventType().toString())) {
+			if (getCacheEventSet().contains(((ItemEvent<E>) event).getEventType().toString())) {
 				sendMessage(event, ((ItemEvent<E>) event).getMember().getSocketAddress(), getCacheListeningPolicy());
+			}
+
+			if (logger.isDebugEnabled()){
+				logger.debug("Received ItemEvent : " + event);
 			}
 		}
 
@@ -146,6 +154,10 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		protected void processEvent(EventObject event) {
 			Assert.notNull(event, "event must not be null");
 			sendMessage(event, ((Message<E>) event).getPublishingMember().getSocketAddress(), null);
+
+			if (logger.isDebugEnabled()){
+				logger.debug("Received Message : " + event);
+			}
 		}
 
 	}

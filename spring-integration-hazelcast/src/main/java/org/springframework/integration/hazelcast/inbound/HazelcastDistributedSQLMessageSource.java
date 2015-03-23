@@ -43,11 +43,15 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 
 	private DistributedSQLIterationType iterationType;
 
-	public HazelcastDistributedSQLMessageSource(IMap<?,?> distributedMap, String distributedSQL) {
+	private HazelcastDistributedSQLMessageSource(IMap<?,?> distributedMap, String distributedSQL) {
 		Assert.notNull(distributedMap, "cache must not be null");
-		Assert.notNull(distributedSQL, "distributed-sql must not be null");
+		Assert.hasText(distributedSQL, "distributed-sql must not be null");
 		this.distributedMap = distributedMap;
 		this.distributedSQL = distributedSQL;
+	}
+
+	public void setIterationType(DistributedSQLIterationType iterationType) {
+		this.iterationType = iterationType;
 	}
 
 	@Override
@@ -81,10 +85,6 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 		}
 
 		return collection;
-	}
-
-	public void setIterationType(DistributedSQLIterationType iterationType) {
-		this.iterationType = iterationType;
 	}
 
 }

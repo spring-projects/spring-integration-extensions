@@ -54,8 +54,6 @@ public class HazelcastContinuousQueryInboundChannelAdapterParser extends Abstrac
 
 	private static final String CACHE_EVENT_TYPES = "cacheEventTypes";
 
-	private static final String INCLUDE_VALUE = "includeValue";
-
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return HazelcastContinuousQueryMessageProducer.class;
@@ -98,7 +96,7 @@ public class HazelcastContinuousQueryInboundChannelAdapterParser extends Abstrac
 		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
 		builder.addConstructorArgValue(element.getAttribute(PREDICATE_ATTRIBUTE));
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_EVENTS_ATTRIBUTE, CACHE_EVENT_TYPES);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, INCLUDE_VALUE_ATTRIBUTE, INCLUDE_VALUE);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, INCLUDE_VALUE_ATTRIBUTE);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.AUTO_STARTUP);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.PHASE);
 	}

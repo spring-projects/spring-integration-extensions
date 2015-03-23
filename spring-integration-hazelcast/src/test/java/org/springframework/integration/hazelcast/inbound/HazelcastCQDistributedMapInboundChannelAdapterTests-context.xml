@@ -56,7 +56,7 @@
 	  <constructor-arg value="cqDistributedMap5"/>
 	</bean>
 		
-	<bean id="cqInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+	<bean id="cqInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance" destroy-method="shutdown">
 	  <constructor-arg>
 	    <bean class="com.hazelcast.config.Config" />
 	  </constructor-arg>

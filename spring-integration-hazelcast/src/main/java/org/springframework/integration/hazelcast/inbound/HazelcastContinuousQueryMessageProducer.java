@@ -36,10 +36,14 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 	private final String predicate;
 	private boolean includeValue;
 
-	public HazelcastContinuousQueryMessageProducer(IMap<?, ?> distributedMap, String predicate) {
+	private HazelcastContinuousQueryMessageProducer(IMap<?, ?> distributedMap, String predicate) {
 		super(distributedMap);
-		Assert.notNull(predicate, "predicate must not be null");
+		Assert.hasText(predicate, "predicate must not be null");
 		this.predicate = predicate;
+	}
+
+	public void setIncludeValue(boolean includeValue) {
+		this.includeValue = includeValue;
 	}
 
 	@Override
@@ -63,10 +67,6 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 	@Override
 	public String getComponentType() {
 		return "hazelcast:cq-inbound-channel-adapter";
-	}
-
-	public void setIncludeValue(boolean includeValue) {
-		this.includeValue = includeValue;
 	}
 
 }

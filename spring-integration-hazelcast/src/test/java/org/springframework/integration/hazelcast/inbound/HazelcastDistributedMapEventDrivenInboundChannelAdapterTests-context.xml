@@ -47,7 +47,7 @@
 	  <constructor-arg value="edDistributedMap4"/>
 	</bean>
 		
-	<bean id="edMapInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+	<bean id="edMapInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance" destroy-method="shutdown">
 	  <constructor-arg>
 	    <bean class="com.hazelcast.config.Config" />
 	  </constructor-arg>

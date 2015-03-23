@@ -15,7 +15,7 @@
 	<int:channel id="setChannel"/>
 	<int:channel id="queueChannel"/>
 	
-	<int-hazelcast:outbound-channel-adapter id="mapChannel" cache="distributedMap" />
+	<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache="distributedMap" />
 	<int-hazelcast:outbound-channel-adapter channel="listChannel" cache="distributedList" />
 	<int-hazelcast:outbound-channel-adapter channel="setChannel" cache="distributedSet" />
 	<int-hazelcast:outbound-channel-adapter channel="queueChannel" cache="distributedQueue" />
@@ -36,7 +36,7 @@
 	  <constructor-arg value="distributedQueue"/>
 	</bean>
 	
-	<bean id="instance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+	<bean id="instance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance" destroy-method="shutdown">
 	  <constructor-arg>
 	    <bean class="com.hazelcast.config.Config" />
 	  </constructor-arg>

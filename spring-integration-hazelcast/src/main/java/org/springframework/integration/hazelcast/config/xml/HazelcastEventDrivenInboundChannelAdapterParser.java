@@ -52,8 +52,6 @@ public class HazelcastEventDrivenInboundChannelAdapterParser extends AbstractSin
 
 	private static final String CACHE_EVENT_TYPES = "cacheEventTypes";
 
-	private static final String CACHE_LISTENING_POLICY = "cacheListeningPolicy";
-
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return HazelcastEventDrivenMessageProducer.class;
@@ -95,7 +93,7 @@ public class HazelcastEventDrivenInboundChannelAdapterParser extends AbstractSin
 		builder.addPropertyReference(OUTPUT_CHANNEL, channelName);
 		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_EVENTS_ATTRIBUTE, CACHE_EVENT_TYPES);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_LISTENING_POLICY_ATTRIBUTE, CACHE_LISTENING_POLICY);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_LISTENING_POLICY_ATTRIBUTE);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.AUTO_STARTUP);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.PHASE);
 	}

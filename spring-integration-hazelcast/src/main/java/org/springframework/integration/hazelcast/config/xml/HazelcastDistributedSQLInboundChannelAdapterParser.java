@@ -42,8 +42,6 @@ public class HazelcastDistributedSQLInboundChannelAdapterParser extends Abstract
 
 	private static final String ITERATION_TYPE_ATTRIBUTE = "iteration-type";
 
-	private static final String ITERATION_TYPE_PROPERTY = "iterationType";
-
 	@Override
 	protected BeanMetadataElement parseSource(Element element, ParserContext parserContext) {
 		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
@@ -62,8 +60,7 @@ public class HazelcastDistributedSQLInboundChannelAdapterParser extends Abstract
 		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
 		builder.addConstructorArgValue(element.getAttribute(DISTRIBUTED_SQL_ATTRIBUTE));
 
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder,
-				element, ITERATION_TYPE_ATTRIBUTE, ITERATION_TYPE_PROPERTY);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, ITERATION_TYPE_ATTRIBUTE);
 
 		return builder.getBeanDefinition();
 	}

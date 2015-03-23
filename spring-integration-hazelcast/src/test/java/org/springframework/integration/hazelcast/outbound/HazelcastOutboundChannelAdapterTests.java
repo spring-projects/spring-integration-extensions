@@ -35,10 +35,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.support.DefaultMessageBuilderFactory;
-import org.springframework.integration.support.MessageBuilderFactory;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandlingException;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -55,8 +54,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class HazelcastOutboundChannelAdapterTests {
 
 	private static final int DATA_COUNT = 100;
-
-	private volatile MessageBuilderFactory messageBuilderFactory;
 
 	@Autowired
 	private MessageChannel mapChannel;
@@ -88,28 +85,26 @@ public class HazelcastOutboundChannelAdapterTests {
 		distributedList.clear();
 		distributedSet.clear();
 		distributedQueue.clear();
-
-		messageBuilderFactory = new DefaultMessageBuilderFactory();
 	}
 
 	@Test
 	public void testWriteDistributedMap() {
 		Map<Integer, String> map = createMapByEntryCount();
-		mapChannel.send(this.messageBuilderFactory.withPayload(map).build());
+		mapChannel.send(new GenericMessage<>(map));
 		verifyDistributedMap();
 	}
 
 	@Test
 	public void testWriteDistributedList() {
 		List<Integer> list = (List<Integer>) fillCollectionByEntryCount(new ArrayList<Integer>());
-		listChannel.send(this.messageBuilderFactory.withPayload(list).build());
+		listChannel.send(new GenericMessage<>(list));
 		verifyDistributedList();
 	}
 
 	@Test
 	public void testWriteDistributedSet() {
 		Set<Integer> set = (Set<Integer>) fillCollectionByEntryCount(new HashSet<Integer>());
-		setChannel.send(this.messageBuilderFactory.withPayload(set).build());
+		setChannel.send(new GenericMessage<>(set));
 		verifyDistributedSet();
 	}
 
@@ -117,7 +112,7 @@ public class HazelcastOutboundChannelAdapterTests {
 	public void testWriteDistributedQueue() {
 		Queue<Integer> queue = (Queue<Integer>) fillCollectionByEntryCount(
 				new LinkedBlockingQueue<Integer>(DATA_COUNT));
-		queueChannel.send(this.messageBuilderFactory.withPayload(queue).build());
+		queueChannel.send(new GenericMessage<>(queue));
 		verifyDistributedQueue();
 	}
 
@@ -125,28 +120,28 @@ public class HazelcastOutboundChannelAdapterTests {
 	public void testMapChannelWithIncorrectDataType() {
 		Set<Integer> set = new HashSet<>();
 		set.add(1);
-		mapChannel.send(this.messageBuilderFactory.withPayload(set).build());
+		mapChannel.send(new GenericMessage<>(set));
 	}
 
 	@Test(expected = MessageHandlingException.class)
 	public void testListChannelWithIncorrectDataType() {
 		Set<Integer> set = new HashSet<>();
 		set.add(1);
-		listChannel.send(this.messageBuilderFactory.withPayload(set).build());
+		listChannel.send(new GenericMessage<>(set));
 	}
 
 	@Test(expected = MessageHandlingException.class)
 	public void testSetChannelWithIncorrectDataType() {
 		List<Integer> list = new ArrayList<>();
 		list.add(1);
-		setChannel.send(this.messageBuilderFactory.withPayload(list).build());
+		setChannel.send(new GenericMessage<>(list));
 	}
 
 	@Test(expected = MessageHandlingException.class)
 	public void testQueueChannelWithIncorrectDataType() {
 		Set<Integer> set = new HashSet<>();
 		set.add(1);
-		queueChannel.send(this.messageBuilderFactory.withPayload(set).build());
+		queueChannel.send(new GenericMessage<>(set));
 	}
 
 	private Map<Integer, String> createMapByEntryCount() {
@@ -199,11 +194,9 @@ public class HazelcastOutboundChannelAdapterTests {
 
 	private void verifyDistributedQueue() {
 		Assert.assertEquals(true, distributedQueue.size() == DATA_COUNT);
-		Iterator<?> it = distributedQueue.iterator();
 		int index = 0;
-		while (it.hasNext()) {
-			Assert.assertEquals(index, it.next());
-			index++;
+		for (Object o : distributedQueue) {
+		    Assert.assertEquals(index++, o);
 		}
 	}
 }

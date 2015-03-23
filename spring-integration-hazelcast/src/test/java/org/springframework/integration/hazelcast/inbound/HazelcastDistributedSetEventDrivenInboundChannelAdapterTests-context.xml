@@ -38,7 +38,7 @@
 	  <constructor-arg value="edDistributedSet3"/>
 	</bean>
 		
-	<bean id="edSetInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+	<bean id="edSetInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance" destroy-method="shutdown">
 	  <constructor-arg>
 	    <bean class="com.hazelcast.config.Config" />
 	  </constructor-arg>

@@ -16,6 +16,7 @@ sourceCompatibility = targetCompatibility = 1.7
 ext {
 	hazelcastVersion = '3.4.1'
 	jacocoVersion = '0.7.0.201403182114'
+	slf4jVersion = '1.7.8'
 	springIntegrationVersion = '4.1.2.RELEASE'
 
 	idPrefix = 'hazelcast'
@@ -47,6 +48,8 @@ dependencies {
 	compile "com.hazelcast:hazelcast:$hazelcastVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
+	
+	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
 
 	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }
@@ -57,7 +60,8 @@ dependencies {
 test {
 	// suppress all console output during testing unless running `gradle -i`
 	logging.captureStandardOutput(LogLevel.INFO)
-	jvmArgs "-javaagent:${configurations.jacoco.asPath}=destfile=${buildDir}/jacoco.exec,includes=*"
+	jvmArgs "-javaagent:${configurations.jacoco.asPath}=destfile=${buildDir}/jacoco.exec,includes=*",
+            "-Dhazelcast.logging.type=slf4j"
 }
 
 task sourcesJar(type: Jar) {
