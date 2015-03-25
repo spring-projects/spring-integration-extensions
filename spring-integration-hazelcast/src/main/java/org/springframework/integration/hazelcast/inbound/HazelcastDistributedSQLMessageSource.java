@@ -41,7 +41,7 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 
 	private final String distributedSQL;
 
-	private DistributedSQLIterationType iterationType;
+	private DistributedSQLIterationType iterationType = DistributedSQLIterationType.VALUE;
 
 	public HazelcastDistributedSQLMessageSource(IMap<?,?> distributedMap, String distributedSQL) {
 		Assert.notNull(distributedMap, "cache must not be null");
@@ -51,6 +51,7 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 	}
 
 	public void setIterationType(DistributedSQLIterationType iterationType) {
+		Assert.notNull(this.iterationType, "iterationType must not be null");
 		this.iterationType = iterationType;
 	}
 
@@ -61,7 +62,6 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 
 	@Override
 	protected Collection<?> doReceive() {
-		Assert.notNull(this.iterationType, "iterationType must not be null");
 		switch (this.iterationType) {
 			case ENTRY:
 				return getDistributedSQLResultSet(Collections
