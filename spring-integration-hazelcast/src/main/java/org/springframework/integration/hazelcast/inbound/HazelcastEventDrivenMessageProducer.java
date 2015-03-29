@@ -54,56 +54,56 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 	@Override
 	protected void onInit() {
 		super.onInit();
-		HazelcastIntegrationDefinitionValidator.validateCacheTypeForEventDrivenMessageProducer(getDistributedObject());
+		HazelcastIntegrationDefinitionValidator.validateCacheTypeForEventDrivenMessageProducer(this.distributedObject);
 	}
 
 	@Override
 	protected void doStart() {
-		if(getDistributedObject() instanceof IMap) {
-			setHazelcastRegisteredEventListenerId(((IMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(), true));
+		if(this.distributedObject instanceof IMap) {
+			setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject).addEntryListener(new HazelcastEntryListener(), true));
 		}
-		else if(getDistributedObject() instanceof MultiMap) {
-			setHazelcastRegisteredEventListenerId(((MultiMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener(), true));
+		else if(this.distributedObject instanceof MultiMap) {
+			setHazelcastRegisteredEventListenerId(((MultiMap<?, ?>) this.distributedObject).addEntryListener(new HazelcastEntryListener(), true));
 		}
-		else if(getDistributedObject() instanceof ReplicatedMap) {
-			setHazelcastRegisteredEventListenerId(((ReplicatedMap<?, ?>)getDistributedObject()).addEntryListener(new HazelcastEntryListener()));
+		else if(this.distributedObject instanceof ReplicatedMap) {
+			setHazelcastRegisteredEventListenerId(((ReplicatedMap<?, ?>) this.distributedObject).addEntryListener(new HazelcastEntryListener()));
 		}
-		else if(getDistributedObject() instanceof IList) {
-			setHazelcastRegisteredEventListenerId(((IList<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(), true));
+		else if(this.distributedObject instanceof IList) {
+			setHazelcastRegisteredEventListenerId(((IList<?>) this.distributedObject).addItemListener(new HazelcastItemListener(), true));
 		}
-		else if(getDistributedObject() instanceof ISet) {
-			setHazelcastRegisteredEventListenerId(((ISet<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(), true));
+		else if(this.distributedObject instanceof ISet) {
+			setHazelcastRegisteredEventListenerId(((ISet<?>) this.distributedObject).addItemListener(new HazelcastItemListener(), true));
 		}
-		else if(getDistributedObject() instanceof IQueue) {
-			setHazelcastRegisteredEventListenerId(((IQueue<?>)getDistributedObject()).addItemListener(new HazelcastItemListener(), true));
+		else if(this.distributedObject instanceof IQueue) {
+			setHazelcastRegisteredEventListenerId(((IQueue<?>) this.distributedObject).addItemListener(new HazelcastItemListener(), true));
 		}
-		else if(getDistributedObject() instanceof ITopic) {
-			setHazelcastRegisteredEventListenerId(((ITopic<?>)getDistributedObject()).addMessageListener(new HazelcastMessageListener()));
+		else if(this.distributedObject instanceof ITopic) {
+			setHazelcastRegisteredEventListenerId(((ITopic<?>) this.distributedObject).addMessageListener(new HazelcastMessageListener()));
 		}
 	}
 
 	@Override
 	protected void doStop() {
-		if(getDistributedObject() instanceof IMap) {
-			((IMap<?, ?>)getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+		if(this.distributedObject instanceof IMap) {
+			((IMap<?, ?>) this.distributedObject).removeEntryListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(getDistributedObject() instanceof MultiMap) {
-			((MultiMap<?, ?>)getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+		else if(this.distributedObject instanceof MultiMap) {
+			((MultiMap<?, ?>) this.distributedObject).removeEntryListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(getDistributedObject() instanceof ReplicatedMap) {
-			((ReplicatedMap<?, ?>)getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+		else if(this.distributedObject instanceof ReplicatedMap) {
+			((ReplicatedMap<?, ?>) this.distributedObject).removeEntryListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(getDistributedObject() instanceof IList) {
-			((IList<?>)getDistributedObject()).removeItemListener(getHazelcastRegisteredEventListenerId());
+		else if(this.distributedObject instanceof IList) {
+			((IList<?>) this.distributedObject).removeItemListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(getDistributedObject() instanceof ISet) {
-			((ISet<?>)getDistributedObject()).removeItemListener(getHazelcastRegisteredEventListenerId());
+		else if(this.distributedObject instanceof ISet) {
+			((ISet<?>) this.distributedObject).removeItemListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(getDistributedObject() instanceof IQueue) {
-			((IQueue<?>)getDistributedObject()).removeItemListener(getHazelcastRegisteredEventListenerId());
+		else if(this.distributedObject instanceof IQueue) {
+			((IQueue<?>) this.distributedObject).removeItemListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(getDistributedObject() instanceof ITopic) {
-			((ITopic<?>)getDistributedObject()).removeMessageListener(getHazelcastRegisteredEventListenerId());
+		else if(this.distributedObject instanceof ITopic) {
+			((ITopic<?>) this.distributedObject).removeMessageListener(getHazelcastRegisteredEventListenerId());
 		}
 	}
 

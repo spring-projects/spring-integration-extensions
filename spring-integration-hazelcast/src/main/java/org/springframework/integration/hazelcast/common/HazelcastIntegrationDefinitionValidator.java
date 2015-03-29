@@ -72,14 +72,6 @@ public class HazelcastIntegrationDefinitionValidator {
 		}
 	}
 
-	public static void validateCacheTypeForContinuousQueryMessageProducer(final DistributedObject distributedObject) {
-		if (!(distributedObject instanceof IMap)) {
-			throw new IllegalArgumentException(
-					"Invalid 'cache' type is set. Only IMap cache object type is acceptable "
-							+ "for Hazelcast Continuous Query Inbound Channel Adapter.");
-		}
-	}
-
 	public static void validateCacheEventsByDistributedObject(
 			final DistributedObject distributedObject, final Set<String> cacheEventTypeSet) {
 		List<String> supportedCacheEventTypes = getSupportedCacheEventTypes(distributedObject);

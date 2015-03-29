@@ -21,6 +21,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.integration.config.IntegrationConfigurationInitializer;
+import org.springframework.integration.hazelcast.common.HazelcastLocalInstanceRegistrar;
 
 /**
  * The Hazelcast Integration infrastructure {@code beanFactory} initializer.

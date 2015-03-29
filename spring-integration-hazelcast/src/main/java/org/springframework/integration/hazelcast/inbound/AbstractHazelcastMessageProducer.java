@@ -37,7 +37,7 @@ import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.hazelcast.common.CacheEventType;
 import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
 import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
-import org.springframework.integration.hazelcast.config.HazelcastLocalInstanceRegistrar;
+import org.springframework.integration.hazelcast.common.HazelcastLocalInstanceRegistrar;
 import org.springframework.util.Assert;
 
 /**
@@ -48,9 +48,7 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractHazelcastMessageProducer extends MessageProducerSupport {
 
-	private final DistributedObject distributedObject;
-
-	private String cacheEventTypes;
+	protected final DistributedObject distributedObject;
 
 	private CacheListeningPolicyType cacheListeningPolicy;
 
@@ -67,13 +65,13 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		return cacheEvents;
 	}
 
-	protected DistributedObject getDistributedObject() {
-		return distributedObject;
-	}
-
 	public void setCacheEventTypes(String cacheEventTypes) {
 		HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, cacheEventTypes);
-		this.cacheEventTypes = cacheEventTypes;
+		final Set<String> cacheEvents = StringUtils.commaDelimitedListToSet(cacheEventTypes);
+		Assert.notEmpty(cacheEvents, "cacheEvents must have elements");
+		HazelcastIntegrationDefinitionValidator.validateCacheEventsByDistributedObject(
+				this.distributedObject, cacheEvents);
+		this.cacheEvents = cacheEvents;
 	}
 
 	protected CacheListeningPolicyType getCacheListeningPolicy() {
@@ -90,14 +88,6 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 	protected void setHazelcastRegisteredEventListenerId(String hazelcastRegisteredEventListenerId) {
 		this.hazelcastRegisteredEventListenerId = hazelcastRegisteredEventListenerId;
-	}
-
-	@Override
-	protected void onInit() {
-		super.onInit();
-		this.cacheEvents = StringUtils.commaDelimitedListToSet(this.cacheEventTypes);
-		HazelcastIntegrationDefinitionValidator.validateCacheEventsByDistributedObject(
-				getDistributedObject(), this.cacheEvents);
 	}
 
 	protected abstract class AbstractHazelcastEventListener {

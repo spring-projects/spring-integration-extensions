@@ -26,7 +26,7 @@ import com.hazelcast.core.MembershipAdapter;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MultiMap;
 
-import org.springframework.integration.hazelcast.config.HazelcastLocalInstanceRegistrar;
+import org.springframework.integration.hazelcast.common.HazelcastLocalInstanceRegistrar;
 
 /**
  * Hazelcast {@link MembershipAdapter} in order to listen for membership updates in the cluster.

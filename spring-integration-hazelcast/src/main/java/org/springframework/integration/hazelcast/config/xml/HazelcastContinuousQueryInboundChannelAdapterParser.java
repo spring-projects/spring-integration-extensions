@@ -30,10 +30,8 @@ import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.hazelcast.inbound.HazelcastContinuousQueryMessageProducer;
 
 /**
- * Hazelcast Continuous Query Inbound Channel Adapter Parser is a
- * {@link org.springframework.beans.factory.xml.BeanDefinitionParser} implementation. It parses
- * {@code <int-hazelcast:cq-inbound-channel-adapter/>} configuration and defines just a single
- * {@link org.springframework.beans.factory.config.BeanDefinition}.
+ * Hazelcast Continuous Query Inbound Channel Adapter Parser parses
+ * {@code <int-hazelcast:cq-inbound-channel-adapter/>} configuration.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0

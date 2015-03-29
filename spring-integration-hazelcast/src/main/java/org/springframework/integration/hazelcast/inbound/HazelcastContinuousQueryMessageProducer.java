@@ -19,7 +19,6 @@ package org.springframework.integration.hazelcast.inbound;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.SqlPredicate;
 
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
 import org.springframework.util.Assert;
 
 /**
@@ -46,22 +45,16 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 		this.includeValue = includeValue;
 	}
 
-	@Override
-	protected void onInit() {
-		super.onInit();
-		HazelcastIntegrationDefinitionValidator.validateCacheTypeForContinuousQueryMessageProducer(getDistributedObject());
-	}
-
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void doStart() {
-		setHazelcastRegisteredEventListenerId(((IMap<?, ?>) getDistributedObject())
+		setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject)
 				.addEntryListener(new HazelcastEntryListener(), new SqlPredicate(this.predicate), this.includeValue));
 	}
 
 	@Override
 	protected void doStop() {
-		((IMap<?, ?>) getDistributedObject()).removeEntryListener(getHazelcastRegisteredEventListenerId());
+		((IMap<?, ?>) this.distributedObject).removeEntryListener(getHazelcastRegisteredEventListenerId());
 	}
 
 	@Override

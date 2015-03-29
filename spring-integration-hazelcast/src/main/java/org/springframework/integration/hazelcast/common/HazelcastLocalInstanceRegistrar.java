@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.config;
+package org.springframework.integration.hazelcast.common;
 
 import java.net.SocketAddress;
 import java.util.concurrent.locks.Lock;
