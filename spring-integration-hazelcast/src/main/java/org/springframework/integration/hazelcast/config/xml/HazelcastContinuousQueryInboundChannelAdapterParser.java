@@ -48,6 +48,8 @@ public class HazelcastContinuousQueryInboundChannelAdapterParser extends Abstrac
 
 	private static final String INCLUDE_VALUE_ATTRIBUTE = "include-value";
 
+	private static final String CACHE_LISTENING_POLICY_ATTRIBUTE = "cache-listening-policy";
+
 	private static final String OUTPUT_CHANNEL = "outputChannel";
 
 	private static final String CACHE_EVENT_TYPES = "cacheEventTypes";
@@ -89,12 +91,16 @@ public class HazelcastContinuousQueryInboundChannelAdapterParser extends Abstrac
 		else if (!StringUtils.hasText(element.getAttribute(PREDICATE_ATTRIBUTE))) {
 			parserContext.getReaderContext().error("'" + PREDICATE_ATTRIBUTE + "' attribute is required.", element);
 		}
+		else if (!StringUtils.hasText(element.getAttribute(CACHE_LISTENING_POLICY_ATTRIBUTE))) {
+			parserContext.getReaderContext().error("'" + CACHE_LISTENING_POLICY_ATTRIBUTE + "' attribute is required.", element);
+		}
 
 		builder.addPropertyReference(OUTPUT_CHANNEL, channelName);
 		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
 		builder.addConstructorArgValue(element.getAttribute(PREDICATE_ATTRIBUTE));
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_EVENTS_ATTRIBUTE, CACHE_EVENT_TYPES);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, INCLUDE_VALUE_ATTRIBUTE);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, CACHE_LISTENING_POLICY_ATTRIBUTE);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.AUTO_STARTUP);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.PHASE);
 	}

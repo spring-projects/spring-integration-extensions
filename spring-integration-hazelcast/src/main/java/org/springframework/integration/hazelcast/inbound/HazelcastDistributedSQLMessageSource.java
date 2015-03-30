@@ -43,7 +43,7 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 
 	private DistributedSQLIterationType iterationType = DistributedSQLIterationType.VALUE;
 
-	public HazelcastDistributedSQLMessageSource(IMap<?,?> distributedMap, String distributedSQL) {
+	public HazelcastDistributedSQLMessageSource(IMap distributedMap, String distributedSQL) {
 		Assert.notNull(distributedMap, "cache must not be null");
 		Assert.hasText(distributedSQL, "distributed-sql must not be null");
 		this.distributedMap = distributedMap;

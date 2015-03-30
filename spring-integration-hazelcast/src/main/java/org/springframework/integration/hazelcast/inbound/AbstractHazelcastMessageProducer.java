@@ -18,6 +18,7 @@ package org.springframework.integration.hazelcast.inbound;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,11 +51,11 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 	protected final DistributedObject distributedObject;
 
-	private CacheListeningPolicyType cacheListeningPolicy;
+	private CacheListeningPolicyType cacheListeningPolicy = CacheListeningPolicyType.SINGLE;
 
 	private String hazelcastRegisteredEventListenerId;
 
-	private Set<String> cacheEvents;
+	private Set<String> cacheEvents = Collections.singleton(CacheEventType.ADDED.name());
 
 	protected AbstractHazelcastMessageProducer(DistributedObject distributedObject) {
 		Assert.notNull(distributedObject, "cache must not be null");
@@ -79,6 +80,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	public void setCacheListeningPolicy(CacheListeningPolicyType cacheListeningPolicy) {
+		Assert.notNull(cacheListeningPolicy, "cacheListeningPolicy must have elements");
 		this.cacheListeningPolicy = cacheListeningPolicy;
 	}
 

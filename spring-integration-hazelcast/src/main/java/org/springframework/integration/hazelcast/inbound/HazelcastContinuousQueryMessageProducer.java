@@ -33,9 +33,10 @@ import org.springframework.util.Assert;
 public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMessageProducer {
 
 	private final String predicate;
-	private boolean includeValue;
+	private boolean includeValue = true;
 
-	public HazelcastContinuousQueryMessageProducer(IMap<?, ?> distributedMap, String predicate) {
+	@SuppressWarnings("rawtypes")
+	public HazelcastContinuousQueryMessageProducer(IMap distributedMap, String predicate) {
 		super(distributedMap);
 		Assert.hasText(predicate, "predicate must not be null");
 		this.predicate = predicate;

@@ -162,6 +162,19 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			
+			<xsd:attribute name="cache-listening-policy" default="SINGLE" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[ Specifies cache listening policy. ]]></xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="SINGLE" />
+						<xsd:enumeration value="ALL" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:attribute>
+			
 		</xsd:complexType>
 	</xsd:element>
 	
