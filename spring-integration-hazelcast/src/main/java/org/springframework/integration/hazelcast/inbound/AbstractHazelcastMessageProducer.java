@@ -80,7 +80,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	public void setCacheListeningPolicy(CacheListeningPolicyType cacheListeningPolicy) {
-		Assert.notNull(cacheListeningPolicy, "cacheListeningPolicy must have elements");
+		Assert.notNull(cacheListeningPolicy, "cacheListeningPolicy must not be null");
 		this.cacheListeningPolicy = cacheListeningPolicy;
 	}
 
