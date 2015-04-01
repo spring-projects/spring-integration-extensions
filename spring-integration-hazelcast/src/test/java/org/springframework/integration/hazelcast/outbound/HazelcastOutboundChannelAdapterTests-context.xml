@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:int="http://www.springframework.org/schema/integration"
+  xmlns:int-hazelcast="http://www.springframework.org/schema/integration/hazelcast"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/hazelcast
+	http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
+
+	<int:channel id="mapChannel"/>
+	<int:channel id="listChannel"/>
+	<int:channel id="setChannel"/>
+	<int:channel id="queueChannel"/>
+	
+	<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache="distributedMap" />
+	<int-hazelcast:outbound-channel-adapter channel="listChannel" cache="distributedList" />
+	<int-hazelcast:outbound-channel-adapter channel="setChannel" cache="distributedSet" />
+	<int-hazelcast:outbound-channel-adapter channel="queueChannel" cache="distributedQueue" />
+	
+	<bean id="distributedMap" factory-bean="instance" factory-method="getMap">
+	  <constructor-arg value="distributedMap"/>
+	</bean>
+	
+	<bean id="distributedList" factory-bean="instance" factory-method="getList">
+	  <constructor-arg value="distributedList"/>
+	</bean>
+	
+	<bean id="distributedSet" factory-bean="instance" factory-method="getSet">
+	  <constructor-arg value="distributedSet"/>
+	</bean>
+	
+	<bean id="distributedQueue" factory-bean="instance" factory-method="getQueue">
+	  <constructor-arg value="distributedQueue"/>
+	</bean>
+	
+	<bean id="instance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance" destroy-method="shutdown">
+	  <constructor-arg>
+	    <bean class="com.hazelcast.config.Config" />
+	  </constructor-arg>
+	</bean>
+	
+</beans>
