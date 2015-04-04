@@ -7,7 +7,7 @@
 	targetNamespace="http://www.springframework.org/schema/integration/hazelcast"
 	elementFormDefault="qualified"
 	attributeFormDefault="unqualified">
-	
+
 	<xsd:import namespace="http://www.springframework.org/schema/beans"
 				schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
 	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
@@ -15,16 +15,16 @@
 				schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd"/>
 
 	<xsd:element name="inbound-channel-adapter">
-	
+
 		<xsd:annotation>
 			<xsd:documentation>
 				Configures Hazelcast Event-Driven Inbound Channel Adapter
 			</xsd:documentation>
 		</xsd:annotation>
-		
+
 		<xsd:complexType>
 			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
-			
+
 			<xsd:attribute name="cache" use="required" type="xsd:string">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -51,7 +51,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="cache-listening-policy" default="SINGLE" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ Specifies cache listening policy. ]]></xsd:documentation>
@@ -63,26 +63,27 @@
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:attribute>
-					
+
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="outbound-channel-adapter">
-		
+
 		<xsd:annotation>
 			<xsd:documentation>
 				Configures Hazelcast Outbound Channel Adapter
 			</xsd:documentation>
 		</xsd:annotation>
-		
+
 		<xsd:complexType>
-			<xsd:all>
+			<xsd:choice minOccurs="0" maxOccurs="2">
 				<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType"
 							minOccurs="0" maxOccurs="1" />
-			</xsd:all>
- 			
+				<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
+			</xsd:choice>
+
  			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
- 	
+
 			<xsd:attribute name="cache" use="required" type="xsd:string">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -95,7 +96,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="order" type="xsd:string" use="optional">
                 <xsd:annotation>
                     <xsd:documentation><![CDATA[
@@ -104,22 +105,22 @@
                 ]]></xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
-		
+
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="cq-inbound-channel-adapter">
-	
+
 		<xsd:annotation>
 			<xsd:documentation>
 				Configures Hazelcast Continuous Query Inbound Channel Adapter
 			</xsd:documentation>
 		</xsd:annotation>
-		
+
 		<xsd:complexType>
 
 			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
-			
+
 			<xsd:attribute name="cache" use="required" type="xsd:string">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -146,7 +147,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="predicate" type="xsd:string" use="required">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -154,7 +155,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="include-value" type="xsd:boolean" default="true">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -162,7 +163,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="cache-listening-policy" default="SINGLE" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ Specifies cache listening policy. ]]></xsd:documentation>
@@ -174,24 +175,24 @@
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:attribute>
-			
+
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="ds-inbound-channel-adapter">
-	
+
 		<xsd:annotation>
 			<xsd:documentation>
 				Configures Hazelcast Distributed SQL Inbound Channel Adapter
 			</xsd:documentation>
 		</xsd:annotation>
-		
+
 		<xsd:complexType>
-		
+
 			<xsd:sequence>
 				<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
 			</xsd:sequence>
-			
+
 			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
 
 			<xsd:attribute name="cache" use="required" type="xsd:string">
@@ -206,7 +207,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="iteration-type" default="VALUE" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[ Specifies Distributed-SQL Iteration Types. ]]></xsd:documentation>
@@ -220,7 +221,7 @@
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:attribute>
-			
+
 			<xsd:attribute name="distributed-sql" type="xsd:string" use="required">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -228,8 +229,8 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-		
+
 		</xsd:complexType>
-		
+
 	</xsd:element>
 </xsd:schema>

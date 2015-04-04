@@ -11,14 +11,34 @@
 	http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
 	<int:channel id="mapChannel"/>
+
 	<int:channel id="listChannel"/>
+
 	<int:channel id="setChannel"/>
-	<int:channel id="queueChannel"/>
+
+	<int:channel id="queueChannel">
+		<int:queue/>
+	</int:channel>
+
+	<int:channel id="errorChannel">
+		<int:queue/>
+	</int:channel>
 
 	<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache="distributedMap"/>
+
 	<int-hazelcast:outbound-channel-adapter channel="listChannel" cache="distributedList"/>
+
 	<int-hazelcast:outbound-channel-adapter channel="setChannel" cache="distributedSet"/>
-	<int-hazelcast:outbound-channel-adapter channel="queueChannel" cache="distributedQueue"/>
+
+	<bean id="testRequestHandlerAdvice"
+		  class="org.springframework.integration.hazelcast.outbound.HazelcastOutboundChannelAdapterTests$TestRequestHandlerAdvice"/>
+
+	<int-hazelcast:outbound-channel-adapter channel="queueChannel" cache="distributedQueue">
+		<int:poller fixed-delay="100"/>
+		<int-hazelcast:request-handler-advice-chain>
+			<ref bean="testRequestHandlerAdvice"/>
+		</int-hazelcast:request-handler-advice-chain>
+	</int-hazelcast:outbound-channel-adapter>
 
 	<bean id="distributedMap" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="distributedMap"/>
