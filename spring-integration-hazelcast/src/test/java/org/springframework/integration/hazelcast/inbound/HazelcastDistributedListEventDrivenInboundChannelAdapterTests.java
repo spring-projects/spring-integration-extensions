@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
+import org.springframework.integration.hazelcast.message.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
@@ -32,7 +33,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.EntryEventType;
 import com.hazelcast.core.IList;
-import com.hazelcast.core.ItemEvent;
 
 /**
  * Hazelcast Distributed List Event Driven Inbound Channel Adapter Test Class
@@ -69,15 +69,11 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests {
 		Message<?> msg = edListChannel1.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof ItemEvent);
-		Assert.assertEquals(EntryEventType.ADDED.toString(),
-				((ItemEvent<?>) msg.getPayload()).getEventType().toString());
-		Assert.assertEquals(1,
-				((HazelcastIntegrationTestUser) ((ItemEvent<?>) msg.getPayload()).getItem()).getId());
-		Assert.assertEquals("TestName1",
-				((HazelcastIntegrationTestUser) ((ItemEvent<?>) msg.getPayload()).getItem()).getName());
-		Assert.assertEquals("TestSurname1",
-				((HazelcastIntegrationTestUser) ((ItemEvent<?>) msg.getPayload()).getItem()).getSurname());
+		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
+		Assert.assertEquals(EntryEventType.ADDED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT).toString());
+		Assert.assertEquals(1, ((HazelcastIntegrationTestUser) msg.getPayload()).getId());
+		Assert.assertEquals("TestName1", ((HazelcastIntegrationTestUser) msg.getPayload()).getName());
+		Assert.assertEquals("TestSurname1", ((HazelcastIntegrationTestUser) msg.getPayload()).getSurname());
 	}
 
 	@Test
@@ -88,15 +84,11 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests {
 		Message<?> msg = edListChannel2.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof ItemEvent);
-		Assert.assertEquals(EntryEventType.REMOVED.toString(),
-				((ItemEvent<?>) msg.getPayload()).getEventType().toString());
-		Assert.assertEquals(2,
-				((HazelcastIntegrationTestUser) ((ItemEvent<?>) msg.getPayload()).getItem()).getId());
-		Assert.assertEquals("TestName2",
-				((HazelcastIntegrationTestUser) ((ItemEvent<?>) msg.getPayload()).getItem()).getName());
-		Assert.assertEquals("TestSurname2",
-				((HazelcastIntegrationTestUser) ((ItemEvent<?>) msg.getPayload()).getItem()).getSurname());
+		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
+		Assert.assertEquals(EntryEventType.REMOVED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT).toString());
+		Assert.assertEquals(2, ((HazelcastIntegrationTestUser) msg.getPayload()).getId());
+		Assert.assertEquals("TestName2", ((HazelcastIntegrationTestUser) msg.getPayload()).getName());
+		Assert.assertEquals("TestSurname2", ((HazelcastIntegrationTestUser) msg.getPayload()).getSurname());
 	}
 
 	@Test
@@ -116,12 +108,11 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests {
 		verify(msg, EntryEventType.ADDED);
 	}
 
-	private void verify(Message<?> msg, EntryEventType type) {
+	private void verify(Message<?> msg, EntryEventType event) {
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof ItemEvent);
-		Assert.assertEquals(type.toString(),
-				((ItemEvent<?>) msg.getPayload()).getEventType().toString());
+		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
+		Assert.assertEquals(event.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT).toString());
 	}
 
 }
