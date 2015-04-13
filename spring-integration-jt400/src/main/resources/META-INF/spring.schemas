@@ -1,0 +1,2 @@
+http\://www.springframework.org/schema/integration/jt400/spring-integration-jt400-1.0.xsd=org/springframework/integration/jt400/config/xml/spring-integration-jt400-1.0.xsd
+http\://www.springframework.org/schema/integration/jt400/spring-integration-jt400.xsd=org/springframework/integration/jt400/config/xml/spring-integration-jt400-1.0.xsd
