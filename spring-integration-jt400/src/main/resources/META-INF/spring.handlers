@@ -1,0 +1,1 @@
+http\://www.springframework.org/schema/integration/jt400=org.springframework.integration.jt400.config.xml.Jt400IntegrationNamespaceHandler
