@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.common;
+package org.springframework.integration.hazelcast;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import reactor.util.CollectionUtils;
+import reactor.util.StringUtils;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.IList;
@@ -28,9 +31,6 @@ import com.hazelcast.core.ISet;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
-
-import reactor.util.CollectionUtils;
-import reactor.util.StringUtils;
 
 /**
  * Common Validator for Hazelcast Integration. It validates cache types and events.

@@ -23,15 +23,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.hazelcast.AbstractHazelcastTestSupport;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
+import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.hazelcast.core.AbstractIMapEvent;
-import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryEventType;
 import com.hazelcast.core.MultiMap;
 
@@ -44,7 +45,8 @@ import com.hazelcast.core.MultiMap;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 @DirtiesContext
-public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests {
+@SuppressWarnings("unchecked")
+public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests extends AbstractHazelcastTestSupport {
 
 	@Autowired
 	private PollableChannel edMultiMapChannel1;
@@ -70,18 +72,23 @@ public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests {
 		Message<?> msg = edMultiMapChannel1.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof EntryEvent);
-		Assert.assertEquals(EntryEventType.ADDED,
-				((EntryEvent<?, ?>) msg.getPayload()).getEventType());
-		Assert.assertEquals("edMultiMap1",
-				((EntryEvent<?, ?>) msg.getPayload()).getName());
-		Assert.assertEquals(1, ((EntryEvent<?, ?>) msg.getPayload()).getKey());
+		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
+		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
+		Assert.assertEquals(EntryEventType.ADDED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("edMultiMap1", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
+
+		Assert.assertEquals(Integer.valueOf(1),
+				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).key);
 		Assert.assertEquals(1,
-				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getId());
+				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).value).getId());
 		Assert.assertEquals("TestName1",
-				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getName());
+				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).value).getName());
 		Assert.assertEquals("TestSurname1",
-				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getSurname());
+				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).value).getSurname());
 	}
 
 	@Test
@@ -92,51 +99,48 @@ public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests {
 		Message<?> msg = edMultiMapChannel2.receive(2_000);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof EntryEvent);
-		Assert.assertEquals(EntryEventType.REMOVED,
-				((EntryEvent<?, ?>) msg.getPayload()).getEventType());
-		Assert.assertEquals("edMultiMap2",
-				((EntryEvent<?, ?>) msg.getPayload()).getName());
-		Assert.assertEquals(2, ((EntryEvent<?, ?>) msg.getPayload()).getKey());
+		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
+		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
+		Assert.assertEquals(EntryEventType.REMOVED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("edMultiMap2", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
+
+		Assert.assertEquals(Integer.valueOf(2),
+				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).key);
 		Assert.assertEquals(2,
-				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getId());
+				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).value).getId());
 		Assert.assertEquals("TestName2",
-				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getName());
+				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).value).getName());
 		Assert.assertEquals("TestSurname2",
-				((HazelcastIntegrationTestUser) ((EntryEvent<?, ?>) msg.getPayload()).getValue()).getSurname());
+				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+						.getPayload()).value).getSurname());
 	}
 
 	@Test
 	public void testEventDrivenForALLEntryEvent() {
 		edMultiMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		Message<?> msg = edMultiMapChannel3.receive(2_000);
-		verify(msg, "edMultiMap3", EntryEventType.ADDED);
+		verifyEntryEvent(msg, "edMultiMap3", EntryEventType.ADDED);
 
 		edMultiMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurnameUpdated"));
 		msg = edMultiMapChannel3.receive(2_000);
-		verify(msg, "edMultiMap3", EntryEventType.ADDED);
+		verifyEntryEvent(msg, "edMultiMap3", EntryEventType.ADDED);
 
 		edMultiMap3.remove(1);
 		msg = edMultiMapChannel3.receive(2_000);
-		verify(msg, "edMultiMap3", EntryEventType.REMOVED);
+		verifyEntryEvent(msg, "edMultiMap3", EntryEventType.REMOVED);
 		msg = edMultiMapChannel3.receive(2_000);
-		verify(msg, "edMultiMap3", EntryEventType.REMOVED);
+		verifyEntryEvent(msg, "edMultiMap3", EntryEventType.REMOVED);
 
 		edMultiMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
 		msg = edMultiMapChannel3.receive(2_000);
-		verify(msg, "edMultiMap3", EntryEventType.ADDED);
+		verifyEntryEvent(msg, "edMultiMap3", EntryEventType.ADDED);
 
 		edMultiMap3.clear();
 		msg = edMultiMapChannel3.receive(2_000);
-		verify(msg, "edMultiMap3", EntryEventType.CLEAR_ALL);
-	}
-
-	private void verify(Message<?> msg, String cacheName, EntryEventType type) {
-		Assert.assertNotNull(msg);
-		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof AbstractIMapEvent);
-		Assert.assertEquals(cacheName, ((AbstractIMapEvent) msg.getPayload()).getName());
-		Assert.assertEquals(type, ((AbstractIMapEvent) msg.getPayload()).getEventType());
+		verifyEntryEvent(msg, "edMultiMap3", EntryEventType.CLEAR_ALL);
 	}
 
 }

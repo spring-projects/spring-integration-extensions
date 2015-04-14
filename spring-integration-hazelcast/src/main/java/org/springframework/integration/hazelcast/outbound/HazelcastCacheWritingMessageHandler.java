@@ -22,7 +22,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.springframework.integration.handler.AbstractMessageHandler;
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 

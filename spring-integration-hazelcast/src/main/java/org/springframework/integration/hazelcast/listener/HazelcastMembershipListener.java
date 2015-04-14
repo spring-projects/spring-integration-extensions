@@ -20,7 +20,7 @@ import java.net.SocketAddress;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
-import org.springframework.integration.hazelcast.common.HazelcastLocalInstanceRegistrar;
+import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;

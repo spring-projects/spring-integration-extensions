@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.common;
+package org.springframework.integration.hazelcast;
 
 /**
- * Enumeration of Cache Listening Policy Type
+ * Enumeration of Cache Event Types
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
  * @see org.springframework.integration.hazelcast.inbound.AbstractHazelcastMessageProducer
  */
-public enum CacheListeningPolicyType {
+public enum CacheEventType {
 
-	SINGLE, ALL;
+	ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL, CLEAR_ALL;
 
 }

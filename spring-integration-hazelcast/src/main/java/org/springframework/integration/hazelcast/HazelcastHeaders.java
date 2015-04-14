@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.springframework.integration.hazelcast.common;
+package org.springframework.integration.hazelcast;
 
 /**
- * Enumeration of Cache Event Types
+ * Hazelcast Message Headers
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- * @see org.springframework.integration.hazelcast.inbound.AbstractHazelcastMessageProducer
  */
-public enum CacheEventType {
+public abstract class HazelcastHeaders {
 
-	ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL, CLEAR_ALL;
+	private static final String PREFIX = "hazelcast_";
 
+	public static final String EVENT_TYPE = PREFIX + "eventType";
+
+	public static final String MEMBER = PREFIX + "member";
+
+	public static final String CACHE_NAME = PREFIX + "cacheName";
+
+	public static final String PUBLISHING_TIME = PREFIX + "publishingTime";
 }

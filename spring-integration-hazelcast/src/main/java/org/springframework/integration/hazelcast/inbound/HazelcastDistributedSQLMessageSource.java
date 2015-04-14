@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.integration.endpoint.AbstractMessageSource;
-import org.springframework.integration.hazelcast.common.DistributedSQLIterationType;
+import org.springframework.integration.hazelcast.DistributedSQLIterationType;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
