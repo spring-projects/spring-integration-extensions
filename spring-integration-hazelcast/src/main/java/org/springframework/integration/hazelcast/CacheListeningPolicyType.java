@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.integration.hazelcast.message;
+
+package org.springframework.integration.hazelcast;
 
 /**
- * Hazelcast Message Headers
+ * Enumeration of Cache Listening Policy Type
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
+ * @see org.springframework.integration.hazelcast.inbound.AbstractHazelcastMessageProducer
  */
-public abstract class HazelcastHeaders {
+public enum CacheListeningPolicyType {
 
-	private static final String PREFIX = "hazelcast_";
+	SINGLE, ALL;
 
-	public static final String EVENT = PREFIX + "event";
-
-	public static final String MEMBER = PREFIX + "member";
-
-	public static final String NAME = PREFIX + "name";
-
-	public static final String PUBLISHING_TIME = PREFIX + "publishingTime";
 }

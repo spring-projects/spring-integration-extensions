@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.common;
+package org.springframework.integration.hazelcast;
 
 /**
  * Enumeration of Cache Event Types

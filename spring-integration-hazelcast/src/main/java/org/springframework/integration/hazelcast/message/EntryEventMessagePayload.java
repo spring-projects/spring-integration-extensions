@@ -25,39 +25,64 @@ import org.springframework.util.Assert;
  */
 public class EntryEventMessagePayload<K, V> {
 
-	private K key;
+	public final K key;
 
-	private V value;
+	public final V value;
 
-	private V oldValue;
+	public final V oldValue;
 
-	private int numberOfEntriesAffected;
-
-	public EntryEventMessagePayload(int numberOfEntriesAffected) {
-		this.numberOfEntriesAffected = numberOfEntriesAffected;
-	}
-
-	public EntryEventMessagePayload(K key, V value, V oldValue) {
+	public EntryEventMessagePayload(final K key, final V value, final V oldValue) {
 		Assert.notNull(key, "key must not be null");
 		this.key = key;
 		this.value = value;
 		this.oldValue = oldValue;
 	}
 
-	public K getKey() {
-		return key;
+	@Override
+	public String toString() {
+		return "EntryEventMessagePayload [key=" + key + ", value=" + value
+				+ ", oldValue=" + oldValue + "]";
 	}
 
-	public V getValue() {
-		return value;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + ((oldValue == null) ? 0 : oldValue.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
 	}
 
-	public V getOldValue() {
-		return oldValue;
-	}
-
-	public int getNumberOfEntriesAffected() {
-		return numberOfEntriesAffected;
+	@SuppressWarnings("rawtypes")
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EntryEventMessagePayload other = (EntryEventMessagePayload) obj;
+		if (key == null) {
+			if (other.key != null)
+				return false;
+		}
+		else if (!key.equals(other.key))
+			return false;
+		if (oldValue == null) {
+			if (other.oldValue != null)
+				return false;
+		}
+		else if (!oldValue.equals(other.oldValue))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		}
+		else if (!value.equals(other.value))
+			return false;
+		return true;
 	}
 
 }

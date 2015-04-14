@@ -23,9 +23,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.hazelcast.AbstractHazelcastTestSupport;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
-import org.springframework.integration.hazelcast.message.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
@@ -45,7 +46,7 @@ import com.hazelcast.core.IMap;
 @ContextConfiguration
 @DirtiesContext
 @SuppressWarnings("unchecked")
-public class HazelcastCQDistributedMapInboundChannelAdapterTests {
+public class HazelcastCQDistributedMapInboundChannelAdapterTests extends AbstractHazelcastTestSupport {
 
 	@Autowired
 	private PollableChannel cqMapChannel1;
@@ -87,21 +88,21 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests {
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.ADDED, msg.getHeaders().get(HazelcastHeaders.EVENT));
-		Assert.assertEquals("cqDistributedMap1", msg.getHeaders().get(HazelcastHeaders.NAME));
+		Assert.assertEquals(EntryEventType.ADDED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("cqDistributedMap1", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 
 		Assert.assertEquals(Integer.valueOf(1),
 				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getKey());
+						.getPayload()).key);
 		Assert.assertEquals(1,
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getValue()).getId());
+						.getPayload()).value).getId());
 		Assert.assertEquals("TestName1",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getValue()).getName());
+						.getPayload()).value).getName());
 		Assert.assertEquals("TestSurname1",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getValue()).getSurname());
+						.getPayload()).value).getSurname());
 	}
 
 	@Test
@@ -114,44 +115,44 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests {
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.REMOVED, msg.getHeaders().get(HazelcastHeaders.EVENT));
-		Assert.assertEquals("cqDistributedMap2", msg.getHeaders().get(HazelcastHeaders.NAME));
+		Assert.assertEquals(EntryEventType.REMOVED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("cqDistributedMap2", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 
 		Assert.assertEquals(Integer.valueOf(2),
 				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getKey());
+						.getPayload()).key);
 		Assert.assertEquals(2,
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getOldValue()).getId());
+						.getPayload()).oldValue).getId());
 		Assert.assertEquals("TestName2",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getOldValue()).getName());
+						.getPayload()).oldValue).getName());
 		Assert.assertEquals("TestSurname2",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getOldValue()).getSurname());
+						.getPayload()).oldValue).getSurname());
 	}
 
 	@Test
 	public void testContinuousQueryForALLEntryEvent() {
 		cqDistributedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		Message<?> msg = cqMapChannel3.receive(2_000);
-		verify(msg, "cqDistributedMap3", EntryEventType.ADDED);
+		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.ADDED);
 
 		cqDistributedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurnameUpdated"));
 		msg = cqMapChannel3.receive(2_000);
-		verify(msg, "cqDistributedMap3", EntryEventType.UPDATED);
+		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.UPDATED);
 
 		cqDistributedMap3.remove(1);
 		msg = cqMapChannel3.receive(2_000);
-		verify(msg, "cqDistributedMap3", EntryEventType.REMOVED);
+		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.REMOVED);
 
 		cqDistributedMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
 		msg = cqMapChannel3.receive(2_000);
-		verify(msg, "cqDistributedMap3", EntryEventType.ADDED);
+		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.ADDED);
 
 		cqDistributedMap3.clear();
 		msg = cqMapChannel3.receive(2_000);
-		verify(msg, "cqDistributedMap3", EntryEventType.CLEAR_ALL);
+		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.CLEAR_ALL);
 	}
 
 	@Test
@@ -163,30 +164,30 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests {
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.UPDATED, msg.getHeaders().get(HazelcastHeaders.EVENT));
-		Assert.assertEquals("cqDistributedMap4", msg.getHeaders().get(HazelcastHeaders.NAME));
+		Assert.assertEquals(EntryEventType.UPDATED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("cqDistributedMap4", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 
 		Assert.assertEquals(Integer.valueOf(1),
 				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getKey());
+						.getPayload()).key);
 		Assert.assertEquals(1,
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getOldValue()).getId());
+						.getPayload()).oldValue).getId());
 		Assert.assertEquals("TestName1",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getOldValue()).getName());
+						.getPayload()).oldValue).getName());
 		Assert.assertEquals("TestSurname1",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getOldValue()).getSurname());
+						.getPayload()).oldValue).getSurname());
 		Assert.assertEquals(2,
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getValue()).getId());
+						.getPayload()).value).getId());
 		Assert.assertEquals("TestName2",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getValue()).getName());
+						.getPayload()).value).getName());
 		Assert.assertEquals("TestSurname2",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).getValue()).getSurname());
+						.getPayload()).value).getSurname());
 	}
 
 	@Test
@@ -198,20 +199,12 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests {
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.UPDATED, msg.getHeaders().get(HazelcastHeaders.EVENT));
-		Assert.assertEquals("cqDistributedMap5", msg.getHeaders().get(HazelcastHeaders.NAME));
+		Assert.assertEquals(EntryEventType.UPDATED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("cqDistributedMap5", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 
-		Assert.assertEquals(Integer.valueOf(1), ((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg.getPayload()).getKey());
-		Assert.assertNull(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg.getPayload()).getOldValue());
-		Assert.assertNull(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg.getPayload()).getValue());
-	}
-
-	private void verify(Message<?> msg, String cacheName, EntryEventType event) {
-		Assert.assertNotNull(msg);
-		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
-		Assert.assertEquals(cacheName, msg.getHeaders().get(HazelcastHeaders.NAME));
-		Assert.assertEquals(event, msg.getHeaders().get(HazelcastHeaders.EVENT));
+		Assert.assertEquals(Integer.valueOf(1), ((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg.getPayload()).key);
+		Assert.assertNull(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg.getPayload()).oldValue);
+		Assert.assertNull(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg.getPayload()).value);
 	}
 
 }

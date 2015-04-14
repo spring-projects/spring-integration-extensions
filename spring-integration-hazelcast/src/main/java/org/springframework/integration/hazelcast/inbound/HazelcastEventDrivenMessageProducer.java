@@ -20,8 +20,8 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
-import org.springframework.integration.hazelcast.message.HazelcastHeaders;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.DistributedObject;
@@ -153,8 +153,8 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 			Assert.notNull(itemEvent.getItem(), "item must not be null");
 
 			final Map<String, Object> headers = new HashMap<String, Object>();
-			headers.put(HazelcastHeaders.EVENT, itemEvent.getEventType());
-			headers.put(HazelcastHeaders.MEMBER, itemEvent.getMember());
+			headers.put(HazelcastHeaders.EVENT_TYPE, itemEvent.getEventType().name());
+			headers.put(HazelcastHeaders.MEMBER, itemEvent.getMember().getSocketAddress());
 
 			return getMessageBuilderFactory().withPayload(itemEvent.getItem()).copyHeaders(headers).build();
 		}
@@ -184,8 +184,8 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 			Assert.notNull(message.getMessageObject(), "message must not be null");
 
 			final Map<String, Object> headers = new HashMap<String, Object>();
-			headers.put(HazelcastHeaders.MEMBER, message.getPublishingMember());
-			headers.put(HazelcastHeaders.NAME, message.getSource());
+			headers.put(HazelcastHeaders.MEMBER, message.getPublishingMember().getSocketAddress());
+			headers.put(HazelcastHeaders.CACHE_NAME, message.getSource());
 			headers.put(HazelcastHeaders.PUBLISHING_TIME, message.getPublishTime());
 
 			return getMessageBuilderFactory().withPayload(message.getMessageObject()).copyHeaders(headers).build();

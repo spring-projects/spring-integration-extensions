@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.common;
+package org.springframework.integration.hazelcast;
 
 import java.util.Arrays;
 import java.util.List;

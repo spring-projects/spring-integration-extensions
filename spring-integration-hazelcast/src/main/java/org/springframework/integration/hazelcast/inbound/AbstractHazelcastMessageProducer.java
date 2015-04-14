@@ -26,12 +26,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.integration.hazelcast.common.CacheEventType;
-import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
-import org.springframework.integration.hazelcast.common.HazelcastLocalInstanceRegistrar;
+import org.springframework.integration.hazelcast.CacheEventType;
+import org.springframework.integration.hazelcast.CacheListeningPolicyType;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
+import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar;
 import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
-import org.springframework.integration.hazelcast.message.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
@@ -196,26 +196,25 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		protected Message<?> toMessage(EventObject event) {
-			EntryEventMessagePayload<?, ?> messagePayload = null;
-
 			final Map<String, Object> headers = new HashMap<String, Object>();
-			headers.put(HazelcastHeaders.EVENT, ((AbstractIMapEvent) event).getEventType());
-			headers.put(HazelcastHeaders.MEMBER, ((AbstractIMapEvent) event).getMember());
-			headers.put(HazelcastHeaders.NAME, ((AbstractIMapEvent) event).getName());
+			headers.put(HazelcastHeaders.EVENT_TYPE, ((AbstractIMapEvent) event).getEventType().name());
+			headers.put(HazelcastHeaders.MEMBER, ((AbstractIMapEvent) event).getMember().getSocketAddress());
+			headers.put(HazelcastHeaders.CACHE_NAME, ((AbstractIMapEvent) event).getName());
 
 			if (event instanceof EntryEvent) {
 				Assert.notNull(((EntryEvent) event).getKey(), "key must not be null");
-				messagePayload = new EntryEventMessagePayload(
+				EntryEventMessagePayload<?, ?> messagePayload = new EntryEventMessagePayload(
 						((EntryEvent) event).getKey(), ((EntryEvent) event).getValue(),
 						((EntryEvent) event).getOldValue());
+				return getMessageBuilderFactory().withPayload(messagePayload).copyHeaders(headers).build();
 			}
 			else if (event instanceof MapEvent) {
-				messagePayload = new EntryEventMessagePayload(((MapEvent) event).getNumberOfEntriesAffected());
-			} else {
+				return getMessageBuilderFactory()
+						.withPayload(((MapEvent) event).getNumberOfEntriesAffected()).copyHeaders(headers).build();
+			}
+			else {
 				throw new IllegalStateException("Invalid event is received. Event : " + event);
 			}
-
-			return getMessageBuilderFactory().withPayload(messagePayload).copyHeaders(headers).build();
 		}
 
 	}

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.common;
+package org.springframework.integration.hazelcast;
 
 /**
- * Enumeration of Cache Listening Policy Type
+ * Enumeration of Distributed SQL Iteration Type
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
- * @see org.springframework.integration.hazelcast.inbound.AbstractHazelcastMessageProducer
+ * @see org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQLMessageSource
  */
-public enum CacheListeningPolicyType {
+public enum DistributedSQLIterationType {
 
-	SINGLE, ALL;
+	ENTRY, KEY, LOCAL_KEY, VALUE
 
 }

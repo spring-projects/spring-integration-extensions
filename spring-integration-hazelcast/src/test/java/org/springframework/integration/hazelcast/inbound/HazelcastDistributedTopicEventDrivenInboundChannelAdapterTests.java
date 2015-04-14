@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
-import org.springframework.integration.hazelcast.message.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
@@ -58,7 +58,7 @@ public class HazelcastDistributedTopicEventDrivenInboundChannelAdapterTests {
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.PUBLISHING_TIME));
-		Assert.assertEquals("edDistributedTopic1", msg.getHeaders().get(HazelcastHeaders.NAME));
+		Assert.assertEquals("edDistributedTopic1", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 		Assert.assertEquals(1, ((HazelcastIntegrationTestUser) msg.getPayload()).getId());
 		Assert.assertEquals("TestName1", ((HazelcastIntegrationTestUser) msg.getPayload()).getName());
 		Assert.assertEquals("TestSurname1", ((HazelcastIntegrationTestUser) msg.getPayload()).getSurname());
