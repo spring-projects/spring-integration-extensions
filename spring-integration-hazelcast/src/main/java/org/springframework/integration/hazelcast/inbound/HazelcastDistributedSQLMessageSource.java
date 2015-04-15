@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.integration.endpoint.AbstractMessageSource;
-import org.springframework.integration.hazelcast.common.DistributedSQLIterationType;
+import org.springframework.integration.hazelcast.DistributedSQLIterationType;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -39,19 +39,19 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 
 	private final IMap<?, ?> distributedMap;
 
-	private final String distributedSQL;
+	private final String distributedSql;
 
 	private DistributedSQLIterationType iterationType = DistributedSQLIterationType.VALUE;
 
-	public HazelcastDistributedSQLMessageSource(IMap distributedMap, String distributedSQL) {
-		Assert.notNull(distributedMap, "cache must not be null");
-		Assert.hasText(distributedSQL, "distributed-sql must not be null");
+	public HazelcastDistributedSQLMessageSource(IMap distributedMap, String distributedSql) {
+		Assert.notNull(distributedMap, "'distributedMap' must not be null");
+		Assert.hasText(distributedSql, "'distributedSql' must not be empty");
 		this.distributedMap = distributedMap;
-		this.distributedSQL = distributedSQL;
+		this.distributedSql = distributedSql;
 	}
 
 	public void setIterationType(DistributedSQLIterationType iterationType) {
-		Assert.notNull(this.iterationType, "iterationType must not be null");
+		Assert.notNull(this.iterationType, "'iterationType' must not be null");
 		this.iterationType = iterationType;
 	}
 
@@ -65,18 +65,18 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 		switch (this.iterationType) {
 			case ENTRY:
 				return getDistributedSQLResultSet(Collections
-						.unmodifiableCollection(this.distributedMap.entrySet(new SqlPredicate(this.distributedSQL))));
+						.unmodifiableCollection(this.distributedMap.entrySet(new SqlPredicate(this.distributedSql))));
 
 			case KEY:
 				return getDistributedSQLResultSet(Collections
-						.unmodifiableCollection(this.distributedMap.keySet(new SqlPredicate(this.distributedSQL))));
+						.unmodifiableCollection(this.distributedMap.keySet(new SqlPredicate(this.distributedSql))));
 
 			case LOCAL_KEY:
 				return getDistributedSQLResultSet(Collections
-						.unmodifiableCollection(this.distributedMap.localKeySet(new SqlPredicate(this.distributedSQL))));
+						.unmodifiableCollection(this.distributedMap.localKeySet(new SqlPredicate(this.distributedSql))));
 
 			default:
-				return getDistributedSQLResultSet(this.distributedMap.values(new SqlPredicate(this.distributedSQL)));
+				return getDistributedSQLResultSet(this.distributedMap.values(new SqlPredicate(this.distributedSql)));
 		}
 	}
 

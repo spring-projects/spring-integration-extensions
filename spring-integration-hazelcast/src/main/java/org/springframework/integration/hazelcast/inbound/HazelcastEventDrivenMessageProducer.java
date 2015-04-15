@@ -16,9 +16,11 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.DistributedObject;
@@ -42,9 +44,9 @@ import com.hazelcast.core.ReplicatedMap;
  * to listen related cache events and sends events to related channel.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
  * @since 1.0.0
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
 public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessageProducer {
 
 	public HazelcastEventDrivenMessageProducer(DistributedObject distributedObject) {
@@ -58,32 +60,33 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 	}
 
 	@Override
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected void doStart() {
-		if(this.distributedObject instanceof IMap) {
+		if (this.distributedObject instanceof IMap) {
 			setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject)
 					.addEntryListener(new HazelcastEntryListener(), true));
 		}
-		else if(this.distributedObject instanceof MultiMap) {
+		else if (this.distributedObject instanceof MultiMap) {
 			setHazelcastRegisteredEventListenerId(((MultiMap<?, ?>) this.distributedObject)
 					.addEntryListener(new HazelcastEntryListener(), true));
 		}
-		else if(this.distributedObject instanceof ReplicatedMap) {
+		else if (this.distributedObject instanceof ReplicatedMap) {
 			setHazelcastRegisteredEventListenerId(((ReplicatedMap<?, ?>) this.distributedObject)
 					.addEntryListener(new HazelcastEntryListener()));
 		}
-		else if(this.distributedObject instanceof IList) {
+		else if (this.distributedObject instanceof IList) {
 			setHazelcastRegisteredEventListenerId(((IList<?>) this.distributedObject)
 					.addItemListener(new HazelcastItemListener(), true));
 		}
-		else if(this.distributedObject instanceof ISet) {
+		else if (this.distributedObject instanceof ISet) {
 			setHazelcastRegisteredEventListenerId(((ISet<?>) this.distributedObject)
 					.addItemListener(new HazelcastItemListener(), true));
 		}
-		else if(this.distributedObject instanceof IQueue) {
+		else if (this.distributedObject instanceof IQueue) {
 			setHazelcastRegisteredEventListenerId(((IQueue<?>) this.distributedObject)
 					.addItemListener(new HazelcastItemListener(), true));
 		}
-		else if(this.distributedObject instanceof ITopic) {
+		else if (this.distributedObject instanceof ITopic) {
 			setHazelcastRegisteredEventListenerId(((ITopic<?>) this.distributedObject)
 					.addMessageListener(new HazelcastMessageListener()));
 		}
@@ -91,25 +94,25 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 
 	@Override
 	protected void doStop() {
-		if(this.distributedObject instanceof IMap) {
+		if (this.distributedObject instanceof IMap) {
 			((IMap<?, ?>) this.distributedObject).removeEntryListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(this.distributedObject instanceof MultiMap) {
+		else if (this.distributedObject instanceof MultiMap) {
 			((MultiMap<?, ?>) this.distributedObject).removeEntryListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(this.distributedObject instanceof ReplicatedMap) {
+		else if (this.distributedObject instanceof ReplicatedMap) {
 			((ReplicatedMap<?, ?>) this.distributedObject).removeEntryListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(this.distributedObject instanceof IList) {
+		else if (this.distributedObject instanceof IList) {
 			((IList<?>) this.distributedObject).removeItemListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(this.distributedObject instanceof ISet) {
+		else if (this.distributedObject instanceof ISet) {
 			((ISet<?>) this.distributedObject).removeItemListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(this.distributedObject instanceof IQueue) {
+		else if (this.distributedObject instanceof IQueue) {
 			((IQueue<?>) this.distributedObject).removeItemListener(getHazelcastRegisteredEventListenerId());
 		}
-		else if(this.distributedObject instanceof ITopic) {
+		else if (this.distributedObject instanceof ITopic) {
 			((ITopic<?>) this.distributedObject).removeMessageListener(getHazelcastRegisteredEventListenerId());
 		}
 	}
@@ -119,7 +122,8 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		return "hazelcast:inbound-channel-adapter";
 	}
 
-	private class HazelcastItemListener<E> extends AbstractHazelcastEventListener implements ItemListener<E> {
+	private class HazelcastItemListener<E> extends AbstractHazelcastEventListener<ItemEvent<E>>
+			implements ItemListener<E> {
 
 		@Override
 		public void itemAdded(ItemEvent<E> item) {
@@ -132,21 +136,29 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		}
 
 		@Override
-		protected void processEvent(EventObject event) {
-			Assert.notNull(event, "event must not be null");
-
-			if (getCacheEvents().contains(((ItemEvent<E>) event).getEventType().toString())) {
-				sendMessage(event, ((ItemEvent<E>) event).getMember().getSocketAddress(), getCacheListeningPolicy());
+		protected void processEvent(ItemEvent<E> event) {
+			if (getCacheEvents().contains(event.getEventType().toString())) {
+				sendMessage(event, event.getMember().getSocketAddress(), getCacheListeningPolicy());
 			}
 
-			if (logger.isDebugEnabled()){
+			if (logger.isDebugEnabled()) {
 				logger.debug("Received ItemEvent : " + event);
 			}
 		}
 
+		@Override
+		protected org.springframework.messaging.Message<?> toMessage(ItemEvent<E> event) {
+			final Map<String, Object> headers = new HashMap<>();
+			headers.put(HazelcastHeaders.EVENT_TYPE, event.getEventType().name());
+			headers.put(HazelcastHeaders.MEMBER, event.getMember().getSocketAddress());
+
+			return getMessageBuilderFactory().withPayload(event.getItem()).copyHeaders(headers).build();
+		}
+
 	}
 
-	private class HazelcastMessageListener<E> extends AbstractHazelcastEventListener implements MessageListener<E> {
+	private class HazelcastMessageListener<E> extends AbstractHazelcastEventListener<Message<E>>
+			implements MessageListener<E> {
 
 		@Override
 		public void onMessage(Message<E> message) {
@@ -154,13 +166,24 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		}
 
 		@Override
-		protected void processEvent(EventObject event) {
-			Assert.notNull(event, "event must not be null");
-			sendMessage(event, ((Message<E>) event).getPublishingMember().getSocketAddress(), null);
+		protected void processEvent(Message<E> event) {
+			sendMessage(event, event.getPublishingMember().getSocketAddress(), null);
 
-			if (logger.isDebugEnabled()){
+			if (logger.isDebugEnabled()) {
 				logger.debug("Received Message : " + event);
 			}
+		}
+
+		@Override
+		protected org.springframework.messaging.Message<?> toMessage(Message<E> event) {
+			Assert.notNull(event.getMessageObject(), "message must not be null");
+
+			final Map<String, Object> headers = new HashMap<>();
+			headers.put(HazelcastHeaders.MEMBER, event.getPublishingMember().getSocketAddress());
+			headers.put(HazelcastHeaders.CACHE_NAME, event.getSource());
+			headers.put(HazelcastHeaders.PUBLISHING_TIME, event.getPublishTime());
+
+			return getMessageBuilderFactory().withPayload(event.getMessageObject()).copyHeaders(headers).build();
 		}
 
 	}

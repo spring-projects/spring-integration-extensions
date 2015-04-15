@@ -37,7 +37,7 @@ Basically, Hazelcast Event-Driven Inbound Channel Adapter requires following att
 3. Supported cache event types for IList, ISet and IQueue : ADDED, REMOVED. 
 4. There is no need to cache event type definition for ITopic. 
 
-* **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast inbound channel adapter which listens same cache object with same cache-events attribute, can receive a single event message or all event messages. If this is ALL, all Hazelcast inbound channel adapters which listens same cache object with same cache-events attribute, will receive same event messages. If this is SINGLE, they will receive unique event messages.
+* **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast CQ inbound channel adapter listening same cache object with same cache-events attribute, can receive a single event message or all event messages. If it is ALL, all Hazelcast CQ inbound channel adapters listening same cache object with same cache-events attribute, will receive same event messages. If it is SINGLE, they will receive unique event messages.
 
 Sample namespace and schemaLocation definitions are as follows : 
 ```
@@ -74,9 +74,7 @@ Sample definitions are as follows :
 
 <int-hazelcast:inbound-channel-adapter channel="multiMapChannel" 
 					          cache="multiMap" 
-					          cache-events="ADDED, 
-							            REMOVED, 
-							            CLEAR_ALL" /> 
+					          cache-events="ADDED, REMOVED, CLEAR_ALL" /> 
 
 <bean id="multiMap" factory-bean="instance" factory-method="getMultiMap"> 
 	<constructor-arg value="multiMap"/> 
@@ -139,7 +137,7 @@ Sample definitions are as follows :
 
 <int-hazelcast:inbound-channel-adapter channel="replicatedMapChannel" 
 					          cache="replicatedMap" 
-					          cache-events="ADDED,UPDATED, REMOVED"
+					          cache-events="ADDED, UPDATED, REMOVED"
  					          cache-listening-policy="SINGLE"  /> 
 
 <bean id="replicatedMap" factory-bean="instance" factory-method="getReplicatedMap"> 
@@ -163,14 +161,18 @@ Hazelcast Continuous Query enables to listen to the modifications performed on s
 				channel="cqMapChannel" 
 				cache="cqMap" 
 				cache-events="UPDATED, REMOVED" 
-				predicate="name=TestName AND surname=TestSurname" /> 
+				predicate="name=TestName AND surname=TestSurname"
+				include-value="true"
+				cache-listening-policy="SINGLE" /> 
 ```
 Basically, it requires four attributes as follows : 
 
 * **channel :** Specifies channel which message is sent. It is mandatory attribute. 
 * **cache :** Specifies distributed Map reference which is listened. It is mandatory attribute. 
 * **cache-events :** Specifies cache events which are listened. It is optional attribute with ADDED default value. Supported values are ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
-* **predicate :** Specifies predicate to listen to the modifications performed on specific map entries. It is mandatory attribute. 
+* **predicate :** Specifies predicate to listen to the modifications performed on specific map entries. It is mandatory attribute.
+* **include-value :** Specifies including of value and oldValue in continuous query result. It is optional attribute with 'true' default value.
+* **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast CQ inbound channel adapter listening same cache object with same cache-events attribute, can receive a single event message or all event messages. If it is ALL, all Hazelcast CQ inbound channel adapters listening same cache object with same cache-events attribute, will receive same event messages. If it is SINGLE, they will receive unique event messages.
 
 Sample definition is as follows : 
 ```
@@ -180,7 +182,9 @@ Sample definition is as follows :
 				channel="cqMapChannel" 
 				cache="cqMap" 
 				cache-events="UPDATED, REMOVED" 
-				predicate="name=TestName AND surname=TestSurname"/> 
+				predicate="name=TestName AND surname=TestSurname"
+				include-value="true"
+				cache-listening-policy="SINGLE"/> 
 
 <bean id="cqMap" factory-bean="instance" factory-method="getMap"> 
 	<constructor-arg value="cqMap"/> 
@@ -205,7 +209,7 @@ Hazelcast allows to run distributed queries on the distributed map. Hazelcast Di
 			     cache="dsMap"
  			     iteration-type="ENTRY" 
                  distributed-sql="active=false OR age >= 25 OR name = 'TestName'"> 
-	<int:poller cron="*/10 * * * * *"/> 
+	<int:poller fixed-delay="100"/>
 </int-hazelcast:ds-inbound-channel-adapter> 
 ```
 Basically, it requires a poller and four attributes such as 
@@ -224,7 +228,7 @@ Sample definition is as follows :
 			cache="dsMap" 
 			iteration-type="ENTRY" 
 			distributed-sql="active=false OR age >= 25 OR name = 'TestName'"> 
-	<int:poller cron="*/10 * * * * *"/> 
+	<int:poller fixed-delay="100"/>
 </int-hazelcast:ds-inbound-channel-adapter> 
 
 <bean id="dsMap" factory-bean="instance" factory-method="getMap"> 

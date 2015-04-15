@@ -39,7 +39,7 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 	@SuppressWarnings("rawtypes")
 	public HazelcastContinuousQueryMessageProducer(IMap distributedMap, String predicate) {
 		super(distributedMap);
-		Assert.hasText(predicate, "predicate must not be null");
+		Assert.hasText(predicate, "'predicate' must not be null");
 		this.predicate = predicate;
 	}
 

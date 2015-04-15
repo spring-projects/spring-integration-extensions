@@ -22,7 +22,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.springframework.integration.handler.AbstractMessageHandler;
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
@@ -46,7 +46,7 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 	private final DistributedObject distributedObject;
 
 	public HazelcastCacheWritingMessageHandler(DistributedObject distributedObject) {
-		Assert.notNull(distributedObject, "cache must not be null");
+		Assert.notNull(distributedObject, "'distributedObject' must not be null");
 		this.distributedObject = distributedObject;
 	}
 

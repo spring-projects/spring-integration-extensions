@@ -19,15 +19,19 @@ package org.springframework.integration.hazelcast.inbound;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Collections;
-import java.util.EventObject;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.integration.hazelcast.common.CacheEventType;
-import org.springframework.integration.hazelcast.common.CacheListeningPolicyType;
-import org.springframework.integration.hazelcast.common.HazelcastIntegrationDefinitionValidator;
-import org.springframework.integration.hazelcast.common.HazelcastLocalInstanceRegistrar;
+import org.springframework.integration.hazelcast.CacheEventType;
+import org.springframework.integration.hazelcast.CacheListeningPolicyType;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
+import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar;
+import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.AbstractIMapEvent;
@@ -45,20 +49,21 @@ import reactor.util.StringUtils;
  * Hazelcast Base Event-Driven Message Producer.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
  * @since 1.0.0
  */
 public abstract class AbstractHazelcastMessageProducer extends MessageProducerSupport {
 
 	protected final DistributedObject distributedObject;
 
-	private CacheListeningPolicyType cacheListeningPolicy = CacheListeningPolicyType.SINGLE;
+	private volatile CacheListeningPolicyType cacheListeningPolicy = CacheListeningPolicyType.SINGLE;
 
-	private String hazelcastRegisteredEventListenerId;
+	private volatile String hazelcastRegisteredEventListenerId;
 
 	private Set<String> cacheEvents = Collections.singleton(CacheEventType.ADDED.name());
 
-	protected AbstractHazelcastMessageProducer(DistributedObject distributedObject) {
-		Assert.notNull(distributedObject, "cache must not be null");
+	public AbstractHazelcastMessageProducer(DistributedObject distributedObject) {
+		Assert.notNull(distributedObject, "'distributedObject' must not be null");
 		this.distributedObject = distributedObject;
 	}
 
@@ -68,8 +73,8 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 	public void setCacheEventTypes(String cacheEventTypes) {
 		HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, cacheEventTypes);
-		final Set<String> cacheEvents = StringUtils.commaDelimitedListToSet(cacheEventTypes);
-		Assert.notEmpty(cacheEvents, "cacheEvents must have elements");
+		Set<String> cacheEvents = StringUtils.commaDelimitedListToSet(cacheEventTypes);
+		Assert.notEmpty(cacheEvents, "'cacheEvents' must have elements");
 		HazelcastIntegrationDefinitionValidator.validateCacheEventsByDistributedObject(
 				this.distributedObject, cacheEvents);
 		this.cacheEvents = cacheEvents;
@@ -80,7 +85,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	public void setCacheListeningPolicy(CacheListeningPolicyType cacheListeningPolicy) {
-		Assert.notNull(cacheListeningPolicy, "cacheListeningPolicy must not be null");
+		Assert.notNull(cacheListeningPolicy, "'cacheListeningPolicy' must not be null");
 		this.cacheListeningPolicy = cacheListeningPolicy;
 	}
 
@@ -92,28 +97,27 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		this.hazelcastRegisteredEventListenerId = hazelcastRegisteredEventListenerId;
 	}
 
-	protected abstract class AbstractHazelcastEventListener {
+	protected abstract class AbstractHazelcastEventListener<E> {
 
-		protected abstract void processEvent(EventObject event);
+		protected abstract void processEvent(E event);
 
-		protected void sendMessage(final EventObject event, final InetSocketAddress socketAddress,
-				final CacheListeningPolicyType cacheListeningPolicyType) {
+		protected abstract Message<?> toMessage(E event);
+
+		protected void sendMessage(E event, InetSocketAddress socketAddress,
+				CacheListeningPolicyType cacheListeningPolicyType) {
 			if (CacheListeningPolicyType.ALL == cacheListeningPolicyType || isEventAcceptable(socketAddress)) {
-				AbstractHazelcastMessageProducer.this.sendMessage(getMessageBuilderFactory().withPayload(event).build());
+				AbstractHazelcastMessageProducer.this.sendMessage(toMessage(event));
 			}
 		}
 
 		private boolean isEventAcceptable(final InetSocketAddress socketAddress) {
 			final Set<HazelcastInstance> hazelcastInstanceSet = Hazelcast.getAllHazelcastInstances();
 			final Set<SocketAddress> localSocketAddressesSet = getLocalSocketAddresses(hazelcastInstanceSet);
-			if ((!localSocketAddressesSet.isEmpty())
+			return (!localSocketAddressesSet.isEmpty())
 					&& (localSocketAddressesSet.contains(socketAddress) ||
 					isEventComingFromNonRegisteredHazelcastInstance(hazelcastInstanceSet.iterator().next(),
-							localSocketAddressesSet, socketAddress))) {
-				return true;
-			}
+							localSocketAddressesSet, socketAddress));
 
-			return false;
 		}
 
 		private Set<SocketAddress> getLocalSocketAddresses(final Set<HazelcastInstance> hazelcastInstanceSet) {
@@ -140,7 +144,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	protected final class HazelcastEntryListener<K, V> extends
-			AbstractHazelcastEventListener implements EntryListener<K, V> {
+			AbstractHazelcastEventListener<AbstractIMapEvent> implements EntryListener<K, V> {
 
 		@Override
 		public void entryAdded(EntryEvent<K, V> event) {
@@ -173,16 +177,36 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		}
 
 		@Override
-		protected void processEvent(EventObject event) {
-			Assert.notNull(event, "event must not be null");
-
-			if (getCacheEvents().contains(((AbstractIMapEvent) event).getEventType().toString())) {
-				sendMessage(event, ((AbstractIMapEvent) event).getMember().getSocketAddress(),
-						getCacheListeningPolicy());
+		protected void processEvent(AbstractIMapEvent event) {
+			if (getCacheEvents().contains(event.getEventType().toString())) {
+				sendMessage(event, event.getMember().getSocketAddress(), getCacheListeningPolicy());
 			}
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Received Event : " + event);
+			}
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		protected Message<?> toMessage(AbstractIMapEvent event) {
+			final Map<String, Object> headers = new HashMap<String, Object>();
+			headers.put(HazelcastHeaders.EVENT_TYPE, event.getEventType().name());
+			headers.put(HazelcastHeaders.MEMBER, event.getMember().getSocketAddress());
+			headers.put(HazelcastHeaders.CACHE_NAME, event.getName());
+
+			if (event instanceof EntryEvent) {
+				EntryEvent<K, V> entryEvent = (EntryEvent<K, V>) event;
+				EntryEventMessagePayload<K, V> messagePayload = new EntryEventMessagePayload<>(entryEvent.getKey(),
+						entryEvent.getValue(), entryEvent.getOldValue());
+				return getMessageBuilderFactory().withPayload(messagePayload).copyHeaders(headers).build();
+			}
+			else if (event instanceof MapEvent) {
+				return getMessageBuilderFactory()
+						.withPayload(((MapEvent) event).getNumberOfEntriesAffected()).copyHeaders(headers).build();
+			}
+			else {
+				throw new IllegalStateException("Invalid event is received. Event : " + event);
 			}
 		}
 
