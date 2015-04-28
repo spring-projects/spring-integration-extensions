@@ -22,12 +22,12 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
+import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.hazelcast.outbound.HazelcastCacheWritingMessageHandler;
 
-import reactor.util.StringUtils;
-
 /**
- * Hazelcast Outbound Channel Adapter Parser for {@code <int-hazelcast:inbound-channel-adapter />}.
+ * Hazelcast Outbound Channel Adapter Parser for
+ * {@code <int-hazelcast:inbound-channel-adapter />}.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
@@ -36,16 +36,27 @@ public class HazelcastOutboundChannelAdapterParser extends AbstractOutboundChann
 
 	private static final String CACHE_ATTRIBUTE = "cache";
 
+	private static final String CACHE_EXPRESSION_ATTRIBUTE = "cache-expression";
+
+	private static final String KEY_EXPRESSION_ATTRIBUTE = "key-expression";
+
+	private static final String EXTRACT_PAYLOAD_ATTRIBUTE = "extract-payload";
+
+	private static final String DISTRIBUTED_OBJECT = "distributedObject";
+
 	@Override
 	protected AbstractBeanDefinition parseConsumer(Element element, ParserContext parserContext) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder
 				.genericBeanDefinition(HazelcastCacheWritingMessageHandler.class);
 
-		if (!StringUtils.hasText(element.getAttribute(CACHE_ATTRIBUTE))) {
-			parserContext.getReaderContext().error("'" + CACHE_ATTRIBUTE + "' attribute is required.", element);
-		}
-
-		builder.addConstructorArgReference(element.getAttribute(CACHE_ATTRIBUTE));
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element,
+				CACHE_ATTRIBUTE, DISTRIBUTED_OBJECT);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
+				CACHE_EXPRESSION_ATTRIBUTE);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
+				KEY_EXPRESSION_ATTRIBUTE);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
+				EXTRACT_PAYLOAD_ATTRIBUTE);
 
 		return builder.getBeanDefinition();
 	}
