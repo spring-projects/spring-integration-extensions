@@ -80,7 +80,7 @@ public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
     }
 
     private void handleAsyncInsert(Object payload) {
-        WriteListener<T> writeListener = gettWriteListener();
+        WriteListener<T> writeListener = getWriteListener();
         if (payload instanceof List) {
             @SuppressWarnings("unchecked")
             List<T> entities = (List<T>) payload;
@@ -101,7 +101,7 @@ public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
         }
     }
 
-    private WriteListener<T> gettWriteListener() {
+    private WriteListener<T> getWriteListener() {
         return new WriteListener<T>() {
 
             @Override
