@@ -17,6 +17,7 @@ package org.springframework.integration.cassandra.outbound;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.WriteListener;
 import org.springframework.integration.handler.AbstractMessageHandler;
@@ -50,6 +51,11 @@ public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
      */
     private boolean async;
 
+    /**
+     * Various options that can be used for Cassandra writes.
+     */
+    private WriteOptions writeOptions;
+
     public CassandraStoringMessageHandler(CassandraOperations cassandraTemplate) {
         this.cassandraTemplate = cassandraTemplate;
     }
@@ -73,9 +79,9 @@ public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
         if (payload instanceof List) {
             @SuppressWarnings("unchecked")
             List<T> entities = (List<T>) payload;
-            cassandraTemplate.insert(entities);
+            cassandraTemplate.insert(entities, writeOptions);
         } else {
-            cassandraTemplate.insert(message.getPayload());
+            cassandraTemplate.insert(message.getPayload(), writeOptions);
         }
     }
 
@@ -84,11 +90,11 @@ public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
         if (payload instanceof List) {
             @SuppressWarnings("unchecked")
             List<T> entities = (List<T>) payload;
-            cassandraTemplate.insertAsynchronously(entities, writeListener);
+            cassandraTemplate.insertAsynchronously(entities, writeListener, writeOptions);
         } else {
             @SuppressWarnings("unchecked")
             T typedPayload = (T) payload;
-            cassandraTemplate.insertAsynchronously(typedPayload, writeListener);
+            cassandraTemplate.insertAsynchronously(typedPayload, writeListener, writeOptions);
         }
     }
 
@@ -97,7 +103,7 @@ public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
             @SuppressWarnings("unchecked")
             List<List<?>> data = (List<List<?>>) payload;
             assert cqlIngest != null;
-            cassandraTemplate.ingest(cqlIngest, data);
+            cassandraTemplate.ingest(cqlIngest, data, writeOptions);
         }
     }
 
@@ -126,6 +132,10 @@ public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
 
     public void setCqlIngest(String cqlIngest) {
         this.cqlIngest = cqlIngest;
+    }
+
+    public void setWriteOptions(WriteOptions writeOptions) {
+        this.writeOptions = writeOptions;
     }
 
     @Override

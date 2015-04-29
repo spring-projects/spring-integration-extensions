@@ -32,6 +32,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cassandra.core.ConsistencyLevel;
+import org.springframework.cassandra.core.RetryPolicy;
+import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -69,22 +72,39 @@ import com.datastax.driver.core.Session;
             return new String[] { Book.class.getPackage().getName() };
         }
 
+        @Bean (name = "sync")
+        public MessageHandler synchronousCassandraStoringMessageHandler() {
+            return new CassandraStoringMessageHandler<Book>(template);
+        }
+
         @Bean (name = "async")
         public MessageHandler cassandraStoringMessageHandlerAsync() {
-            CassandraStoringMessageHandler cassandraStoringMessageHandler = new CassandraStoringMessageHandler(template);
+            CassandraStoringMessageHandler<Book> cassandraStoringMessageHandler = new CassandraStoringMessageHandler<Book>(template);
             cassandraStoringMessageHandler.setAsync(true);
+
+            WriteOptions options = new WriteOptions();
+            options.setTtl(60);
+            options.setConsistencyLevel(ConsistencyLevel.ONE);
+            options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+
+            cassandraStoringMessageHandler.setWriteOptions(options);
+
             return cassandraStoringMessageHandler;
         }
 
         @Bean (name = "ingest")
         public MessageHandler cassandraStoringMessageHandlerHighThroughputIngest() {
-            CassandraStoringMessageHandler cassandraStoringMessageHandler = new CassandraStoringMessageHandler(template);
+            CassandraStoringMessageHandler<Book> cassandraStoringMessageHandler = new CassandraStoringMessageHandler<Book>(template);
             String cqlIngest = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
             cassandraStoringMessageHandler.setCqlIngest(cqlIngest);
             cassandraStoringMessageHandler.setHighThroughputIngest(true);
             return cassandraStoringMessageHandler;
         }
     }
+
+    @Autowired
+    @Qualifier("sync")
+    public MessageHandler messageHandlerSync;
 
     @Autowired
     @Qualifier("async")
@@ -142,7 +162,6 @@ import com.datastax.driver.core.Session;
 
     @Test
     public void testBasicCassandraInsert() throws Exception {
-        //ensureClusterConnection();
         assertEquals(1, 1);
 
         Book b1 = new Book();
@@ -154,8 +173,8 @@ import com.datastax.driver.core.Session;
         b1.setInStock(true);
 
         Message<Book> message = MessageBuilder.withPayload(b1).build();
-        messageHandlerAsync.handleMessage(message);
-        Thread.sleep(1000); //convert to a latch
+        messageHandlerSync.handleMessage(message);
+        Thread.sleep(1000); //TODO: convert to a latch
 
         ResultSet query = template.query("select * from book;");
         assertEquals(query.all().size(), 1);
@@ -170,7 +189,7 @@ import com.datastax.driver.core.Session;
         List<Book> books = getBookList(5);
         Message<List<Book>> message = MessageBuilder.withPayload(books).build();
         messageHandlerAsync.handleMessage(message);
-        Thread.sleep(1000); //convert to a latch
+        Thread.sleep(1000); //TODO: convert to a latch
         ResultSet query = template.query("select * from book;");
         assertEquals(query.all().size(), 5);
         for (Row r : query) {
@@ -198,7 +217,7 @@ import com.datastax.driver.core.Session;
 
         Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
         messageHandlerIngest.handleMessage(message);
-        Thread.sleep(1000); //convert to a latch
+        Thread.sleep(1000); //TODO: convert to a latch
         ResultSet query = template.query("select * from book;");
         assertEquals(query.all().size(), 5);
         for (Row r : query) {

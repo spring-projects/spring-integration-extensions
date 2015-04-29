@@ -144,7 +144,7 @@ public class CassandraStoringMessageHandlerDriver implements CommandLineRunner {
 
         @Bean
         public MessageHandler cassandraStoringMessageHandler() {
-            return new CassandraStoringMessageHandler(cassandraTemplate());
+            return new CassandraStoringMessageHandler<Users>(cassandraTemplate());
         }
 
         @Bean
