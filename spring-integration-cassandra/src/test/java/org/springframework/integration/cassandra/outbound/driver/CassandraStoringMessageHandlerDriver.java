@@ -15,6 +15,8 @@
  */
 package org.springframework.integration.cassandra.outbound.driver;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
@@ -44,146 +46,149 @@ import org.springframework.messaging.MessageHandler;
 
 import com.datastax.driver.core.Session;
 
-import java.util.UUID;
-
 /**
  * Simple Spring Boot app to run the outbound adapter.
- *
+ * <p>
  * This class requires a Cassandra instance running and
  * configured in cassandra.properties in src/test/resources.
- *
+ * <p>
  * Keyspace used is called "demo"
- *
  * @author Soby Chacko
  */
 @SpringBootApplication
 public class CassandraStoringMessageHandlerDriver implements CommandLineRunner {
 
-    @Autowired
-    @Qualifier("cassandraStoringMessageHandler")
-    private MessageHandler messageHandler;
+	@Autowired
+	@Qualifier("cassandraStoringMessageHandler")
+	private MessageHandler messageHandler;
 
-    @Override
-    public void run(String... args) throws Exception {
-        Users users = new Users();
-        users.setLastname(String.format("Bar-%s", UUID.randomUUID()));
-        users.setFirstname("Foo");
-        users.setEmail("foo@bar.com");
-        users.setCity("New York");
-        users.setAge(40);
+	@Override
+	public void run(String... args) throws Exception {
+		Users users = new Users();
+		users.setLastname(String.format("Bar-%s", UUID.randomUUID()));
+		users.setFirstname("Foo");
+		users.setEmail("foo@bar.com");
+		users.setCity("New York");
+		users.setAge(40);
 
-        Message<Users> message = MessageBuilder.withPayload(users).build();
-        messageHandler.handleMessage(message);
-    }
+		Message<Users> message = MessageBuilder.withPayload(users).build();
+		messageHandler.handleMessage(message);
+	}
 
-    public static void main(String... args) {
-        SpringApplication.run(CassandraStoringMessageHandlerDriver.class, args);
-    }
+	public static void main(String... args) {
+		SpringApplication.run(CassandraStoringMessageHandlerDriver.class, args);
+	}
 
-    @Table
-    public class Users {
+	@Table
+	public class Users {
 
-        @PrimaryKey(value = "lastname")
-        String lastname;
-        String firstname;
-        String email;
-        String city;
-        int age;
+		@PrimaryKey(value = "lastname")
+		String lastname;
 
-        public String getLastname() {
-            return lastname;
-        }
+		String firstname;
 
-        public void setLastname(String lastname) {
-            this.lastname = lastname;
-        }
+		String email;
 
-        public String getFirstname() {
-            return firstname;
-        }
+		String city;
 
-        public void setFirstname(String firstname) {
-            this.firstname = firstname;
-        }
+		int age;
 
-        public String getEmail() {
-            return email;
-        }
+		public String getLastname() {
+			return lastname;
+		}
 
-        public void setEmail(String email) {
-            this.email = email;
-        }
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
 
-        public String getCity() {
-            return city;
-        }
+		public String getFirstname() {
+			return firstname;
+		}
 
-        public void setCity(String city) {
-            this.city = city;
-        }
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
 
-        public int getAge() {
-            return age;
-        }
+		public String getEmail() {
+			return email;
+		}
 
-        public void setAge(int age) {
-            this.age = age;
-        }
-    }
+		public void setEmail(String email) {
+			this.email = email;
+		}
 
-    @Configuration
-    @EnableIntegration
-    @PropertySource(value = { "classpath:cassandra.properties" })
-    static class CassandraConfiguration {
+		public String getCity() {
+			return city;
+		}
 
-        @Autowired
-        private Environment env;
+		public void setCity(String city) {
+			this.city = city;
+		}
 
-        @Autowired
-        private ApplicationContext context;
+		public int getAge() {
+			return age;
+		}
 
-        @Bean
-        public MessageHandler cassandraStoringMessageHandler() {
-            return new CassandraStoringMessageHandler<Users>(cassandraTemplate());
-        }
+		public void setAge(int age) {
+			this.age = age;
+		}
+	}
 
-        @Bean
-        public CassandraClusterFactoryBean cluster() {
+	@Configuration
+	@EnableIntegration
+	@PropertySource(value = {"classpath:cassandra.properties"})
+	@SuppressWarnings("rawtypes")
+	static class CassandraConfiguration {
 
-            CassandraClusterFactoryBean cluster = new CassandraClusterFactoryBean();
-            cluster.setContactPoints(env.getProperty("cassandra.contactpoints"));
-            cluster.setPort(Integer.parseInt(env.getProperty("cassandra.port")));
+		@Autowired
+		private Environment env;
 
-            return cluster;
-        }
+		@Autowired
+		private ApplicationContext context;
 
-        @Bean
-        public CassandraMappingContext mappingContext() {
-            return new BasicCassandraMappingContext();
-        }
+		@Bean
+		public MessageHandler cassandraStoringMessageHandler() {
+			return new CassandraStoringMessageHandler(cassandraTemplate());
+		}
 
-        @Bean
-        public CassandraConverter converter() {
-            return new MappingCassandraConverter(mappingContext());
-        }
+		@Bean
+		public CassandraClusterFactoryBean cluster() {
 
-        @Bean
-        public CassandraSessionFactoryBean session() throws Exception {
+			CassandraClusterFactoryBean cluster = new CassandraClusterFactoryBean();
+			cluster.setContactPoints(env.getProperty("cassandra.contactpoints"));
+			cluster.setPort(Integer.parseInt(env.getProperty("cassandra.port")));
 
-            CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
-            session.setCluster(cluster().getObject());
-            session.setKeyspaceName(env.getProperty("cassandra.keyspace"));
-            session.setConverter(converter());
-            session.setSchemaAction(SchemaAction.NONE);
+			return cluster;
+		}
 
-            return session;
-        }
+		@Bean
+		public CassandraMappingContext mappingContext() {
+			return new BasicCassandraMappingContext();
+		}
 
-        @Bean
-        public CassandraOperations cassandraTemplate()  {
-            Session session = context.getBean(Session.class);
-            return new CassandraTemplate(session);
-        }
-    }
+		@Bean
+		public CassandraConverter converter() {
+			return new MappingCassandraConverter(mappingContext());
+		}
+
+		@Bean
+		public CassandraSessionFactoryBean session() throws Exception {
+
+			CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
+			session.setCluster(cluster().getObject());
+			session.setKeyspaceName(env.getProperty("cassandra.keyspace"));
+			session.setConverter(converter());
+			session.setSchemaAction(SchemaAction.NONE);
+
+			return session;
+		}
+
+		@Bean
+		public CassandraOperations cassandraTemplate() {
+			Session session = context.getBean(Session.class);
+			return new CassandraTemplate(session);
+		}
+
+	}
 
 }

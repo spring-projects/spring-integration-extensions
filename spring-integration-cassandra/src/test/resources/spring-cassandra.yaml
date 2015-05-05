@@ -106,10 +106,10 @@ partitioner: org.apache.cassandra.dht.Murmur3Partitioner
 # will spread data evenly across them, subject to the granularity of
 # the configured compaction strategy.
 data_file_directories:
-    - target/embeddedCassandra/data
+    - build/embeddedCassandra/data
 
 # commit log
-commitlog_directory: target/embeddedCassandra/commitlog
+commitlog_directory: build/embeddedCassandra/commitlog
 
 # policy for data disk failures:
 # stop: shut down gossip and Thrift, leaving the node effectively dead, but
@@ -171,7 +171,7 @@ row_cache_save_period: 0
 # row_cache_keys_to_save: 100
 
 # saved caches
-saved_caches_directory: target/embeddedCassandra/saved_caches
+saved_caches_directory: build/embeddedCassandra/saved_caches
 
 # commitlog_sync may be either "periodic" or "batch."
 # When in batch mode, Cassandra won't ack writes until the commit log

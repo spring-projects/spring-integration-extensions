@@ -15,122 +15,122 @@
  */
 package org.springframework.integration.cassandra.outbound;
 
+import java.util.List;
+
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.WriteListener;
 import org.springframework.integration.cassandra.support.CassandraOutboundGatewayType;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
-
-import java.util.List;
+import org.springframework.util.Assert;
 
 /**
- * @author sobychacko
+ * @author Soby Chacko
  */
 public class CassandraOutboundGateway<T> extends AbstractReplyProducingMessageHandler {
 
-    private final CassandraOperations cassandraTemplate;
+	private final CassandraOperations cassandraTemplate;
 
-    private CassandraOutboundGatewayType gatewayType = CassandraOutboundGatewayType.INSERTING;
+	private CassandraOutboundGatewayType gatewayType = CassandraOutboundGatewayType.INSERTING;
 
-    private WriteListener<T> writeListener;
+	private WriteListener<T> writeListener;
 
-    private boolean producesReply = true;
+	private boolean producesReply = true;
 
-    private boolean async = false;
+	private boolean async = false;
 
-    /**
-     * Various options that can be used for Cassandra writes.
-     */
-    private WriteOptions writeOptions;
+	/**
+	 * Various options that can be used for Cassandra writes.
+	 */
+	private WriteOptions writeOptions;
 
-    public CassandraOutboundGateway(CassandraOperations cassandraTemplate) {
-        this.cassandraTemplate = cassandraTemplate;
-    }
+	public CassandraOutboundGateway(CassandraOperations cassandraOperations) {
+		Assert.notNull(cassandraOperations, "'cassandraOperations' must not be null.");
+		this.cassandraTemplate = cassandraOperations;
+	}
 
-    @Override
-    protected Object handleRequestMessage(Message<?> requestMessage) {
-        Object payload = requestMessage.getPayload();
-       final Object result;
+	public void setGatewayType(CassandraOutboundGatewayType gatewayType) {
+		this.gatewayType = gatewayType;
+	}
 
-        switch (gatewayType){
-            case INSERTING:
-                if (async) {
-                    if (payload instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<T> entities = (List<T>) payload;
-                        result = cassandraTemplate.insertAsynchronously(entities, writeListener, writeOptions);
-                    } else {
-                        @SuppressWarnings("unchecked")
-                        T typedPayload = (T) payload;
-                        result = cassandraTemplate.insertAsynchronously(typedPayload, writeListener, writeOptions);
-                    }
-                }
-                else {
-                    if (payload instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<T> entities = (List<T>) payload;
-                        result = cassandraTemplate.insert(entities, writeOptions);
-                    } else {
-                        result = cassandraTemplate.insert(payload, writeOptions);
-                    }
-                }
-                break;
-            case UPDATING:
-                if (async) {
-                    if (payload instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<T> entities = (List<T>) payload;
-                        result = cassandraTemplate.updateAsynchronously(entities, writeListener, writeOptions);
-                    } else {
-                        @SuppressWarnings("unchecked")
-                        T typedPayload = (T) payload;
-                        result = cassandraTemplate.updateAsynchronously(typedPayload, writeListener, writeOptions);
-                    }
-                }
-                else {
-                    if (payload instanceof List) {
-                        @SuppressWarnings("unchecked")
-                        List<T> entities = (List<T>) payload;
-                        result = cassandraTemplate.update(entities, writeOptions);
-                    } else {
-                        result = cassandraTemplate.update(payload, writeOptions);
-                    }
-                }
-                break;
-            case DELETING:
-                result = null;
-                break;
-            default:
-                result = null;
+	public void setWriteListener(WriteListener<T> writeListener) {
+		this.writeListener = writeListener;
+	}
 
-        }
+	public void setWriteOptions(WriteOptions writeOptions) {
+		this.writeOptions = writeOptions;
+	}
 
-        if (result == null || !producesReply) {
-            return null;
-        }
+	public void setAsync(boolean async) {
+		this.async = async;
+	}
 
-        return this.getMessageBuilderFactory().withPayload(result).copyHeaders(requestMessage.getHeaders()).build();
-    }
+	@Override
+	public String getComponentType() {
+		return "cassandra:outbound-gateway";
+	}
 
-    public void setGatewayType(CassandraOutboundGatewayType gatewayType) {
-        this.gatewayType = gatewayType;
-    }
+	@Override
+	@SuppressWarnings("unchecked")
+	protected Object handleRequestMessage(Message<?> requestMessage) {
+		Object payload = requestMessage.getPayload();
+		final Object result;
 
-    public void setWriteListener(WriteListener<T> writeListener) {
-        this.writeListener = writeListener;
-    }
+		switch (this.gatewayType) {
+			case INSERTING:
+				if (async) {
+					if (payload instanceof List) {
+						result = this.cassandraTemplate.insertAsynchronously((List<T>) payload,
+								this.writeListener, this.writeOptions);
+					}
+					else {
+						result = this.cassandraTemplate.insertAsynchronously((T) payload,
+								this.writeListener, this.writeOptions);
+					}
+				}
+				else {
+					if (payload instanceof List) {
+						result = this.cassandraTemplate.insert((List<T>) payload, this.writeOptions);
+					}
+					else {
+						result = this.cassandraTemplate.insert(payload, this.writeOptions);
+					}
+				}
+				break;
+			case UPDATING:
+				if (async) {
+					if (payload instanceof List) {
+						result = this.cassandraTemplate.updateAsynchronously((List<T>) payload,
+								this.writeListener, this.writeOptions);
+					}
+					else {
+						result = this.cassandraTemplate.updateAsynchronously((T) payload,
+								this.writeListener, this.writeOptions);
+					}
+				}
+				else {
+					if (payload instanceof List) {
+						result = this.cassandraTemplate.update((List<T>) payload, this.writeOptions);
+					}
+					else {
+						result = this.cassandraTemplate.update(payload, this.writeOptions);
+					}
+				}
+				break;
+			case DELETING:
+				result = null;
+				break;
+			default:
+				result = null;
 
-    public void setWriteOptions(WriteOptions writeOptions) {
-        this.writeOptions = writeOptions;
-    }
+		}
 
-    public void setAsync(boolean async) {
-        this.async = async;
-    }
+		if (result == null || !this.producesReply) {
+			return null;
+		}
 
-    @Override
-    public String getComponentType() {
-        return "cassandra:outbound-gateway";
-    }
+		return result;
+	}
+
 }

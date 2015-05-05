@@ -15,132 +15,127 @@
  */
 package org.springframework.integration.cassandra.outbound;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.WriteListener;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
-
-import java.util.Collection;
-import java.util.List;
+import org.springframework.util.Assert;
 
 /**
  * @author Soby Chacko
  */
 public class CassandraStoringMessageHandler<T> extends AbstractMessageHandler {
 
-    private static final Log log = LogFactory.getLog(CassandraStoringMessageHandler.class);
+	private static final Log log = LogFactory.getLog(CassandraStoringMessageHandler.class);
 
-    private final CassandraOperations cassandraTemplate;
+	private final CassandraOperations cassandraOperations;
 
-    /**
-     * Indicates whether the outbound operations need to use the underlying high throughput ingest
-     * capabilities.
-     */
-    private boolean highThroughputIngest;
+	/**
+	 * Indicates whether the outbound operations need to use the underlying high throughput ingest
+	 * capabilities.
+	 */
+	private boolean highThroughputIngest;
 
-    /**
-     * Prepared statement to use in association with high throughput ingestion.
-     */
-    private String cqlIngest;
+	/**
+	 * Prepared statement to use in association with high throughput ingestion.
+	 */
+	private String cqlIngest;
 
-    /**
-     * Indicates whether the outbound operations need to be async.
-     */
-    private boolean async;
+	/**
+	 * Indicates whether the outbound operations need to be async.
+	 */
+	private boolean async;
 
-    /**
-     * Various options that can be used for Cassandra writes.
-     */
-    private WriteOptions writeOptions;
+	/**
+	 * Various options that can be used for Cassandra writes.
+	 */
+	private WriteOptions writeOptions;
 
-    public CassandraStoringMessageHandler(CassandraOperations cassandraTemplate) {
-        this.cassandraTemplate = cassandraTemplate;
-    }
+	public CassandraStoringMessageHandler(CassandraOperations cassandraOperations) {
+		Assert.notNull(cassandraOperations, "'cassandraOperations' must not be null.");
+		this.cassandraOperations = cassandraOperations;
+	}
 
-    @Override
-    protected void handleMessageInternal(Message<?> message) throws Exception {
+	public void setHighThroughputIngest(boolean highThroughputIngest) {
+		this.highThroughputIngest = highThroughputIngest;
+	}
 
-        Object payload = message.getPayload();
-        if (highThroughputIngest) {
-            handleHighThroughputIngest(payload);
-        }
-        else if (async) {
-            handleAsyncInsert(payload);
-        }
-        else {
-            handleSynchronousInsert(message, payload);
-        }
-    }
+	public void setAsync(boolean async) {
+		this.async = async;
+	}
 
-    private void handleSynchronousInsert(Message<?> message, Object payload) {
-        if (payload instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<T> entities = (List<T>) payload;
-            cassandraTemplate.insert(entities, writeOptions);
-        } else {
-            cassandraTemplate.insert(message.getPayload(), writeOptions);
-        }
-    }
+	public void setCqlIngest(String cqlIngest) {
+		this.cqlIngest = cqlIngest;
+	}
 
-    private void handleAsyncInsert(Object payload) {
-        WriteListener<T> writeListener = getWriteListener();
-        if (payload instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<T> entities = (List<T>) payload;
-            cassandraTemplate.insertAsynchronously(entities, writeListener, writeOptions);
-        } else {
-            @SuppressWarnings("unchecked")
-            T typedPayload = (T) payload;
-            cassandraTemplate.insertAsynchronously(typedPayload, writeListener, writeOptions);
-        }
-    }
+	public void setWriteOptions(WriteOptions writeOptions) {
+		this.writeOptions = writeOptions;
+	}
 
-    private void handleHighThroughputIngest(Object payload) {
-        if (payload instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<List<?>> data = (List<List<?>>) payload;
-            assert cqlIngest != null;
-            cassandraTemplate.ingest(cqlIngest, data, writeOptions);
-        }
-    }
+	@Override
+	public String getComponentType() {
+		return "cassandra:outbound-channel-adapter";
+	}
 
-    private WriteListener<T> getWriteListener() {
-        return new WriteListener<T>() {
+	@Override
+	@SuppressWarnings("unchecked")
+	protected void handleMessageInternal(Message<?> message) throws Exception {
 
-            @Override
-            public void onWriteComplete(Collection<T> entities) {
+		Object payload = message.getPayload();
+		if (this.highThroughputIngest) {
+			handleHighThroughputIngest(payload);
+		}
+		else if (this.async) {
+			if (payload instanceof List) {
+				this.cassandraOperations.insertAsynchronously((List<T>) payload, getWriteListener(), this.writeOptions);
+			}
+			else {
+				this.cassandraOperations.insertAsynchronously((T) payload, getWriteListener(), this.writeOptions);
+			}
+		}
+		else {
+			if (payload instanceof List) {
+				this.cassandraOperations.insert((List<T>) payload, this.writeOptions);
+			}
+			else {
+				this.cassandraOperations.insert(payload, this.writeOptions);
+			}
 
-            }
+		}
+	}
 
-            @Override
-            public void onException(Exception x) {
-                log.debug("Exception thrown", x);
-            }
-        };
-    }
+	@SuppressWarnings("unchecked")
+	private void handleHighThroughputIngest(Object payload) {
+		Assert.isInstanceOf(List.class, payload, "to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
+		List<?> list = (List<?>) payload;
+		for (Object o : list) {
+			Assert.isInstanceOf(List.class, o, "to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
+		}
+		List<List<?>> rows = (List<List<?>>) payload;
+		this.cassandraOperations.ingest(this.cqlIngest, rows, this.writeOptions);
+	}
 
-    public void setHighThroughputIngest(boolean highThroughputIngest) {
-        this.highThroughputIngest = highThroughputIngest;
-    }
+	private WriteListener<T> getWriteListener() {
+		return new WriteListener<T>() {
 
-    public void setAsync(boolean async) {
-        this.async = async;
-    }
+			@Override
+			public void onWriteComplete(Collection<T> entities) {
 
-    public void setCqlIngest(String cqlIngest) {
-        this.cqlIngest = cqlIngest;
-    }
+			}
 
-    public void setWriteOptions(WriteOptions writeOptions) {
-        this.writeOptions = writeOptions;
-    }
+			@Override
+			public void onException(Exception x) {
+				log.debug("Exception thrown", x);
+			}
 
-    @Override
-    public String getComponentType() {
-        return "cassandra:outbound-channel-adapter";
-    }
+		};
+	}
 
 }
