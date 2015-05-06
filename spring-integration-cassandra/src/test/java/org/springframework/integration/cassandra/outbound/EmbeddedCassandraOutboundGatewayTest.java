@@ -27,6 +27,7 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,9 +41,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.integration.cassandra.config.IntegrationTestConfig;
 import org.springframework.integration.cassandra.test.domain.Book;
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -59,7 +60,7 @@ import com.datastax.driver.core.Session;
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext
-    public class EmbeddedCassandraStoringMessageHandlerTest {
+    public class EmbeddedCassandraOutboundGatewayTest {
 
     @Configuration
     public static class Config extends IntegrationTestConfig {
@@ -73,32 +74,41 @@ import com.datastax.driver.core.Session;
         }
 
         @Bean (name = "sync")
-        public MessageHandler synchronousCassandraStoringMessageHandler() {
-            return new CassandraStoringMessageHandler<Book>(template);
+        public MessageHandler cassandraOutboundGatewaySync() {
+            CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
+            cassandraOutboundGateway.setProducesReply(false);
+            return cassandraOutboundGateway;
+        }
+
+        @Bean
+        SubscribableChannel messageChannel() {
+            return new DirectChannel();
         }
 
         @Bean (name = "async")
-        public MessageHandler cassandraStoringMessageHandlerAsync() {
-            CassandraStoringMessageHandler<Book> cassandraStoringMessageHandler = new CassandraStoringMessageHandler<Book>(template);
-            cassandraStoringMessageHandler.setAsync(true);
+        public MessageHandler cassandraOutboundGatewayAsync() {
+            CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
+            cassandraOutboundGateway.setAsync(true);
 
             WriteOptions options = new WriteOptions();
             options.setTtl(60);
             options.setConsistencyLevel(ConsistencyLevel.ONE);
             options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
-            cassandraStoringMessageHandler.setWriteOptions(options);
+            cassandraOutboundGateway.setWriteOptions(options);
 
-            return cassandraStoringMessageHandler;
+            cassandraOutboundGateway.setOutputChannel(messageChannel());
+
+            return cassandraOutboundGateway;
         }
 
         @Bean (name = "ingest")
-        public MessageHandler cassandraStoringMessageHandlerHighThroughputIngest() {
-            CassandraStoringMessageHandler<Book> cassandraStoringMessageHandler = new CassandraStoringMessageHandler<Book>(template);
+        public MessageHandler cassandraOutboundGatewayIngest() {
+            CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
             String cqlIngest = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
-            cassandraStoringMessageHandler.setCqlIngest(cqlIngest);
-            cassandraStoringMessageHandler.setHighThroughputIngest(true);
-            return cassandraStoringMessageHandler;
+            cassandraOutboundGateway.setCqlIngest(cqlIngest);
+            cassandraOutboundGateway.setHighThroughputIngest(true);
+            return cassandraOutboundGateway;
         }
     }
 
@@ -116,6 +126,9 @@ import com.datastax.driver.core.Session;
 
     @Autowired
     public CassandraOperations template;
+
+    @Autowired
+    public SubscribableChannel channel;
 
     protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
     protected static String CASSANDRA_HOST = "localhost";
@@ -142,6 +155,16 @@ import com.datastax.driver.core.Session;
     public static void cleanup() {
         cluster.close();
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+    }
+
+    @Before
+    public void setup(){
+        channel.subscribe(new MessageHandler() {
+            @Override
+            public void handleMessage(Message<?> message) throws MessagingException {
+                System.out.println("Foo:"+message);
+            }
+        });
     }
 
     public static Cluster cluster() {
@@ -195,6 +218,9 @@ import com.datastax.driver.core.Session;
         for (Row r : query) {
             System.out.println("Foo: " + r.toString());
         }
+
+
+
         template.delete(books);
     }
 

@@ -15,6 +15,7 @@
  */
 package org.springframework.integration.cassandra.outbound.driver;
 
+import com.datastax.driver.core.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
@@ -36,13 +37,12 @@ import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.integration.cassandra.outbound.CassandraStoringMessageHandler;
+import org.springframework.integration.cassandra.outbound.CassandraOutboundGateway;
+import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
-
-import com.datastax.driver.core.Session;
 
 import java.util.UUID;
 
@@ -60,7 +60,7 @@ import java.util.UUID;
 public class CassandraStoringMessageHandlerDriver implements CommandLineRunner {
 
     @Autowired
-    @Qualifier("cassandraStoringMessageHandler")
+    @Qualifier("cassandraOutboundGateway")
     private MessageHandler messageHandler;
 
     @Override
@@ -143,8 +143,10 @@ public class CassandraStoringMessageHandlerDriver implements CommandLineRunner {
         private ApplicationContext context;
 
         @Bean
-        public MessageHandler cassandraStoringMessageHandler() {
-            return new CassandraStoringMessageHandler<Users>(cassandraTemplate());
+        public MessageHandler cassandraOutboundGateway() {
+            CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(cassandraTemplate());
+            cassandraOutboundGateway.setProducesReply(false);
+            return cassandraOutboundGateway;
         }
 
         @Bean
