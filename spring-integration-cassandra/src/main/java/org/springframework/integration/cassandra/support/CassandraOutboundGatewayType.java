@@ -20,5 +20,5 @@ package org.springframework.integration.cassandra.support;
  */
 public enum CassandraOutboundGatewayType {
 
-    INSERTING, UPDATING, DELETING;
+	INSERTING, UPDATING, DELETING;
 }

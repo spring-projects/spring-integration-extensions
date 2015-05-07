@@ -35,33 +35,33 @@ import org.springframework.data.cassandra.config.java.AbstractCassandraConfigura
 @Configuration
 public class IntegrationTestConfig extends AbstractCassandraConfiguration {
 
-    //public static final SpringCassandraBuildProperties PROPS = new SpringCassandraBuildProperties();
-    public static final int PORT = 9043;//PROPS.getCassandraPort();
-   // public static final int RPC_PORT = PROPS.getCassandraRpcPort();
+	//public static final SpringCassandraBuildProperties PROPS = new SpringCassandraBuildProperties();
+	public static final int PORT = 9043;//PROPS.getCassandraPort();
+	// public static final int RPC_PORT = PROPS.getCassandraRpcPort();
 
-    public String keyspaceName = randomKeyspaceName();
+	public String keyspaceName = randomKeyspaceName();
 
-    public static String randomKeyspaceName() {
-        return "ks" + UUID.randomUUID().toString().replace("-", "");
-    }
+	public static String randomKeyspaceName() {
+		return "ks" + UUID.randomUUID().toString().replace("-", "");
+	}
 
-    @Override
-    protected int getPort() {
-        return PORT;
-    }
+	@Override
+	protected int getPort() {
+		return PORT;
+	}
 
-    @Override
-    public SchemaAction getSchemaAction() {
-        return SchemaAction.RECREATE;
-    }
+	@Override
+	public SchemaAction getSchemaAction() {
+		return SchemaAction.RECREATE;
+	}
 
-    @Override
-    protected String getKeyspaceName() {
-        return keyspaceName;
-    }
+	@Override
+	protected String getKeyspaceName() {
+		return keyspaceName;
+	}
 
-    @Override
-    protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-        return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
-    }
+	@Override
+	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+		return Arrays.asList(createKeyspace().name(getKeyspaceName()).withSimpleReplication());
+	}
 }

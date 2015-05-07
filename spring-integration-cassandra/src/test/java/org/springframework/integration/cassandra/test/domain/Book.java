@@ -28,109 +28,109 @@ import org.springframework.data.cassandra.mapping.Table;
 @Table("book")
 public class Book {
 
-    @PrimaryKey
-    private String isbn;
+	@PrimaryKey
+	private String isbn;
 
-    private String title;
-    private String author;
-    private int pages;
-    private Date saleDate;
-    private boolean isInStock;
+	private String title;
+	private String author;
+	private int pages;
+	private Date saleDate;
+	private boolean isInStock;
 
-    /**
-     * @return Returns the isbn.
-     */
-    public String getIsbn() {
-        return isbn;
-    }
+	/**
+	 * @return Returns the isbn.
+	 */
+	public String getIsbn() {
+		return isbn;
+	}
 
-    /**
-     * @return Returns the saleDate.
-     */
-    public Date getSaleDate() {
-        return saleDate;
-    }
+	/**
+	 * @return Returns the saleDate.
+	 */
+	public Date getSaleDate() {
+		return saleDate;
+	}
 
-    /**
-     * @param saleDate The saleDate to set.
-     */
-    public void setSaleDate(Date saleDate) {
-        this.saleDate = saleDate;
-    }
+	/**
+	 * @param saleDate The saleDate to set.
+	 */
+	public void setSaleDate(Date saleDate) {
+		this.saleDate = saleDate;
+	}
 
-    /**
-     * @return Returns the isInStock.
-     */
-    public boolean isInStock() {
-        return isInStock;
-    }
+	/**
+	 * @return Returns the isInStock.
+	 */
+	public boolean isInStock() {
+		return isInStock;
+	}
 
-    /**
-     * @param isInStock The isInStock to set.
-     */
-    public void setInStock(boolean isInStock) {
-        this.isInStock = isInStock;
-    }
+	/**
+	 * @param isInStock The isInStock to set.
+	 */
+	public void setInStock(boolean isInStock) {
+		this.isInStock = isInStock;
+	}
 
-    /**
-     * @param isbn The isbn to set.
-     */
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
+	/**
+	 * @param isbn The isbn to set.
+	 */
+	public void setIsbn(String isbn) {
+		this.isbn = isbn;
+	}
 
-    /**
-     * @return Returns the title.
-     */
-    public String getTitle() {
-        return title;
-    }
+	/**
+	 * @return Returns the title.
+	 */
+	public String getTitle() {
+		return title;
+	}
 
-    /**
-     * @param title The title to set.
-     */
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	/**
+	 * @param title The title to set.
+	 */
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    /**
-     * @return Returns the author.
-     */
-    public String getAuthor() {
-        return author;
-    }
+	/**
+	 * @return Returns the author.
+	 */
+	public String getAuthor() {
+		return author;
+	}
 
-    /**
-     * @param author The author to set.
-     */
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+	/**
+	 * @param author The author to set.
+	 */
+	public void setAuthor(String author) {
+		this.author = author;
+	}
 
-    /**
-     * @return Returns the pages.
-     */
-    public int getPages() {
-        return pages;
-    }
+	/**
+	 * @return Returns the pages.
+	 */
+	public int getPages() {
+		return pages;
+	}
 
-    /**
-     * @param pages The pages to set.
-     */
-    public void setPages(int pages) {
-        this.pages = pages;
-    }
+	/**
+	 * @param pages The pages to set.
+	 */
+	public void setPages(int pages) {
+		this.pages = pages;
+	}
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("isbn -> " + isbn).append("\n");
-        sb.append("tile -> " + title).append("\n");
-        sb.append("author -> " + author).append("\n");
-        sb.append("pages -> " + pages).append("\n");
-        return sb.toString();
-    }
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("isbn -> " + isbn).append("\n");
+		sb.append("tile -> " + title).append("\n");
+		sb.append("author -> " + author).append("\n");
+		sb.append("pages -> " + pages).append("\n");
+		return sb.toString();
+	}
 }

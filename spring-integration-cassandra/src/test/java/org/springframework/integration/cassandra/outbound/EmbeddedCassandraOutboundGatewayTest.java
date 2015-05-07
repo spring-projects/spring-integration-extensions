@@ -60,214 +60,211 @@ import com.datastax.driver.core.Session;
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext
-    public class EmbeddedCassandraOutboundGatewayTest {
+public class EmbeddedCassandraOutboundGatewayTest {
 
-    @Configuration
-    public static class Config extends IntegrationTestConfig {
+	@Configuration
+	public static class Config extends IntegrationTestConfig {
 
-        @Autowired
-        public CassandraOperations template;
+		@Autowired
+		public CassandraOperations template;
 
-        @Override
-        public String[] getEntityBasePackages() {
-            return new String[] { Book.class.getPackage().getName() };
-        }
+		@Override
+		public String[] getEntityBasePackages() {
+			return new String[]{Book.class.getPackage().getName()};
+		}
 
-        @Bean (name = "sync")
-        public MessageHandler cassandraOutboundGatewaySync() {
-            CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
-            cassandraOutboundGateway.setProducesReply(false);
-            return cassandraOutboundGateway;
-        }
+		@Bean(name = "sync")
+		public MessageHandler cassandraOutboundGatewaySync() {
+			CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
+			cassandraOutboundGateway.setProducesReply(false);
+			return cassandraOutboundGateway;
+		}
 
-        @Bean
-        SubscribableChannel messageChannel() {
-            return new DirectChannel();
-        }
+		@Bean
+		SubscribableChannel messageChannel() {
+			return new DirectChannel();
+		}
 
-        @Bean (name = "async")
-        public MessageHandler cassandraOutboundGatewayAsync() {
-            CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
-            cassandraOutboundGateway.setAsync(true);
+		@Bean(name = "async")
+		public MessageHandler cassandraOutboundGatewayAsync() {
+			CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
+			cassandraOutboundGateway.setAsync(true);
 
-            WriteOptions options = new WriteOptions();
-            options.setTtl(60);
-            options.setConsistencyLevel(ConsistencyLevel.ONE);
-            options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
+			WriteOptions options = new WriteOptions();
+			options.setTtl(60);
+			options.setConsistencyLevel(ConsistencyLevel.ONE);
+			options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
 
-            cassandraOutboundGateway.setWriteOptions(options);
+			cassandraOutboundGateway.setWriteOptions(options);
 
-            cassandraOutboundGateway.setOutputChannel(messageChannel());
+			cassandraOutboundGateway.setOutputChannel(messageChannel());
 
-            return cassandraOutboundGateway;
-        }
+			return cassandraOutboundGateway;
+		}
 
-        @Bean (name = "ingest")
-        public MessageHandler cassandraOutboundGatewayIngest() {
-            CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
-            String cqlIngest = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
-            cassandraOutboundGateway.setCqlIngest(cqlIngest);
-            cassandraOutboundGateway.setHighThroughputIngest(true);
-            return cassandraOutboundGateway;
-        }
-    }
+		@Bean(name = "ingest")
+		public MessageHandler cassandraOutboundGatewayIngest() {
+			CassandraOutboundGateway<Book> cassandraOutboundGateway = new CassandraOutboundGateway<Book>(template);
+			String cqlIngest = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
+			cassandraOutboundGateway.setCqlIngest(cqlIngest);
+			return cassandraOutboundGateway;
+		}
+	}
 
-    @Autowired
-    @Qualifier("sync")
-    public MessageHandler messageHandlerSync;
+	@Autowired
+	@Qualifier("sync")
+	public MessageHandler messageHandlerSync;
 
-    @Autowired
-    @Qualifier("async")
-    public MessageHandler messageHandlerAsync;
+	@Autowired
+	@Qualifier("async")
+	public MessageHandler messageHandlerAsync;
 
-    @Autowired
-    @Qualifier("ingest")
-    public MessageHandler messageHandlerIngest;
+	@Autowired
+	@Qualifier("ingest")
+	public MessageHandler messageHandlerIngest;
 
-    @Autowired
-    public CassandraOperations template;
+	@Autowired
+	public CassandraOperations template;
 
-    @Autowired
-    public SubscribableChannel channel;
+	@Autowired
+	public SubscribableChannel channel;
 
-    protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
-    protected static String CASSANDRA_HOST = "localhost";
+	protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
+	protected static String CASSANDRA_HOST = "localhost";
 
-    /**
-     * The {@link Cluster} that's connected to Cassandra.
-     */
-    protected static Cluster cluster;
+	/**
+	 * The {@link Cluster} that's connected to Cassandra.
+	 */
+	protected static Cluster cluster;
 
-    /**
-     * The session connected to the system keyspace.
-     */
-    protected static Session system;
+	/**
+	 * The session connected to the system keyspace.
+	 */
+	protected static Session system;
 
-    @BeforeClass
-    public static void startCassandra() throws TTransportException, IOException, InterruptedException,
-            ConfigurationException {
+	@BeforeClass
+	public static void startCassandra() throws TTransportException, IOException, InterruptedException,
+			ConfigurationException {
 
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
-        ensureClusterConnection();
-    }
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
+		ensureClusterConnection();
+	}
 
-    @AfterClass
-    public static void cleanup() {
-        cluster.close();
-        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-    }
+	@AfterClass
+	public static void cleanup() {
+		cluster.close();
+		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+	}
 
-    @Before
-    public void setup(){
-        channel.subscribe(new MessageHandler() {
-            @Override
-            public void handleMessage(Message<?> message) throws MessagingException {
-                System.out.println("Foo:"+message);
-            }
-        });
-    }
+	@Before
+	public void setup() {
+		channel.subscribe(new MessageHandler() {
+			@Override
+			public void handleMessage(Message<?> message) throws MessagingException {
+				System.out.println("Foo:" + message);
+			}
+		});
+	}
 
-    public static Cluster cluster() {
-        return Cluster.builder().addContactPoint(CASSANDRA_HOST).withPort(9043).build();
-    }
-
-
-    public static void ensureClusterConnection() {
-        // check cluster
-        if (cluster == null) {
-            cluster = cluster();
-        }
-
-        if (system == null) {
-            system = cluster.connect();
-        }
-    }
-
-    @Test
-    public void testBasicCassandraInsert() throws Exception {
-        assertEquals(1, 1);
-
-        Book b1 = new Book();
-        b1.setIsbn("123456-1");
-        b1.setTitle("Spring Integration Cassandra");
-        b1.setAuthor("Cassandra Guru");
-        b1.setPages(521);
-        b1.setSaleDate(new Date());
-        b1.setInStock(true);
-
-        Message<Book> message = MessageBuilder.withPayload(b1).build();
-        messageHandlerSync.handleMessage(message);
-        Thread.sleep(1000); //TODO: convert to a latch
-
-        ResultSet query = template.query("select * from book;");
-        assertEquals(query.all().size(), 1);
-        for (Row r : query) {
-            System.out.println("Foo: " + r.toString());
-        }
-        template.delete(b1);
-    }
-
-    @Test
-    public void testCassandraBatchInsert() throws Exception {
-        List<Book> books = getBookList(5);
-        Message<List<Book>> message = MessageBuilder.withPayload(books).build();
-        messageHandlerAsync.handleMessage(message);
-        Thread.sleep(1000); //TODO: convert to a latch
-        ResultSet query = template.query("select * from book;");
-        assertEquals(query.all().size(), 5);
-        for (Row r : query) {
-            System.out.println("Foo: " + r.toString());
-        }
+	public static Cluster cluster() {
+		return Cluster.builder().addContactPoint(CASSANDRA_HOST).withPort(9043).build();
+	}
 
 
+	public static void ensureClusterConnection() {
+		// check cluster
+		if (cluster == null) {
+			cluster = cluster();
+		}
 
-        template.delete(books);
-    }
+		if (system == null) {
+			system = cluster.connect();
+		}
+	}
 
-    @Test
-    public void testCassandraBatchIngest() throws Exception {
-        List<Book> books = getBookList(5);
-        List<List<?>> ingestBooks = new ArrayList<List<?>>();
-        for (Book b : books) {
+	@Test
+	public void testBasicCassandraInsert() throws Exception {
+		assertEquals(1, 1);
 
-            List<Object> l = new ArrayList<Object>();
-            l.add(b.getIsbn());
-            l.add(b.getTitle());
-            l.add(b.getAuthor());
-            l.add(b.getPages());
-            l.add(b.getSaleDate());
-            l.add(b.isInStock());
-            ingestBooks.add(l);
-        }
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Integration Cassandra");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+		b1.setSaleDate(new Date());
+		b1.setInStock(true);
+
+		Message<Book> message = MessageBuilder.withPayload(b1).build();
+		messageHandlerSync.handleMessage(message);
+		Thread.sleep(1000); //TODO: convert to a latch
+
+		ResultSet query = template.query("select * from book;");
+		assertEquals(query.all().size(), 1);
+		for (Row r : query) {
+			System.out.println("Foo: " + r.toString());
+		}
+		template.delete(b1);
+	}
+
+	@Test
+	public void testCassandraBatchInsert() throws Exception {
+		List<Book> books = getBookList(5);
+		Message<List<Book>> message = MessageBuilder.withPayload(books).build();
+		messageHandlerAsync.handleMessage(message);
+		Thread.sleep(1000); //TODO: convert to a latch
+		ResultSet query = template.query("select * from book;");
+		assertEquals(query.all().size(), 5);
+		for (Row r : query) {
+			System.out.println("Foo: " + r.toString());
+		}
 
 
-        Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
-        messageHandlerIngest.handleMessage(message);
-        Thread.sleep(1000); //TODO: convert to a latch
-        ResultSet query = template.query("select * from book;");
-        assertEquals(query.all().size(), 5);
-        for (Row r : query) {
-            System.out.println("Foo: " + r.toString());
-        }
-        template.delete(books);
-    }
+		template.delete(books);
+	}
 
-    private List<Book> getBookList(int numBooks) {
+	@Test
+	public void testCassandraBatchIngest() throws Exception {
+		List<Book> books = getBookList(5);
+		List<List<?>> ingestBooks = new ArrayList<List<?>>();
+		for (Book b : books) {
 
-        List<Book> books = new ArrayList<Book>();
+			List<Object> l = new ArrayList<Object>();
+			l.add(b.getIsbn());
+			l.add(b.getTitle());
+			l.add(b.getAuthor());
+			l.add(b.getPages());
+			l.add(b.getSaleDate());
+			l.add(b.isInStock());
+			ingestBooks.add(l);
+		}
 
-        Book b;
-        for (int i = 0; i < numBooks; i++) {
-            b = new Book();
-            b.setIsbn(UUID.randomUUID().toString());
-            b.setTitle("Spring Data Cassandra Guide");
-            b.setAuthor("Cassandra Guru");
-            b.setPages(i * 10 + 5);
-            b.setInStock(true);
-            b.setSaleDate(new Date());
-            books.add(b);
-        }
+		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
+		messageHandlerIngest.handleMessage(message);
+		Thread.sleep(1000); //TODO: convert to a latch
+		ResultSet query = template.query("select * from book;");
+		assertEquals(query.all().size(), 5);
+		for (Row r : query) {
+			System.out.println("Foo: " + r.toString());
+		}
+		template.delete(books);
+	}
 
-        return books;
-    }
+	private List<Book> getBookList(int numBooks) {
+
+		List<Book> books = new ArrayList<Book>();
+
+		Book b;
+		for (int i = 0; i < numBooks; i++) {
+			b = new Book();
+			b.setIsbn(UUID.randomUUID().toString());
+			b.setTitle("Spring Data Cassandra Guide");
+			b.setAuthor("Cassandra Guru");
+			b.setPages(i * 10 + 5);
+			b.setInStock(true);
+			b.setSaleDate(new Date());
+			books.add(b);
+		}
+
+		return books;
+	}
 }
