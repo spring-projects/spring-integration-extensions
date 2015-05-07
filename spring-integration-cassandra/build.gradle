@@ -55,7 +55,6 @@ dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "com.goldmansachs:gs-collections:$gsCollectionsVersion"
     compile "org.springframework.data:spring-data-cassandra:$springDataCassandraVersion"
-    compile "org.springframework.boot:spring-boot-starter:1.2.3.RELEASE"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "org.slf4j:slf4j-log4j12:1.7.7"
