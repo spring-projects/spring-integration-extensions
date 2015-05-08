@@ -16,15 +16,18 @@
 
 package org.springframework.integration.hazelcast.outbound;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.integration.expression.IntegrationEvaluationContextAware;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
-
-import reactor.util.StringUtils;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.IList;
@@ -42,27 +45,29 @@ import com.hazelcast.core.ReplicatedMap;
  * @author Eren Avsarogullari
  * @since 1.0.0
  */
-public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler {
+public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler implements IntegrationEvaluationContextAware {
 
 	private DistributedObject distributedObject;
 
-	private String cacheExpression;
+	private Expression cacheExpression;
 
-	private String keyExpression;
+	private Expression keyExpression;
 
 	private boolean extractPayload = true;
+
+	private EvaluationContext evaluationContext;
 
 	public void setDistributedObject(DistributedObject distributedObject) {
 		Assert.notNull(distributedObject, "'distributedObject' must not be null");
 		this.distributedObject = distributedObject;
 	}
 
-	public void setCacheExpression(String cacheExpression) {
+	public void setCacheExpression(Expression cacheExpression) {
 		Assert.notNull(cacheExpression, "'cacheExpression' must not be null");
 		this.cacheExpression = cacheExpression;
 	}
 
-	public void setKeyExpression(String keyExpression) {
+	public void setKeyExpression(Expression keyExpression) {
 		Assert.notNull(keyExpression, "'keyExpression' must not be null");
 		this.keyExpression = keyExpression;
 	}
@@ -72,41 +77,63 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 	}
 
 	@Override
-	protected void onInit() throws Exception {
-		super.onInit();
+	public void setIntegrationEvaluationContext(EvaluationContext evaluationContext) {
+		this.evaluationContext = evaluationContext;
 	}
 
 	@Override
 	protected void handleMessageInternal(final Message<?> message) throws Exception {
-		writeToCache(message);
+		writeToCache(message, getPayloadOrMessage(message));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void writeToCache(final Message<?> message) {
+	private void writeToCache(final Message<?> message, Object objectToStore) {
 		DistributedObject distributedObject = getDistributedObject(message);
 		if (distributedObject instanceof IMap) {
-			((IMap) distributedObject).put(parseKeyExpression(message),
-					getPayloadOrMessage(message));
+			if (objectToStore instanceof Map) {
+				((IMap) distributedObject).putAll((Map) objectToStore);
+			}
+			else {
+				((IMap) distributedObject).put(parseKeyExpression(message), objectToStore);
+			}
 		}
 		else if (distributedObject instanceof MultiMap) {
-			((MultiMap) distributedObject).put(parseKeyExpression(message),
-					getPayloadOrMessage(message));
+			((MultiMap) distributedObject).put(parseKeyExpression(message), objectToStore);
 		}
 		else if (distributedObject instanceof ReplicatedMap) {
-			((ReplicatedMap) distributedObject).put(parseKeyExpression(message),
-					getPayloadOrMessage(message));
-		}
-		else if (distributedObject instanceof IList) {
-			((IList) distributedObject).add(getPayloadOrMessage(message));
-		}
-		else if (distributedObject instanceof ISet) {
-			((ISet) distributedObject).add(getPayloadOrMessage(message));
-		}
-		else if (distributedObject instanceof IQueue) {
-			((IQueue) distributedObject).add(getPayloadOrMessage(message));
+			if (objectToStore instanceof Map) {
+				((ReplicatedMap) distributedObject).putAll((Map) objectToStore);
+			}
+			else {
+				((ReplicatedMap) distributedObject).put(parseKeyExpression(message), objectToStore);
+			}
 		}
 		else if (distributedObject instanceof ITopic) {
-			((ITopic) distributedObject).publish(getPayloadOrMessage(message));
+			((ITopic) distributedObject).publish(objectToStore);
+		}
+		else if (distributedObject instanceof IList) {
+			if (objectToStore instanceof List) {
+				((IList) distributedObject).addAll((List) objectToStore);
+			}
+			else {
+				((IList) distributedObject).add(objectToStore);
+			}
+		}
+		else if (distributedObject instanceof ISet) {
+			if (objectToStore instanceof Set) {
+				((ISet) distributedObject).addAll((Set) objectToStore);
+			}
+			else {
+				((ISet) distributedObject).add(objectToStore);
+			}
+		}
+		else if (distributedObject instanceof IQueue) {
+			if (objectToStore instanceof Queue) {
+				((IQueue) distributedObject).addAll((Queue) objectToStore);
+			}
+			else {
+				((IQueue) distributedObject).add(objectToStore);
+			}
 		}
 	}
 
@@ -114,8 +141,8 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 		if (this.distributedObject != null) {
 			return this.distributedObject;
 		}
-		else if (StringUtils.hasText(this.cacheExpression)) {
-			return parseCacheExpression(message);
+		else if (this.cacheExpression != null) {
+			return this.cacheExpression.getValue(this.evaluationContext, message, DistributedObject.class);
 		}
 		else if (message.getHeaders().get(HazelcastHeaders.CACHE_NAME) != null) {
 			return this.getBeanFactory().getBean(
@@ -129,26 +156,14 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 		}
 	}
 
-	private DistributedObject parseCacheExpression(final Message<?> message) {
-		Object cacheName = parseExpression(this.cacheExpression, message);
-		return this.getBeanFactory().getBean(cacheName.toString(),
-				DistributedObject.class);
-	}
-
 	private Object parseKeyExpression(final Message<?> message) {
-		if (StringUtils.hasText(this.keyExpression)) {
-			return parseExpression(this.keyExpression, message);
+		if (this.keyExpression != null) {
+			return this.keyExpression.getValue(message);
 		}
 		else {
 			throw new IllegalStateException(
 					"'key-expression' must be set for IMap, MultiMap and ReplicatedMap");
 		}
-	}
-
-	private Object parseExpression(final String expressionString, final Message<?> message) {
-		Expression expression = new SpelExpressionParser()
-				.parseExpression(expressionString);
-		return expression.getValue(new StandardEvaluationContext(message));
 	}
 
 	private Object getPayloadOrMessage(final Message<?> message) {

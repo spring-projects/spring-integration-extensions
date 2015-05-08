@@ -18,6 +18,7 @@ package org.springframework.integration.hazelcast.config.xml;
 
 import org.w3c.dom.Element;
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -51,10 +52,16 @@ public class HazelcastOutboundChannelAdapterParser extends AbstractOutboundChann
 
 		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element,
 				CACHE_ATTRIBUTE, DISTRIBUTED_OBJECT);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
-				CACHE_EXPRESSION_ATTRIBUTE);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
-				KEY_EXPRESSION_ATTRIBUTE);
+		BeanDefinition cacheExpressionDef = IntegrationNamespaceUtils.createExpressionDefIfAttributeDefined(CACHE_EXPRESSION_ATTRIBUTE, element);
+		if (cacheExpressionDef != null) {
+			builder.addPropertyValue("cacheExpression", cacheExpressionDef);
+		}
+
+		BeanDefinition keyExpressionDef = IntegrationNamespaceUtils.createExpressionDefIfAttributeDefined(KEY_EXPRESSION_ATTRIBUTE, element);
+		if (keyExpressionDef != null) {
+			builder.addPropertyValue("keyExpression", keyExpressionDef);
+		}
+
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element,
 				EXTRACT_PAYLOAD_ATTRIBUTE);
 
