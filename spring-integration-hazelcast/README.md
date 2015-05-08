@@ -37,7 +37,7 @@ Basically, Hazelcast Event-Driven Inbound Channel Adapter requires following att
 3. Supported cache event types for IList, ISet and IQueue : ADDED, REMOVED. 
 4. There is no need to cache event type definition for ITopic. 
 
-* **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast CQ inbound channel adapter listening same cache object with same cache-events attribute, can receive a single event message or all event messages. If it is ALL, all Hazelcast CQ inbound channel adapters listening same cache object with same cache-events attribute, will receive same event messages. If it is SINGLE, they will receive unique event messages.
+* **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast inbound channel adapter listening same cache object with same cache-events attribute, can receive a single event message or all event messages. If it is ALL, all Hazelcast inbound channel adapters listening same cache object with same cache-events attribute, will receive same event messages. If it is SINGLE, they will receive unique event messages.
 
 Sample namespace and schemaLocation definitions are as follows : 
 ```
@@ -247,59 +247,28 @@ Sample definition is as follows :
 
 ## HAZELCAST OUTBOUND CHANNEL ADAPTER 
 
-Hazelcast Outbound Channel Adapter listens its defined channel and writes incoming messages to related distributed cache. It expects  one of java.util.Map, List, Set and Queue data structures in incoming message's payload. Its definition is as follows : 
+Hazelcast Outbound Channel Adapter listens its defined channel and writes incoming messages to related distributed cache. It expects one of cache, cache-expression or HazelcastHeaders.CACHE_NAME for distributed object definition. Supported Distributed Objects : IMap, MultiMap, ReplicatedMap, IList, ISet, IQueue and ITopic. Its sample definition is as follows :
 ```
-<int-hazelcast:outbound-channel-adapter  channel="mapChannel" cache="distributedMap" /> 
+<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache="distributedMap" key-expression="payload.id" extract-payload="false"/>
 ```
-Basically, it requires two attributes as follows : 
+Basically, it requires the following attributes : 
 
-* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
-* **cache :** Specifies distributed Map reference which is queried. It is mandatory attribute. 
+**channel :** Specifies channel which message is sent.
+* **cache :** Specifies distributed object reference. It is optional attribute.
+* **cache-expression :** Specifies distributed object via Spring Expression Language(SpEL). It is optional attribute. 
+* **key-expression :** Specifies key of K,V pair via Spring Expression Language(SpEL). It is optional attribute and required for just IMap, MultiMap and ReplicatedMap distributed data structures. 
+* **extract-payload :** Specifies whole message or just payload to send. It is optional attribute with  **true** default value. If it is true, just payload will be written to distributed object. Otherwise, whole message will be written by covering both message header and payload.
 
-**Case 1-** If incoming messages need to be written to distributed map(com.hazelcast.core.IMap), Message should have java.util.Map payload. Sample definition should be as follows : 
+**Sample Definitions :**
 ```
-<int:channel id="mapChannel"/> 
+<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache="distributedMap" key-expression="payload.id" extract-payload="false"/>
+```
+**OR**
+```
+<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache-expression="headers['CACHE_HEADER']" key-expression="payload.key" extract-payload="true"/> 
+```
+By setting distributed object name in the header, messages can be written to different distributed objects via same channel.
 
-<int-hazelcast:outbound-channel-adapter  channel="mapChannel" cache="distributedMap" /> 
+**OR**
 
-<bean id="distributedMap" factory-bean="instance" factory-method="getMap"> 
-	<constructor-arg value="distributedMap"/> 
-</bean> 
-
-<bean id="instance" class="com.hazelcast.core.Hazelcast" 
-			factory-method="newHazelcastInstance"> 
-	<constructor-arg> 
-		<bean class="com.hazelcast.config.Config" /> 
-	</constructor-arg> 
-</bean> 
-```
-**Case 2-** If incoming messages need to be written to distributed list(com.hazelcast.core.IList), Message should have java.util.List payload. Sample definition should be as follows : 
-```
-<int:channel id="listChannel"/> 
-	 
-<int-hazelcast:outbound-channel-adapter channel="listChannel" cache="distributedList" /> 
-
-<bean id="distributedList" factory-bean="instance" factory-method="getList"> 
-	<constructor-arg value="distributedList"/> 
-</bean> 
-```
-**Case 3-** If incoming messages need to be written to distributed set(com.hazelcast.core.ISet), Message should have java.util.Set payload. Sample definition should be as follows : 
-```
-<int:channel id="setChannel"/> 
-
-<int-hazelcast:outbound-channel-adapter channel="setChannel" cache="distributedSet" /> 
-	 
-<bean id="distributedSet" factory-bean="instance" factory-method="getSet"> 
-	<constructor-arg value="distributedSet"/> 
-</bean> 
-```
-**Case 4-** If incoming messages need to be written to distributed queue(com.hazelcast.core.IQueue), Message should have java.util.Queue payload. Sample definition should be as follows : 
-```
-<int:channel id="queueChannel"/> 
-		 
-<int-hazelcast:outbound-channel-adapter  channel="queueChannel" cache="distributedQueue" /> 
-		 
-<bean id="distributedQueue" factory-bean="instance" factory-method="getQueue"> 
-	<constructor-arg value="distributedQueue"/> 
-</bean> 
-```	
+If **cache** or **cache-expression** attributes are not defined, HazelcastHeaders.CACHE_NAME has to be set in Message.

@@ -21,8 +21,11 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.integration.expression.IntegrationEvaluationContextAware;
 import org.springframework.integration.handler.AbstractMessageHandler;
-import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
@@ -31,49 +34,144 @@ import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
+import com.hazelcast.core.ITopic;
+import com.hazelcast.core.MultiMap;
+import com.hazelcast.core.ReplicatedMap;
 
 /**
- * MessageHandler implementation that writes {@link Message} payload to defined Hazelcast
- * distributed cache object. Currently, it supports {@link java.util.Map},
- * {@link java.util.List}, {@link java.util.Set} and {@link java.util.Queue} data
- * structures.
+ * MessageHandler implementation that writes {@link Message} or payload to defined
+ * Hazelcast distributed cache object.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
  */
-public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler {
+public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler implements IntegrationEvaluationContextAware {
 
-	private final DistributedObject distributedObject;
+	private DistributedObject distributedObject;
 
-	public HazelcastCacheWritingMessageHandler(DistributedObject distributedObject) {
+	private Expression cacheExpression;
+
+	private Expression keyExpression;
+
+	private boolean extractPayload = true;
+
+	private EvaluationContext evaluationContext;
+
+	public void setDistributedObject(DistributedObject distributedObject) {
 		Assert.notNull(distributedObject, "'distributedObject' must not be null");
 		this.distributedObject = distributedObject;
 	}
 
-	@Override
-	protected void onInit() throws Exception {
-		super.onInit();
-		HazelcastIntegrationDefinitionValidator.validateCacheTypeForCacheWritingMessageHandler(this.distributedObject);
+	public void setCacheExpression(Expression cacheExpression) {
+		Assert.notNull(cacheExpression, "'cacheExpression' must not be null");
+		this.cacheExpression = cacheExpression;
+	}
+
+	public void setKeyExpression(Expression keyExpression) {
+		Assert.notNull(keyExpression, "'keyExpression' must not be null");
+		this.keyExpression = keyExpression;
+	}
+
+	public void setExtractPayload(boolean extractPayload) {
+		this.extractPayload = extractPayload;
 	}
 
 	@Override
-	protected void handleMessageInternal(Message<?> message) throws Exception {
-		writeToCache(message);
+	public void setIntegrationEvaluationContext(EvaluationContext evaluationContext) {
+		this.evaluationContext = evaluationContext;
+	}
+
+	@Override
+	protected void handleMessageInternal(final Message<?> message) throws Exception {
+		writeToCache(message, getPayloadOrMessage(message));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void writeToCache(Message<?> message) {
-		if (this.distributedObject instanceof IMap) {
-			((IMap<?, ?>) this.distributedObject).putAll((Map) message.getPayload());
+	private void writeToCache(final Message<?> message, Object objectToStore) {
+		DistributedObject distributedObject = getDistributedObject(message);
+		if (distributedObject instanceof IMap) {
+			if (objectToStore instanceof Map) {
+				((IMap) distributedObject).putAll((Map) objectToStore);
+			}
+			else {
+				((IMap) distributedObject).put(parseKeyExpression(message), objectToStore);
+			}
 		}
-		else if (this.distributedObject instanceof IList) {
-			((IList<?>) this.distributedObject).addAll((List) message.getPayload());
+		else if (distributedObject instanceof MultiMap) {
+			((MultiMap) distributedObject).put(parseKeyExpression(message), objectToStore);
 		}
-		else if (this.distributedObject instanceof ISet) {
-			((ISet<?>) this.distributedObject).addAll((Set) message.getPayload());
+		else if (distributedObject instanceof ReplicatedMap) {
+			if (objectToStore instanceof Map) {
+				((ReplicatedMap) distributedObject).putAll((Map) objectToStore);
+			}
+			else {
+				((ReplicatedMap) distributedObject).put(parseKeyExpression(message), objectToStore);
+			}
 		}
-		else if (this.distributedObject instanceof IQueue) {
-			((IQueue<?>) this.distributedObject).addAll((Queue) message.getPayload());
+		else if (distributedObject instanceof ITopic) {
+			((ITopic) distributedObject).publish(objectToStore);
+		}
+		else if (distributedObject instanceof IList) {
+			if (objectToStore instanceof List) {
+				((IList) distributedObject).addAll((List) objectToStore);
+			}
+			else {
+				((IList) distributedObject).add(objectToStore);
+			}
+		}
+		else if (distributedObject instanceof ISet) {
+			if (objectToStore instanceof Set) {
+				((ISet) distributedObject).addAll((Set) objectToStore);
+			}
+			else {
+				((ISet) distributedObject).add(objectToStore);
+			}
+		}
+		else if (distributedObject instanceof IQueue) {
+			if (objectToStore instanceof Queue) {
+				((IQueue) distributedObject).addAll((Queue) objectToStore);
+			}
+			else {
+				((IQueue) distributedObject).add(objectToStore);
+			}
+		}
+	}
+
+	private DistributedObject getDistributedObject(final Message<?> message) {
+		if (this.distributedObject != null) {
+			return this.distributedObject;
+		}
+		else if (this.cacheExpression != null) {
+			return this.cacheExpression.getValue(this.evaluationContext, message, DistributedObject.class);
+		}
+		else if (message.getHeaders().get(HazelcastHeaders.CACHE_NAME) != null) {
+			return this.getBeanFactory().getBean(
+					message.getHeaders().get(HazelcastHeaders.CACHE_NAME).toString(),
+					DistributedObject.class);
+		}
+		else {
+			throw new IllegalStateException("One of 'cache', 'cache-expression' and "
+					+ HazelcastHeaders.CACHE_NAME
+					+ " must be set for cache object definition.");
+		}
+	}
+
+	private Object parseKeyExpression(final Message<?> message) {
+		if (this.keyExpression != null) {
+			return this.keyExpression.getValue(message);
+		}
+		else {
+			throw new IllegalStateException(
+					"'key-expression' must be set for IMap, MultiMap and ReplicatedMap");
+		}
+	}
+
+	private Object getPayloadOrMessage(final Message<?> message) {
+		if (this.extractPayload) {
+			return message.getPayload();
+		}
+		else {
+			return message;
 		}
 	}
 

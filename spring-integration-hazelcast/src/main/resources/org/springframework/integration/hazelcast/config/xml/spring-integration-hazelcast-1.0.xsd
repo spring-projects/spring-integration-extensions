@@ -84,7 +84,7 @@
 
  			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
 
-			<xsd:attribute name="cache" use="required" type="xsd:string">
+			<xsd:attribute name="cache" type="xsd:string" use="optional">
 				<xsd:annotation>
 					<xsd:appinfo>
 						<tool:annotation kind="ref">
@@ -93,6 +93,30 @@
 					</xsd:appinfo>
 					<xsd:documentation>
 						<![CDATA[ Specifies cache reference to listen ]]>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			
+			<xsd:attribute name="cache-expression" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						<![CDATA[ Specifies cache name to listen ]]>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			
+			<xsd:attribute name="key-expression" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						<![CDATA[ Specifies entry key ]]>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			
+			<xsd:attribute name="extract-payload" type="xsd:boolean" default="true">
+				<xsd:annotation>
+					<xsd:documentation>
+						<![CDATA[ Specifies whole message or just payload to send ]]>
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
