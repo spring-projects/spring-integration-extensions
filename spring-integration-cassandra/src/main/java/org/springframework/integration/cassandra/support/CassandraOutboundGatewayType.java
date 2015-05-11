@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.cassandra.support;
 
 /**
@@ -21,4 +22,5 @@ package org.springframework.integration.cassandra.support;
 public enum CassandraOutboundGatewayType {
 
 	INSERTING, UPDATING, DELETING;
+
 }
