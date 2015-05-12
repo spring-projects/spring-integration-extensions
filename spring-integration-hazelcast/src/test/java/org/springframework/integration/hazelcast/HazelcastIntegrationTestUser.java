@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @author Eren Avsarogullari
  * @since 1.0.0
  */
-public class HazelcastIntegrationTestUser implements Serializable {
+public class HazelcastIntegrationTestUser implements Comparable<HazelcastIntegrationTestUser>, Serializable {
 
 	private static final long serialVersionUID = -5357485957528362705L;
 
@@ -124,6 +124,11 @@ public class HazelcastIntegrationTestUser implements Serializable {
 		else if (!surname.equals(other.surname))
 			return false;
 		return true;
+	}
+
+	@Override
+	public int compareTo(HazelcastIntegrationTestUser user) {
+		return (this.id < user.getId()) ? -1: (this.id > user.getId()) ? 1 : 0;
 	}
 
 }

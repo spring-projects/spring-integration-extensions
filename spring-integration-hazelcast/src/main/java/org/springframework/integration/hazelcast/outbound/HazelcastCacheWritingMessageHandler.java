@@ -16,64 +16,150 @@
 
 package org.springframework.integration.hazelcast.outbound;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.integration.expression.IntegrationEvaluationContextAware;
 import org.springframework.integration.handler.AbstractMessageHandler;
-import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
+import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.IList;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.ISet;
+import com.hazelcast.core.ITopic;
+import com.hazelcast.core.MultiMap;
 
 /**
- * MessageHandler implementation that writes {@link Message} payload to defined Hazelcast
- * distributed cache object. Currently, it supports {@link java.util.Map},
- * {@link java.util.List}, {@link java.util.Set} and {@link java.util.Queue} data
- * structures.
+ * MessageHandler implementation that writes {@link Message} or payload to defined
+ * Hazelcast distributed cache object.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
  * @since 1.0.0
  */
-public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler {
+public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler
+		implements IntegrationEvaluationContextAware {
 
-	private final DistributedObject distributedObject;
+	private DistributedObject distributedObject;
 
-	public HazelcastCacheWritingMessageHandler(DistributedObject distributedObject) {
+	private Expression cacheExpression;
+
+	private Expression keyExpression;
+
+	private boolean extractPayload = true;
+
+	private EvaluationContext evaluationContext;
+
+	public void setDistributedObject(DistributedObject distributedObject) {
 		Assert.notNull(distributedObject, "'distributedObject' must not be null");
 		this.distributedObject = distributedObject;
 	}
 
-	@Override
-	protected void onInit() throws Exception {
-		super.onInit();
-		HazelcastIntegrationDefinitionValidator.validateCacheTypeForCacheWritingMessageHandler(this.distributedObject);
+	public void setCacheExpression(Expression cacheExpression) {
+		Assert.notNull(cacheExpression, "'cacheExpression' must not be null");
+		this.cacheExpression = cacheExpression;
+	}
+
+	public void setKeyExpression(Expression keyExpression) {
+		Assert.notNull(keyExpression, "'keyExpression' must not be null");
+		this.keyExpression = keyExpression;
+	}
+
+	public void setExtractPayload(boolean extractPayload) {
+		this.extractPayload = extractPayload;
 	}
 
 	@Override
-	protected void handleMessageInternal(Message<?> message) throws Exception {
-		writeToCache(message);
+	public void setIntegrationEvaluationContext(EvaluationContext evaluationContext) {
+		this.evaluationContext = evaluationContext;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void writeToCache(Message<?> message) {
-		if (this.distributedObject instanceof IMap) {
-			((IMap<?, ?>) this.distributedObject).putAll((Map) message.getPayload());
+	@Override
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	protected void handleMessageInternal(final Message<?> message) throws Exception {
+		Object objectToStore = message;
+		if (this.extractPayload) {
+			objectToStore = message.getPayload();
 		}
-		else if (this.distributedObject instanceof IList) {
-			((IList<?>) this.distributedObject).addAll((List) message.getPayload());
+
+		DistributedObject distributedObject = getDistributedObject(message);
+
+		if (distributedObject instanceof Map) {
+			Map map = (Map) distributedObject;
+			if (objectToStore instanceof Map) {
+				map.putAll((Map) objectToStore);
+			}
+			else if (objectToStore instanceof Map.Entry) {
+				Map.Entry entry = (Map.Entry) objectToStore;
+				map.put(entry.getKey(), entry.getValue());
+			}
+			else {
+				map.put(getKey(message), objectToStore);
+			}
 		}
-		else if (this.distributedObject instanceof ISet) {
-			((ISet<?>) this.distributedObject).addAll((Set) message.getPayload());
+		else if (distributedObject instanceof MultiMap) {
+			MultiMap map = (MultiMap) distributedObject;
+			if (objectToStore instanceof Map) {
+				Map<?, ?> mapToStore = (Map) objectToStore;
+				for (Map.Entry entry : mapToStore.entrySet()) {
+					map.put(entry.getKey(), entry.getValue());
+				}
+			}
+			else if (objectToStore instanceof Map.Entry) {
+				Map.Entry entry = (Map.Entry) objectToStore;
+				map.put(entry.getKey(), entry.getValue());
+			}
+			else {
+				map.put(getKey(message), objectToStore);
+			}
 		}
-		else if (this.distributedObject instanceof IQueue) {
-			((IQueue<?>) this.distributedObject).addAll((Queue) message.getPayload());
+		else if (distributedObject instanceof ITopic) {
+			((ITopic) distributedObject).publish(objectToStore);
+		}
+		else if (distributedObject instanceof Collection) {
+			if (objectToStore instanceof Collection) {
+				((Collection) distributedObject).addAll((Collection) objectToStore);
+			}
+			else {
+				((Collection) distributedObject).add(objectToStore);
+			}
+		}
+		else {
+			throw new IllegalStateException("The 'distributedObject' for 'HazelcastCacheWritingMessageHandler' " +
+					"must be of 'IMap', 'MultiMap', 'ITopic', 'ISet' or 'IList' type, " +
+					"but gotten: [" + distributedObject + "].");
+		}
+	}
+
+
+	private DistributedObject getDistributedObject(final Message<?> message) {
+		if (this.distributedObject != null) {
+			return this.distributedObject;
+		}
+		else if (this.cacheExpression != null) {
+			return this.cacheExpression.getValue(this.evaluationContext, message, DistributedObject.class);
+		}
+		else if (message.getHeaders().containsKey(HazelcastHeaders.CACHE_NAME)) {
+			return getBeanFactory()
+					.getBean(message.getHeaders().get(HazelcastHeaders.CACHE_NAME, String.class),
+							DistributedObject.class);
+		}
+		else {
+			throw new IllegalStateException("One of 'cache', 'cache-expression' and "
+					+ HazelcastHeaders.CACHE_NAME
+					+ " must be set for cache object definition.");
+		}
+	}
+
+	private Object getKey(Message<?> message) {
+		if (this.keyExpression != null) {
+			return this.keyExpression.getValue(this.evaluationContext, message);
+		}
+		else {
+			throw new IllegalStateException(
+					"'key-expression' must be set to place the raw 'payload' to the IMap, MultiMap and ReplicatedMap");
 		}
 	}
 

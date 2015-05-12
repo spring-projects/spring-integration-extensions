@@ -61,17 +61,6 @@ public class HazelcastIntegrationDefinitionValidator {
 		}
 	}
 
-	public static void validateCacheTypeForCacheWritingMessageHandler(final DistributedObject distributedObject) {
-		if (!(distributedObject instanceof IMap
-				|| distributedObject instanceof IList
-				|| distributedObject instanceof ISet
-				|| distributedObject instanceof IQueue)) {
-			throw new IllegalArgumentException(
-					"Invalid 'cache' type is set. IMap, IList, ISet and IQueue cache object types are acceptable "
-							+ "for Hazelcast Outbound Channel Adapter.");
-		}
-	}
-
 	public static void validateCacheEventsByDistributedObject(
 			final DistributedObject distributedObject, final Set<String> cacheEventTypeSet) {
 		List<String> supportedCacheEventTypes = getSupportedCacheEventTypes(distributedObject);
