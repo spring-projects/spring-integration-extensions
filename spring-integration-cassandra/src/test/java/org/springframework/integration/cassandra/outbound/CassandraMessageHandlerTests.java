@@ -16,7 +16,10 @@
 
 package org.springframework.integration.cassandra.outbound;
 
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -24,15 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,20 +37,33 @@ import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.cassandra.config.IntegrationTestConfig;
 import org.springframework.integration.cassandra.test.domain.Book;
-import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.NullChannel;
+import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessagingException;
-import org.springframework.messaging.SubscribableChannel;
+import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.thrift.transport.TTransportException;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -70,7 +78,10 @@ import com.datastax.driver.core.querybuilder.Select;
 @DirtiesContext
 public class CassandraMessageHandlerTests {
 
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
+
 	@Configuration
+	@EnableIntegration
 	public static class Config extends IntegrationTestConfig {
 
 		@Autowired
@@ -82,21 +93,21 @@ public class CassandraMessageHandlerTests {
 		}
 
 		@Bean(name = "sync")
-		public MessageHandler cassandraOutboundGatewaySync() {
+		public MessageHandler cassandraMessageHandlerSync() {
 			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<Book>(template);
 			cassandraMessageHandler.setProducesReply(false);
+			cassandraMessageHandler.setAsync(false);
 			return cassandraMessageHandler;
 		}
 
 		@Bean
-		SubscribableChannel messageChannel() {
-			return new DirectChannel();
+		public PollableChannel messageChannel() {
+			return new NullChannel();
 		}
 
 		@Bean(name = "async")
-		public MessageHandler cassandraOutboundGatewayAsync() {
+		public MessageHandler cassandraMessageHandlerAsync() {
 			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<Book>(template);
-			cassandraMessageHandler.setAsync(true);
 
 			WriteOptions options = new WriteOptions();
 			options.setTtl(60);
@@ -111,12 +122,29 @@ public class CassandraMessageHandlerTests {
 		}
 
 		@Bean(name = "ingest")
-		public MessageHandler cassandraOutboundGatewayIngest() {
+		public MessageHandler cassandraMessageHandlerIngest() {
 			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<Book>(template);
 			String cqlIngest = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
 			cassandraMessageHandler.setCqlIngest(cqlIngest);
 			return cassandraMessageHandler;
 		}
+
+		@Bean
+		public PollableChannel resultChannel() {
+			return new QueueChannel();
+		}
+
+
+		@Bean(name = "select")
+		public MessageHandler cassandraMessageHandlerSelect() {
+			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<Book>(template);
+			Expression query = PARSER.parseExpression("T(QueryBuilder).select().all().from('book').limit(payload)");
+			cassandraMessageHandler.setStatementExpression(query);
+			cassandraMessageHandler.setOutputChannel(resultChannel());
+			cassandraMessageHandler.setProducesReply(true);
+			return cassandraMessageHandler;
+		}
+
 	}
 
 	@Autowired
@@ -132,14 +160,16 @@ public class CassandraMessageHandlerTests {
 	public MessageHandler messageHandlerIngest;
 
 	@Autowired
+	@Qualifier("select")
+	public MessageHandler messageHandlerSelect;
+
+	@Autowired
 	public CassandraOperations template;
 
 	@Autowired
-	public SubscribableChannel channel;
+	public PollableChannel resultChannel;
 
-	protected static String CASSANDRA_CONFIG = "spring-cassandra.yaml";
-
-	protected static String CASSANDRA_HOST = "localhost";
+	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 
 	/**
 	 * The {@link Cluster} that's connected to Cassandra.
@@ -154,40 +184,18 @@ public class CassandraMessageHandlerTests {
 	@BeforeClass
 	public static void startCassandra() throws TTransportException, IOException, InterruptedException,
 			ConfigurationException {
-
-		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG);
-		ensureClusterConnection();
+		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
+		cluster = Cluster.builder()
+				.addContactPoint(IntegrationTestConfig.HOST)
+				.withPort(IntegrationTestConfig.PORT)
+				.build();
+		system = cluster.connect();
 	}
 
 	@AfterClass
 	public static void cleanup() {
 		cluster.close();
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
-	}
-
-	@Before
-	public void setup() {
-		channel.subscribe(new MessageHandler() {
-			@Override
-			public void handleMessage(Message<?> message) throws MessagingException {
-			}
-		});
-	}
-
-	public static Cluster cluster() {
-		return Cluster.builder().addContactPoint(CASSANDRA_HOST).withPort(IntegrationTestConfig.PORT).build();
-	}
-
-
-	public static void ensureClusterConnection() {
-		// check cluster
-		if (cluster == null) {
-			cluster = cluster();
-		}
-
-		if (system == null) {
-			system = cluster.connect();
-		}
 	}
 
 	@Test
@@ -210,26 +218,37 @@ public class CassandraMessageHandlerTests {
 			Thread.sleep(100);
 		}
 		assertTrue(n < 10);
-		assertEquals(books.size(), 1);
+		assertEquals(1, books.size());
 
 		template.delete(b1);
 	}
 
 	@Test
-	public void testCassandraBatchInsert() throws Exception {
+	public void testCassandraBatchInsertAndSelectStatement() throws Exception {
 		List<Book> books = getBookList(5);
 		Message<List<Book>> message = MessageBuilder.withPayload(books).build();
-		messageHandlerAsync.handleMessage(message);
+		this.messageHandlerAsync.handleMessage(message);
 
 		int n = 0;
 		Select select = QueryBuilder.select().all().from("book");
-		while ((books = template.select(select, Book.class)).isEmpty() && n++ < 10) {
+		while ((books = this.template.select(select, Book.class)).isEmpty() && n++ < 10) {
 			Thread.sleep(100);
 		}
 		assertTrue(n < 10);
-		assertEquals(books.size(), 5);
+		assertEquals(5, books.size());
 
-		template.delete(books);
+		this.messageHandlerSelect.handleMessage(new GenericMessage<>(2));
+
+		Message<?> receive = this.resultChannel.receive(10000);
+		assertNotNull(receive);
+		assertThat(receive.getPayload(), instanceOf(ResultSetFuture.class));
+		ResultSetFuture result = (ResultSetFuture) receive.getPayload();
+		ResultSet resultSet = result.get(10, TimeUnit.SECONDS);
+		assertNotNull(resultSet);
+		List<Row> rows = resultSet.all();
+		assertEquals(2, rows.size());
+
+		this.messageHandlerSync.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book")));
 	}
 
 	@Test
@@ -257,7 +276,7 @@ public class CassandraMessageHandlerTests {
 			Thread.sleep(100);
 		}
 		assertTrue(n < 10);
-		assertEquals(books.size(), 5);
+		assertEquals(5, books.size());
 
 		template.delete(books);
 	}

@@ -36,8 +36,11 @@ import org.springframework.data.cassandra.config.java.AbstractCassandraConfigura
 @Configuration
 public class IntegrationTestConfig extends AbstractCassandraConfiguration {
 
+	public static final String HOST = "localhost";
+
 	//public static final SpringCassandraBuildProperties PROPS = new SpringCassandraBuildProperties();
 	public static final int PORT = 9043;//PROPS.getCassandraPort();
+
 	// public static final int RPC_PORT = PROPS.getCassandraRpcPort();
 
 	public String keyspaceName = randomKeyspaceName();
