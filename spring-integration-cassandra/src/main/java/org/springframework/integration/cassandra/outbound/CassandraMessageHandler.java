@@ -16,181 +16,241 @@
 
 package org.springframework.integration.cassandra.outbound;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import org.springframework.cassandra.core.CachedPreparedStatementCreator;
+import org.springframework.cassandra.core.PreparedStatementCreator;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.WriteListener;
-import org.springframework.integration.cassandra.support.CassandraOutboundGatewayType;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.TypeLocator;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.expression.spel.support.StandardTypeLocator;
+import org.springframework.integration.expression.IntegrationEvaluationContextAware;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
+import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
+import org.springframework.integration.handler.MessageProcessor;
+import org.springframework.integration.util.AbstractExpressionEvaluator;
 import org.springframework.messaging.Message;
+import org.springframework.util.Assert;
+
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Statement;
 
 /**
  * @author Soby Chacko
+ * @author Artem Bilan
  */
-public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler {
+@SuppressWarnings("unchecked")
+public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler
+		implements IntegrationEvaluationContextAware {
 
-	private static final Log log = LogFactory.getLog(CassandraMessageHandler.class);
+	private final Map<String, Expression> parameterExpressions = new HashMap<>();
 
 	private final CassandraOperations cassandraTemplate;
 
-	private CassandraOutboundGatewayType gatewayType = CassandraOutboundGatewayType.INSERTING;
+	private Type queryType;
 
-	private WriteListener<T> writeListener;
-
-	private boolean producesReply = true;
+	private boolean producesReply;
 
 	/**
 	 * Prepared statement to use in association with high throughput ingestion.
 	 */
-	private String cqlIngest;
-
-	/**
-	 * Indicates whether the outbound operations need to be async.
-	 */
-	private boolean async;
+	private String ingestQuery;
 
 	/**
 	 * Various options that can be used for Cassandra writes.
 	 */
 	private WriteOptions writeOptions;
 
+	private MessageProcessor<Statement> statementProcessor;
+
+	private EvaluationContext evaluationContext;
+
 	public CassandraMessageHandler(CassandraOperations cassandraTemplate) {
+		this(cassandraTemplate, Type.INSERT);
+	}
+
+	public CassandraMessageHandler(CassandraOperations cassandraTemplate, CassandraMessageHandler.Type queryType) {
+		Assert.notNull(cassandraTemplate, "'cassandraTemplate' must not be null.");
+		Assert.notNull(queryType, "'queryType' must not be null.");
 		this.cassandraTemplate = cassandraTemplate;
+		this.queryType = queryType;
 	}
 
-	@Override
-	protected Object handleRequestMessage(Message<?> requestMessage) {
-		Object payload = requestMessage.getPayload();
-		Object result = null;
-
-		switch (gatewayType) {
-			case INSERTING:
-				if (cqlIngest != null) {
-					handleHighThroughputIngest(payload);
-				} else if (async) {
-					result = handleAsyncInsert(payload);
-				} else {
-					result = handleSynchronousInsert(requestMessage, payload);
-				}
-				break;
-			case UPDATING:
-				if (async) {
-					if (payload instanceof List) {
-						@SuppressWarnings("unchecked")
-						List<T> entities = (List<T>) payload;
-						result = cassandraTemplate.updateAsynchronously(entities, writeListener, writeOptions);
-					} else {
-						@SuppressWarnings("unchecked")
-						T typedPayload = (T) payload;
-						result = cassandraTemplate.updateAsynchronously(typedPayload, writeListener, writeOptions);
-					}
-				} else {
-					if (payload instanceof List) {
-						@SuppressWarnings("unchecked")
-						List<T> entities = (List<T>) payload;
-						result = cassandraTemplate.update(entities, writeOptions);
-					} else {
-						result = cassandraTemplate.update(payload, writeOptions);
-					}
-				}
-				break;
-			case DELETING:
-				result = null;
-				break;
-			default:
-				result = null;
-		}
-
-		if (result == null || !producesReply) {
-			return null;
-		}
-
-		return this.getMessageBuilderFactory().withPayload(result)
-				.copyHeaders(requestMessage.getHeaders()).build();
-	}
-
-	private Object handleSynchronousInsert(Message<?> message, Object payload) {
-		final Object result;
-		if (payload instanceof List) {
-			@SuppressWarnings("unchecked")
-			List<T> entities = (List<T>) payload;
-			result = cassandraTemplate.insert(entities, writeOptions);
-		} else {
-			result = cassandraTemplate.insert(message.getPayload(), writeOptions);
-		}
-		return result;
-	}
-
-	private Object handleAsyncInsert(Object payload) {
-		final Object result;
-		WriteListener<T> writeListener = getWriteListener();
-		if (payload instanceof List) {
-			@SuppressWarnings("unchecked")
-			List<T> entities = (List<T>) payload;
-			result = cassandraTemplate.insertAsynchronously(entities, writeListener, writeOptions);
-		} else {
-			@SuppressWarnings("unchecked")
-			T typedPayload = (T) payload;
-			result = cassandraTemplate.insertAsynchronously(typedPayload, writeListener, writeOptions);
-		}
-		return result;
-	}
-
-	private void handleHighThroughputIngest(Object payload) {
-		if (payload instanceof List) {
-			@SuppressWarnings("unchecked")
-			List<List<?>> data = (List<List<?>>) payload;
-			assert cqlIngest != null;
-			cassandraTemplate.ingest(cqlIngest, data, writeOptions);
-		}
-	}
-
-	private WriteListener<T> getWriteListener() {
-		return new WriteListener<T>() {
-
-			@Override
-			public void onWriteComplete(Collection<T> entities) {
-
-			}
-
-			@Override
-			public void onException(Exception x) {
-				log.debug("Exception thrown", x);
-			}
-		};
-	}
-
-	public void setCqlIngest(String cqlIngest) {
-		this.cqlIngest = cqlIngest;
-	}
-
-	public void setGatewayType(CassandraOutboundGatewayType gatewayType) {
-		this.gatewayType = gatewayType;
-	}
-
-	public void setWriteListener(WriteListener<T> writeListener) {
-		this.writeListener = writeListener;
+	public void setIngestQuery(String ingestQuery) {
+		Assert.hasText(ingestQuery, "'ingestQuery' must not be empty");
+		this.ingestQuery = ingestQuery;
 	}
 
 	public void setWriteOptions(WriteOptions writeOptions) {
 		this.writeOptions = writeOptions;
 	}
 
-	public void setAsync(boolean async) {
-		this.async = async;
-	}
-
 	public void setProducesReply(boolean producesReply) {
 		this.producesReply = producesReply;
 	}
 
+	public void setStatementExpression(Expression statementExpression) {
+		setStatementProcessor(new ExpressionEvaluatingMessageProcessor<Statement>(statementExpression,
+				Statement.class) {
+
+			@Override
+			protected StandardEvaluationContext getEvaluationContext() {
+				return (StandardEvaluationContext) CassandraMessageHandler.this.evaluationContext;
+			}
+
+		});
+	}
+
+	public void setQuery(String query) {
+		Assert.hasText(query, "'query' must not be empty");
+
+		final PreparedStatementCreator statementCreator = new CachedPreparedStatementCreator(query);
+
+		setStatementProcessor(new MessageProcessor<Statement>() {
+
+			@Override
+			public Statement processMessage(Message<?> message) {
+				PreparedStatement preparedStatement =
+						statementCreator.createPreparedStatement(cassandraTemplate.getSession());
+				ColumnDefinitions variables = preparedStatement.getVariables();
+				List<Object> values = new ArrayList<>(variables.size());
+				Map<String, Object> valueMap = new HashMap<>(variables.size());
+				for (ColumnDefinitions.Definition definition : variables) {
+					String name = definition.getName();
+					Object value = valueMap.get(name);
+					if (value == null) {
+						Expression expression = parameterExpressions.get(name);
+						Assert.state(expression != null, "No expression for parameter: " + name);
+						value = expression.getValue(evaluationContext, message);
+						valueMap.put(name, value);
+					}
+					values.add(value);
+				}
+				return preparedStatement.bind(values.toArray());
+			}
+
+		});
+	}
+
+	public void setParameterExpressions(Map<String, Expression> parameterExpressions) {
+		Assert.notEmpty(parameterExpressions, "'parameterExpressions' must not be empty.");
+		this.parameterExpressions.clear();
+		this.parameterExpressions.putAll(parameterExpressions);
+	}
+
+	public void setStatementProcessor(MessageProcessor<Statement> statementProcessor) {
+		Assert.notNull(statementProcessor, "'statementProcessor' must not be null.");
+		this.statementProcessor = statementProcessor;
+		this.queryType = Type.STATEMENT;
+	}
+
+	@Override
+	public void setIntegrationEvaluationContext(EvaluationContext evaluationContext) {
+		TypeLocator typeLocator = evaluationContext.getTypeLocator();
+		if (typeLocator instanceof StandardTypeLocator) {
+			/*
+			 * Register the Cassandra Query DSL package so they don't need a FQCN for QueryBuilder, for example.
+			 */
+			((StandardTypeLocator) typeLocator).registerImport("com.datastax.driver.core.querybuilder");
+		}
+		this.evaluationContext = evaluationContext;
+	}
+
+
 	@Override
 	public String getComponentType() {
-		return "cassandra:outbound-gateway";
+		return "cassandra:outbound-" + (this.producesReply ? "gateway" : "channel-adapter");
 	}
+
+	@Override
+	protected Object handleRequestMessage(Message<?> requestMessage) {
+		Object payload = requestMessage.getPayload();
+
+		Object result = payload;
+
+		Type queryType = this.queryType;
+
+		Statement statement = null;
+
+		if (payload instanceof Statement) {
+			statement = (Statement) payload;
+			queryType = Type.STATEMENT;
+		}
+
+		switch (queryType) {
+			case INSERT:
+				if (this.ingestQuery != null) {
+					Assert.isInstanceOf(List.class, payload,
+							"to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
+					List<?> list = (List<?>) payload;
+					for (Object o : list) {
+						Assert.isInstanceOf(List.class, o,
+								"to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
+					}
+					List<List<?>> rows = (List<List<?>>) payload;
+					this.cassandraTemplate.ingest(this.ingestQuery, rows, this.writeOptions);
+				}
+				else {
+					if (payload instanceof List) {
+						this.cassandraTemplate.insert((List<T>) payload, this.writeOptions);
+					}
+					else {
+						this.cassandraTemplate.insert(payload, this.writeOptions);
+					}
+				}
+				break;
+			case UPDATE:
+				if (payload instanceof List) {
+					this.cassandraTemplate.update((List<T>) payload, this.writeOptions);
+				}
+				else {
+					this.cassandraTemplate.update(payload, this.writeOptions);
+				}
+				break;
+			case DELETE:
+				if (payload instanceof List) {
+					this.cassandraTemplate.delete((List<T>) payload, this.writeOptions);
+				}
+				else {
+					this.cassandraTemplate.delete(payload, this.writeOptions);
+				}
+				break;
+			case STATEMENT:
+				if (statement == null) {
+					statement = this.statementProcessor.processMessage(requestMessage);
+				}
+
+				result = this.cassandraTemplate.executeAsynchronously(statement).getUninterruptibly();
+				break;
+		}
+
+		return this.producesReply ? result : null;
+	}
+
+	/**
+	 * Always return {@code false} to prevent a {@link com.datastax.driver.core.ResultSet}
+	 * draining on iteration.
+	 *
+	 * @param reply ignored.
+	 * @return {@code false}.
+	 */
+	@Override
+	protected boolean shouldSplitOutput(Iterable<?> reply) {
+		return false;
+	}
+
+
+	public enum Type {
+
+		INSERT, UPDATE, DELETE, STATEMENT;
+
+	}
+
 }

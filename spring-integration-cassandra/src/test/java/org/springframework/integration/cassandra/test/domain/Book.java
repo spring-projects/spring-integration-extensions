@@ -18,6 +18,7 @@ package org.springframework.integration.cassandra.test.domain;
 
 import java.util.Date;
 
+import org.springframework.data.cassandra.mapping.Indexed;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 
@@ -33,6 +34,7 @@ public class Book {
 
 	private String title;
 
+	@Indexed
 	private String author;
 
 	private int pages;
