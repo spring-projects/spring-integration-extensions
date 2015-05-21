@@ -16,13 +16,15 @@
 
 package org.springframework.integration.cassandra.outbound;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.cassandra.core.CachedPreparedStatementCreator;
+import org.springframework.cassandra.core.PreparedStatementCreator;
 import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.DeletionListener;
-import org.springframework.data.cassandra.core.WriteListener;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.TypeLocator;
@@ -32,11 +34,13 @@ import org.springframework.integration.expression.IntegrationEvaluationContextAw
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
 import org.springframework.integration.handler.MessageProcessor;
+import org.springframework.integration.util.AbstractExpressionEvaluator;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * @author Soby Chacko
@@ -46,23 +50,18 @@ import com.datastax.driver.core.querybuilder.Select;
 public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler
 		implements IntegrationEvaluationContextAware {
 
+	private final Map<String, Expression> parameterExpressions = new HashMap<>();
+
 	private final CassandraOperations cassandraTemplate;
 
 	private Type queryType;
 
 	private boolean producesReply;
 
-	private QueryListenerAdapter<T> queryListener;
-
 	/**
 	 * Prepared statement to use in association with high throughput ingestion.
 	 */
-	private String cqlIngest;
-
-	/**
-	 * Indicates whether the outbound operations need to be async.
-	 */
-	private boolean async = true;
+	private String ingestQuery;
 
 	/**
 	 * Various options that can be used for Cassandra writes.
@@ -84,20 +83,13 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 		this.queryType = queryType;
 	}
 
-	public void setCqlIngest(String cqlIngest) {
-		this.cqlIngest = cqlIngest;
-	}
-
-	public void setQueryListener(QueryListener<T> queryListener) {
-		this.queryListener = new QueryListenerAdapter<T>(queryListener);
+	public void setIngestQuery(String ingestQuery) {
+		Assert.hasText(ingestQuery, "'ingestQuery' must not be empty");
+		this.ingestQuery = ingestQuery;
 	}
 
 	public void setWriteOptions(WriteOptions writeOptions) {
 		this.writeOptions = writeOptions;
-	}
-
-	public void setAsync(boolean async) {
-		this.async = async;
 	}
 
 	public void setProducesReply(boolean producesReply) {
@@ -116,20 +108,42 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 		});
 	}
 
-	/* TODO: implement QueryParameterSource to allocate named parameters from query, e.g.
-	               SELECT * FROM book WHERE author = :payload.author
-
-	public void setQuery(final String query) {
+	public void setQuery(String query) {
 		Assert.hasText(query, "'query' must not be empty");
+
+		final PreparedStatementCreator statementCreator = new CachedPreparedStatementCreator(query);
+
 		setStatementProcessor(new MessageProcessor<Statement>() {
 
 			@Override
 			public Statement processMessage(Message<?> message) {
-				return new SimpleStatement(query);
+				PreparedStatement preparedStatement =
+						statementCreator.createPreparedStatement(cassandraTemplate.getSession());
+				ColumnDefinitions variables = preparedStatement.getVariables();
+				List<Object> values = new ArrayList<>(variables.size());
+				Map<String, Object> valueMap = new HashMap<>(variables.size());
+				for (ColumnDefinitions.Definition definition : variables) {
+					String name = definition.getName();
+					Object value = valueMap.get(name);
+					if (value == null) {
+						Expression expression = parameterExpressions.get(name);
+						Assert.state(expression != null, "No expression for parameter: " + name);
+						value = expression.getValue(evaluationContext, message);
+						valueMap.put(name, value);
+					}
+					values.add(value);
+				}
+				return preparedStatement.bind(values.toArray());
 			}
 
 		});
-	}*/
+	}
+
+	public void setParameterExpressions(Map<String, Expression> parameterExpressions) {
+		Assert.notEmpty(parameterExpressions, "'parameterExpressions' must not be empty.");
+		this.parameterExpressions.clear();
+		this.parameterExpressions.putAll(parameterExpressions);
+	}
 
 	public void setStatementProcessor(MessageProcessor<Statement> statementProcessor) {
 		Assert.notNull(statementProcessor, "'statementProcessor' must not be null.");
@@ -152,7 +166,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 
 	@Override
 	public String getComponentType() {
-		return "cassandra:outbound-" + (this.async ? "gateway" : "channel-adapter");
+		return "cassandra:outbound-" + (this.producesReply ? "gateway" : "channel-adapter");
 	}
 
 	@Override
@@ -172,7 +186,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 
 		switch (queryType) {
 			case INSERT:
-				if (this.cqlIngest != null) {
+				if (this.ingestQuery != null) {
 					Assert.isInstanceOf(List.class, payload,
 							"to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
 					List<?> list = (List<?>) payload;
@@ -181,17 +195,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 								"to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
 					}
 					List<List<?>> rows = (List<List<?>>) payload;
-					this.cassandraTemplate.ingest(this.cqlIngest, rows, this.writeOptions);
-				}
-				else if (this.async) {
-					if (payload instanceof List) {
-						result = this.cassandraTemplate.insertAsynchronously((List<T>) payload, this.queryListener,
-								this.writeOptions);
-					}
-					else {
-						result = this.cassandraTemplate.insertAsynchronously((T) payload, this.queryListener,
-								this.writeOptions);
-					}
+					this.cassandraTemplate.ingest(this.ingestQuery, rows, this.writeOptions);
 				}
 				else {
 					if (payload instanceof List) {
@@ -203,65 +207,27 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 				}
 				break;
 			case UPDATE:
-				if (this.async) {
-					if (payload instanceof List) {
-						result = this.cassandraTemplate.updateAsynchronously((List<T>) payload, this.queryListener,
-								this.writeOptions);
-					}
-					else {
-						result = this.cassandraTemplate.updateAsynchronously((T) payload, this.queryListener,
-								this.writeOptions);
-					}
+				if (payload instanceof List) {
+					result = this.cassandraTemplate.update((List<T>) payload, this.writeOptions);
 				}
 				else {
-					if (payload instanceof List) {
-						result = this.cassandraTemplate.update((List<T>) payload, this.writeOptions);
-					}
-					else {
-						result = this.cassandraTemplate.update(payload, this.writeOptions);
-					}
+					result = this.cassandraTemplate.update(payload, this.writeOptions);
 				}
 				break;
 			case DELETE:
-				if (this.async) {
-					if (payload instanceof List) {
-						result = this.cassandraTemplate.deleteAsynchronously((List<T>) payload, this.queryListener,
-								this.writeOptions);
-					}
-					else {
-						result = this.cassandraTemplate.deleteAsynchronously((T) payload, this.queryListener,
-								this.writeOptions);
-					}
+				if (payload instanceof List) {
+					this.cassandraTemplate.delete((List<T>) payload, this.writeOptions);
 				}
 				else {
-					if (payload instanceof List) {
-						this.cassandraTemplate.delete((List<T>) payload, this.writeOptions);
-					}
-					else {
-						this.cassandraTemplate.delete(payload, this.writeOptions);
-					}
+					this.cassandraTemplate.delete(payload, this.writeOptions);
 				}
 				break;
 			case STATEMENT:
 				if (statement == null) {
 					statement = this.statementProcessor.processMessage(requestMessage);
 				}
-				if (this.async) {
-					if (statement instanceof Select) {
-						result = this.cassandraTemplate.queryAsynchronously((Select) statement);
-					}
-					else {
-						result = this.cassandraTemplate.executeAsynchronously(statement);
-					}
-				}
-				else {
-					if (statement instanceof Select) {
-						result = this.cassandraTemplate.query((Select) statement);
-					}
-					else {
-						this.cassandraTemplate.execute(statement);
-					}
-				}
+
+				result = this.cassandraTemplate.executeAsynchronously(statement).getUninterruptibly();
 				break;
 		}
 
@@ -272,31 +238,18 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 		return result;
 	}
 
-	private static class QueryListenerAdapter<T> implements WriteListener<T>, DeletionListener<T> {
-
-		private final QueryListener<T> delegate;
-
-		private QueryListenerAdapter(QueryListener<T> delegate) {
-			Assert.notNull(delegate, "'delegate' must not be null.");
-			this.delegate = delegate;
-		}
-
-		@Override
-		public void onDeletionComplete(Collection<T> entities) {
-			this.delegate.onComplete(entities);
-		}
-
-		@Override
-		public void onWriteComplete(Collection<T> entities) {
-			this.delegate.onComplete(entities);
-		}
-
-		@Override
-		public void onException(Exception x) {
-			this.delegate.onException(x);
-		}
-
+	/**
+	 * Always return {@code false} to prevent a {@link com.datastax.driver.core.ResultSet}
+	 * draining on iteration.
+	 *
+	 * @param reply ignored.
+	 * @return {@code false}.
+	 */
+	@Override
+	protected boolean shouldSplitOutput(Iterable<?> reply) {
+		return false;
 	}
+
 
 	public enum Type {
 
