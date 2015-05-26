@@ -173,7 +173,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	protected Object handleRequestMessage(Message<?> requestMessage) {
 		Object payload = requestMessage.getPayload();
 
-		Object result = null;
+		Object result = payload;
 
 		Type queryType = this.queryType;
 
@@ -199,19 +199,19 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 				}
 				else {
 					if (payload instanceof List) {
-						result = this.cassandraTemplate.insert((List<T>) payload, this.writeOptions);
+						this.cassandraTemplate.insert((List<T>) payload, this.writeOptions);
 					}
 					else {
-						result = this.cassandraTemplate.insert(payload, this.writeOptions);
+						this.cassandraTemplate.insert(payload, this.writeOptions);
 					}
 				}
 				break;
 			case UPDATE:
 				if (payload instanceof List) {
-					result = this.cassandraTemplate.update((List<T>) payload, this.writeOptions);
+					this.cassandraTemplate.update((List<T>) payload, this.writeOptions);
 				}
 				else {
-					result = this.cassandraTemplate.update(payload, this.writeOptions);
+					this.cassandraTemplate.update(payload, this.writeOptions);
 				}
 				break;
 			case DELETE:
@@ -231,11 +231,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 				break;
 		}
 
-		if (result == null || !this.producesReply) {
-			return null;
-		}
-
-		return result;
+		return this.producesReply ? result : null;
 	}
 
 	/**
