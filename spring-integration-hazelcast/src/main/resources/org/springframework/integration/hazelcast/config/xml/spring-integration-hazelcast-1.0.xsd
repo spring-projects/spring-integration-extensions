@@ -257,4 +257,47 @@
 		</xsd:complexType>
 
 	</xsd:element>
+	
+	<xsd:element name="cm-inbound-channel-adapter">
+
+		<xsd:annotation>
+			<xsd:documentation>
+				Configures Hazelcast Cluster Monitor Inbound Channel Adapter
+			</xsd:documentation>
+		</xsd:annotation>
+
+		<xsd:complexType>
+
+			<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
+
+			<xsd:attribute name="hazelcast-instance" use="required" type="xsd:string">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="ref">
+							<tool:expected-type type="com.hazelcast.core.HazelcastInstance" />
+						</tool:annotation>
+					</xsd:appinfo>
+					<xsd:documentation>
+						<![CDATA[ Specifies hazelcast instance reference to listen ]]>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+
+			<xsd:attribute name="monitor-types" type="xsd:string" use="optional" default="MEMBERSHIP">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<tool:annotation kind="value">
+							<tool:expected-type
+								type="org.springframework.integration.hazelcast.ClusterMonitorType" />
+						</tool:annotation>
+					</xsd:appinfo>
+					<xsd:documentation>
+						<![CDATA[ Specifies cluster monitor types ]]>
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+
+	</xsd:element>
+	
 </xsd:schema>

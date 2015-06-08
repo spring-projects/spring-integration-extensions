@@ -33,7 +33,6 @@ import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar
 import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.hazelcast.core.AbstractIMapEvent;
 import com.hazelcast.core.DistributedObject;
@@ -71,11 +70,11 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	public void setCacheEventTypes(String cacheEventTypes) {
-		HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, cacheEventTypes);
-		Set<String> cacheEvents = StringUtils.commaDelimitedListToSet(cacheEventTypes);
+		Set<String> cacheEvents =
+				HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, cacheEventTypes);
 		Assert.notEmpty(cacheEvents, "'cacheEvents' must have elements");
-		HazelcastIntegrationDefinitionValidator.validateCacheEventsByDistributedObject(
-				this.distributedObject, cacheEvents);
+		HazelcastIntegrationDefinitionValidator.validateCacheEventsByDistributedObject(this.distributedObject,
+				cacheEvents);
 		this.cacheEvents = cacheEvents;
 	}
 
@@ -103,7 +102,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		protected abstract Message<?> toMessage(E event);
 
 		protected void sendMessage(E event, InetSocketAddress socketAddress,
-				CacheListeningPolicyType cacheListeningPolicyType) {
+								   CacheListeningPolicyType cacheListeningPolicyType) {
 			if (CacheListeningPolicyType.ALL == cacheListeningPolicyType || isEventAcceptable(socketAddress)) {
 				AbstractHazelcastMessageProducer.this.sendMessage(toMessage(event));
 			}
@@ -178,11 +177,10 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		@Override
 		protected void processEvent(AbstractIMapEvent event) {
 			if (getCacheEvents().contains(event.getEventType().toString())) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Received Event : " + event);
+				}
 				sendMessage(event, event.getMember().getSocketAddress(), getCacheListeningPolicy());
-			}
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Received Event : " + event);
 			}
 		}
 

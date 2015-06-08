@@ -6,6 +6,7 @@ The Spring Integration Extensions project provides extension modules for [Spring
 ## Available Modules
 
 * [Amazon Web Services (AWS)][] Support
+* [Hazelcast][] Support
 * [Kafka][] Support
 * [MQ Telemetry Transport (MQTT)][] Support
 * [Print][] Support
@@ -139,6 +140,7 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [MQ Telemetry Transport]: http://mqtt.org/
 [Websockets]: http://www.html5rocks.com/en/tutorials/websockets/basics/
 [XQuery]: http://en.wikipedia.org/wiki/XQuery
-[Splunk]:http://www.splunk.com/
+[Splunk]: http://www.splunk.com/
 [Amazon Web Services (AWS)]: http://aws.amazon.com/
 [MQ Telemetry Transport (MQTT)]: http://mqtt.org/
+[Hazelcast]: http://hazelcast.org/

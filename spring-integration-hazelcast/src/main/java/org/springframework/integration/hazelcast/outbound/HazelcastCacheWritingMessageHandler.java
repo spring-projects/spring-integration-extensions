@@ -22,7 +22,6 @@ import java.util.Map;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.integration.expression.ExpressionUtils;
-import org.springframework.integration.expression.IntegrationEvaluationContextAware;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.messaging.Message;

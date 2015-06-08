@@ -12,7 +12,7 @@ buildscript {
 		maven { url 'http://repo.spring.io/plugins-release' }
 	}
 	dependencies {
-		classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
 	}
 }
 
@@ -26,8 +26,12 @@ repositories {
 if (project.hasProperty('platformVersion')) {
 	apply plugin: 'spring-io'
 
-	dependencies {
-		springIoVersions "io.spring.platform:platform-bom:${platformVersion}@properties"
+	dependencyManagement {
+		springIoTestRuntime {
+			imports {
+				mavenBom "io.spring.platform:platform-bom:${platformVersion}"
+			}
+		}
 	}
 }
 
@@ -66,6 +70,8 @@ configurations {
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "com.hazelcast:hazelcast:$hazelcastVersion"
+
+	testCompile "com.hazelcast:hazelcast-client:$hazelcastVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 
