@@ -33,6 +33,7 @@ import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar
 import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.hazelcast.core.AbstractIMapEvent;
 import com.hazelcast.core.DistributedObject;
@@ -42,8 +43,6 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
 import com.hazelcast.core.MultiMap;
-
-import reactor.util.StringUtils;
 
 /**
  * Hazelcast Base Event-Driven Message Producer.

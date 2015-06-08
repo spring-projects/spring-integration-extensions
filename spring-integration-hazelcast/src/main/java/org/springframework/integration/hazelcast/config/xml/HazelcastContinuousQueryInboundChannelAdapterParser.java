@@ -26,8 +26,7 @@ import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.hazelcast.inbound.HazelcastContinuousQueryMessageProducer;
-
-import reactor.util.StringUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Hazelcast Continuous Query Inbound Channel Adapter Parser parses

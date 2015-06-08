@@ -200,6 +200,40 @@ Sample definition is as follows :
 **Reference :** http://docs.hazelcast.org/docs/3.4/manual/html-single/hazelcast-documentation.html#continuous-query 
 
 
+## HAZELCAST CLUSTER MONITOR INBOUND CHANNEL ADAPTER 
+
+Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven inbound channel adapter and listens related Membership, Distributed Object, Migration, Lifecycle and Client events. Its basic definition is as follows : 
+```
+<int-hazelcast:cm-inbound-channel-adapter 
+				 channel="monitorChannel" 
+				 hazelcast-instance="instance" 
+				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYLE, CLIENT" /> 
+```
+Basically, it requires four attributes as follows : 
+
+* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **hazelcast-instance :** Specifies Hazelcast Instance reference to listen cluster events. It is mandatory attribute. 
+* **monitor-types :** Specifies monitor types which are listened. It is optional attribute with MEMBERSHIP default value. Supported values are MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYLE, CLIENT.
+
+Sample definition is as follows : 
+```
+<int:channel id="monitorChannel"/> 
+
+<int-hazelcast:cm-inbound-channel-adapter 
+				 channel="monitorChannel" 
+				 hazelcast-instance="instance" 
+				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT" /> 
+
+<bean id="instance" class="com.hazelcast.core.Hazelcast" 
+			factory-method="newHazelcastInstance"> 
+	<constructor-arg> 
+		<bean class="com.hazelcast.config.Config" /> 
+	</constructor-arg> 
+</bean> 
+```
+**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedevents.html 
+
+
 ## HAZELCAST DISTRIBUTED-SQL INBOUND CHANNEL ADAPTER 
 
 Hazelcast allows to run distributed queries on the distributed map. Hazelcast Distributed SQL Inbound Channel Adapter is a poller-driven inbound channel adapter. It runs defined distributed-sql and returns results in the light of iteration type. Its basic definition is as follows : 

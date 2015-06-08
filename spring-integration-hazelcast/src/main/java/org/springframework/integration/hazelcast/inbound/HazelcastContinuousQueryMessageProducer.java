@@ -19,6 +19,7 @@ package org.springframework.integration.hazelcast.inbound;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.IMap;
+import com.hazelcast.map.listener.MapListener;
 import com.hazelcast.query.SqlPredicate;
 
 /**
@@ -51,7 +52,8 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 	@Override
 	protected void doStart() {
 		setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject)
-				.addEntryListener(new HazelcastEntryListener(), new SqlPredicate(this.predicate), this.includeValue));
+				.addEntryListener((MapListener) new HazelcastEntryListener(), new SqlPredicate(this.predicate),
+						this.includeValue));
 	}
 
 	@Override

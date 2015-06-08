@@ -32,6 +32,7 @@ public class HazelcastIntegrationNamespaceHandler extends AbstractIntegrationNam
 		registerBeanDefinitionParser("outbound-channel-adapter", new HazelcastOutboundChannelAdapterParser());
 		registerBeanDefinitionParser("cq-inbound-channel-adapter", new HazelcastContinuousQueryInboundChannelAdapterParser());
 		registerBeanDefinitionParser("ds-inbound-channel-adapter", new HazelcastDistributedSQLInboundChannelAdapterParser());
+		registerBeanDefinitionParser("cm-inbound-channel-adapter", new HazelcastClusterMonitorInboundChannelAdapterParser());
 	}
 
 }

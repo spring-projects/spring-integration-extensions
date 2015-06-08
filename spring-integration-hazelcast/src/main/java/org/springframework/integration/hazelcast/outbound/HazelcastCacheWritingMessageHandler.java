@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.expression.IntegrationEvaluationContextAware;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
@@ -39,8 +40,7 @@ import com.hazelcast.core.MultiMap;
  * @author Artem Bilan
  * @since 1.0.0
  */
-public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler
-		implements IntegrationEvaluationContextAware {
+public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler {
 
 	private DistributedObject distributedObject;
 
@@ -72,8 +72,9 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler
 	}
 
 	@Override
-	public void setIntegrationEvaluationContext(EvaluationContext evaluationContext) {
-		this.evaluationContext = evaluationContext;
+	protected void onInit() throws Exception {
+		super.onInit();
+		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
 	}
 
 	@Override
