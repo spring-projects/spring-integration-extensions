@@ -86,6 +86,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	public void setIngestQuery(String ingestQuery) {
 		Assert.hasText(ingestQuery, "'ingestQuery' must not be empty");
 		this.ingestQuery = ingestQuery;
+		this.queryType = Type.INSERT;
 	}
 
 	public void setWriteOptions(WriteOptions writeOptions) {
