@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/integration/zip"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	targetNamespace="http://www.springframework.org/schema/integration/zip"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+	<xsd:import namespace="http://www.springframework.org/schema/integration"
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd" />
+
+	<xsd:annotation>
+		<xsd:documentation><![CDATA[
+			Defines the configuration elements for the Spring Integration
+			Zip Adapter.
+		]]></xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="zip-transformer">
+		<xsd:annotation>
+			<xsd:documentation>
+				Creates a Transformer that compresses message
+				payloads using Zip compressions. The following payload types are
+				supported:
+
+				- java.io.File
+				- byte[]
+				- String
+
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="transformerType">
+					<xsd:attribute name="compression-level" type="xsd:integer"
+						use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Sets the compression level. Default is
+								java.util.zip.Deflater.DEFAULT_COMPRESSION
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="unzip-transformer">
+		<xsd:annotation>
+			<xsd:documentation>
+				Creates a Transformer that uncompresses message
+				payloads using Zip compressions. The following payload types are
+				supported:
+
+				- java.io.File
+				- byte[]
+
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="transformerType">
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="transformerType">
+		<xsd:attribute name="id" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[Identifies the underlying Spring bean definition (EventDrivenConsumer)]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="input-channel" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					<![CDATA[The input channel of the transformer.]]>
+				</xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:expected-type
+							type="org.springframework.integration.MessageChannel" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="output-channel" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					<![CDATA[The channel to which the transformer will send the transformed message.
+					Optional, because incoming messages can specify a reply channel using the 'replyChannel'
+					message header value themselves.]]>
+				</xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<tool:expected-type
+							type="org.springframework.integration.MessageChannel" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="delete-files" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					<![CDATA[If the payload is an instance of {@link File}, this
+					attribute specifies whether to delete the {@link File} after
+					transformation. The default is 'false'.]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="expect-single-result" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					<![CDATA[If set to 'true', this property indicates
+					that only one result object shall be returned as a result
+					from the executed Unzip operation. Defaults to 'false'.]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="result-type" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Defines the format of the data returned after
+					transformation. Available options are:
+						- File
+						- Byte Array
+
+					Depending on the used input format, not all
+					options may be applicable.
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="resultType xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:simpleType name="resultType">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="BYTE_ARRAY" />
+			<xsd:enumeration value="FILE" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+</xsd:schema>
