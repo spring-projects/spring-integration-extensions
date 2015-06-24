@@ -40,6 +40,7 @@ import com.hazelcast.core.MultiMap;
  * Hazelcast MultiMap Event Driven Inbound Channel Adapter Test
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
  * @since 1.0.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -107,15 +108,16 @@ public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests extends Abst
 		Assert.assertEquals(Integer.valueOf(2),
 				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
 						.getPayload()).key);
+		Assert.assertNull(((EntryEventMessagePayload<?, ?>) msg.getPayload()).value);
 		Assert.assertEquals(2,
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).value).getId());
+						.getPayload()).oldValue).getId());
 		Assert.assertEquals("TestName2",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).value).getName());
+						.getPayload()).oldValue).getName());
 		Assert.assertEquals("TestSurname2",
 				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).value).getSurname());
+						.getPayload()).oldValue).getSurname());
 	}
 
 	@Test

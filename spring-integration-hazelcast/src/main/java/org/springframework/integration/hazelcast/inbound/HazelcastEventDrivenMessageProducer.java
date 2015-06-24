@@ -35,6 +35,7 @@ import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.map.listener.MapListener;
 
 /**
  * Hazelcast Event Driven Message Producer is a message producer which enables
@@ -64,7 +65,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 	protected void doStart() {
 		if (this.distributedObject instanceof IMap) {
 			setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject)
-					.addEntryListener(new HazelcastEntryListener(), true));
+					.addEntryListener((MapListener) new HazelcastEntryListener(), true));
 		}
 		else if (this.distributedObject instanceof MultiMap) {
 			setHazelcastRegisteredEventListenerId(((MultiMap<?, ?>) this.distributedObject)

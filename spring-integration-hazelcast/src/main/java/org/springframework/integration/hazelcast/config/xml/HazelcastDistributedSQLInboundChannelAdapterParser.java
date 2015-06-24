@@ -24,8 +24,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractPollingInboundChannelAdapterParser;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQLMessageSource;
-
-import reactor.util.StringUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Hazelcast Distributed SQL Inbound Channel Adapter Parser parses
