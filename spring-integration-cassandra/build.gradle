@@ -27,7 +27,7 @@ if (project.hasProperty('platformVersion')) {
 	apply plugin: 'spring-io'
 
 	dependencies {
-		springIoVersions "io.spring.platform:platform-versions:${platformVersion}@properties"
+		springIoVersions "io.spring.platform:platform-bom:${platformVersion}@properties"
 	}
 }
 
