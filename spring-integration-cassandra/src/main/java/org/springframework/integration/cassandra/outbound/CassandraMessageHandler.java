@@ -30,6 +30,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.TypeLocator;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.expression.spel.support.StandardTypeLocator;
+import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.expression.IntegrationEvaluationContextAware;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
@@ -47,8 +48,7 @@ import com.datastax.driver.core.Statement;
  * @author Artem Bilan
  */
 @SuppressWarnings("unchecked")
-public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler
-		implements IntegrationEvaluationContextAware {
+public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler {
 
 	private final Map<String, Expression> parameterExpressions = new HashMap<>();
 
@@ -153,21 +153,22 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	}
 
 	@Override
-	public void setIntegrationEvaluationContext(EvaluationContext evaluationContext) {
-		TypeLocator typeLocator = evaluationContext.getTypeLocator();
+	public String getComponentType() {
+		return "cassandra:outbound-" + (this.producesReply ? "gateway" : "channel-adapter");
+	}
+
+	@Override
+	protected void doInit() {
+		super.doInit();
+
+		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
+		TypeLocator typeLocator = this.evaluationContext.getTypeLocator();
 		if (typeLocator instanceof StandardTypeLocator) {
 			/*
 			 * Register the Cassandra Query DSL package so they don't need a FQCN for QueryBuilder, for example.
 			 */
 			((StandardTypeLocator) typeLocator).registerImport("com.datastax.driver.core.querybuilder");
 		}
-		this.evaluationContext = evaluationContext;
-	}
-
-
-	@Override
-	public String getComponentType() {
-		return "cassandra:outbound-" + (this.producesReply ? "gateway" : "channel-adapter");
 	}
 
 	@Override
