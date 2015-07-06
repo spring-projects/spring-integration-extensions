@@ -125,16 +125,17 @@ public class SmesMessageSpecification {
 
 	private OptionalParameter messagePayloadParameter;
 
-	/**
+    private OptionalParameter[] optionalParameters;
+
+    /**
 	 * This method takes an inbound SMS message and converts it to a Spring Integration message
-	 * @param dsm the {@link DeliverSm} from
-	 * {@link AbstractReceivingMessageListener#onTextMessage(org.jsmpp.bean.DeliverSm, String)}
+	 * @param dsm the {@link org.jsmpp.bean.DeliverSm} from
+	 * {@link org.springframework.integration.smpp.core.AbstractReceivingMessageListener#onTextMessage(org.jsmpp.bean.DeliverSm, String)}
 	 * @param txtMessage the String from
-	 * {@link AbstractReceivingMessageListener#onTextMessage(org.jsmpp.bean.DeliverSm, String)}
+	 * {@link org.springframework.integration.smpp.core.AbstractReceivingMessageListener#onTextMessage(org.jsmpp.bean.DeliverSm, String)}
 	 * @return a Spring Integration message
 	 */
 	public static Message<?> toMessageFromSms(DeliverSm dsm, String txtMessage) {
-
 		Assert.isTrue(!dsm.isSmscDeliveryReceipt(), "the message should not be a delivery confirmation receipt!");
 
 		MessageBuilder<String> mb = MessageBuilder.withPayload(txtMessage);
@@ -179,33 +180,49 @@ public class SmesMessageSpecification {
 	}
 
 	/**
-	 * this method will take an inbound Spring Integration {@link Message}
-	 * and map it to a {@link SmesMessageSpecification}
+	 * this method will take an inbound Spring Integration {@link org.springframework.messaging.Message}
+	 * and map it to a {@link uz.smst.ussd.core.SmesMessageSpecification}
 	 * which we can use to send the SMS message.
-	 * @param msg a new {@link Message}
+	 * @param msg a new {@link org.springframework.messaging.Message}
 	 * @param smppSession the SMPPSession
-	 * @return a {@link SmesMessageSpecification}
+	 * @return a {@link uz.smst.ussd.core.SmesMessageSpecification}
 	 */
 	public static SmesMessageSpecification fromMessage(ClientSession smppSession, Message<?> msg) {
-		if (log.isDebugEnabled()) {
+		if (log.isDebugEnabled())
 			log.debug("Message: " + msg);
-		}
-		String srcAddy = valueIfHeaderExists(SRC_ADDR, msg);
+
+	        String srcAddy = valueIfHeaderExists(SOURCE_ADDR, msg);
 		String dstAddy = valueIfHeaderExists(DST_ADDR, msg);
-		String smsTxt = valueIfHeaderExists(SMS_MSG, msg);
-		if (!StringUtils.hasText(smsTxt)) {
-			Object payload = msg.getPayload();
-			if (payload instanceof String) {
-				smsTxt = (String) payload;
-			}
-		}
+	        TypeOfNumber srcToN = TypeOfNumber.valueOf((Byte) valueIfHeaderExists(DEST_ADDR_TON, msg));
+	        TypeOfNumber destToN = TypeOfNumber.valueOf((Byte) valueIfHeaderExists(SOURCE_ADDR_TON, msg));
+	        NumberingPlanIndicator srcNPI = NumberingPlanIndicator.valueOf((Byte) valueIfHeaderExists(DEST_ADDR_NPI, msg));
+	        NumberingPlanIndicator destNPI = NumberingPlanIndicator.valueOf((Byte) valueIfHeaderExists(SOURCE_ADDR_NPI, msg));
+	        SMSCDeliveryReceipt regDeliveryMode = valueIfHeaderExists(REGISTERED_DELIVERY_MODE, msg);
+	        OptionalParameter[] optionalParameters = valueIfHeaderExists(OPTIONAL_PARAMETERS, msg);
+	
+	        String smsTxt = valueIfHeaderExists(SMS_MSG, msg);
+	        if (!StringUtils.hasText(smsTxt)) {
+	            Object payload = msg.getPayload();
+	            if (payload instanceof String) {
+	                smsTxt = (String) payload;
+	            }
+	        }
 		final DataCoding dataCodingFromHeader = SmesMessageSpecification.dataCodingFromHeader(msg);
 		final SmesMessageSpecification spec = new SmesMessageSpecification()
 				.reset()
 				.setSmppSession(smppSession)
 				.setSourceAddress(srcAddy)
+                .setSourceAddressTypeOfNumber(srcToN)
+                .setSourceAddressNumberingPlanIndicator(srcNPI)
+                .setDestinationAddressTypeOfNumber(destToN)
+                .setDestinationAddressNumberingPlanIndicator(destNPI)
+                .setRegisteredDelivery(new RegisteredDelivery())
 				.setDestinationAddress(dstAddy)
-				.setDataCoding(dataCodingFromHeader);
+				.setDataCoding(dataCodingFromHeader)
+                .setOptionalParameter(optionalParameters)
+                .setScheduleDeliveryTime(new Date())
+                .setValidityPeriod(null)
+                .setEsmClass(new ESMClass());
 		spec.setMaxLengthSmsMessages(maximumCharactersFromHeader(msg));
 		spec.setEsmClass(SmesMessageSpecification.esmClassFromHeader(msg));
 		if (msg.getHeaders().containsKey(SmppConstants.USE_MSG_PAYLOAD_PARAM)) {
@@ -247,10 +264,10 @@ public class SmesMessageSpecification {
 
 		spec.setRegisteredDelivery(registeredDeliveryFromHeader(msg));
 
-		return spec;
+        return spec;
 	}
 
-	private static DataCoding dataCodingFromHeader(Message<?> msg) {
+    private static DataCoding dataCodingFromHeader(Message<?> msg) {
 		Object dc = msg.getHeaders().get(DATA_CODING);
 		if (dc instanceof DataCoding) {
 			return (DataCoding) dc;
@@ -264,13 +281,13 @@ public class SmesMessageSpecification {
 
 	/**
 	 * Getting maximum characters from header. This will allow checking maximum character based on
-	 * {@link SmppConstants#MAXIMUM_CHARACTERS} header or determine the maximum character based on data coding
-	 * header {@link SmppConstants#DATA_CODING}.
+	 * {@link org.springframework.integration.smpp.core.SmppConstants#MAXIMUM_CHARACTERS} header or determine the maximum character based on data coding
+	 * header {@link org.springframework.integration.smpp.core.SmppConstants#DATA_CODING}.
 	 * <p/>
 	 * The order of the selection is
 	 * <ol>
-	 *     <li>If {@link SmppConstants#MAXIMUM_CHARACTERS} is set, use it</li>
-	 *     <li>If {@link SmppConstants#DATA_CODING} is set, find maximum character for the data coding</li>
+	 *     <li>If {@link org.springframework.integration.smpp.core.SmppConstants#MAXIMUM_CHARACTERS} is handle, use it</li>
+	 *     <li>If {@link org.springframework.integration.smpp.core.SmppConstants#DATA_CODING} is handle, find maximum character for the data coding</li>
 	 *     <li>Using default maximum character which is 140</li>
 	 * </ol>
 	 * @param msg the Spring Integration message
@@ -294,10 +311,10 @@ public class SmesMessageSpecification {
 
 	/**
 	 * need to be a little flexibile about what we take in as
-	 * {@link SmppConstants#REGISTERED_DELIVERY_MODE}. The value can
-	 * be a String or a member of the {@link SMSCDeliveryReceipt} enum.
+	 * {@link org.springframework.integration.smpp.core.SmppConstants#REGISTERED_DELIVERY_MODE}. The value can
+	 * be a String or a member of the {@link org.jsmpp.bean.SMSCDeliveryReceipt} enum.
 	 * @param msg the Spring Integration message
-	 * @return a value for {@link RegisteredDelivery} or null, which is
+	 * @return a value for {@link org.jsmpp.bean.RegisteredDelivery} or null, which is
 	 * good because it'll simply let the existing default work
 	 */
 	private static RegisteredDelivery registeredDeliveryFromHeader(Message<?> msg) {
@@ -325,7 +342,7 @@ public class SmesMessageSpecification {
 	 * you need to use the builder API
 	 *
 	 * @param smppSession the SMPPSession instance against which we should work.
-	 * @see SmesMessageSpecification#SmesMessageSpecification()
+	 * @see uz.smst.ussd.core.SmesMessageSpecification#SmesMessageSpecification()
 	 */
 	SmesMessageSpecification(SMPPSession smppSession) {
 		this.smppSession = smppSession;
@@ -353,15 +370,15 @@ public class SmesMessageSpecification {
 	@SuppressWarnings("unchecked")
 	static private <T> T valueIfHeaderExists(String h, Message<?> msg) {
 		if (msg != null && msg.getHeaders().containsKey(h)) {
-			return (T) msg.getHeaders().get(h);
-		}
-		return null;
+            return (T) msg.getHeaders().get(h);
+        }
+        return null;
 	}
 
 	/**
 	 * Everybody else has to use the builder API. DO NOT make this private
 	 * or it will not be proxied and that will make me sad!
-	 * @param ss the {@link SMPPSession}
+	 * @param ss the {@link org.jsmpp.session.SMPPSession}
 	 * @return the current spec
 	 */
 	SmesMessageSpecification setSmppSession(ClientSession ss) {
@@ -383,7 +400,7 @@ public class SmesMessageSpecification {
 	 * @param destAddress the destination address
 	 * @param txtMessage    the message to send (must be  no more than 140 characters
 	 * @param ss the SMPPSession
-	 * @return the {@link SmesMessageSpecification}
+	 * @return the {@link uz.smst.ussd.core.SmesMessageSpecification}
 	 */
 	public static SmesMessageSpecification newSmesMessageSpecification(ClientSession ss, String srcAddress,
 			String destAddress, String txtMessage) {
@@ -403,7 +420,7 @@ public class SmesMessageSpecification {
 	/**
 	 * Only sets the #sourceAddressTypeOfNumber if the current value is null, otherwise, it leaves it.
 	 * @param sourceAddressTypeOfNumberIfRequired
-	 *         the {@link TypeOfNumber}
+	 *         the {@link org.jsmpp.bean.TypeOfNumber}
 	 * @return this
 	 */
 	public SmesMessageSpecification setSourceAddressTypeOfNumberIfRequired(TypeOfNumber sourceAddressTypeOfNumberIfRequired) {
@@ -423,14 +440,14 @@ public class SmesMessageSpecification {
 	 * @return the messageId(s) (required if you want to then track it
 	 * or correlate it with message receipt confirmations)
 	 * @throws Exception the
-	 * {@link SMPPSession#submitShortMessage(String, org.jsmpp.bean.TypeOfNumber,
+	 * {@link org.jsmpp.session.SMPPSession#submitShortMessage(String, org.jsmpp.bean.TypeOfNumber,
 	 * org.jsmpp.bean.NumberingPlanIndicator, String, org.jsmpp.bean.TypeOfNumber,
 	 * org.jsmpp.bean.NumberingPlanIndicator, String, org.jsmpp.bean.ESMClass,
 	 * byte, byte, String, String, org.jsmpp.bean.RegisteredDelivery, byte,
 	 * org.jsmpp.bean.DataCoding, byte, byte[], org.jsmpp.bean.OptionalParameter...)}
 	 * method throws lots of Exceptions, including {@link java.io.IOException}
 	 */
-	public List<String> send() throws Exception {
+	public synchronized List<String> send() throws Exception {
 		validate();
 		List<String> msgIds = new LinkedList<String>();
 		if (messagePayloadParameter == null) {
@@ -454,7 +471,8 @@ public class SmesMessageSpecification {
 						this.replaceIfPresentFlag,
 						this.dataCoding,
 						this.smDefaultMsgId,
-						this.shortMessage);
+						this.shortMessage,
+                        this.optionalParameters);
 				msgIds.add(msgId);
 			}
 			else {
@@ -496,8 +514,7 @@ public class SmesMessageSpecification {
 					msgIds.add(msgId);
 				}
 			}
-		}
-		else {
+		} else {
 			// SPEC 3.2.3
 			log.debug("Sending message using message_payload");
 			String msgId = this.smppSession.submitShortMessage(
@@ -534,7 +551,7 @@ public class SmesMessageSpecification {
 		final boolean shortMessageSet = this.shortMessage != null && this.shortMessage.length > 0
 				|| !shortMessageParts.isEmpty();
 		Assert.isTrue(messagePayloadParameter != null ^ shortMessageSet,
-				"message can only be set in payload or short message. cannot be both");
+				"message can only be handle in payload or short message. cannot be both");
 		if (messagePayloadParameter == null) {
 			Assert.isTrue(shortMessageSet, "the message must not be null");
 		}
@@ -586,7 +603,12 @@ public class SmesMessageSpecification {
 		return this;
 	}
 
-	/**
+    public SmesMessageSpecification setOptionalParameter(OptionalParameter[] optionalParameters) {
+        this.optionalParameters = optionalParameters;
+        return this;
+    }
+
+    /**
 	 * guard against overwriting perfectly good defaults with null values.
 	 *
 	 * @param v value the value
@@ -701,7 +723,7 @@ public class SmesMessageSpecification {
 	/**
 	 * Setting short message. This will take into account if {@link #dataCoding}
 	 * or if {@link #maxLengthSmsMessages}
-	 * is set through header to validate the maximum characters can be set.
+	 * is handle through header to validate the maximum characters can be handle.
 	 * @param s the text message body
 	 * @return the SmesMessageSpecification
 	 */
@@ -764,7 +786,7 @@ public class SmesMessageSpecification {
 	 * <p/>
 	 * Resetting the variables is trivially cheap compared to proxying a new one each time.
 	 *
-	 * @return the cleaned up {@link SmesMessageSpecification}
+	 * @return the cleaned up {@link uz.smst.ussd.core.SmesMessageSpecification}
 	 */
 	protected SmesMessageSpecification reset() {
 
@@ -802,51 +824,7 @@ public class SmesMessageSpecification {
 		return this;
 	}
 
+    public OptionalParameter[] getOptionalParameters() {
+        return optionalParameters;
+    }
 }
-
-/*	private static String fromPropertyToHeaderConstant(String n) {
-
-		StringBuffer stringBuffer = new StringBuffer();
-
-		for (char c : n.toCharArray()) {
-			if (Character.isUpperCase(c)) {
-				stringBuffer.append("_");
-			}
-			stringBuffer.append(c);
-		}
-
-		String nn = stringBuffer.toString().toUpperCase();
-
-		String is = "IS_",
-				get = "GET_";
-		if (nn.startsWith(is)) nn = nn.substring(is.length());
-		if (nn.startsWith(get)) nn = nn.substring(get.length());
-
-		return nn;
-	}
-
-	static public void main(String[] args) throws Throwable {
-		String m = "mb.setHeader( SmppConstants.%s,  dsm.%s() );";
-		String h = "public static final String %s = \"%s\";";
-		Set<String> marshalling = new HashSet<String>();
-		Set<String> headers = new HashSet<String>();
-		PropertyDescriptor[] pds = PropertyUtils.getPropertyDescriptors(DeliverSm.class);
-		for (PropertyDescriptor propertyDescriptor : pds) {
-			Method reader = propertyDescriptor.getReadMethod();
-			String readerName = reader.getName();
-
-			String header = fromPropertyToHeaderConstant(readerName);
-			headers.add(header);
-			marshalling.add(readerName + ":" + header);
-		}
-
-		for (String s : headers) System.outSession.println(String.format(h, s, s));
-
-		for (String s : marshalling) {
-
-			String[] tuple = s.split(":");
-
-			System.outSession.println(String.format(m, tuple[1], tuple[0]));
-		}
-	}
-*/
