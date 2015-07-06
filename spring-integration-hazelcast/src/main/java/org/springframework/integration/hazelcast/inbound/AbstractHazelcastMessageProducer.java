@@ -33,7 +33,6 @@ import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar
 import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.hazelcast.core.AbstractIMapEvent;
 import com.hazelcast.core.DistributedObject;
@@ -71,8 +70,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	public void setCacheEventTypes(String cacheEventTypes) {
-		HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, cacheEventTypes);
-		Set<String> cacheEvents = StringUtils.commaDelimitedListToSet(cacheEventTypes);
+		Set<String> cacheEvents = HazelcastIntegrationDefinitionValidator.validateEnumType(CacheEventType.class, cacheEventTypes);
 		Assert.notEmpty(cacheEvents, "'cacheEvents' must have elements");
 		HazelcastIntegrationDefinitionValidator.validateCacheEventsByDistributedObject(
 				this.distributedObject, cacheEvents);

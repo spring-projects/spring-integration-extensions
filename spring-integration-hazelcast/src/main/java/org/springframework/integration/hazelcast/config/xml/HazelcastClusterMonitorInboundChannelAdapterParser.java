@@ -27,11 +27,10 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.hazelcast.inbound.HazelcastClusterMonitorMessageProducer;
 
-import reactor.util.StringUtils;
+import org.springframework.util.StringUtils;
 
 /**
- * Hazelcast Cluster Monitor Event Driven Inbound Channel Adapter Parser parses
- * {@code <int-hazelcast:cm-inbound-channel-adapter />} configuration.
+ * Parser for the {@code <int-hazelcast:cm-inbound-channel-adapter />} component.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0

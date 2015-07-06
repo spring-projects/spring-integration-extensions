@@ -28,7 +28,7 @@ Hazelcast Event-Driven Inbound Channel Adapter listens related cache events and 
 ```
 Basically, Hazelcast Event-Driven Inbound Channel Adapter requires following attributes : 
 
-* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **channel :** Specifies channel which message is sent.
 * **cache :** Specifies the distributed Object reference which is listened. It is mandatory attribute.
 * **cache-events :** Specifies cache events which are listened. It is optional attribute and its default value is ADDED. Its supported values are as follows : 
 
@@ -155,7 +155,7 @@ Sample definitions are as follows :
 
 ## HAZELCAST CONTINUOUS QUERY INBOUND CHANNEL ADAPTER 
 
-Hazelcast Continuous Query enables to listen to the modifications performed on specific map entries. Hazelcast Continuous Query Inbound Channel Adapter is an event-driven inbound channel adapter and listens related distributed map events in the light of defined predicate. Its basic definition is as follows : 
+Hazelcast Continuous Query enables to listen to the modifications performed on specific map entries. Hazelcast Continuous Query Inbound Channel Adapter is an event-driven channel adapter and listens related distributed map events in the light of defined predicate. Its basic definition is as follows : 
 ```
 <int-hazelcast:cq-inbound-channel-adapter 
 				channel="cqMapChannel" 
@@ -167,7 +167,7 @@ Hazelcast Continuous Query enables to listen to the modifications performed on s
 ```
 Basically, it requires four attributes as follows : 
 
-* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **channel :** Specifies channel which message is sent.
 * **cache :** Specifies distributed Map reference which is listened. It is mandatory attribute. 
 * **cache-events :** Specifies cache events which are listened. It is optional attribute with ADDED default value. Supported values are ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
 * **predicate :** Specifies predicate to listen to the modifications performed on specific map entries. It is mandatory attribute.
@@ -202,7 +202,7 @@ Sample definition is as follows :
 
 ## HAZELCAST CLUSTER MONITOR INBOUND CHANNEL ADAPTER 
 
-Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven inbound channel adapter and listens related Membership, Distributed Object, Migration, Lifecycle and Client events. Its basic definition is as follows : 
+Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven channel adapter and listens related Membership, Distributed Object, Migration, Lifecycle and Client events. Its basic definition is as follows : 
 ```
 <int-hazelcast:cm-inbound-channel-adapter 
 				 channel="monitorChannel" 
@@ -211,7 +211,7 @@ Hazelcast Cluster Monitor enables to listen to the modifications performed on cl
 ```
 Basically, it requires four attributes as follows : 
 
-* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
+* **channel :** Specifies channel which message is sent.
 * **hazelcast-instance :** Specifies Hazelcast Instance reference to listen cluster events. It is mandatory attribute. 
 * **monitor-types :** Specifies monitor types which are listened. It is optional attribute with MEMBERSHIP default value. Supported values are MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYLE, CLIENT.
 

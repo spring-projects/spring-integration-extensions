@@ -60,7 +60,7 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	private static final String TEST_GROUP_NAME3 = "Test_Group_Name3";
 
-	private static final int TIMEOUT = 2_000;
+	private static final int TIMEOUT = 10_000;
 
 	@Autowired
 	private PollableChannel cmChannel1;
