@@ -128,6 +128,11 @@ public class SmppInboundGateway extends MessagingGatewaySupport {
 		if (StringUtils.hasText(this.defaultSourceAddress)) {
 			smesMessageSpecification.setSourceAddressIfRequired(this.defaultSourceAddress);
 		}
+		 if (request.getHeaders().containsKey(SmppConstants.OPTIONAL_PARAMETERS)) {
+        	    	OptionalParameter[] op = (OptionalParameter[]) request.getHeaders().get(SmppConstants.OPTIONAL_PARAMETERS);
+            		op[0] = InboundChannelHandler.getUSSDRequestQueue().get(to) != null ? USSD.USSR_REQUEST : USSD.PSSR_RESPONSE;
+            		smesMessageSpecification.setOptionalParameter(op);
+        	}
 		return smesMessageSpecification;
 	}
 
