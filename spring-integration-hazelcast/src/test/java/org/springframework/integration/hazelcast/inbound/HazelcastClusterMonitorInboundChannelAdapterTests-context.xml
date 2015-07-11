@@ -61,8 +61,8 @@
  			 
 	<int-hazelcast:cm-inbound-channel-adapter 
 				 channel="cmChannel6" 
-				 hazelcast-instance="hazelcastInstance4" 
-				 monitor-types="DISTRIBUTED_OBJECT,CLIENT" />
+				 hazelcast-instance="hazelcastInstance" 
+				 monitor-types="MEMBERSHIP,DISTRIBUTED_OBJECT" />
 	
 	<bean id="hazelcastInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
 		  destroy-method="shutdown">
@@ -102,18 +102,4 @@
 	        </bean>
 	    </constructor-arg>
 	</bean>
-	
-	<bean id="hazelcastInstance4" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-	        <bean class="com.hazelcast.config.Config">
-	            <property name="groupConfig">
-	                <bean class="com.hazelcast.config.GroupConfig">
-	                    <property name="name" value="Test_Group_Name3"/>
-	                </bean>
-	            </property>
-	        </bean>
-	    </constructor-arg>
-	</bean>
-
 </beans>

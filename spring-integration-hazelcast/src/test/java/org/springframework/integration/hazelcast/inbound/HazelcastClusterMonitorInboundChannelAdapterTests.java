@@ -32,15 +32,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.config.Config;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.Client;
 import com.hazelcast.core.ClientType;
 import com.hazelcast.core.DistributedObjectEvent;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.LifecycleEvent;
+import com.hazelcast.core.Member;
 import com.hazelcast.core.LifecycleEvent.LifecycleState;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MigrationEvent;
@@ -57,8 +56,6 @@ import com.hazelcast.core.MigrationEvent;
 public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	private static final String TEST_GROUP_NAME1 = "Test_Group_Name1";
-
-	private static final String TEST_GROUP_NAME3 = "Test_Group_Name3";
 
 	private static final int TIMEOUT = 10_000;
 
@@ -89,24 +86,9 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 	@Autowired
 	private HazelcastInstance hazelcastInstance3;
 
-	@Autowired
-	private HazelcastInstance hazelcastInstance4;
-
 	@Test
 	public void testMembershipEvent() {
-		final GroupConfig groupConfig = new GroupConfig();
-		groupConfig.setName(TEST_GROUP_NAME1);
-		final Config cfg = new Config();
-		cfg.setGroupConfig(groupConfig);
-		final HazelcastInstance newHzInstance = Hazelcast.newHazelcastInstance(cfg);
-
-		Message<?> msg = cmChannel1.receive(TIMEOUT);
-		verifyMembershipEvent(msg, MembershipEvent.MEMBER_ADDED);
-
-		newHzInstance.getLifecycleService().terminate();
-
-		msg = cmChannel1.receive(TIMEOUT);
-		verifyMembershipEvent(msg, MembershipEvent.MEMBER_REMOVED);
+		testMembershipEvent(hazelcastInstance, cmChannel1, "testKey1", "testValue1");
 	}
 
 	@Test
@@ -140,9 +122,20 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	@Test
 	public void testMultipleMonitorTypes() {
-		testClientEventByChannelAndGroupName(cmChannel6, TEST_GROUP_NAME3);
 		testDistributedObjectEventByChannelAndHazelcastInstance(cmChannel6,
-				hazelcastInstance4);
+				hazelcastInstance);
+
+		testMembershipEvent(hazelcastInstance, cmChannel6, "testKey2", "testValue2");
+	}
+
+	private void testMembershipEvent(
+			final HazelcastInstance instance, final PollableChannel channel,
+			final String key, final String value) {
+		Member member = instance.getCluster().getMembers().iterator().next();
+		member.setStringAttribute(key, value);
+
+		Message<?> msg = channel.receive(TIMEOUT);
+		verifyMembershipEvent(msg, MembershipEvent.MEMBER_ATTRIBUTE_CHANGED);
 	}
 
 	private void testClientEventByChannelAndGroupName(final PollableChannel channel,
