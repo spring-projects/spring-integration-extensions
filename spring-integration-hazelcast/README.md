@@ -155,7 +155,7 @@ Sample definitions are as follows :
 
 ## HAZELCAST CONTINUOUS QUERY INBOUND CHANNEL ADAPTER 
 
-Hazelcast Continuous Query enables to listen to the modifications performed on specific map entries. Hazelcast Continuous Query Inbound Channel Adapter is an event-driven channel adapter and listens related distributed map events in the light of defined predicate. Its basic definition is as follows : 
+Hazelcast Continuous Query enables to listen to the modifications performed on specific map entries. Hazelcast Continuous Query Inbound Channel Adapter is an event-driven channel adapter and listens to related distributed map events in the light of defined predicate. Its basic definition is as follows : 
 ```
 <int-hazelcast:cq-inbound-channel-adapter 
 				channel="cqMapChannel" 
@@ -202,18 +202,18 @@ Sample definition is as follows :
 
 ## HAZELCAST CLUSTER MONITOR INBOUND CHANNEL ADAPTER 
 
-Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven channel adapter and listens related Membership, Distributed Object, Migration, Lifecycle and Client events. Its basic definition is as follows : 
+Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven channel adapter and listens to related Membership, Distributed Object, Migration, Lifecycle and Client events. Its basic definition is as follows : 
 ```
 <int-hazelcast:cm-inbound-channel-adapter 
 				 channel="monitorChannel" 
 				 hazelcast-instance="instance" 
-				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYLE, CLIENT" /> 
+				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYCLE, CLIENT" /> 
 ```
 Basically, it requires four attributes as follows : 
 
 * **channel :** Specifies channel which message is sent.
 * **hazelcast-instance :** Specifies Hazelcast Instance reference to listen cluster events. It is mandatory attribute. 
-* **monitor-types :** Specifies monitor types which are listened. It is optional attribute with MEMBERSHIP default value. Supported values are MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYLE, CLIENT.
+* **monitor-types :** Specifies monitor types which are listened. It is optional attribute with MEMBERSHIP default value. Supported values are MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYCLE, CLIENT.
 
 Sample definition is as follows : 
 ```

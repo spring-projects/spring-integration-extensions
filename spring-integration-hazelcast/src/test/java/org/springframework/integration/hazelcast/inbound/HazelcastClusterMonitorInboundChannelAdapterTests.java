@@ -141,7 +141,7 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 	private void testClientEventByChannelAndGroupName(final PollableChannel channel,
 			final String groupName) {
 		final HazelcastInstance client = getHazelcastClientByGroupName(groupName);
-
+		assertTrue(client.getLifecycleService().isRunning());
 		Message<?> msg = channel.receive(TIMEOUT);
 		verifyClientEvent(msg);
 
@@ -171,8 +171,10 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 	private HazelcastInstance getHazelcastClientByGroupName(final String groupName) {
 		final GroupConfig groupConfig = new GroupConfig();
 		groupConfig.setName(groupName);
+		groupConfig.setPassword("dev-pass");
 		final ClientConfig cfg = new ClientConfig();
 		cfg.setGroupConfig(groupConfig);
+		cfg.getNetworkConfig().addAddress("127.0.0.1:5701");
 
 		return HazelcastClient.newHazelcastClient(cfg);
 	}
@@ -181,7 +183,7 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof MembershipEvent);
-		assertEquals(((MembershipEvent) msg.getPayload()).getEventType(), membershipEvent);
+		assertEquals(membershipEvent, ((MembershipEvent) msg.getPayload()).getEventType());
 		assertNotNull(((MembershipEvent) msg.getPayload()).getMember());
 	}
 
@@ -191,8 +193,7 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof DistributedObjectEvent);
-		assertEquals(((DistributedObjectEvent) msg.getPayload()).getEventType(),
-				eventType);
+		assertEquals(eventType, ((DistributedObjectEvent) msg.getPayload()).getEventType());
 		assertNotNull(
 				(((DistributedObjectEvent) msg.getPayload()).getDistributedObject())
 						.getName(),
@@ -213,14 +214,14 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof LifecycleEvent);
-		assertEquals(((LifecycleEvent) msg.getPayload()).getState(), lifecycleState);
+		assertEquals(lifecycleState, ((LifecycleEvent) msg.getPayload()).getState());
 	}
 
 	private void verifyClientEvent(final Message<?> msg) {
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof Client);
-		assertEquals(((Client) msg.getPayload()).getClientType(), ClientType.JAVA);
+		assertEquals(ClientType.JAVA, ((Client) msg.getPayload()).getClientType());
 		assertNotNull(((Client) msg.getPayload()).getSocketAddress());
 	}
 

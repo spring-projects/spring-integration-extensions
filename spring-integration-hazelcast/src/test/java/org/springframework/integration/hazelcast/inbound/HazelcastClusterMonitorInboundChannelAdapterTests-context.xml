@@ -71,8 +71,30 @@
 	            <property name="groupConfig">
 	                <bean class="com.hazelcast.config.GroupConfig">
 	                    <property name="name" value="Test_Group_Name1"/>
+	                    <property name="password" value="dev-pass"/>
 	                </bean>
 	            </property>
+	            <property name="networkConfig">
+					<bean class="com.hazelcast.config.NetworkConfig">
+						<property name="port" value="5701"/>
+						<property name="portAutoIncrement" value="false"/>
+						<property name="join">
+							<bean class="com.hazelcast.config.JoinConfig">
+								<property name="multicastConfig">
+									<bean class="com.hazelcast.config.MulticastConfig">
+										<property name="enabled" value="false" />
+									</bean>
+								</property>
+								<property name="tcpIpConfig">
+									<bean class="com.hazelcast.config.TcpIpConfig">
+										<property name="members" value="127.0.0.1:5701,127.0.0.1:5703" />
+										<property name="enabled" value="true" />
+									</bean>
+								</property>
+							</bean>
+						</property>
+					</bean>
+				</property>
 	        </bean>
 	    </constructor-arg>
 	</bean>
@@ -86,6 +108,27 @@
 	                    <property name="name" value="Test_Group_Name2"/>
 	                </bean>
 	            </property>
+	            <property name="networkConfig">
+					<bean class="com.hazelcast.config.NetworkConfig">
+						<property name="port" value="5702"/>
+						<property name="portAutoIncrement" value="false"/>
+						<property name="join">
+							<bean class="com.hazelcast.config.JoinConfig">
+								<property name="multicastConfig">
+									<bean class="com.hazelcast.config.MulticastConfig">
+										<property name="enabled" value="false" />
+									</bean>
+								</property>
+								<property name="tcpIpConfig">
+									<bean class="com.hazelcast.config.TcpIpConfig">
+										<property name="members" value="127.0.0.1:5702" />
+										<property name="enabled" value="true" />
+									</bean>
+								</property>
+							</bean>
+						</property>
+					</bean>
+				</property>
 	        </bean>
 	    </constructor-arg>
 	</bean>
@@ -97,8 +140,30 @@
 	            <property name="groupConfig">
 	                <bean class="com.hazelcast.config.GroupConfig">
 	                    <property name="name" value="Test_Group_Name1"/>
+	                    <property name="password" value="dev-pass"/>
 	                </bean>
 	            </property>
+	            <property name="networkConfig">
+					<bean class="com.hazelcast.config.NetworkConfig">
+						<property name="port" value="5703"/>
+						<property name="portAutoIncrement" value="false"/>
+						<property name="join">
+							<bean class="com.hazelcast.config.JoinConfig">
+								<property name="multicastConfig">
+									<bean class="com.hazelcast.config.MulticastConfig">
+										<property name="enabled" value="false" />
+									</bean>
+								</property>
+								<property name="tcpIpConfig">
+									<bean class="com.hazelcast.config.TcpIpConfig">
+										<property name="members" value="127.0.0.1:5701,127.0.0.1:5703" />
+										<property name="enabled" value="true" />
+									</bean>
+								</property>
+							</bean>
+						</property>
+ 					</bean>
+				</property>
 	        </bean>
 	    </constructor-arg>
 	</bean>

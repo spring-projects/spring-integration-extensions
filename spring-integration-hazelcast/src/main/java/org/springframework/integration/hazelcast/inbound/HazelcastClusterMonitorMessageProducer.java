@@ -49,15 +49,13 @@ import com.hazelcast.core.MigrationListener;
  */
 public class HazelcastClusterMonitorMessageProducer extends MessageProducerSupport {
 
-	private static final int CLUSTER_MONITOR_TYPE_COUNT = 5;
-
 	private final HazelcastInstance hazelcastInstance;
 
 	private Set<String> monitorTypes = Collections
 			.singleton(ClusterMonitorType.MEMBERSHIP.name());
 
 	private final Map<ClusterMonitorType, String> hazelcastRegisteredListenerIdMap =
-			new ConcurrentHashMap<>(CLUSTER_MONITOR_TYPE_COUNT);
+			new ConcurrentHashMap<>(5);
 
 	public HazelcastClusterMonitorMessageProducer(
 			final HazelcastInstance hazelcastInstance) {

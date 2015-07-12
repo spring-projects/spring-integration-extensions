@@ -22,6 +22,11 @@ package org.springframework.integration.hazelcast;
  * @author Eren Avsarogullari
  * @since 1.0.0
  * @see org.springframework.integration.hazelcast.inbound.HazelcastClusterMonitorMessageProducer
+ * @see com.hazelcast.core.MembershipListener
+ * @see com.hazelcast.core.DistributedObjectListener
+ * @see com.hazelcast.core.MigrationListener
+ * @see com.hazelcast.core.LifecycleListener
+ * @see com.hazelcast.core.ClientListener
  */
 public enum ClusterMonitorType {
 
