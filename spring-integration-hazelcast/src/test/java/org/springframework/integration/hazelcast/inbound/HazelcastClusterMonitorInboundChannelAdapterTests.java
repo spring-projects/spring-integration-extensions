@@ -141,7 +141,7 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 	private void testClientEventByChannelAndGroupName(final PollableChannel channel,
 			final String groupName) {
 		final HazelcastInstance client = getHazelcastClientByGroupName(groupName);
-		assertTrue(client.getLifecycleService().isRunning());
+
 		Message<?> msg = channel.receive(TIMEOUT);
 		verifyClientEvent(msg);
 
