@@ -112,31 +112,35 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 
 	@Override
 	protected void doStop() {
-		String id = this.hazelcastRegisteredListenerIdMap
-				.remove(ClusterMonitorType.MEMBERSHIP);
-		if (id != null) {
-			this.hazelcastInstance.getCluster().removeMembershipListener(id);
-		}
+		if (this.hazelcastInstance.getLifecycleService().isRunning()) {
+			String id = this.hazelcastRegisteredListenerIdMap
+					.remove(ClusterMonitorType.MEMBERSHIP);
+			if (id != null) {
+				this.hazelcastInstance.getCluster().removeMembershipListener(id);
+			}
 
-		id = this.hazelcastRegisteredListenerIdMap
-				.remove(ClusterMonitorType.DISTRIBUTED_OBJECT);
-		if (id != null) {
-			this.hazelcastInstance.removeDistributedObjectListener(id);
-		}
+			id = this.hazelcastRegisteredListenerIdMap
+					.remove(ClusterMonitorType.DISTRIBUTED_OBJECT);
+			if (id != null) {
+				this.hazelcastInstance.removeDistributedObjectListener(id);
+			}
 
-		id = this.hazelcastRegisteredListenerIdMap.remove(ClusterMonitorType.MIGRATION);
-		if (id != null) {
-			this.hazelcastInstance.getPartitionService().removeMigrationListener(id);
-		}
+			id = this.hazelcastRegisteredListenerIdMap
+					.remove(ClusterMonitorType.MIGRATION);
+			if (id != null) {
+				this.hazelcastInstance.getPartitionService().removeMigrationListener(id);
+			}
 
-		id = this.hazelcastRegisteredListenerIdMap.remove(ClusterMonitorType.LIFECYCLE);
-		if (id != null) {
-			this.hazelcastInstance.getLifecycleService().removeLifecycleListener(id);
-		}
+			id = this.hazelcastRegisteredListenerIdMap
+					.remove(ClusterMonitorType.LIFECYCLE);
+			if (id != null) {
+				this.hazelcastInstance.getLifecycleService().removeLifecycleListener(id);
+			}
 
-		id = this.hazelcastRegisteredListenerIdMap.remove(ClusterMonitorType.CLIENT);
-		if (id != null) {
-			this.hazelcastInstance.getClientService().removeClientListener(id);
+			id = this.hazelcastRegisteredListenerIdMap.remove(ClusterMonitorType.CLIENT);
+			if (id != null) {
+				this.hazelcastInstance.getClientService().removeClientListener(id);
+			}
 		}
 	}
 
