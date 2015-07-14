@@ -99,6 +99,11 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	@Test
 	public void testMigrationEvent() {
+		final IMap<Integer, String> distributedMap = hazelcastInstance3
+				.getMap("Test_Distributed_Map2");
+		distributedMap.put(1, "TestValue1");
+		distributedMap.put(2, "TestValue2");
+
 		hazelcastInstance3.getLifecycleService().terminate();
 		final Message<?> msg = cmChannel3.receive(TIMEOUT);
 		verifyMigrationEvent(msg);
