@@ -66,6 +66,7 @@ configurations {
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "com.hazelcast:hazelcast:$hazelcastVersion"
+	testCompile "com.hazelcast:hazelcast-client:$hazelcastVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 

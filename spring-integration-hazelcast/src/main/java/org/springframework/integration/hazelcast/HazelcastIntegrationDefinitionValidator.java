@@ -40,11 +40,13 @@ import com.hazelcast.core.ReplicatedMap;
  */
 public class HazelcastIntegrationDefinitionValidator {
 
-	public static <E extends Enum<E>> void validateEnumType(final Class<E> enumType, final String cacheEventTypes) {
-		Set<String> eventTypeSet = StringUtils.commaDelimitedListToSet(cacheEventTypes);
-		for (String eventType : eventTypeSet) {
-			Enum.valueOf(enumType, eventType);
+	public static <E extends Enum<E>> Set<String> validateEnumType(final Class<E> enumType, final String types) {
+		Set<String> typeSet = StringUtils.commaDelimitedListToSet(types);
+		for (String type : typeSet) {
+			Enum.valueOf(enumType, type);
 		}
+
+		return typeSet;
 	}
 
 	public static void validateCacheTypeForEventDrivenMessageProducer(final DistributedObject distributedObject) {
