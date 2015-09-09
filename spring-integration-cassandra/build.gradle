@@ -21,6 +21,7 @@ repositories {
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 	}
 	maven { url 'http://repo.spring.io/libs-milestone' }
+//	maven { url 'http://repo.spring.io/libs-staging-local' }
 }
 
 if (project.hasProperty('platformVersion')) {
@@ -37,9 +38,9 @@ ext {
 	cassandraVersion = '2.1.5'
 	cassandraUnitVersion = '2.1.3.1'
 	jacocoVersion = '0.7.2.201409121644'
-	slf4jVersion = '1.7.11'
-	springDataCassandraVersion = '1.2.0.RELEASE'
-	springIntegrationVersion = '4.1.5.RELEASE'
+	slf4jVersion = '1.7.12'
+	springDataCassandraVersion = '1.3.0.RELEASE'
+	springIntegrationVersion = '4.2.0.RELEASE'
 
 	idPrefix = 'cassandra'
 
