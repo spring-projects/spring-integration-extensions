@@ -1,0 +1,266 @@
+description = 'Spring Integration XMPP Smack 4.1'
+
+apply plugin: 'java'
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'jacoco'
+
+buildscript {
+	repositories {
+		maven { url 'http://repo.spring.io/plugins-release' }
+	}
+	dependencies {
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
+	}
+}
+
+group = 'org.springframework.integration'
+
+repositories {
+	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+		maven { url 'http://repo.spring.io/libs-snapshot' }
+	}
+	maven { url 'http://repo.spring.io/libs-milestone' }
+//	maven { url 'http://repo.spring.io/libs-staging-local' }
+}
+
+if (project.hasProperty('platformVersion')) {
+	apply plugin: 'spring-io'
+
+	dependencyManagement {
+		springIoTestRuntime {
+			imports {
+				mavenBom "io.spring.platform:platform-bom:${platformVersion}"
+			}
+
+		}
+	}
+}
+
+sourceCompatibility = targetCompatibility = 1.6
+
+
+ext {
+	javaxActivationVersion = '1.1.1'
+	smackVersion = '4.1.4'
+	springIntegrationVersion = '4.2.0.RELEASE'
+
+	idPrefix = 'smack'
+
+	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkCi = 'https://build.spring.io/browse/INTEXT-SIJD'
+	linkIssue = 'https://jira.spring.io/browse/INTEXT'
+	linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
+	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
+}
+
+eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
+
+sourceSets {
+	test {
+		resources {
+			srcDirs = ['src/test/resources', 'src/test/java']
+		}
+	}
+}
+
+jacoco {
+	toolVersion = "0.7.2.201409121644"
+}
+
+dependencies {
+	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
+	compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
+	compile "org.igniterealtime.smack:smack-java7:$smackVersion"
+	compile "org.igniterealtime.smack:smack-extensions:$smackVersion"
+
+	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
+	testCompile "org.springframework.integration:spring-integration-stream:$springIntegrationVersion"
+}
+
+
+// enable all compiler warnings; individual projects may customize further
+[compileJava, compileTestJava]*.options*.compilerArgs = ['-Xlint:all,-options']
+
+test {
+	// suppress all console output during testing unless running `gradle -i`
+	logging.captureStandardOutput(LogLevel.INFO)
+	maxHeapSize = "1024m"
+	jacoco {
+		append = false
+		destinationFile = file("$buildDir/jacoco.exec")
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination "${buildDir}/reports/jacoco/html"
+	}
+}
+
+build.dependsOn jacocoTestReport
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+	classifier = 'javadoc'
+	from javadoc
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+apply plugin: 'sonar-runner'
+
+sonarRunner {
+	sonarProperties {
+		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
+		property "sonar.links.homepage", linkHomepage
+		property "sonar.links.ci", linkCi
+		property "sonar.links.issue", linkIssue
+		property "sonar.links.scm", linkScmUrl
+		property "sonar.links.scm_dev", linkScmDevConnection
+		property "sonar.java.coveragePlugin", "jacoco"
+	}
+}
+
+task api(type: Javadoc) {
+	group = 'Documentation'
+	description = 'Generates the Javadoc API documentation.'
+	title = "${rootProject.description} ${version} API"
+	options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+	options.author = true
+	options.header = rootProject.description
+	options.overview = 'src/api/overview.html'
+	options.stylesheetFile = file("src/api/stylesheet.css")
+
+	source = sourceSets.main.allJava
+	classpath = project.sourceSets.main.compileClasspath
+	destinationDir = new File(buildDir, "api")
+}
+
+task schemaZip(type: Zip) {
+	group = 'Distribution'
+	classifier = 'schema'
+	description = "Builds -${classifier} archive containing all " +
+			"XSDs for deployment at static.springframework.org/schema."
+
+	duplicatesStrategy = 'exclude'
+
+	def Properties schemas = new Properties();
+	def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
+
+	project.sourceSets.main.resources.find {
+		it.path.endsWith("META-INF${File.separator}spring.schemas")
+	}?.withInputStream { schemas.load(it) }
+
+	for (def key : schemas.keySet()) {
+		File xsdFile = project.sourceSets.main.resources.find {
+			it.path.replaceAll('\\\\', '/').endsWith(schemas.get(key))
+		}
+		assert xsdFile != null
+		into("integration/${shortName}") {
+			from xsdFile.path
+		}
+	}
+}
+
+task docsZip(type: Zip) {
+	group = 'Distribution'
+	classifier = 'docs'
+	description = "Builds -${classifier} archive containing api " +
+			"for deployment at static.spring.io/spring-integration/docs."
+
+	from('src/dist') {
+		include 'changelog.txt'
+	}
+
+	from(api) {
+		into 'api'
+	}
+}
+
+task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
+	group = 'Distribution'
+	classifier = 'dist'
+	description = "Builds -${classifier} archive, containing all jars and docs, " +
+			"suitable for community download page."
+
+	ext.baseDir = "${project.name}-${project.version}";
+
+	from('src/dist') {
+		include 'readme.txt'
+		include 'license.txt'
+		include 'notice.txt'
+		into "${baseDir}"
+	}
+
+	from(zipTree(docsZip.archivePath)) {
+		into "${baseDir}/docs"
+	}
+
+	from(zipTree(schemaZip.archivePath)) {
+		into "${baseDir}/schema"
+	}
+
+	into("${baseDir}/libs") {
+		from project.jar
+		from project.sourcesJar
+		from project.javadocJar
+	}
+}
+
+// Create an optional "with dependencies" distribution.
+// Not published by default; only for use when building from source.
+task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
+	group = 'Distribution'
+	classifier = 'dist-with-deps'
+	description = "Builds -${classifier} archive, containing everything " +
+			"in the -${distZip.classifier} archive plus all dependencies."
+
+	from zipTree(distZip.archivePath)
+
+	gradle.taskGraph.whenReady { taskGraph ->
+		if (taskGraph.hasTask(":${zipTask.name}")) {
+			def projectName = rootProject.name
+			def artifacts = new HashSet()
+
+			rootProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+				def dependency = artifact.moduleVersion.id
+				if (!projectName.equals(dependency.name)) {
+					artifacts << artifact.file
+				}
+			}
+
+			zipTask.from(artifacts) {
+				into "${distZip.baseDir}/deps"
+			}
+		}
+	}
+}
+
+artifacts {
+	archives distZip
+	archives docsZip
+	archives schemaZip
+}
+
+task dist(dependsOn: assemble) {
+	group = 'Distribution'
+	description = 'Builds -dist, -docs and -schema distribution archives.'
+}
+
+task wrapper(type: Wrapper) {
+	description = 'Generates gradlew[.bat] scripts'
+	gradleVersion = '2.5'
+	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
