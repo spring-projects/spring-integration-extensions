@@ -10,9 +10,9 @@
 		</layout>
 	</appender>
 	<logger name="org.springframework.integration">
-		<level value="trace" />
+		<level value="warn" />
 	</logger>
-	
+
 <!--	<logger name="org.springframework.integration">-->
 <!--		<level value="debug" />-->
 <!--	</logger>-->

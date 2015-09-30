@@ -43,7 +43,7 @@ sourceCompatibility = targetCompatibility = 1.6
 
 ext {
 	javaxActivationVersion = '1.1.1'
-	smackVersion = '4.0.6'
+	smackVersion = '4.1.4'
 	springIntegrationVersion = '4.2.0.RELEASE'
 
 	idPrefix = 'smack'
@@ -72,10 +72,10 @@ jacoco {
 
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile("javax.activation:activation:$javaxActivationVersion", optional)
 	compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
 	compile "org.igniterealtime.smack:smack-resolver-javax:$smackVersion"
 	compile "org.igniterealtime.smack:smack-extensions:$smackVersion"
+
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 	testCompile "org.springframework.integration:spring-integration-stream:$springIntegrationVersion"
 }

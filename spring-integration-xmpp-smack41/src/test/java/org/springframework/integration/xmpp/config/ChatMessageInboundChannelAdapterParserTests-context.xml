@@ -19,7 +19,7 @@
 				http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd">
 
 	<beans:bean id="testConnection" class="org.mockito.Mockito" factory-method="mock">
-		<beans:constructor-arg value="org.jivesoftware.smack.XMPPConnection"/>
+		<beans:constructor-arg value="org.jivesoftware.smack.tcp.XMPPTCPConnection"/>
 	</beans:bean>
 
 	<channel id="xmppInbound">

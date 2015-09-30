@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package org.springframework.integration.xmpp.config;
 
-import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionListener;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
+import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
+
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.SmartLifecycle;
@@ -29,20 +29,21 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * This class configures an {@link org.jivesoftware.smack.XMPPConnection} object.
+ * This class configures an {@link XMPPTCPConnection} object.
  * This object is used for all scenarios to talk to a Smack server.
  *
  * @author Josh Long
  * @author Mark Fisher
  * @author Oleg Zhurakousky
  * @author Florian Schmaus
+ * @author Artem Bilan
  *
- * @see org.jivesoftware.smack.XMPPConnection
+ * @see XMPPTCPConnection
  * @since 2.0
  */
-public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnection> implements SmartLifecycle{
+public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPTCPConnection> implements SmartLifecycle {
 
-	private final ConnectionConfiguration connectionConfiguration;
+	private final XMPPTCPConnectionConfiguration connectionConfiguration;
 
 	private volatile String resource = null; // server will generate resource if not provided
 
@@ -52,7 +53,7 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 
 	private volatile String subscriptionMode = "accept_all";
 
-	private volatile XMPPConnection connection;
+	private volatile XMPPTCPConnection connection;
 
 	private volatile boolean autoStartup = true;
 
@@ -63,11 +64,14 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 	private volatile boolean running;
 
 
-	public XmppConnectionFactoryBean(ConnectionConfiguration connectionConfiguration) {
+	public XmppConnectionFactoryBean(XMPPTCPConnectionConfiguration connectionConfiguration) {
 		Assert.notNull(connectionConfiguration, "'connectionConfiguration' must not be null");
 		this.connectionConfiguration = connectionConfiguration;
 	}
 
+	private XmppConnectionFactoryBean(XMPPTCPConnectionConfiguration.Builder connectionConfigurationBuilder) {
+		this(connectionConfigurationBuilder.build());
+	}
 
 	public void setAutoStartup(boolean autoStartup) {
 		this.autoStartup = autoStartup;
@@ -94,12 +98,12 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 	}
 
 	@Override
-	public Class<? extends XMPPConnection> getObjectType() {
-		return XMPPConnection.class;
+	public Class<? extends XMPPTCPConnection> getObjectType() {
+		return XMPPTCPConnection.class;
 	}
 
 	@Override
-	protected XMPPConnection createInstance() throws Exception {
+	protected XMPPTCPConnection createInstance() throws Exception {
 		this.connection = new XMPPTCPConnection(this.connectionConfiguration);
 		return this.connection;
 	}
@@ -117,7 +121,7 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 					Assert.isTrue(this.connection.isAuthenticated(), "Failed to authenticate user: " + this.user);
 					if (StringUtils.hasText(this.subscriptionMode)) {
 						Roster.SubscriptionMode subscriptionMode = Roster.SubscriptionMode.valueOf(this.subscriptionMode);
-						this.connection.getRoster().setSubscriptionMode(subscriptionMode);
+						Roster.getInstanceFor(this.connection).setSubscriptionMode(subscriptionMode);
 					}
 				}
 				else {
@@ -135,11 +139,7 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 	public void stop() {
 		synchronized (this.lifecycleMonitor) {
 			if (this.isRunning()) {
-				try {
-					this.connection.disconnect();
-				} catch (NotConnectedException e) {
-					// Ignore
-				}
+				this.connection.disconnect();
 				this.running = false;
 			}
 		}
@@ -178,7 +178,7 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 		}
 
 		public void connectionClosedOnError(Exception e) {
-			logger.debug("Connection closed on error",  e);
+			logger.debug("Connection closed on error", e);
 		}
 
 		public void connectionClosed() {
@@ -191,9 +191,10 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 		}
 
 		@Override
-		public void authenticated(XMPPConnection connection) {
+		public void authenticated(XMPPConnection connection, boolean resumed) {
 			logger.debug("Connection authenticated");
 		}
+
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package org.springframework.integration.xmpp.outbound;
 
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import org.springframework.integration.xmpp.core.AbstractXmppConnectionAwareMessageHandler;
 import org.springframework.messaging.Message;
@@ -36,7 +36,7 @@ public class PresenceSendingMessageHandler extends AbstractXmppConnectionAwareMe
 		super();
 	}
 
-	public PresenceSendingMessageHandler(XMPPConnection xmppConnection) {
+	public PresenceSendingMessageHandler(XMPPTCPConnection xmppConnection) {
 		super(xmppConnection);
 	}
 
@@ -47,14 +47,14 @@ public class PresenceSendingMessageHandler extends AbstractXmppConnectionAwareMe
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-		Assert.isTrue(this.initialized, this.getComponentName() + " must be initialized");
+		Assert.state(this.initialized, this.getComponentName() + " must be initialized");
 		Object payload = message.getPayload();
-		Assert.isTrue(payload instanceof Presence,
+		Assert.state(payload instanceof Presence,
 				"Payload must be of type 'org.jivesoftware.smack.packet.Presence', was: " + payload.getClass().getName());
 		if (!this.xmppConnection.isConnected()) {
 			this.xmppConnection.connect();
 		}
-		this.xmppConnection.sendPacket((Presence) payload);
+		this.xmppConnection.sendStanza((Presence) payload);
 	}
 
 }

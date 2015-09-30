@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2010 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,29 @@
 
 package org.springframework.integration.xmpp.config;
 
+import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
  * Parser for 'xmpp:xmpp-connection' element
- *
  * @author Oleg Zhurakousky
+ * @author Artem Bilan
  * @since 2.0
  */
 public class XmppConnectionParser extends AbstractSingleBeanDefinitionParser {
 
-	private static String[] connectionFactoryAttributes = new String[]{"user", "password", "resource","subscription-mode"};
-
+	private static String[] connectionFactoryAttributes =
+			new String[]{"user", "password", "resource", "subscription-mode"};
 
 	@Override
-	protected String getBeanClassName(Element element) {
-		return "org.springframework.integration.xmpp.config.XmppConnectionFactoryBean";
+	protected Class<?> getBeanClass(Element element) {
+		return XmppConnectionFactoryBean.class;
 	}
 
 	@Override
@@ -51,25 +51,25 @@ public class XmppConnectionParser extends AbstractSingleBeanDefinitionParser {
 		String serviceName = element.getAttribute("service-name");
 		String host = element.getAttribute("host");
 		String port = element.getAttribute("port");
+
+		if (!StringUtils.hasText(serviceName)) {
+			serviceName = host;
+		}
+
 		BeanDefinitionBuilder connectionConfigurationBuilder =
-			BeanDefinitionBuilder.genericBeanDefinition("org.jivesoftware.smack.ConnectionConfiguration");
-		if (StringUtils.hasText(host)) {
-			Assert.hasLength(port, "Port must be provided if 'host' is specified");
-			connectionConfigurationBuilder.addConstructorArgValue(host);
-			connectionConfigurationBuilder.addConstructorArgValue(port);
-		}
-		else {
-			Assert.hasText(serviceName, "'serviceName' is requuired if 'host' is not provided");
-		}
-		if (StringUtils.hasText(serviceName)){
-			connectionConfigurationBuilder.addConstructorArgValue(serviceName);
-		}
+				BeanDefinitionBuilder.genericBeanDefinition(XMPPTCPConnectionConfiguration.class)
+						.setFactoryMethod("builder")
+						.addPropertyValue("host", host)
+						.addPropertyValue("port", port)
+						.addPropertyValue("serviceName", serviceName);
+
+		builder.addConstructorArgValue(connectionConfigurationBuilder.getBeanDefinition());
+
 		for (String attribute : connectionFactoryAttributes) {
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, attribute);
 		}
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.AUTO_STARTUP);
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.PHASE);
-		builder.addConstructorArgValue(connectionConfigurationBuilder.getBeanDefinition());
 	}
 
 }
