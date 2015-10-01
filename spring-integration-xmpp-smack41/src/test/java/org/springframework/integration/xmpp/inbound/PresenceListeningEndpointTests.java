@@ -32,7 +32,6 @@ import org.jivesoftware.smack.packet.Presence.Mode;
 import org.jivesoftware.smack.packet.Presence.Type;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterListener;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -99,7 +98,7 @@ public class PresenceListeningEndpointTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNonInitializedFailure() {
-		PresenceListeningEndpoint rosterEndpoint = new PresenceListeningEndpoint(mock(XMPPTCPConnection.class));
+		PresenceListeningEndpoint rosterEndpoint = new PresenceListeningEndpoint(mock(XMPPConnection.class));
 		rosterEndpoint.start();
 	}
 
@@ -126,7 +125,7 @@ public class PresenceListeningEndpointTests {
 	@Test
 	public void testWithImplicitXmppConnection() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
-		bf.registerSingleton(XmppContextUtils.XMPP_CONNECTION_BEAN_NAME, mock(XMPPTCPConnection.class));
+		bf.registerSingleton(XmppContextUtils.XMPP_CONNECTION_BEAN_NAME, mock(XMPPConnection.class));
 		PresenceListeningEndpoint endpoint = new PresenceListeningEndpoint();
 		endpoint.setBeanFactory(bf);
 		endpoint.setOutputChannel(new QueueChannel());
@@ -144,7 +143,7 @@ public class PresenceListeningEndpointTests {
 	@Test
 	public void testWithErrorChannel() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
-		XMPPTCPConnection connection = mock(XMPPTCPConnection.class);
+		XMPPConnection connection = mock(XMPPConnection.class);
 		bf.registerSingleton(XmppContextUtils.XMPP_CONNECTION_BEAN_NAME, connection);
 
 		PresenceListeningEndpoint endpoint = new PresenceListeningEndpoint();

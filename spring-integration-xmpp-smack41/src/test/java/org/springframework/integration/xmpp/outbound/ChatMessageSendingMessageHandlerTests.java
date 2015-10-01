@@ -22,7 +22,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
+import org.jivesoftware.smack.XMPPConnection;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
@@ -47,7 +47,7 @@ public class ChatMessageSendingMessageHandlerTests {
 
 	@Test
 	public void validateMessagePostAsString() throws Exception {
-		XMPPTCPConnection connection = mock(XMPPTCPConnection.class);
+		XMPPConnection connection = mock(XMPPConnection.class);
 		ChatMessageSendingMessageHandler handler = new ChatMessageSendingMessageHandler(connection);
 		handler.setBeanFactory(mock(BeanFactory.class));
 		handler.afterPropertiesSet();
@@ -96,7 +96,7 @@ public class ChatMessageSendingMessageHandlerTests {
 
 	@Test
 	public void validateMessagePostAsSmackMessage() throws Exception {
-		XMPPTCPConnection connection = mock(XMPPTCPConnection.class);
+		XMPPConnection connection = mock(XMPPConnection.class);
 		ChatMessageSendingMessageHandler handler = new ChatMessageSendingMessageHandler(connection);
 		handler.setBeanFactory(mock(BeanFactory.class));
 		handler.afterPropertiesSet();
@@ -126,20 +126,20 @@ public class ChatMessageSendingMessageHandlerTests {
 
 	@Test(expected = MessageHandlingException.class)
 	public void validateFailureNoChatToUser() throws Exception {
-		ChatMessageSendingMessageHandler handler = new ChatMessageSendingMessageHandler(mock(XMPPTCPConnection.class));
+		ChatMessageSendingMessageHandler handler = new ChatMessageSendingMessageHandler(mock(XMPPConnection.class));
 		handler.handleMessage(new GenericMessage<String>("hello"));
 	}
 
 	@Test(expected = MessageHandlingException.class)
 	public void validateMessageWithUnsupportedPayload() throws Exception {
-		ChatMessageSendingMessageHandler handler = new ChatMessageSendingMessageHandler(mock(XMPPTCPConnection.class));
+		ChatMessageSendingMessageHandler handler = new ChatMessageSendingMessageHandler(mock(XMPPConnection.class));
 		handler.handleMessage(new GenericMessage<Integer>(123));
 	}
 
 	@Test
 	public void testWithImplicitXmppConnection() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
-		bf.registerSingleton(XmppContextUtils.XMPP_CONNECTION_BEAN_NAME, mock(XMPPTCPConnection.class));
+		bf.registerSingleton(XmppContextUtils.XMPP_CONNECTION_BEAN_NAME, mock(XMPPConnection.class));
 		ChatMessageSendingMessageHandler handler = new ChatMessageSendingMessageHandler();
 		handler.setBeanFactory(bf);
 		handler.afterPropertiesSet();

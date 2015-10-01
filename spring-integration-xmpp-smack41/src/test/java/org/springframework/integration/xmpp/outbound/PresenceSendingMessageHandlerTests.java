@@ -19,8 +19,8 @@ package org.springframework.integration.xmpp.outbound;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.junit.Test;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -40,7 +40,7 @@ public class PresenceSendingMessageHandlerTests {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Test
 	public void testPresencePayload() {
-		PresenceSendingMessageHandler handler = new PresenceSendingMessageHandler(mock(XMPPTCPConnection.class));
+		PresenceSendingMessageHandler handler = new PresenceSendingMessageHandler(mock(XMPPConnection.class));
 		handler.setBeanFactory(mock(BeanFactory.class));
 		handler.afterPropertiesSet();
 		handler.handleMessage(new GenericMessage<Presence>(new Presence(Presence.Type.subscribe)));
@@ -49,7 +49,7 @@ public class PresenceSendingMessageHandlerTests {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Test(expected = MessageHandlingException.class)
 	public void testWrongPayload() {
-		PresenceSendingMessageHandler handler = new PresenceSendingMessageHandler(mock(XMPPTCPConnection.class));
+		PresenceSendingMessageHandler handler = new PresenceSendingMessageHandler(mock(XMPPConnection.class));
 		handler.setBeanFactory(mock(BeanFactory.class));
 		handler.afterPropertiesSet();
 		handler.handleMessage(new GenericMessage(new Object()));
@@ -58,7 +58,7 @@ public class PresenceSendingMessageHandlerTests {
 	@Test
 	public void testWithImplicitXmppConnection() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
-		bf.registerSingleton(XmppContextUtils.XMPP_CONNECTION_BEAN_NAME, mock(XMPPTCPConnection.class));
+		bf.registerSingleton(XmppContextUtils.XMPP_CONNECTION_BEAN_NAME, mock(XMPPConnection.class));
 		PresenceSendingMessageHandler handler = new PresenceSendingMessageHandler();
 		handler.setBeanFactory(bf);
 		handler.afterPropertiesSet();

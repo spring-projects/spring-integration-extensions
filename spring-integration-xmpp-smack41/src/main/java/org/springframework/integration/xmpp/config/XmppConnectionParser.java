@@ -16,7 +16,6 @@
 
 package org.springframework.integration.xmpp.config;
 
-import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -33,9 +32,6 @@ import org.springframework.util.StringUtils;
  */
 public class XmppConnectionParser extends AbstractSingleBeanDefinitionParser {
 
-	private static String[] connectionFactoryAttributes =
-			new String[]{"user", "password", "resource", "subscription-mode"};
-
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return XmppConnectionFactoryBean.class;
@@ -49,27 +45,18 @@ public class XmppConnectionParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		String serviceName = element.getAttribute("service-name");
-		String host = element.getAttribute("host");
-		String port = element.getAttribute("port");
+		String user = element.getAttribute("user");
 
-		if (!StringUtils.hasText(serviceName)) {
-			serviceName = host;
+		if (!StringUtils.hasText(serviceName) && !StringUtils.hasText(user)) {
+			parserContext.getReaderContext().error("One of 'service-name' or 'user' attributes is required", element);
 		}
 
-		BeanDefinitionBuilder connectionConfigurationBuilder =
-				BeanDefinitionBuilder.genericBeanDefinition(XMPPTCPConnectionConfiguration.class)
-						.setFactoryMethod("builder")
-						.addPropertyValue("host", host)
-						.addPropertyValue("port", port)
-						.addPropertyValue("serviceName", serviceName);
+		String[] attributes = {"user", "password", "resource", "subscription-mode", "host", "port", "service-name",
+				IntegrationNamespaceUtils.AUTO_STARTUP, IntegrationNamespaceUtils.PHASE};
 
-		builder.addConstructorArgValue(connectionConfigurationBuilder.getBeanDefinition());
-
-		for (String attribute : connectionFactoryAttributes) {
+		for (String attribute : attributes) {
 			IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, attribute);
 		}
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.AUTO_STARTUP);
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, IntegrationNamespaceUtils.PHASE);
 	}
 
 }

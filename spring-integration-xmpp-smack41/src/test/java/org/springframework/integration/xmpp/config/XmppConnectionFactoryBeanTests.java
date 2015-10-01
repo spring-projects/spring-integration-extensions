@@ -41,7 +41,7 @@ public class XmppConnectionFactoryBeanTests {
 
 	@Test
 	public void testXmppConnectionFactoryBeanViaConfig() throws Exception {
-		new ClassPathXmlApplicationContext("XmppConnectionFactoryBeanTests-context.xml", this.getClass());
+		new ClassPathXmlApplicationContext("XmppConnectionFactoryBeanTests-context.xml", this.getClass()).close();
 		// the fact that no exception was thrown satisfies this test
 	}
 

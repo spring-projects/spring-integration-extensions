@@ -21,6 +21,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
+import org.jxmpp.util.XmppStringUtils;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
@@ -41,36 +42,42 @@ import org.springframework.util.StringUtils;
  * @see XMPPTCPConnection
  * @since 2.0
  */
-public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPTCPConnection> implements SmartLifecycle {
+public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnection> implements SmartLifecycle {
 
 	private final XMPPTCPConnectionConfiguration connectionConfiguration;
 
-	private volatile String resource = null; // server will generate resource if not provided
+	private final Object lifecycleMonitor = new Object();
+
+	private volatile String resource; // server will generate resource if not provided
 
 	private volatile String user;
 
 	private volatile String password;
 
-	private volatile String subscriptionMode = "accept_all";
+	private volatile String serviceName;
 
-	private volatile XMPPTCPConnection connection;
+	private volatile String host;
+
+	private volatile int port = 5222;
+
+	private volatile Roster.SubscriptionMode subscriptionMode = Roster.getDefaultSubscriptionMode();
 
 	private volatile boolean autoStartup = true;
 
 	private volatile int phase = Integer.MIN_VALUE;
 
-	private final Object lifecycleMonitor = new Object();
-
 	private volatile boolean running;
 
+	private volatile XMPPTCPConnection connection;
+
+
+	public XmppConnectionFactoryBean() {
+		this.connectionConfiguration = null;
+	}
 
 	public XmppConnectionFactoryBean(XMPPTCPConnectionConfiguration connectionConfiguration) {
 		Assert.notNull(connectionConfiguration, "'connectionConfiguration' must not be null");
 		this.connectionConfiguration = connectionConfiguration;
-	}
-
-	private XmppConnectionFactoryBean(XMPPTCPConnectionConfiguration.Builder connectionConfigurationBuilder) {
-		this(connectionConfigurationBuilder.build());
 	}
 
 	public void setAutoStartup(boolean autoStartup) {
@@ -79,10 +86,6 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPTCPConnec
 
 	public void setPhase(int phase) {
 		this.phase = phase;
-	}
-
-	public void setSubscriptionMode(String subscriptionMode) {
-		this.subscriptionMode = subscriptionMode;
 	}
 
 	public void setUser(String user) {
@@ -97,14 +100,47 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPTCPConnec
 		this.resource = resource;
 	}
 
-	@Override
-	public Class<? extends XMPPTCPConnection> getObjectType() {
-		return XMPPTCPConnection.class;
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public void setSubscriptionMode(Roster.SubscriptionMode subscriptionMode) {
+		this.subscriptionMode = subscriptionMode;
 	}
 
 	@Override
-	protected XMPPTCPConnection createInstance() throws Exception {
-		this.connection = new XMPPTCPConnection(this.connectionConfiguration);
+	public Class<? extends XMPPConnection> getObjectType() {
+		return XMPPConnection.class;
+	}
+
+	@Override
+	protected XMPPConnection createInstance() throws Exception {
+		XMPPTCPConnectionConfiguration connectionConfiguration = this.connectionConfiguration;
+		if (this.connectionConfiguration == null) {
+			XMPPTCPConnectionConfiguration.Builder builder =
+					XMPPTCPConnectionConfiguration.builder()
+							.setHost(this.host)
+							.setPort(this.port)
+							.setResource(this.resource)
+							.setUsernameAndPassword(this.user, this.password)
+							.setServiceName(this.serviceName);
+
+			if (!StringUtils.hasText(this.serviceName) && StringUtils.hasText(this.user)) {
+				builder.setUsernameAndPassword(XmppStringUtils.parseLocalpart(this.user), this.password)
+						.setServiceName(XmppStringUtils.parseDomain(this.user));
+			}
+
+			connectionConfiguration = builder.build();
+		}
+		this.connection = new XMPPTCPConnection(connectionConfiguration);
 		return this.connection;
 	}
 
@@ -116,16 +152,9 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPTCPConnec
 			try {
 				this.connection.connect();
 				this.connection.addConnectionListener(new LoggingConnectionListener());
-				if (StringUtils.hasText(this.user)) {
-					this.connection.login(this.user, this.password, this.resource);
-					Assert.isTrue(this.connection.isAuthenticated(), "Failed to authenticate user: " + this.user);
-					if (StringUtils.hasText(this.subscriptionMode)) {
-						Roster.SubscriptionMode subscriptionMode = Roster.SubscriptionMode.valueOf(this.subscriptionMode);
-						Roster.getInstanceFor(this.connection).setSubscriptionMode(subscriptionMode);
-					}
-				}
-				else {
-					this.connection.loginAnonymously();
+				this.connection.login();
+				if (this.subscriptionMode != null) {
+					Roster.getInstanceFor(this.connection).setSubscriptionMode(this.subscriptionMode);
 				}
 				this.running = true;
 			}
@@ -146,7 +175,7 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPTCPConnec
 	}
 
 	public void stop(Runnable callback) {
-		this.stop();
+		stop();
 		callback.run();
 	}
 
