@@ -73,6 +73,7 @@ jacoco {
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "org.igniterealtime.smack:smack-tcp:$smackVersion"
+	compile "org.igniterealtime.smack:smack-java7:$smackVersion"
 	compile "org.igniterealtime.smack:smack-extensions:$smackVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"

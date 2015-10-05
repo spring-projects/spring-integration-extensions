@@ -160,7 +160,7 @@ public class XmppConnectionFactoryBean extends AbstractFactoryBean<XMPPConnectio
 			}
 			catch (Exception e) {
 				throw new BeanInitializationException("failed to connect to XMPP service for "
-						+ this.connectionConfiguration.getServiceName(), e);
+						+ this.connection.getServiceName(), e);
 			}
 		}
 	}
