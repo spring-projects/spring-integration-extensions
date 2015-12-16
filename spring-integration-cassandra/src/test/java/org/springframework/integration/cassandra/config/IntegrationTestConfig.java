@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.SchemaAction;
@@ -46,7 +47,7 @@ public class IntegrationTestConfig extends AbstractCassandraConfiguration {
 	public String keyspaceName = randomKeyspaceName();
 
 	public static String randomKeyspaceName() {
-		return "ks" + UUID.randomUUID().toString().replace("-", "");
+		return "ks" + UUID.randomUUID().toString().replace("-", StringUtils.EMPTY);
 	}
 
 	@Override

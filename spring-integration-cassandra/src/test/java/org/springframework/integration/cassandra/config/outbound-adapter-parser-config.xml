@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	xmlns:int-cassandra="http://www.springframework.org/schema/integration/cassandra"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+		http://www.springframework.org/schema/integration/cassandra http://www.springframework.org/schema/integration/cassandra/spring-integration-cassandra.xsd">
+
+
+
+
+	<bean id="cassandraSession" class="org.mockito.Mockito"
+		factory-method="mock">
+		<constructor-arg value="com.datastax.driver.core.Session" />
+	</bean>
+
+	<cassandra:mapping />
+	<cassandra:converter />
+	<cassandra:template id="cassandraTemplate" />
+	
+	<int-cassandra:outbound-channel-adapter 
+									id="outbound1" 
+									cassandra-template="cassandraTemplate" 
+									operation-type="INSERT"/>
+
+
+</beans>

@@ -46,13 +46,14 @@ import com.datastax.driver.core.Statement;
  * @author Artem Bilan
  */
 @SuppressWarnings("unchecked")
-public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler {
+public class CassandraMessageHandler<T>
+		extends AbstractReplyProducingMessageHandler {
 
 	private final Map<String, Expression> parameterExpressions = new HashMap<>();
 
 	private final CassandraOperations cassandraTemplate;
 
-	private Type queryType;
+	private OperationType queryType;
 
 	private boolean producesReply;
 
@@ -71,11 +72,18 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	private EvaluationContext evaluationContext;
 
 	public CassandraMessageHandler(CassandraOperations cassandraTemplate) {
-		this(cassandraTemplate, Type.INSERT);
+		this(cassandraTemplate, OperationType.INSERT);
+	}
+	
+
+	public void setQueryType(OperationType queryType) {
+		this.queryType = queryType;
 	}
 
-	public CassandraMessageHandler(CassandraOperations cassandraTemplate, CassandraMessageHandler.Type queryType) {
-		Assert.notNull(cassandraTemplate, "'cassandraTemplate' must not be null.");
+	public CassandraMessageHandler(CassandraOperations cassandraTemplate,
+			CassandraMessageHandler.OperationType queryType) {
+		Assert.notNull(cassandraTemplate,
+				"'cassandraTemplate' must not be null.");
 		Assert.notNull(queryType, "'queryType' must not be null.");
 		this.cassandraTemplate = cassandraTemplate;
 		this.queryType = queryType;
@@ -84,7 +92,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	public void setIngestQuery(String ingestQuery) {
 		Assert.hasText(ingestQuery, "'ingestQuery' must not be empty");
 		this.ingestQuery = ingestQuery;
-		this.queryType = Type.INSERT;
+		this.queryType = OperationType.INSERT;
 	}
 
 	public void setWriteOptions(WriteOptions writeOptions) {
@@ -96,28 +104,31 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	}
 
 	public void setStatementExpression(Expression statementExpression) {
-		setStatementProcessor(new ExpressionEvaluatingMessageProcessor<Statement>(statementExpression,
-				Statement.class) {
+		setStatementProcessor(
+				new ExpressionEvaluatingMessageProcessor<Statement>(
+						statementExpression, Statement.class) {
 
-			@Override
-			protected StandardEvaluationContext getEvaluationContext() {
-				return (StandardEvaluationContext) CassandraMessageHandler.this.evaluationContext;
-			}
+					@Override
+					protected StandardEvaluationContext getEvaluationContext() {
+						return (StandardEvaluationContext) CassandraMessageHandler.this.evaluationContext;
+					}
 
-		});
+				});
 	}
 
 	public void setQuery(String query) {
 		Assert.hasText(query, "'query' must not be empty");
 
-		final PreparedStatementCreator statementCreator = new CachedPreparedStatementCreator(query);
+		final PreparedStatementCreator statementCreator = new CachedPreparedStatementCreator(
+				query);
 
 		setStatementProcessor(new MessageProcessor<Statement>() {
 
 			@Override
 			public Statement processMessage(Message<?> message) {
-				PreparedStatement preparedStatement =
-						statementCreator.createPreparedStatement(cassandraTemplate.getSession());
+				PreparedStatement preparedStatement = statementCreator
+						.createPreparedStatement(
+								cassandraTemplate.getSession());
 				ColumnDefinitions variables = preparedStatement.getVariables();
 				List<Object> values = new ArrayList<>(variables.size());
 				Map<String, Object> valueMap = new HashMap<>(variables.size());
@@ -126,7 +137,8 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 					Object value = valueMap.get(name);
 					if (value == null) {
 						Expression expression = parameterExpressions.get(name);
-						Assert.state(expression != null, "No expression for parameter: " + name);
+						Assert.state(expression != null,
+								"No expression for parameter: " + name);
 						value = expression.getValue(evaluationContext, message);
 						valueMap.put(name, value);
 					}
@@ -138,34 +150,42 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 		});
 	}
 
-	public void setParameterExpressions(Map<String, Expression> parameterExpressions) {
-		Assert.notEmpty(parameterExpressions, "'parameterExpressions' must not be empty.");
+	public void setParameterExpressions(
+			Map<String, Expression> parameterExpressions) {
+		Assert.notEmpty(parameterExpressions,
+				"'parameterExpressions' must not be empty.");
 		this.parameterExpressions.clear();
 		this.parameterExpressions.putAll(parameterExpressions);
 	}
 
-	public void setStatementProcessor(MessageProcessor<Statement> statementProcessor) {
-		Assert.notNull(statementProcessor, "'statementProcessor' must not be null.");
+	public void setStatementProcessor(
+			MessageProcessor<Statement> statementProcessor) {
+		Assert.notNull(statementProcessor,
+				"'statementProcessor' must not be null.");
 		this.statementProcessor = statementProcessor;
-		this.queryType = Type.STATEMENT;
+		this.queryType = OperationType.STATEMENT;
 	}
 
 	@Override
 	public String getComponentType() {
-		return "cassandra:outbound-" + (this.producesReply ? "gateway" : "channel-adapter");
+		return "cassandra:outbound-"
+				+ (this.producesReply ? "gateway" : "channel-adapter");
 	}
 
 	@Override
 	protected void doInit() {
 		super.doInit();
 
-		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
+		this.evaluationContext = ExpressionUtils
+				.createStandardEvaluationContext(getBeanFactory());
 		TypeLocator typeLocator = this.evaluationContext.getTypeLocator();
 		if (typeLocator instanceof StandardTypeLocator) {
 			/*
-			 * Register the Cassandra Query DSL package so they don't need a FQCN for QueryBuilder, for example.
+			 * Register the Cassandra Query DSL package so they don't need a
+			 * FQCN for QueryBuilder, for example.
 			 */
-			((StandardTypeLocator) typeLocator).registerImport("com.datastax.driver.core.querybuilder");
+			((StandardTypeLocator) typeLocator)
+					.registerImport("com.datastax.driver.core.querybuilder");
 		}
 	}
 
@@ -175,68 +195,74 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 
 		Object result = payload;
 
-		Type queryType = this.queryType;
+		OperationType queryType = this.queryType;
 
 		Statement statement = null;
 
 		if (payload instanceof Statement) {
 			statement = (Statement) payload;
-			queryType = Type.STATEMENT;
+			queryType = OperationType.STATEMENT;
 		}
 
 		switch (queryType) {
-			case INSERT:
-				if (this.ingestQuery != null) {
-					Assert.isInstanceOf(List.class, payload,
+		case INSERT:
+			if (this.ingestQuery != null) {
+				Assert.isInstanceOf(List.class, payload,
+						"to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
+				List<?> list = (List<?>) payload;
+				for (Object o : list) {
+					Assert.isInstanceOf(List.class, o,
 							"to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
-					List<?> list = (List<?>) payload;
-					for (Object o : list) {
-						Assert.isInstanceOf(List.class, o,
-								"to perform 'ingest' the 'payload' must be of 'List<List<?>>' type.");
-					}
-					List<List<?>> rows = (List<List<?>>) payload;
-					this.cassandraTemplate.ingest(this.ingestQuery, rows, this.writeOptions);
 				}
-				else {
-					if (payload instanceof List) {
-						this.cassandraTemplate.insert((List<T>) payload, this.writeOptions);
-					}
-					else {
-						this.cassandraTemplate.insert(payload, this.writeOptions);
-					}
-				}
-				break;
-			case UPDATE:
+				List<List<?>> rows = (List<List<?>>) payload;
+				this.cassandraTemplate.ingest(this.ingestQuery, rows,
+						this.writeOptions);
+			}
+			else {
 				if (payload instanceof List) {
-					this.cassandraTemplate.update((List<T>) payload, this.writeOptions);
+					this.cassandraTemplate.insert((List<T>) payload,
+							this.writeOptions);
 				}
 				else {
-					this.cassandraTemplate.update(payload, this.writeOptions);
+					this.cassandraTemplate.insert(payload, this.writeOptions);
 				}
-				break;
-			case DELETE:
-				if (payload instanceof List) {
-					this.cassandraTemplate.delete((List<T>) payload, this.writeOptions);
-				}
-				else {
-					this.cassandraTemplate.delete(payload, this.writeOptions);
-				}
-				break;
-			case STATEMENT:
-				if (statement == null) {
-					statement = this.statementProcessor.processMessage(requestMessage);
-				}
+			}
+			break;
+		case UPDATE:
+			if (payload instanceof List) {
+				this.cassandraTemplate.update((List<T>) payload,
+						this.writeOptions);
+			}
+			else {
+				this.cassandraTemplate.update(payload, this.writeOptions);
+			}
+			break;
+		case DELETE:
+			if (payload instanceof List) {
+				this.cassandraTemplate.delete((List<T>) payload,
+						this.writeOptions);
+			}
+			else {
+				this.cassandraTemplate.delete(payload, this.writeOptions);
+			}
+			break;
+		case STATEMENT:
+			if (statement == null) {
+				statement = this.statementProcessor
+						.processMessage(requestMessage);
+			}
 
-				result = this.cassandraTemplate.executeAsynchronously(statement).getUninterruptibly();
-				break;
+			result = this.cassandraTemplate.executeAsynchronously(statement)
+					.getUninterruptibly();
+			break;
 		}
 
 		return this.producesReply ? result : null;
 	}
 
 	/**
-	 * Always return {@code false} to prevent a {@link com.datastax.driver.core.ResultSet}
-	 * draining on iteration.
+	 * Always return {@code false} to prevent a
+	 * {@link com.datastax.driver.core.ResultSet} draining on iteration.
 	 *
 	 * @param reply ignored.
 	 * @return {@code false}.
@@ -246,10 +272,35 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 		return false;
 	}
 
+	public enum OperationType {
 
-	public enum Type {
+		INSERT("INSERT"),
+		
+		UPDATE("UPDATE"), 
+		
+		DELETE("DELETE"), 
+		
+		STATEMENT("STATEMENT");
 
-		INSERT, UPDATE, DELETE, STATEMENT;
+		OperationType(String type) {
+			this.type = type;
+		}
+
+		private String type;
+
+		public String getType() {
+			return type;
+		}
+
+		public static OperationType toType(String type) {
+			for (OperationType typeValue : values()) {
+				if (typeValue.getType().equals(type)) {
+					return typeValue;
+				}
+			}
+			throw new IllegalArgumentException(
+					"No QueryType with value '" + type + "'");
+		}
 
 	}
 

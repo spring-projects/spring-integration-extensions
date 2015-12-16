@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns="http://www.springframework.org/schema/integration/kafka"
-			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:tool="http://www.springframework.org/schema/tool"
-			xmlns:integration="http://www.springframework.org/schema/integration"
-			targetNamespace="http://www.springframework.org/schema/integration/kafka"
-			elementFormDefault="qualified" attributeFormDefault="unqualified">
-
-	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
-	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
+<xsd:schema
+	xmlns="http://www.springframework.org/schema/integration/cassandra"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	targetNamespace="http://www.springframework.org/schema/integration/cassandra"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:import namespace="http://www.springframework.org/schema/beans" />
+	<xsd:import namespace="http://www.springframework.org/schema/tool" />
 	<xsd:import namespace="http://www.springframework.org/schema/integration"
-				schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd"/>
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration-4.2.xsd" />
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -17,5 +17,59 @@
 		]]></xsd:documentation>
 	</xsd:annotation>
 
+	<xsd:element name="outbound-channel-adapter">
+		<xsd:annotation>
+			<xsd:documentation>
+				Defines cassandra outbound channel adapter that
+				writes the contents of the
+				Message into Cassandra cluster
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="cassandraAdapterType">
+					<xsd:choice minOccurs="0" maxOccurs="2">
+						<xsd:element ref="integration:poller" minOccurs="0"
+							maxOccurs="1" />
+						<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType"
+							minOccurs="0" maxOccurs="1" />
+					</xsd:choice>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
 
+	<xsd:complexType name="cassandraAdapterType">
+		<xsd:annotation>
+			<xsd:documentation>
+				Common configuration for cassandra adapters.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attributeGroup ref="integration:channelAdapterAttributes" />
+		<xsd:attribute name="cassandra-template" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<xsd:documentation>
+							Reference to an instance of
+							org.springframework.data.cassandra.core.CassandraOperations
+						</xsd:documentation>
+						<tool:expected-type
+							type="org.springframework.data.cassandra.core.CassandraOperations" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="operation-type" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+							Indicates the operation to do on cassandra db]]></xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="direct">
+						<tool:expected-type type="java.lang.String" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
 </xsd:schema>
