@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import com.datastax.driver.core.Statement;
 /**
  * @author Soby Chacko
  * @author Artem Bilan
+ * @author Filippo Balicchia
  */
 @SuppressWarnings("unchecked")
 public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler {
@@ -52,7 +53,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 
 	private final CassandraOperations cassandraTemplate;
 
-	private Type queryType;
+	private Type mode;
 
 	private boolean producesReply;
 
@@ -78,13 +79,13 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 		Assert.notNull(cassandraTemplate, "'cassandraTemplate' must not be null.");
 		Assert.notNull(queryType, "'queryType' must not be null.");
 		this.cassandraTemplate = cassandraTemplate;
-		this.queryType = queryType;
+		this.mode = queryType;
 	}
 
 	public void setIngestQuery(String ingestQuery) {
 		Assert.hasText(ingestQuery, "'ingestQuery' must not be empty");
 		this.ingestQuery = ingestQuery;
-		this.queryType = Type.INSERT;
+		this.mode = Type.INSERT;
 	}
 
 	public void setWriteOptions(WriteOptions writeOptions) {
@@ -147,7 +148,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	public void setStatementProcessor(MessageProcessor<Statement> statementProcessor) {
 		Assert.notNull(statementProcessor, "'statementProcessor' must not be null.");
 		this.statementProcessor = statementProcessor;
-		this.queryType = Type.STATEMENT;
+		this.mode = Type.STATEMENT;
 	}
 
 	@Override
@@ -175,16 +176,16 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 
 		Object result = payload;
 
-		Type queryType = this.queryType;
+		Type mode = this.mode;
 
 		Statement statement = null;
 
 		if (payload instanceof Statement) {
 			statement = (Statement) payload;
-			queryType = Type.STATEMENT;
+			mode = Type.STATEMENT;
 		}
 
-		switch (queryType) {
+		switch (mode) {
 			case INSERT:
 				if (this.ingestQuery != null) {
 					Assert.isInstanceOf(List.class, payload,
