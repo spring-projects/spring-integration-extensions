@@ -44,10 +44,10 @@ import com.datastax.driver.core.Statement;
 /**
  * @author Soby Chacko
  * @author Artem Bilan
+ * @author Filippo Balicchia
  */
 @SuppressWarnings("unchecked")
-public class CassandraMessageHandler<T>
-		extends AbstractReplyProducingMessageHandler {
+public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHandler {
 
 	private final Map<String, Expression> parameterExpressions = new HashMap<>();
 

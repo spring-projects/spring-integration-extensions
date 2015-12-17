@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
 	xmlns:int-cassandra="http://www.springframework.org/schema/integration/cassandra"
 	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
-		http://www.springframework.org/schema/integration/cassandra http://www.springframework.org/schema/integration/cassandra/spring-integration-cassandra.xsd">
+		http://www.springframework.org/schema/integration/cassandra http://www.springframework.org/schema/integration/cassandra/spring-integration-cassandra.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 
 
@@ -16,14 +18,48 @@
 		<constructor-arg value="com.datastax.driver.core.Session" />
 	</bean>
 
+	<bean id="writeOptions" class="org.springframework.cassandra.core.WriteOptions">
+		<property name="ttl" value="60" />
+		<property name="consistencyLevel">
+			<util:constant
+				static-field="org.springframework.cassandra.core.ConsistencyLevel.ONE" />
+		</property>
+		<property name="retryPolicy">
+			<util:constant
+				static-field="org.springframework.cassandra.core.RetryPolicy.DOWNGRADING_CONSISTENCY" />
+		</property>
+	</bean>
+
 	<cassandra:mapping />
 	<cassandra:converter />
 	<cassandra:template id="cassandraTemplate" />
 	
-	<int-cassandra:outbound-channel-adapter 
-									id="outbound1" 
-									cassandra-template="cassandraTemplate" 
-									operation-type="INSERT"/>
+	<int:channel id="input">
+		<int:queue/>
+	</int:channel>
+
+	<int-cassandra:outbound-channel-adapter id="outbound1" 
+							cassandra-template="cassandraTemplate" 
+							channel="input"
+							operation-type="INSERT"
+							write-options="writeOptions"
+							/>
+							
+	<int-cassandra:outbound-channel-adapter id="outbound2" 
+							cassandra-template="cassandraTemplate" 
+							channel="input"
+							operation-type="UPDATE"
+							write-options="writeOptions"
+							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
+							/>
+
+	<int-cassandra:outbound-channel-adapter id="outbound3" 
+							cassandra-template="cassandraTemplate" 
+							channel="input"
+							operation-type="INSERT"
+							write-options="writeOptions"
+							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
+							/>
 
 
 </beans>

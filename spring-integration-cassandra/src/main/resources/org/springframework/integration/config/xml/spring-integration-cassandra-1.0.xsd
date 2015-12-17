@@ -38,7 +38,6 @@
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-
 	<xsd:complexType name="cassandraAdapterType">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -60,10 +59,35 @@
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="write-options" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<xsd:documentation>
+							Reference to an instance of
+							org.springframework.cassandra.core.WriteOptions
+						</xsd:documentation>
+						<tool:expected-type
+							type="org.springframework.cassandra.core.WriteOptions" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="operation-type" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
 							Indicates the operation to do on cassandra db]]></xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="direct">
+						<tool:expected-type type="java.lang.String" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cql-ingest" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+							csql query to ingest data]]></xsd:documentation>
 				<xsd:appinfo>
 					<tool:annotation kind="direct">
 						<tool:expected-type type="java.lang.String" />
