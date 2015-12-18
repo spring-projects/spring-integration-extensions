@@ -23,6 +23,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.cassandra.outbound.CassandraMessageHandler;
 import org.springframework.integration.cassandra.outbound.CassandraMessageHandler.OperationType;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
+import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -63,10 +64,16 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
 			builder.addPropertyValue("writeOptions", new RuntimeBeanReference(writeOptionsInstance));
 		}
 		
-		if(StringUtils.isNotEmpty(ingestQuery) && ! "INSERT".equalsIgnoreCase(operationType))
-		{
-			parserContext.getReaderContext().error("Ingest cql query can be apply only with insert operation", element);
+		if (StringUtils.isNotEmpty(ingestQuery) && !"INSERT".equalsIgnoreCase(operationType)) {
+			parserContext.getReaderContext().error( "Ingest cql query can be apply only with insert operation",element);
 		}
+		else if (StringUtils.isNotEmpty(ingestQuery)) {
+			builder.addPropertyValue("ingestQuery", ingestQuery);
+		}
+		
+		
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "ingestQuery");
+		
 		return builder.getBeanDefinition();
     }
 }

@@ -10,9 +10,6 @@
 		http://www.springframework.org/schema/integration/cassandra http://www.springframework.org/schema/integration/cassandra/spring-integration-cassandra.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-
-
-
 	<bean id="cassandraSession" class="org.mockito.Mockito"
 		factory-method="mock">
 		<constructor-arg value="com.datastax.driver.core.Session" />
@@ -38,26 +35,10 @@
 		<int:queue/>
 	</int:channel>
 
-	<int-cassandra:outbound-channel-adapter id="outbound1" 
-							cassandra-template="cassandraTemplate" 
-							channel="input"
-							operation-type="INSERT"
-							write-options="writeOptions"
-							/>
 							
-	<int-cassandra:outbound-channel-adapter id="outbound2" 
+	<int-cassandra:outbound-channel-adapter id="wrong-outbound" 
 							cassandra-template="cassandraTemplate" 
-							channel="input"
 							operation-type="UPDATE"
-							write-options="writeOptions"
-							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
-							/>
-
-	<int-cassandra:outbound-channel-adapter id="outbound3" 
-							cassandra-template="cassandraTemplate" 
-							channel="input"
-							operation-type="INSERT"
-							write-options="writeOptions"
 							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
 							/>
 

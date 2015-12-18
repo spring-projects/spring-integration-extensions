@@ -29,10 +29,8 @@
 			<xsd:complexContent>
 				<xsd:extension base="cassandraAdapterType">
 					<xsd:choice minOccurs="0" maxOccurs="2">
-						<xsd:element ref="integration:poller" minOccurs="0"
-							maxOccurs="1" />
-						<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType"
-							minOccurs="0" maxOccurs="1" />
+						<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
+						<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0" maxOccurs="1" />
 					</xsd:choice>
 				</xsd:extension>
 			</xsd:complexContent>
@@ -50,8 +48,9 @@
 				<xsd:appinfo>
 					<tool:annotation kind="ref">
 						<xsd:documentation>
+						<![CDATA[
 							Reference to an instance of
-							org.springframework.data.cassandra.core.CassandraOperations
+							org.springframework.data.cassandra.core.CassandraOperations]]>
 						</xsd:documentation>
 						<tool:expected-type
 							type="org.springframework.data.cassandra.core.CassandraOperations" />
@@ -63,9 +62,9 @@
 			<xsd:annotation>
 				<xsd:appinfo>
 					<tool:annotation kind="ref">
-						<xsd:documentation>
+						<xsd:documentation><![CDATA[
 							Reference to an instance of
-							org.springframework.cassandra.core.WriteOptions
+							org.springframework.cassandra.core.WriteOptions]]>
 						</xsd:documentation>
 						<tool:expected-type
 							type="org.springframework.cassandra.core.WriteOptions" />
@@ -84,15 +83,12 @@
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="cql-ingest" use="optional">
+		<xsd:attribute name="cql-ingest" type="xsd:string">
 			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-							csql query to ingest data]]></xsd:documentation>
-				<xsd:appinfo>
-					<tool:annotation kind="direct">
-						<tool:expected-type type="java.lang.String" />
-					</tool:annotation>
-				</xsd:appinfo>
+				<xsd:documentation>
+					<![CDATA[
+							csql query to ingest data]]>
+				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
