@@ -191,6 +191,8 @@ public class CassandraMessageHandlerTests {
 				.withPort(IntegrationTestConfig.PORT)
 				.build();
 		system = cluster.connect();
+		
+		String loggedKeyspace = system.getLoggedKeyspace();
 	}
 
 	@AfterClass

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:int-cassandra="http://www.springframework.org/schema/integration/cassandra"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration/cassandra http://www.springframework.org/schema/integration/cassandra/spring-integration-cassandra.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+	<context:property-placeholder location="classpath:cassandra.properties" />
+	
+	<int:poller default="true" fixed-delay="50" />
+
+	<cassandra:mapping entity-base-packages="org.springframework.integration.cassandra.test.domain">
+		<cassandra:entity
+			class="org.springframework.integration.cassandra.test.domain.Book">
+			<cassandra:table name="book" />
+		</cassandra:entity>
+	</cassandra:mapping>
+
+	<cassandra:cluster contact-points="${cassandra.contactpoints}" port="${cassandra.port}">
+		<cassandra:keyspace action="CREATE_DROP" name="${cassandra.keyspace}" />
+	</cassandra:cluster>
+
+	<cassandra:session keyspace-name="${cassandra.keyspace}" schema-action="CREATE"/>
+
+
+	
+	<cassandra:converter />
+	<cassandra:template id="cassandraTemplate"  />
+
+	<int-cassandra:outbound-channel-adapter id="outbound1" 
+											cassandra-template="cassandraTemplate"
+											operation-type="INSERT" 
+											auto-startup="true" />
+
+
+	<cassandra:repositories base-package="org.springframework.integration.cassandra.test.domain" />
+
+</beans>
