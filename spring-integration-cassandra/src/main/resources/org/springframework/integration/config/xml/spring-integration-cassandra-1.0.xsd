@@ -72,6 +72,20 @@
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="outputChannel" type="xsd:string">
+			<xsd:annotation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
+						<xsd:documentation><![CDATA[
+							Reference to an instance of
+							channel where message can be send]]>
+						</xsd:documentation>
+						<tool:expected-type
+							type="org.springframework.messaging.MessageChannel" />
+					</tool:annotation>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="operation-type" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
@@ -86,9 +100,15 @@
 		<xsd:attribute name="cql-ingest" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					<![CDATA[
-							csql query to ingest data]]>
+					<![CDATA[csql query to ingest data]]>
 				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="parameterExpressions" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+					Specifies the SpEL expression to be evaluate as a Map for cql parameter expressions.
+					]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>

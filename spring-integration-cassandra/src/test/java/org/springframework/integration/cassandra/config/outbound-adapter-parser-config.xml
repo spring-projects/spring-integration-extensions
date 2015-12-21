@@ -28,18 +28,67 @@
 		<cassandra:keyspace action="CREATE_DROP" name="${cassandra.keyspace}" />
 	</cassandra:cluster>
 
-	<cassandra:session keyspace-name="${cassandra.keyspace}" schema-action="CREATE"/>
+	<cassandra:session keyspace-name="${cassandra.keyspace}" schema-action="RECREATE"/>
 
 
 	
 	<cassandra:converter />
 	<cassandra:template id="cassandraTemplate"  />
 
-	<int-cassandra:outbound-channel-adapter id="outbound1" 
-											cassandra-template="cassandraTemplate"
-											operation-type="INSERT" 
-											auto-startup="true" />
+	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler1" 
+							cassandra-template="cassandraTemplate" 
+							operation-type="INSERT"
+							auto-startup="true" />
+							
+	<bean id="writeOptions" class="org.springframework.cassandra.core.WriteOptions">
+		<property name="ttl" value="60" />
+		<property name="consistencyLevel">
+			<util:constant
+				static-field="org.springframework.cassandra.core.ConsistencyLevel.ONE" />
+		</property>
+		<property name="retryPolicy">
+			<util:constant
+				static-field="org.springframework.cassandra.core.RetryPolicy.DOWNGRADING_CONSISTENCY" />
+		</property>
+	</bean>
+	
+	<bean id="nullChannel" class="org.springframework.integration.channel.NullChannel"/>
+							
+     <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler2" 
+							cassandra-template="cassandraTemplate" 
+							operation-type="INSERT"
+							write-options="writeOptions"
+							outputChannel="nullChannel"
+							auto-startup="true" />
+							
+	  <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler2" 
+							cassandra-template="cassandraTemplate" 
+							operation-type="INSERT"
+							write-options="writeOptions"
+							outputChannel="nullChannel"
+							auto-startup="true" />						
+	 						
+		
+		 <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler3" 
+							cassandra-template="cassandraTemplate" 
+							operation-type="INSERT"
+							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
+							auto-startup="true" />
 
+		 <util:map id="params" key-type="java.lang.String" value-type="java.lang.String">
+			<entry key="author" value="payload" />
+			<entry key="size" value="headers.limit" />
+		 </util:map>
+							
+		 
+		  <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler4" 
+							cassandra-template="cassandraTemplate" 
+							operation-type="INSERT"
+							parameterExpressions="@params"
+							cql-ingest="SELECT * FROM book limit :size"
+							auto-startup="true" />						
+	
+		
 
 	<cassandra:repositories base-package="org.springframework.integration.cassandra.test.domain" />
 

@@ -22,8 +22,8 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.cassandra.outbound.CassandraMessageHandler;
 import org.springframework.integration.cassandra.outbound.CassandraMessageHandler.OperationType;
+import org.springframework.integration.config.ExpressionFactoryBean;
 import org.springframework.integration.config.xml.AbstractOutboundChannelAdapterParser;
-import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -46,6 +46,11 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
         String operationType = element.getAttribute("operation-type");
         String writeOptionsInstance = element.getAttribute("write-options");
         String ingestQuery = element.getAttribute("cql-ingest");
+        String outputChannel = element.getAttribute("outputChannel");
+        
+        String parameterExpressions = element.getAttribute("parameterExpressions");
+        
+        
 
 		if (StringUtils.isEmpty(cassandraTemplate)){
 			parserContext.getReaderContext().error("cassandra-template is empty", element);
@@ -56,12 +61,16 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
 		}
 		
 		OperationType queryType = CassandraMessageHandler.OperationType.toType(operationType);
-		builder.addConstructorArgValue(
-				new RuntimeBeanReference(cassandraTemplate));
+		builder.addConstructorArgValue(new RuntimeBeanReference(cassandraTemplate));
 		builder.addPropertyValue("queryType", queryType);
 		
 		if(StringUtils.isNotEmpty(writeOptionsInstance)){
 			builder.addPropertyValue("writeOptions", new RuntimeBeanReference(writeOptionsInstance));
+		}
+		
+		
+		if(StringUtils.isNotEmpty(outputChannel)){
+			builder.addPropertyValue("outputChannel", new RuntimeBeanReference(outputChannel));
 		}
 		
 		if (StringUtils.isNotEmpty(ingestQuery) && !"INSERT".equalsIgnoreCase(operationType)) {
@@ -71,8 +80,13 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
 			builder.addPropertyValue("ingestQuery", ingestQuery);
 		}
 		
+		if(StringUtils.isNotEmpty(parameterExpressions))
+		{
+			BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(ExpressionFactoryBean.class)
+					.addConstructorArgValue(parameterExpressions);
+			builder.addPropertyValue("parameterExpressions", beanDefinitionBuilder.getBeanDefinition());
+		}
 		
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "ingestQuery");
 		
 		return builder.getBeanDefinition();
     }

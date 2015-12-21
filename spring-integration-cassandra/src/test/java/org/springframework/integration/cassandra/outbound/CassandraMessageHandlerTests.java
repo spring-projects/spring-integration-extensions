@@ -27,8 +27,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
+import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.thrift.transport.TTransportException;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.ConsistencyLevel;
 import org.springframework.cassandra.core.RetryPolicy;
@@ -40,6 +46,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.cassandra.config.IntegrationTestConfig;
 import org.springframework.integration.cassandra.test.domain.Book;
+import org.springframework.integration.cassandra.test.utils.SICassandraTestUtils;
 import org.springframework.integration.channel.NullChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
@@ -51,14 +58,6 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
@@ -191,8 +190,6 @@ public class CassandraMessageHandlerTests {
 				.withPort(IntegrationTestConfig.PORT)
 				.build();
 		system = cluster.connect();
-		
-		String loggedKeyspace = system.getLoggedKeyspace();
 	}
 
 	@AfterClass
@@ -223,7 +220,7 @@ public class CassandraMessageHandlerTests {
 
 	@Test
 	public void testCassandraBatchInsertAndSelectStatement() throws Exception {
-		List<Book> books = getBookList(5);
+		List<Book> books = SICassandraTestUtils.getBookList(5);
 
 		this.cassandraMessageHandler2.handleMessage(new GenericMessage<>(books));
 
@@ -245,7 +242,7 @@ public class CassandraMessageHandlerTests {
 
 	@Test
 	public void testCassandraBatchIngest() throws Exception {
-		List<Book> books = getBookList(5);
+		List<Book> books = SICassandraTestUtils.getBookList(5);
 		List<List<?>> ingestBooks = new ArrayList<>();
 		for (Book b : books) {
 
@@ -269,23 +266,5 @@ public class CassandraMessageHandlerTests {
 		this.template.delete(books);
 	}
 
-	private List<Book> getBookList(int numBooks) {
-
-		List<Book> books = new ArrayList<>();
-
-		Book b;
-		for (int i = 0; i < numBooks; i++) {
-			b = new Book();
-			b.setIsbn(UUID.randomUUID().toString());
-			b.setTitle("Spring Data Cassandra Guide");
-			b.setAuthor("Cassandra Guru");
-			b.setPages(i * 10 + 5);
-			b.setInStock(true);
-			b.setSaleDate(new Date());
-			books.add(b);
-		}
-
-		return books;
-	}
 
 }
