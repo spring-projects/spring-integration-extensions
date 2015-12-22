@@ -150,16 +150,14 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 		});
 	}
 
-	public void setParameterExpressions(
-			Map<String, Expression> parameterExpressions) {
+	public void setParameterExpressions(Map<String, Expression> parameterExpressions) {
 		Assert.notEmpty(parameterExpressions,
 				"'parameterExpressions' must not be empty.");
 		this.parameterExpressions.clear();
 		this.parameterExpressions.putAll(parameterExpressions);
 	}
 
-	public void setStatementProcessor(
-			MessageProcessor<Statement> statementProcessor) {
+	public void setStatementProcessor(MessageProcessor<Statement> statementProcessor) {
 		Assert.notNull(statementProcessor,
 				"'statementProcessor' must not be null.");
 		this.statementProcessor = statementProcessor;

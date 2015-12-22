@@ -63,8 +63,7 @@ public class CassandraOutboundChannelAdapterIntegrationTests {
 		context = new ClassPathXmlApplicationContext(
 				"outbound-adapter-parser-config.xml", CassandraOutboundChannelAdapterIntegrationTests.class);
 		
-		template = context.getBean("cassandraTemplate",
-				CassandraTemplate.class);
+		template = context.getBean("cassandraTemplate",CassandraTemplate.class);
 
 	}
 
