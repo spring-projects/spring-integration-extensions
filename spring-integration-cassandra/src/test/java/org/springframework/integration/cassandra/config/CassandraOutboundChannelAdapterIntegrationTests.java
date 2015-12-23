@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -37,9 +38,9 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.cassandra.test.utils.SICassandraTestUtils;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.channel.NullChannel;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.support.GenericMessage;
 
 import com.datastax.driver.core.ResultSet;
@@ -69,9 +70,8 @@ public class CassandraOutboundChannelAdapterIntegrationTests {
 	
 	private static DirectChannel cassandraMessageHandler4;
 	
-	private static NullChannel messageChannel;
 	
-	private static NullChannel resultChannel;
+	private static PollableChannel resultChannel;
 	
 	
 	@BeforeClass
@@ -81,8 +81,7 @@ public class CassandraOutboundChannelAdapterIntegrationTests {
 		startCassandra();
 		context = new ClassPathXmlApplicationContext("outbound-adapter-parser-config.xml", CassandraOutboundChannelAdapterIntegrationTests.class);
 		template = context.getBean("cassandraTemplate",CassandraTemplate.class);
-		messageChannel = context.getBean("messageChannel",NullChannel.class);
-		//resultChannel = context.getBean("resultChannel",NullChannel.class);
+		resultChannel = context.getBean("resultChannel",PollableChannel.class);
 		cassandraMessageHandler1 = context.getBean("cassandraMessageHandler1",DirectChannel.class);
 		cassandraMessageHandler2 = context.getBean("cassandraMessageHandler2",DirectChannel.class);
 		cassandraMessageHandler3 = context.getBean("cassandraMessageHandler3",DirectChannel.class);
@@ -133,10 +132,36 @@ public class CassandraOutboundChannelAdapterIntegrationTests {
 	    assertNotNull(resultSet);
 	    List<Row> rows = resultSet.all();
 	    assertEquals(2, rows.size());
- //		this.cassandraMessageHandler1.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book")));
-		
-		
+	    cassandraMessageHandler1.send(new GenericMessage<>(QueryBuilder.truncate("book")));
 
 	}
+	
+	   @Test
+	    public void testCassandraBatchIngest() throws Exception {
+	        List<Book> books = SICassandraTestUtils.getBookList(5);
+	        List<List<?>> ingestBooks = new ArrayList<>();
+	        for (Book b : books) {
+
+	            List<Object> l = new ArrayList<>();
+	            l.add(b.getIsbn());
+	            l.add(b.getTitle());
+	            l.add(b.getAuthor());
+	            l.add(b.getPages());
+	            l.add(b.getSaleDate());
+	            l.add(b.isInStock());
+	            ingestBooks.add(l);
+	        }
+
+	        Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
+	        cassandraMessageHandler3.send(message);
+	        Select select = QueryBuilder.select().all().from("book");
+	        books = template.select(select, Book.class);
+	        assertEquals(5, books.size());
+	        template.delete(books);
+	    }
+	
+	
+	
+	
 
 }

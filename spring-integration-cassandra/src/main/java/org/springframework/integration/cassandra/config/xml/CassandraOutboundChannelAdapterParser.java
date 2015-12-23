@@ -53,7 +53,7 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
         String ingestQuery = element.getAttribute("cql-ingest");
         String outputChannel = element.getAttribute("output-channel");
         String query = element.getAttribute("query");
-        
+        String producesReply = element.getAttribute("produces-reply");
 
 		if (StringUtils.isEmpty(cassandraTemplate)){
 			parserContext.getReaderContext().error("cassandra-template is empty", element);
@@ -83,11 +83,13 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
 			builder.addPropertyValue("ingestQuery", ingestQuery);
 		}
 		
-		if(StringUtils.isNotEmpty(query))
-		{
-			builder.addPropertyValue("query", query);
-		}
-		
+        if (StringUtils.isNotEmpty(query)){
+            builder.addPropertyValue("query", query);
+        }
+
+        if (StringUtils.isNotEmpty(producesReply)){
+            builder.addPropertyValue("producesReply", producesReply);
+        }
 		
 		
 		List<Element> parameterExpression = DomUtils.getChildElementsByTagName(element, "parameter-expressions");
@@ -101,7 +103,7 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
 						parameterExpressionsMap.put(name,  factoryBeanBuilder.getBeanDefinition());
 					}
 					builder.addPropertyValue("parameterExpressions", parameterExpressionsMap);
-				}
+		}
 		
 		
 		

@@ -82,6 +82,8 @@
 							cassandra-template="cassandraTemplate" 
 							operation-type="STATEMENT"
 							query="SELECT * FROM book limit :size"
+                            output-channel="resultChannel"
+                            produces-reply="true"
 							auto-startup="true">
 		    <int-cassandra:parameter-expressions name="author" expression="payload"/>
 		    <int-cassandra:parameter-expressions name="size" expression="headers.limit"/>	

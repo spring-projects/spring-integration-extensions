@@ -118,6 +118,14 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+        <xsd:attribute name="produces-reply" default="false" type="xsd:boolean">
+                <xsd:annotation>
+              <xsd:documentation>
+                <![CDATA[statement to use in prepared statement]]>
+              </xsd:documentation>
+            </xsd:annotation>
+       </xsd:attribute>
+    
 	</xsd:complexType>
 	
 	<xsd:complexType name="queryParameterType">
