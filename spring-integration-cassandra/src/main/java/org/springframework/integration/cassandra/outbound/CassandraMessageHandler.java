@@ -70,6 +70,9 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 	private MessageProcessor<Statement> statementProcessor;
 
 	private EvaluationContext evaluationContext;
+	
+	private String query;
+	
 
 	public CassandraMessageHandler(CassandraOperations cassandraTemplate) {
 		this(cassandraTemplate, OperationType.INSERT);
@@ -116,8 +119,11 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 				});
 	}
 
-	public void setQuery(String query) {
-		Assert.hasText(query, "'query' must not be empty");
+	public void setQuery(String queryInput) {
+		
+		query = queryInput;
+		
+		Assert.hasText(this.query, "'query' must not be empty");
 
 		final PreparedStatementCreator statementCreator = new CachedPreparedStatementCreator(
 				query);
@@ -127,8 +133,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 			@Override
 			public Statement processMessage(Message<?> message) {
 				PreparedStatement preparedStatement = statementCreator
-						.createPreparedStatement(
-								cassandraTemplate.getSession());
+						.createPreparedStatement(cassandraTemplate.getSession());
 				ColumnDefinitions variables = preparedStatement.getVariables();
 				List<Object> values = new ArrayList<>(variables.size());
 				Map<String, Object> valueMap = new HashMap<>(variables.size());
@@ -182,8 +187,7 @@ public class CassandraMessageHandler<T> extends AbstractReplyProducingMessageHan
 			 * Register the Cassandra Query DSL package so they don't need a
 			 * FQCN for QueryBuilder, for example.
 			 */
-			((StandardTypeLocator) typeLocator)
-					.registerImport("com.datastax.driver.core.querybuilder");
+			((StandardTypeLocator) typeLocator).registerImport("com.datastax.driver.core.querybuilder");
 		}
 	}
 

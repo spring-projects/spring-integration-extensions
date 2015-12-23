@@ -111,6 +111,13 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="query" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					<![CDATA[statement to use in prepared statement]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 	
 	<xsd:complexType name="queryParameterType">

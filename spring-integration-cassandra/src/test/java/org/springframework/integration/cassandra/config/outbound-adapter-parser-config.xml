@@ -52,7 +52,10 @@
 		</property>
 	</bean>
 	
-	<bean id="nullChannel" class="org.springframework.integration.channel.NullChannel"/>
+	<bean id="messageChannel" class="org.springframework.integration.channel.NullChannel"/>
+	
+	<bean id="resultChannel" class="org.springframework.integration.channel.QueueChannel"/>
+	
 							
      <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler2" 
 							cassandra-template="cassandraTemplate" 
@@ -65,7 +68,7 @@
 							cassandra-template="cassandraTemplate" 
 							operation-type="INSERT"
 							write-options="writeOptions"
-							output-channel="nullChannel"
+							output-channel="messageChannel"
 							auto-startup="true" />						
 	 						
 		
@@ -74,12 +77,11 @@
 							operation-type="INSERT"
 							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
 							auto-startup="true" />
-							
 		 
 		  <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler4" 
 							cassandra-template="cassandraTemplate" 
-							operation-type="INSERT"
-							cql-ingest="SELECT * FROM book limit :size"
+							operation-type="STATEMENT"
+							query="SELECT * FROM book limit :size"
 							auto-startup="true">
 		    <int-cassandra:parameter-expressions name="author" expression="payload"/>
 		    <int-cassandra:parameter-expressions name="size" expression="headers.limit"/>	

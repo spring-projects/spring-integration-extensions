@@ -52,6 +52,8 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
         String writeOptionsInstance = element.getAttribute("write-options");
         String ingestQuery = element.getAttribute("cql-ingest");
         String outputChannel = element.getAttribute("output-channel");
+        String query = element.getAttribute("query");
+        
 
 		if (StringUtils.isEmpty(cassandraTemplate)){
 			parserContext.getReaderContext().error("cassandra-template is empty", element);
@@ -80,6 +82,27 @@ public class CassandraOutboundChannelAdapterParser extends AbstractOutboundChann
 		else if (StringUtils.isNotEmpty(ingestQuery)) {
 			builder.addPropertyValue("ingestQuery", ingestQuery);
 		}
+		
+		if(StringUtils.isNotEmpty(query))
+		{
+			builder.addPropertyValue("query", query);
+		}
+		
+		
+		
+		List<Element> parameterExpression = DomUtils.getChildElementsByTagName(element, "parameter-expressions");
+		if (!CollectionUtils.isEmpty(parameterExpression)) {
+					ManagedMap<String, Object> parameterExpressionsMap = new ManagedMap<String, Object>();
+					for (Element parmaterExpressionElement : parameterExpression) {
+						String name = parmaterExpressionElement.getAttribute("name");
+						String expression = parmaterExpressionElement.getAttribute("expression");
+						BeanDefinitionBuilder factoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(ExpressionFactoryBean.class);
+						factoryBeanBuilder.addConstructorArgValue(expression);
+						parameterExpressionsMap.put(name,  factoryBeanBuilder.getBeanDefinition());
+					}
+					builder.addPropertyValue("parameterExpressions", parameterExpressionsMap);
+				}
+		
 		
 		
 		return builder.getBeanDefinition();

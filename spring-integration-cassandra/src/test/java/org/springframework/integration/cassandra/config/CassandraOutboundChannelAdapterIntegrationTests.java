@@ -16,7 +16,11 @@
 
 package org.springframework.integration.cassandra.config;
 
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+
 
 import java.io.IOException;
 import java.util.Date;
@@ -33,10 +37,13 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.cassandra.test.utils.SICassandraTestUtils;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.NullChannel;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -54,17 +61,39 @@ public class CassandraOutboundChannelAdapterIntegrationTests {
 
 	private static CassandraTemplate template;
 	
+	private static DirectChannel cassandraMessageHandler1;
+	
+	private static DirectChannel cassandraMessageHandler2;
+	
+	private static DirectChannel cassandraMessageHandler3;
+	
+	private static DirectChannel cassandraMessageHandler4;
+	
+	private static NullChannel messageChannel;
+	
+	private static NullChannel resultChannel;
+	
+	
 	@BeforeClass
-	public static void startCassandra() throws TTransportException, IOException,
+	public static void init()throws TTransportException, IOException,
+	InterruptedException, ConfigurationException 
+	{
+		startCassandra();
+		context = new ClassPathXmlApplicationContext("outbound-adapter-parser-config.xml", CassandraOutboundChannelAdapterIntegrationTests.class);
+		template = context.getBean("cassandraTemplate",CassandraTemplate.class);
+		messageChannel = context.getBean("messageChannel",NullChannel.class);
+		//resultChannel = context.getBean("resultChannel",NullChannel.class);
+		cassandraMessageHandler1 = context.getBean("cassandraMessageHandler1",DirectChannel.class);
+		cassandraMessageHandler2 = context.getBean("cassandraMessageHandler2",DirectChannel.class);
+		cassandraMessageHandler3 = context.getBean("cassandraMessageHandler3",DirectChannel.class);
+		cassandraMessageHandler4 = context.getBean("cassandraMessageHandler4",DirectChannel.class);
+	}
+	
+	private static void startCassandra() throws TTransportException, IOException,
 			InterruptedException, ConfigurationException {
 
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG,
 				"build/embeddedCassandra");
-		context = new ClassPathXmlApplicationContext(
-				"outbound-adapter-parser-config.xml", CassandraOutboundChannelAdapterIntegrationTests.class);
-		
-		template = context.getBean("cassandraTemplate",CassandraTemplate.class);
-
 	}
 
 	@AfterClass
@@ -83,12 +112,7 @@ public class CassandraOutboundChannelAdapterIntegrationTests {
 		b1.setInStock(true);
 
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
-
-		
-		DirectChannel channel = context.getBean("cassandraMessageHandler1",
-				DirectChannel.class);
-	
-		channel.send(message);
+		cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.select().all().from("book");
 		List<Book> books = template.select(select, Book.class);
 		assertEquals(1, books.size());
@@ -98,26 +122,21 @@ public class CassandraOutboundChannelAdapterIntegrationTests {
 	@Test
 	public void testCassandraBatchInsertAndSelectStatement() throws Exception {
 		List<Book> books = SICassandraTestUtils.getBookList(5);
-		
-		DirectChannel channel = context.getBean("cassandraMessageHandler2",
-				DirectChannel.class);
-		channel.send(new GenericMessage<>(books));
+		cassandraMessageHandler2.send(new GenericMessage<>(books));
 
-		Message<?> message = MessageBuilder.withPayload("Cassandra Guru").setHeader("limit", 2).build();
-		channel.send(message);
-//		
-//		PollableChannel messageChannel = context.getBean("nullChannel",PollableChannel.class);
-//
-//		Message<?> receive = messageChannel.receive(10000);
-//		assertNotNull(receive);
-//		assertThat(receive.getPayload(), instanceOf(ResultSet.class));
-//		ResultSet resultSet = (ResultSet) receive.getPayload();
-//		assertNotNull(resultSet);
-//		List<Row> rows = resultSet.all();
-//		assertEquals(2, rows.size());
-//
-//		this.cassandraMessageHandler1.handleMessage(
-//				new GenericMessage<>(QueryBuilder.truncate("book")));
+		Message<?> message = MessageBuilder.withPayload("Cassandra Puppy Guru").setHeader("limit", 2).build();
+	    cassandraMessageHandler4.send(message);
+	    Message<?> receive =  resultChannel.receive(10000);
+	    assertNotNull(receive);
+	    assertThat(receive.getPayload(), instanceOf(ResultSet.class));
+	    ResultSet resultSet = (ResultSet) receive.getPayload();
+	    assertNotNull(resultSet);
+	    List<Row> rows = resultSet.all();
+	    assertEquals(2, rows.size());
+ //		this.cassandraMessageHandler1.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book")));
+		
+		
+
 	}
 
 }
