@@ -58,7 +58,6 @@ public class CassandraOutboundChannelAdapterParserTests
     public void ingestConfig(){
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				"outbound-adapter-parser.xml", this.getClass());
-        
 		
 		CassandraMessageHandler<?> handler = TestUtils.getPropertyValue(
 				context.getBean("outbound2"), "handler",
@@ -67,6 +66,23 @@ public class CassandraOutboundChannelAdapterParserTests
 		assertEquals("insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)", TestUtils.getPropertyValue(handler, "ingestQuery"));
 		
     }
+    
+    @Test 
+    public void fullConfig(){
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				"outbound-adapter-parser.xml", this.getClass());
+		
+		CassandraMessageHandler<?> handler = TestUtils.getPropertyValue(
+				context.getBean("outbound3.adapter"), "handler",
+				CassandraMessageHandler.class);
+		
+		assertEquals("SELECT * FROM book limit :size", TestUtils.getPropertyValue(handler, "query"));
+		assertEquals(Boolean.TRUE, TestUtils.getPropertyValue(handler, "producesReply"));
+		assertEquals(CassandraMessageHandler.OperationType.STATEMENT, TestUtils.getPropertyValue(handler, "queryType"));
+		assertEquals(context.getBean("writeOptions"), TestUtils.getPropertyValue(handler, "writeOptions"));
+		
+    }
+    
     
     
     

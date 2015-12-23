@@ -37,6 +37,10 @@
 	<int:channel id="input">
 		<int:queue/>
 	</int:channel>
+	
+	<bean id="resultChannel" class="org.springframework.integration.channel.QueueChannel"/>
+	
+	
 
 	
 	<int-cassandra:outbound-channel-adapter id="outbound1" 
@@ -51,6 +55,19 @@
 							cassandra-template="cassandraTemplate" 
 							operation-type="INSERT"
 							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
-							/>							
+							/>
+    
+    <int-cassandra:outbound-channel-adapter id="outbound3" 
+							cassandra-template="cassandraTemplate" 
+							operation-type="STATEMENT"
+							write-options="writeOptions"
+							query="SELECT * FROM book limit :size"
+                            output-channel="resultChannel"
+                            produces-reply="true"
+							auto-startup="true">
+		    <int-cassandra:parameter-expressions name="author" expression="payload"/>
+		    <int-cassandra:parameter-expressions name="size" expression="headers.limit"/>	
+    </int-cassandra:outbound-channel-adapter>									
+													
 
 </beans>
