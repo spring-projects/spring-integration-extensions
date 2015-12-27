@@ -46,7 +46,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.cassandra.config.IntegrationTestConfig;
 import org.springframework.integration.cassandra.test.domain.Book;
-import org.springframework.integration.cassandra.test.utils.SICassandraTestUtils;
+import org.springframework.integration.cassandra.test.domain.BookSampler;
 import org.springframework.integration.channel.NullChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
@@ -86,7 +86,7 @@ public class CassandraMessageHandlerTests {
 
 		@Override
 		public String[] getEntityBasePackages() {
-			return new String[]{Book.class.getPackage().getName()};
+			return new String[] { Book.class.getPackage().getName() };
 		}
 
 		@Bean
@@ -119,7 +119,7 @@ public class CassandraMessageHandlerTests {
 
 		@Bean
 		public MessageHandler cassandraMessageHandler3() {
-			CassandraMessageHandler<Book> cassandraMessageHandler =	new CassandraMessageHandler<>(this.template);
+			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<>(this.template);
 			String cqlIngest = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
 			cassandraMessageHandler.setIngestQuery(cqlIngest);
 			return cassandraMessageHandler;
@@ -130,12 +130,12 @@ public class CassandraMessageHandlerTests {
 			return new QueueChannel();
 		}
 
-
 		@Bean
 		public MessageHandler cassandraMessageHandler4() {
 			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<>(this.template);
-			//TODO https://jira.spring.io/browse/DATACASS-213
-			//cassandraMessageHandler.setQuery("SELECT * FROM book WHERE author = :author limit :size");
+			// TODO https://jira.spring.io/browse/DATACASS-213
+			// cassandraMessageHandler.setQuery("SELECT * FROM book WHERE author
+			// = :author limit :size");
 			cassandraMessageHandler.setQuery("SELECT * FROM book limit :size");
 
 			Map<String, Expression> params = new HashMap<>();
@@ -182,12 +182,10 @@ public class CassandraMessageHandlerTests {
 	protected static Session system;
 
 	@BeforeClass
-	public static void startCassandra() throws TTransportException, IOException, InterruptedException,
-			ConfigurationException {
+	public static void startCassandra()
+			throws TTransportException, IOException, InterruptedException, ConfigurationException {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
-		cluster = Cluster.builder()
-				.addContactPoint(IntegrationTestConfig.HOST)
-				.withPort(IntegrationTestConfig.PORT)
+		cluster = Cluster.builder().addContactPoint(IntegrationTestConfig.HOST).withPort(IntegrationTestConfig.PORT)
 				.build();
 		system = cluster.connect();
 	}
@@ -220,13 +218,11 @@ public class CassandraMessageHandlerTests {
 
 	@Test
 	public void testCassandraBatchInsertAndSelectStatement() throws Exception {
-		List<Book> books = SICassandraTestUtils.getBookList(5);
+		List<Book> books = BookSampler.getBookList(5);
 
 		this.cassandraMessageHandler2.handleMessage(new GenericMessage<>(books));
 
-		Message<?> message = MessageBuilder.withPayload("Cassandra Guru")
-				.setHeader("limit", 2)
-				.build();
+		Message<?> message = MessageBuilder.withPayload("Cassandra Guru").setHeader("limit", 2).build();
 		this.cassandraMessageHandler4.handleMessage(message);
 
 		Message<?> receive = this.resultChannel.receive(10000);
@@ -242,7 +238,7 @@ public class CassandraMessageHandlerTests {
 
 	@Test
 	public void testCassandraBatchIngest() throws Exception {
-		List<Book> books = SICassandraTestUtils.getBookList(5);
+		List<Book> books = BookSampler.getBookList(5);
 		List<List<?>> ingestBooks = new ArrayList<>();
 		for (Book b : books) {
 
@@ -265,6 +261,4 @@ public class CassandraMessageHandlerTests {
 
 		this.template.delete(books);
 	}
-
-
 }

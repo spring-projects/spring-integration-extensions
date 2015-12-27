@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * @author Filippo Balicchia
- */
-package org.springframework.integration.cassandra.test.utils;
+
+package org.springframework.integration.cassandra.test.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,8 +23,11 @@ import java.util.UUID;
 
 import org.springframework.integration.cassandra.test.domain.Book;
 
-public class SICassandraTestUtils {
-	
+/**
+ * @author Filippo Balicchia
+ */
+public class BookSampler {
+
 	public static List<Book> getBookList(int numBooks) {
 
 		List<Book> books = new ArrayList<>();
@@ -36,16 +37,24 @@ public class SICassandraTestUtils {
 			b = new Book();
 			b.setIsbn(UUID.randomUUID().toString());
 			b.setTitle("Spring Data Cassandra Guide");
-			b.setAuthor("Cassandra Guru");
+			b.setAuthor("Cassandra Guru puppy");
 			b.setPages(i * 10 + 5);
 			b.setInStock(true);
 			b.setSaleDate(new Date());
 			books.add(b);
 		}
-
 		return books;
 	}
 
+	public static Book getBook() {
+		Book b1 = new Book();
+		b1.setIsbn("123456-1");
+		b1.setTitle("Spring Integration Cassandra");
+		b1.setAuthor("Cassandra Guru");
+		b1.setPages(521);
+		b1.setSaleDate(new Date());
+		b1.setInStock(true);
+		return b1;
+	}
 	
-
 }

@@ -9,7 +9,7 @@
 	<xsd:import namespace="http://www.springframework.org/schema/beans" />
 	<xsd:import namespace="http://www.springframework.org/schema/tool" />
 	<xsd:import namespace="http://www.springframework.org/schema/integration"
-		schemaLocation="http://www.springframework.org/schema/integration/spring-integration-4.2.xsd" />
+		schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd" />
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -27,12 +27,12 @@
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:complexContent>
-				<xsd:extension base="cassandraAdapterType">
+				<xsd:extension base="outboundType">
 					<xsd:choice minOccurs="0" maxOccurs="2">
-					<xsd:element name="parameter-expressions" type="queryParameterType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:element name="parameter-expression" type="queryParameterType" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation>
-							TODO
+							Specify an expression for parameter variable placeholder in cql statement.
 						</xsd:documentation>
 					</xsd:annotation>
 				    </xsd:element>
@@ -43,7 +43,60 @@
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-	<xsd:complexType name="cassandraAdapterType">
+	
+	<xsd:element name="outbound-gateway">
+		<xsd:annotation>
+			<xsd:documentation>
+				Defines cassandra outbound gateway that
+				writes the contents of the
+				Message into Cassandra cluster
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="outboundType">
+					<xsd:choice minOccurs="0" maxOccurs="2">
+					<xsd:element name="parameter-expression" type="queryParameterType" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>
+							Specify an expression for parameter variable placeholder in cql statement.
+						</xsd:documentation>
+					</xsd:annotation>
+				    </xsd:element>
+					<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0" maxOccurs="1" />
+					</xsd:choice>
+					<xsd:attribute name="reply-channel" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation>
+								Message Channel to which replies should be sent after being received from Cassandra cluster.
+							</xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation kind="ref">
+									<tool:expected-type
+										type="org.springframework.messaging.MessageChannel"/>
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="input-channel" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation>
+								Message Channel to which Messages should be sent to Cassandra.
+							</xsd:documentation>
+							<xsd:appinfo>
+								<tool:annotation kind="ref">
+									<tool:expected-type
+										type="org.springframework.messaging.MessageChannel"/>
+								</tool:annotation>
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:complexType name="outboundType">
 		<xsd:annotation>
 			<xsd:documentation>
 				Common configuration for cassandra adapters.
@@ -52,13 +105,13 @@
 		<xsd:attributeGroup ref="integration:channelAdapterAttributes" />
 		<xsd:attribute name="cassandra-template" type="xsd:string">
 			<xsd:annotation>
-				<xsd:appinfo>
-					<tool:annotation kind="ref">
-						<xsd:documentation>
+			<xsd:documentation>
 						<![CDATA[
 							Reference to an instance of
 							org.springframework.data.cassandra.core.CassandraOperations]]>
 						</xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
 						<tool:expected-type
 							type="org.springframework.data.cassandra.core.CassandraOperations" />
 					</tool:annotation>
@@ -67,78 +120,64 @@
 		</xsd:attribute>
 		<xsd:attribute name="write-options" type="xsd:string">
 			<xsd:annotation>
-				<xsd:appinfo>
-					<tool:annotation kind="ref">
-						<xsd:documentation><![CDATA[
+			<xsd:documentation>
+						<![CDATA[
 							Reference to an instance of
 							org.springframework.cassandra.core.WriteOptions]]>
 						</xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref">
 						<tool:expected-type
 							type="org.springframework.cassandra.core.WriteOptions" />
 					</tool:annotation>
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="output-channel" type="xsd:string">
+		<xsd:attribute name="type" default="INSERT" use="optional">
 			<xsd:annotation>
-				<xsd:appinfo>
-					<tool:annotation kind="ref">
-						<xsd:documentation><![CDATA[
-							Reference to an instance of
-							channel where message can be send]]>
-						</xsd:documentation>
-						<tool:expected-type
-							type="org.springframework.messaging.MessageChannel" />
-					</tool:annotation>
-				</xsd:appinfo>
+				<xsd:documentation>
+				<![CDATA[
+					Indicates the operation to do on cassandra db]]>
+				</xsd:documentation>
 			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="operation-type" use="required">
-			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-							Indicates the operation to do on cassandra db]]></xsd:documentation>
-				<xsd:appinfo>
-					<tool:annotation kind="direct">
-						<tool:expected-type type="java.lang.String" />
-					</tool:annotation>
-				</xsd:appinfo>
-			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="cassandraHandlerType xsd:string"/>
+			</xsd:simpleType>
 		</xsd:attribute>
 		<xsd:attribute name="cql-ingest" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					<![CDATA[csql query to ingest data]]>
+					<![CDATA[Cql query to ingest data]]>
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="query" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					<![CDATA[statement to use in prepared statement]]>
+					Statement to use in prepared statement
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-        <xsd:attribute name="produces-reply" default="false" type="xsd:boolean">
-                <xsd:annotation>
-              <xsd:documentation>
-                <![CDATA[statement to use in prepared statement]]>
-              </xsd:documentation>
-            </xsd:annotation>
-       </xsd:attribute>
-    
+		<xsd:attribute name="statement-expression" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>
+					Statement expression that represent an executable query
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 	</xsd:complexType>
 	
 	<xsd:complexType name="queryParameterType">
 		<xsd:annotation>
-			<xsd:documentation><![CDATA[
-				Expression to be evaluated against the Message to replace a query Parameter {placeholder} with the evaluation result.
-			]]></xsd:documentation>
+			<xsd:documentation>
+				Expression to be evaluated against the Message to replace a query Parameter
+			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:attribute name="name" use="required">
 			<xsd:annotation>
-				<xsd:documentation><![CDATA[
-					Name of the placeholder to be replaced.
-				]]></xsd:documentation>
+				<xsd:documentation>
+					Name of the placeholder to be replaced
+				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="expression" use="required">
@@ -152,4 +191,13 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
+	
+	<xsd:simpleType name="cassandraHandlerType">
+	    <xsd:restriction base="xsd:token">
+	        <xsd:enumeration value="INSERT" />
+	        <xsd:enumeration value="UPDATE" />
+	        <xsd:enumeration value="DELETE" />
+	        <xsd:enumeration value="STATEMENT" />
+	    </xsd:restriction>
+	</xsd:simpleType>
 </xsd:schema>

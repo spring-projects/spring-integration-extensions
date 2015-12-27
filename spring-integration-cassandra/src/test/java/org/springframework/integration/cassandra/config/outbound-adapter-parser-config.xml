@@ -37,7 +37,7 @@
 
 	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler1" 
 							cassandra-template="cassandraTemplate" 
-							operation-type="INSERT"
+							type="INSERT"
 							auto-startup="true" />
 							
 	<bean id="writeOptions" class="org.springframework.cassandra.core.WriteOptions">
@@ -52,45 +52,36 @@
 		</property>
 	</bean>
 	
-	<bean id="messageChannel" class="org.springframework.integration.channel.NullChannel"/>
-	
 	<bean id="resultChannel" class="org.springframework.integration.channel.QueueChannel"/>
 	
 							
      <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler2" 
 							cassandra-template="cassandraTemplate" 
-							operation-type="INSERT"
 							write-options="writeOptions"
-							output-channel="nullChannel"
 							auto-startup="true" />
-							
-	  <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler2" 
+
+	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler3" 
+				  	cassandra-template="cassandraTemplate"
+					cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
+					auto-startup="true" />
+
+	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler4" 
 							cassandra-template="cassandraTemplate" 
-							operation-type="INSERT"
-							write-options="writeOptions"
-							output-channel="messageChannel"
-							auto-startup="true" />						
-	 						
-		
-		 <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler3" 
-							cassandra-template="cassandraTemplate" 
-							operation-type="INSERT"
-							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
-							auto-startup="true" />
-		 
-		  <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler4" 
-							cassandra-template="cassandraTemplate" 
-							operation-type="STATEMENT"
-							query="SELECT * FROM book limit :size"
-                            output-channel="resultChannel"
-                            produces-reply="true"
-							auto-startup="true">
-		    <int-cassandra:parameter-expressions name="author" expression="payload"/>
-		    <int-cassandra:parameter-expressions name="size" expression="headers.limit"/>	
-		  </int-cassandra:outbound-channel-adapter>						
+							statement-expression="T(com.datastax.driver.core.querybuilder.QueryBuilder).truncate('book')"
+							auto-startup="true" />	
 	
-		
+	<int:channel id="inputChannel" />
+
+	<int-cassandra:outbound-gateway id="cassandraMessageHandler5"
+					input-channel="inputChannel"
+					cassandra-template="cassandraTemplate" 
+					type="STATEMENT"
+					query="SELECT * FROM book limit :size" 
+					reply-channel="resultChannel"
+					auto-startup="true">
+		<int-cassandra:parameter-expression name="author" expression="payload" />
+		<int-cassandra:parameter-expression name="size" expression="headers.limit" />
+	</int-cassandra:outbound-gateway>		
 
 	<cassandra:repositories base-package="org.springframework.integration.cassandra.test.domain" />
-
 </beans>
