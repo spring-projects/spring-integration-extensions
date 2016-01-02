@@ -36,9 +36,9 @@
 						</xsd:documentation>
 					</xsd:annotation>
 				    </xsd:element>
-					<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
 					<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0" maxOccurs="1" />
 					</xsd:choice>
+					<xsd:attributeGroup ref="integration:channelAdapterAttributes" />
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -78,7 +78,14 @@
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:attribute>
-					<xsd:attribute name="input-channel" type="xsd:string">
+					<xsd:attribute name="id" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation>
+									Unique ID for this gateway.
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="request-channel" type="xsd:string">
 						<xsd:annotation>
 							<xsd:documentation>
 								Message Channel to which Messages should be sent to Cassandra.
@@ -91,6 +98,7 @@
 							</xsd:appinfo>
 						</xsd:annotation>
 					</xsd:attribute>
+					<xsd:attributeGroup ref="integration:smartLifeCycleAttributeGroup"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -102,7 +110,9 @@
 				Common configuration for cassandra adapters.
 			</xsd:documentation>
 		</xsd:annotation>
-		<xsd:attributeGroup ref="integration:channelAdapterAttributes" />
+		<xsd:sequence>
+				<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
 		<xsd:attribute name="cassandra-template" type="xsd:string">
 			<xsd:annotation>
 			<xsd:documentation>
@@ -133,18 +143,21 @@
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="type" default="INSERT" use="optional">
+		<xsd:attribute name="mode" default="INSERT" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>
 				<![CDATA[
-					Indicates the operation to do on cassandra db]]>
+					Indicates the `CassandraMessageHandler` behavior. Ignored in case of explicit 'query', 'ingest-query' or `statement-expression`.
+And yes, let's consider to rename the queryType property to the mode as well!
+Add a line note
+]]>
 				</xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:union memberTypes="cassandraHandlerType xsd:string"/>
 			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="cql-ingest" type="xsd:string">
+		<xsd:attribute name="ingest-query" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
 					<![CDATA[Cql query to ingest data]]>

@@ -50,13 +50,13 @@
      <int-cassandra:outbound-channel-adapter id="outbound2" 
 							channel="input"
 							cassandra-template="cassandraTemplate" 
-							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
+							ingest-query="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
 							/>
     
     <int-cassandra:outbound-gateway id="outgateway" 
-							input-channel="input"    						
+							request-channel="input"    						
 							cassandra-template="cassandraTemplate" 
-							type="STATEMENT"
+							mode="STATEMENT"
 							write-options="writeOptions"
 							query="SELECT * FROM book limit :size"
                             reply-channel ="resultChannel"
@@ -68,7 +68,7 @@
     <int-cassandra:outbound-channel-adapter id="outbound4" 
 							cassandra-template="cassandraTemplate" 
 							write-options="writeOptions"
-							statement-expression="T(com.datastax.driver.core.querybuilder.QueryBuilder).truncate('book')"
+							statement-expression="T(QueryBuilder).truncate('book')"
 							auto-startup="false"
 							/>
     

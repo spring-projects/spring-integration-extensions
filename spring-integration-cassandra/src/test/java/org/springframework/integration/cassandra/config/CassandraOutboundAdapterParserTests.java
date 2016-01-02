@@ -24,6 +24,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.cassandra.outbound.CassandraMessageHandler;
 import org.springframework.integration.test.util.TestUtils;
 
+
 /**
  * @author Filippo Balicchia
  *
@@ -38,13 +39,14 @@ public class CassandraOutboundAdapterParserTests {
 				CassandraMessageHandler.class);
 
 		assertEquals("outbound1.adapter", TestUtils.getPropertyValue(handler, "componentName"));
-		assertEquals(CassandraMessageHandler.Type.INSERT, TestUtils.getPropertyValue(handler, "queryType"));
+		assertEquals(CassandraMessageHandler.Type.INSERT, TestUtils.getPropertyValue(handler, "mode"));
 		assertEquals(context.getBean("cassandraTemplate"), TestUtils.getPropertyValue(handler, "cassandraTemplate"));
 		assertEquals(context.getBean("writeOptions"), TestUtils.getPropertyValue(handler, "writeOptions"));
 		context.close();
 
 	}
 
+	
 	@Test(expected = BeanDefinitionParsingException.class)
 	public void ingestConfigFail() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("outbound-adapter-parser-fail.xml",
@@ -77,7 +79,7 @@ public class CassandraOutboundAdapterParserTests {
 				CassandraMessageHandler.class);
 
 		assertEquals(Boolean.TRUE, TestUtils.getPropertyValue(handler, "producesReply"));
-		assertEquals(CassandraMessageHandler.Type.STATEMENT, TestUtils.getPropertyValue(handler, "queryType"));
+		assertEquals(CassandraMessageHandler.Type.STATEMENT, TestUtils.getPropertyValue(handler, "mode"));
 		assertEquals(context.getBean("writeOptions"), TestUtils.getPropertyValue(handler, "writeOptions"));
 		context.close();
 
@@ -92,7 +94,7 @@ public class CassandraOutboundAdapterParserTests {
 				CassandraMessageHandler.class);
 
 		assertEquals("outbound4.adapter", TestUtils.getPropertyValue(handler, "componentName"));
-		assertEquals(CassandraMessageHandler.Type.STATEMENT, TestUtils.getPropertyValue(handler, "queryType"));
+		assertEquals(CassandraMessageHandler.Type.STATEMENT, TestUtils.getPropertyValue(handler, "mode"));
 		assertEquals(context.getBean("cassandraTemplate"), TestUtils.getPropertyValue(handler, "cassandraTemplate"));
 		assertEquals(context.getBean("writeOptions"), TestUtils.getPropertyValue(handler, "writeOptions"));
 		context.close();

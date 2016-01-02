@@ -28,6 +28,12 @@ import org.w3c.dom.Element;
  * @author Filippo Balicchia
  */
 public class CassandraOutboundGatewayParser extends AbstractConsumerEndpointParser {
+    
+    
+    @Override
+    protected String getInputChannelAttributeName() {
+        return "request-channel";
+    }
 
 	@Override
 	protected BeanDefinitionBuilder parseHandler(Element element, ParserContext parserContext) {

@@ -18,11 +18,10 @@ package org.springframework.integration.cassandra.config.xml;
 import java.util.List;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedMap;
+import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.integration.config.ExpressionFactoryBean;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -39,54 +38,64 @@ public class CassandraParserUtils {
 			BeanDefinitionBuilder builder) {
 
 		String cassandraTemplate = element.getAttribute("cassandra-template");
-		String operationType = element.getAttribute("type");
-		String writeOptionsInstance = element.getAttribute("write-options");
-		String ingestQuery = element.getAttribute("cql-ingest");
+		String mode = element.getAttribute("mode");
+		String ingestQuery = element.getAttribute("ingest-query");
 		String query = element.getAttribute("query");
 
 		if (StringUtils.isEmpty(cassandraTemplate)) {
-			parserContext.getReaderContext().error("cassandra-template is empty", element);
+			parserContext.getReaderContext().error("cassandra-template is required", element);
 		}
 
-		builder.addConstructorArgValue(new RuntimeBeanReference(cassandraTemplate));
-		if (!StringUtils.isEmpty(operationType)) {
-			builder.addConstructorArgValue(operationType);
-		}
-
-		if (!StringUtils.isEmpty(writeOptionsInstance)) {
-			builder.addPropertyReference("writeOptions", writeOptionsInstance);
-		}
-
-		if (!StringUtils.isEmpty(ingestQuery) && !"INSERT".equalsIgnoreCase(operationType)) {
-			parserContext.getReaderContext().error("Ingest cql query can be apply only with insert operation", element);
-		}
-		else if (!StringUtils.isEmpty(ingestQuery)) {
-			builder.addPropertyValue("ingestQuery", ingestQuery);
-		}
-
-		if (!StringUtils.isEmpty(query)) {
-			builder.addPropertyValue("query", query);
+		builder.addConstructorArgReference(cassandraTemplate);
+		if (!StringUtils.isEmpty(mode)) {
+			builder.addConstructorArgValue(mode);
 		}
 
 		BeanDefinition statementExpressionDef = IntegrationNamespaceUtils
 				.createExpressionDefIfAttributeDefined("statement-expression", element);
+
 		if (statementExpressionDef != null) {
 			builder.addPropertyValue("statementExpression", statementExpressionDef);
 		}
+
+		if (!areMutuallyExclusive(query, statementExpressionDef, ingestQuery)) {
+			parserContext.getReaderContext()
+					.error("'query', 'ingest-query', 'statement-expression' are mutually exclusive", element);
+		}
+
+		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "write-options");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "ingest-query");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "query");
 
 		List<Element> parameterExpression = DomUtils.getChildElementsByTagName(element, "parameter-expression");
 		if (!CollectionUtils.isEmpty(parameterExpression)) {
 			ManagedMap<String, Object> parameterExpressionsMap = new ManagedMap<String, Object>();
 			for (Element parameterExpressionElement : parameterExpression) {
-				String name = parameterExpressionElement.getAttribute("name");
-				String expression = parameterExpressionElement.getAttribute("expression");
-				BeanDefinitionBuilder factoryBeanBuilder = BeanDefinitionBuilder
-						.genericBeanDefinition(ExpressionFactoryBean.class);
-				factoryBeanBuilder.addConstructorArgValue(expression);
-				parameterExpressionsMap.put(name, factoryBeanBuilder.getBeanDefinition());
+				String name = parameterExpressionElement.getAttribute(AbstractBeanDefinitionParser.NAME_ATTRIBUTE);
+				BeanDefinition expression = IntegrationNamespaceUtils.createExpressionDefIfAttributeDefined(
+						IntegrationNamespaceUtils.EXPRESSION_ATTRIBUTE, parameterExpressionElement);
+				if (expression != null) {
+					parameterExpressionsMap.put(name, expression);
+				}
+
 			}
 			builder.addPropertyValue("parameterExpressions", parameterExpressionsMap);
 		}
 
 	}
+
+	private static boolean areMutuallyExclusive(String query, BeanDefinition statementExpressionDef,
+			String ingestQuery) {
+
+		if (StringUtils.isEmpty(query) && statementExpressionDef == null && StringUtils.isEmpty(ingestQuery)) {
+			return true;
+		}
+		else if (StringUtils.hasText(query) && statementExpressionDef != null && StringUtils.hasText(ingestQuery)) {
+			return false;
+		}
+		else {
+			return (StringUtils.hasText(query) ^ statementExpressionDef != null) ^ StringUtils.hasText(ingestQuery);
+		}
+	}
+
 }

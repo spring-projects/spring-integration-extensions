@@ -38,7 +38,7 @@
 							
 	<int-cassandra:outbound-channel-adapter id="wrong-outbound" 
 							cassandra-template="cassandraTemplate" 
-							type="UPDATE"
-							cql-ingest="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
+							query="UPDATE"
+							ingest-query="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
 							/>
 </beans>
