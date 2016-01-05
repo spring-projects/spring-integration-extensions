@@ -36,7 +36,6 @@
 						</xsd:documentation>
 					</xsd:annotation>
 				    </xsd:element>
-					<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0" maxOccurs="1" />
 					</xsd:choice>
 					<xsd:attributeGroup ref="integration:channelAdapterAttributes" />
 				</xsd:extension>
@@ -63,7 +62,6 @@
 						</xsd:documentation>
 					</xsd:annotation>
 				    </xsd:element>
-					<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0" maxOccurs="1" />
 					</xsd:choice>
 					<xsd:attribute name="reply-channel" type="xsd:string">
 						<xsd:annotation>
@@ -112,6 +110,7 @@
 		</xsd:annotation>
 		<xsd:sequence>
 				<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
+				<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0" maxOccurs="1" />
 		</xsd:sequence>
 		<xsd:attribute name="cassandra-template" type="xsd:string">
 			<xsd:annotation>
@@ -147,10 +146,7 @@
 			<xsd:annotation>
 				<xsd:documentation>
 				<![CDATA[
-					Indicates the `CassandraMessageHandler` behavior. Ignored in case of explicit 'query', 'ingest-query' or `statement-expression`.
-And yes, let's consider to rename the queryType property to the mode as well!
-Add a line note
-]]>
+					Indicates the `CassandraMessageHandler` behavior. Ignored in case of explicit 'query', 'ingest-query' or `statement-expression`.]]>
 				</xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>

@@ -31,7 +31,8 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.cassandra.test.domain.BookSampler;
@@ -40,6 +41,9 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -49,39 +53,37 @@ import com.datastax.driver.core.querybuilder.Select;
 /**
  * @author Filippo Balicchia
  */
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
+@DirtiesContext
 public class CassandraOutboundAdapterIntegrationTests {
 
 	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 
-	private static ClassPathXmlApplicationContext context;
+	@Autowired
+	private CassandraTemplate cassandraTemplate;
 
-	private static CassandraTemplate template;
+	@Autowired
+	private DirectChannel cassandraMessageHandler1;
 
-	private static DirectChannel cassandraMessageHandler1;
+	@Autowired
+	private DirectChannel cassandraMessageHandler2;
 
-	private static DirectChannel cassandraMessageHandler2;
+	@Autowired
+	private DirectChannel cassandraMessageHandler3;
 
-	private static DirectChannel cassandraMessageHandler3;
+	@Autowired
+	private DirectChannel cassandraMessageHandler4;
 
-	private static DirectChannel cassandraMessageHandler4;
+	@Autowired
+	private DirectChannel inputChannel;
 
-	private static DirectChannel inputChannel;
-
-	private static PollableChannel resultChannel;
+	@Autowired
+	private PollableChannel resultChannel;
 
 	@BeforeClass
 	public static void init() throws TTransportException, IOException, InterruptedException, ConfigurationException {
 		startCassandra();
-		context = new ClassPathXmlApplicationContext("outbound-adapter-parser-config.xml",
-				CassandraOutboundAdapterIntegrationTests.class);
-		template = context.getBean("cassandraTemplate", CassandraTemplate.class);
-		resultChannel = context.getBean("resultChannel", PollableChannel.class);
-		cassandraMessageHandler1 = context.getBean("cassandraMessageHandler1", DirectChannel.class);
-		cassandraMessageHandler2 = context.getBean("cassandraMessageHandler2", DirectChannel.class);
-		cassandraMessageHandler3 = context.getBean("cassandraMessageHandler3", DirectChannel.class);
-		cassandraMessageHandler4 = context.getBean("cassandraMessageHandler4", DirectChannel.class);
-		inputChannel = context.getBean("inputChannel", DirectChannel.class);
 
 	}
 
@@ -102,9 +104,9 @@ public class CassandraOutboundAdapterIntegrationTests {
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
 		cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = template.select(select, Book.class);
+		List<Book> books = cassandraTemplate.select(select, Book.class);
 		assertEquals(1, books.size());
-		template.delete(b1);
+		cassandraTemplate.delete(b1);
 	}
 
 	@Test
@@ -143,9 +145,9 @@ public class CassandraOutboundAdapterIntegrationTests {
 		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
 		cassandraMessageHandler3.send(message);
 		Select select = QueryBuilder.select().all().from("book");
-		books = template.select(select, Book.class);
+		books = cassandraTemplate.select(select, Book.class);
 		assertEquals(5, books.size());
-		template.delete(books);
+		cassandraTemplate.delete(books);
 	}
 
 	@Test
@@ -153,10 +155,10 @@ public class CassandraOutboundAdapterIntegrationTests {
 		Message<Book> message = MessageBuilder.withPayload(BookSampler.getBook()).build();
 		cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = template.select(select, Book.class);
+		List<Book> books = cassandraTemplate.select(select, Book.class);
 		assertEquals(1, books.size());
 		cassandraMessageHandler4.send(MessageBuilder.withPayload("Empty").build());
-		books = template.select(select, Book.class);
+		books = cassandraTemplate.select(select, Book.class);
 		assertEquals(0, books.size());
 	}
 

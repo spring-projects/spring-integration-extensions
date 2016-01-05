@@ -30,7 +30,6 @@ import org.w3c.dom.Element;
 
 /**
  * @author Filippo Balicchia
- *
  */
 public class CassandraParserUtils {
 
@@ -84,7 +83,7 @@ public class CassandraParserUtils {
 
 	}
 
-	private static boolean areMutuallyExclusive(String query, BeanDefinition statementExpressionDef,
+	public static boolean areMutuallyExclusive(String query, BeanDefinition statementExpressionDef,
 			String ingestQuery) {
 
 		if (StringUtils.isEmpty(query) && statementExpressionDef == null && StringUtils.isEmpty(ingestQuery)) {
@@ -97,5 +96,4 @@ public class CassandraParserUtils {
 			return (StringUtils.hasText(query) ^ statementExpressionDef != null) ^ StringUtils.hasText(ingestQuery);
 		}
 	}
-
 }

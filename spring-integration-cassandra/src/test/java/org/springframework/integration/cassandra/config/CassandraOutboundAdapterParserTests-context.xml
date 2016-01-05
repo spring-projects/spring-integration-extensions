@@ -12,35 +12,23 @@
 
 
     <int:poller default="true" fixed-delay="50"/>
-
-	<bean id="cassandraSession" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg value="com.datastax.driver.core.Session" />
-	</bean>
-
-	<bean id="writeOptions" class="org.springframework.cassandra.core.WriteOptions">
-		<property name="ttl" value="60" />
-		<property name="consistencyLevel">
-			<util:constant
-				static-field="org.springframework.cassandra.core.ConsistencyLevel.ONE" />
-		</property>
-		<property name="retryPolicy">
-			<util:constant
-				static-field="org.springframework.cassandra.core.RetryPolicy.DOWNGRADING_CONSISTENCY" />
-		</property>
-	</bean>
-
-	<cassandra:mapping />
-	<cassandra:converter />
-	<cassandra:template id="cassandraTemplate" />
 	
 	<int:channel id="input">
 		<int:queue/>
 	</int:channel>
+
+	<int:channel id="resultChannel">
+		<int:queue/>
+	</int:channel>
 	
-	<bean id="resultChannel" class="org.springframework.integration.channel.QueueChannel"/>
+	<bean id="cassandraTemplate" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="org.springframework.data.cassandra.core.CassandraOperations" />
+	</bean>
 	
-	
+	<bean id="writeOptions" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="org.springframework.cassandra.core.WriteOptions" />
+	</bean>
+
 	<int-cassandra:outbound-channel-adapter id="outbound1" 
 							cassandra-template="cassandraTemplate" 
 							write-options="writeOptions"
