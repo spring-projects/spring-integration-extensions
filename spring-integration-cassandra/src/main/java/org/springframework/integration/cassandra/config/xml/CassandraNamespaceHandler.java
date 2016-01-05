@@ -20,12 +20,14 @@ import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHa
 
 /**
  * @author Artem Bilan
+ * @author Filippo Balicchia
  */
 public class CassandraNamespaceHandler extends AbstractIntegrationNamespaceHandler {
 
 	@Override
 	public void init() {
-
+		registerBeanDefinitionParser("outbound-channel-adapter", new CassandraOutboundChannelAdapterParser());
+		registerBeanDefinitionParser("outbound-gateway", new CassandraOutboundGatewayParser());
 	}
 
 }
