@@ -73,7 +73,7 @@ public class UnZipTransformerTests {
 	@Test
 	public void unzipSingleFileAsInputStreamToByteArray() throws IOException {
 
-		final Resource resource = resourceLoader.getResource("classpath:testzipdata/single.zip");
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
 
 		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
@@ -103,7 +103,7 @@ public class UnZipTransformerTests {
 	@Test
 	public void unzipSingleFileToByteArray() throws IOException {
 
-		final Resource resource = resourceLoader.getResource("classpath:testzipdata/single.zip");
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
 
 		final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
@@ -138,7 +138,7 @@ public class UnZipTransformerTests {
 	@Test
 	public void unzipSingleFileToByteArrayWithDeleteFilesTrue() throws IOException {
 
-		final Resource resource = resourceLoader.getResource("classpath:testzipdata/single.zip");
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
 
 		final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
@@ -177,7 +177,7 @@ public class UnZipTransformerTests {
 	@Test
 	public void unzipMultipleFilesAsInputStreamToByteArray() throws IOException {
 
-		final Resource resource = resourceLoader.getResource("classpath:testzipdata/countries.zip");
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
 		final InputStream is = resource.getInputStream();
 
 		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
@@ -205,9 +205,9 @@ public class UnZipTransformerTests {
 	 * @throws IOException
 	 */
 	@Test
-	public void unzipMultipleFilesAsInputstreamWithExpectSingleResultTrue() throws IOException {
+	public void unzipMultipleFilesAsInputStreamWithExpectSingleResultTrue() throws IOException {
 
-		final Resource resource = resourceLoader.getResource("classpath:testzipdata/countries.zip");
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
 		final InputStream is = resource.getInputStream();
 
 		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
@@ -233,7 +233,7 @@ public class UnZipTransformerTests {
 	@Test
 	public void unzipInvalidZipFile() throws IOException, InterruptedException {
 
-		File fileToUnzip = testFolder.newFile();
+		File fileToUnzip = this.testFolder.newFile();
 		FileUtils.writeStringToFile(fileToUnzip, "hello world");
 
 		UnZipTransformer unZipTransformer = new UnZipTransformer();

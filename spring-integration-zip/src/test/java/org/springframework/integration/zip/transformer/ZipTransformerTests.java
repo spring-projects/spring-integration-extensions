@@ -148,7 +148,8 @@ public class ZipTransformerTests {
 				Assert.assertTrue(file.isFile());
 
 				//See http://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
-				Assert.assertTrue(String.format("%s : %s", fileDate.getTime() - 4000, file.lastModified()), (fileDate.getTime() - 4000) < file.lastModified());
+				Assert.assertTrue(String.format("%s : %s", fileDate.getTime() - 4000, file.lastModified()),
+						(fileDate.getTime() - 4000) < file.lastModified());
 				Assert.assertTrue((fileDate.getTime() + 4000) > file.lastModified());
 
 				Assert.assertTrue(
@@ -241,8 +242,7 @@ public class ZipTransformerTests {
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
 		zipTransformer.afterPropertiesSet();
 
-		final Message<Collection<File>> message = MessageBuilder.withPayload(files)
-																.build();
+		final Message<Collection<File>> message = MessageBuilder.withPayload(files).build();
 
 		final Message<?> result = zipTransformer.transform(message);
 
@@ -259,7 +259,7 @@ public class ZipTransformerTests {
 
 	private File createTestFile(int size) throws IOException {
 
-		final File temporaryTestDirectory = testFolder.newFolder();
+		final File temporaryTestDirectory = this.testFolder.newFolder();
 
 		final File testFile = new File(temporaryTestDirectory, "testdata" + UUID.randomUUID().toString() + ".data");
 

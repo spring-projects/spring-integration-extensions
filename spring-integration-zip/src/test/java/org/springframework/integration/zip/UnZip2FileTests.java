@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,29 +60,28 @@ public class UnZip2FileTests {
 
 	@Before
 	public void setup() throws IOException {
-		this.workDir = testFolder.newFolder();
-		properties.put("workDir", workDir);
+		this.workDir = this.testFolder.newFolder();
+		properties.put("workDir", this.workDir);
 		System.out.print(this.workDir.getAbsolutePath());
 
-		context = new AnnotationConfigApplicationContext();
-		context.register(ContextConfiguration.class);
-		context.refresh();
-		input = context.getBean("input", MessageChannel.class);
-		resourceLoader = context;
+		this.context = new AnnotationConfigApplicationContext();
+		this.context.register(ContextConfiguration.class);
+		this.context.refresh();
+		this.input = this.context.getBean("input", MessageChannel.class);
+		this.resourceLoader = this.context;
 	}
 
 	@After
 	public void cleanup() {
-		if (context != null) {
-			context.close();
+		if (this.context != null) {
+			this.context.close();
 		}
 	}
 
 	@Test
-	@Ignore
 	public void unZipWithOneEntry() throws Exception {
 
-		final Resource resource = resourceLoader.getResource("classpath:testzipdata/single.zip");
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
 
 		byte[] zipdata = IOUtils.toByteArray(is);
@@ -157,4 +156,5 @@ public class UnZip2FileTests {
 		}
 
 	}
+
 }

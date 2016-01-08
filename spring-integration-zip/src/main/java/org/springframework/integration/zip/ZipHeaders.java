@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,17 @@ package org.springframework.integration.zip;
 
 /**
  * Zip adapter specific message headers.
- *
  * @author Gunnar Hillert
  * @since 1.0
  */
-public final class ZipHeaders {
+public abstract class ZipHeaders {
 
-	private static final String PREFIX = "zip_";
+	public static final String PREFIX = "zip_";
 
 	public static final String ZIP_ENTRY_FILE_NAME = PREFIX + "entryFilename";
-	public static final String ZIP_ENTRY_PATH = PREFIX + "entryPath";
-	public static final String ZIP_ENTRY_LAST_MODIFIED_DATE = PREFIX + "entryLastModifiedDate";
 
-	/** Noninstantiable utility class */
-	private ZipHeaders() {
-		throw new AssertionError();
-	}
+	public static final String ZIP_ENTRY_PATH = PREFIX + "entryPath";
+
+	public static final String ZIP_ENTRY_LAST_MODIFIED_DATE = PREFIX + "entryLastModifiedDate";
 
 }

@@ -26,7 +26,7 @@ The following input data types can be **compressed**:
 * Iterable
 
 In input data types can be mixed as part of an Iterable. E.g. you should be
-easily be able to compress a collection containing Strings, byte arrays and Files.
+easily able to compress a collection containing Strings, byte arrays and Files.
 It is important to note that nested Iterables are *NOT SUPPORTED* at present time.
 
 The zip transformer can be customized by setting several properties:
