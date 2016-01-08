@@ -69,39 +69,15 @@
 	</xsd:element>
 
 	<xsd:complexType name="transformerType">
+		<xsd:sequence>
+			<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
 		<xsd:attribute name="id" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[Identifies the underlying Spring bean definition (EventDrivenConsumer)]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="input-channel" type="xsd:string">
-			<xsd:annotation>
-				<xsd:documentation>
-					<![CDATA[The input channel of the transformer.]]>
-				</xsd:documentation>
-				<xsd:appinfo>
-					<tool:annotation kind="ref">
-						<tool:expected-type
-							type="org.springframework.integration.MessageChannel" />
-					</tool:annotation>
-				</xsd:appinfo>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="output-channel" type="xsd:string">
-			<xsd:annotation>
-				<xsd:documentation>
-					<![CDATA[The channel to which the transformer will send the transformed message.
-					Optional, because incoming messages can specify a reply channel using the 'replyChannel'
-					message header value themselves.]]>
-				</xsd:documentation>
-				<xsd:appinfo>
-					<tool:annotation kind="ref">
-						<tool:expected-type
-							type="org.springframework.integration.MessageChannel" />
-					</tool:annotation>
-				</xsd:appinfo>
-			</xsd:annotation>
-		</xsd:attribute>
+		<xsd:attributeGroup ref="integration:inputOutputChannelGroup"/>
 		<xsd:attribute name="delete-files" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>

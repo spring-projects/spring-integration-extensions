@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ import java.util.zip.Deflater;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.zeroturnaround.zip.ByteSource;
+import org.zeroturnaround.zip.FileSource;
+import org.zeroturnaround.zip.ZipEntrySource;
+
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.transformer.Transformer;
 import org.springframework.integration.zip.ZipHeaders;
@@ -34,9 +36,6 @@ import org.springframework.messaging.MessageHandlingException;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
-import org.zeroturnaround.zip.ByteSource;
-import org.zeroturnaround.zip.FileSource;
-import org.zeroturnaround.zip.ZipEntrySource;
 
 /**
  * {@link Transformer} implementation that applies a Zip transformation to the
@@ -62,8 +61,6 @@ public class ZipTransformer extends AbstractZipTransformer {
 	private volatile int compressionLevel = Deflater.DEFAULT_COMPRESSION;
 
 	private volatile boolean useFileAttributes = true;
-
-	@Autowired Environment env;
 
 	/**
 	 * Sets the compression level. Default is {@link Deflater#DEFAULT_COMPRESSION}.
@@ -148,7 +145,8 @@ public class ZipTransformer extends AbstractZipTransformer {
 
 				for (Object item : (Iterable<?>) payload) {
 
-					final ZipEntrySource zipEntrySource = createZipEntrySource(item, lastModifiedDate, baseName + "_" + counter + fileExtension, useFileAttributes);
+					final ZipEntrySource zipEntrySource = createZipEntrySource(item, lastModifiedDate, baseName + "_"
+							+ counter + fileExtension, this.useFileAttributes);
 					if (logger.isDebugEnabled()) {
 						logger.debug("ZipEntrySource path: '" + zipEntrySource.getPath() + "'");
 					}
@@ -157,26 +155,30 @@ public class ZipTransformer extends AbstractZipTransformer {
 				}
 			}
 			else {
-				final ZipEntrySource zipEntrySource = createZipEntrySource(payload, lastModifiedDate, zipEntryName, useFileAttributes);
+				final ZipEntrySource zipEntrySource =
+						createZipEntrySource(payload, lastModifiedDate, zipEntryName, this.useFileAttributes);
 				entries.add(zipEntrySource);
 			}
 
 			final byte[] zippedBytes = SpringZipUtils.pack(entries, this.compressionLevel);
 
-			if (ZipResultType.FILE.equals(zipResultType)) {
+			if (ZipResultType.FILE.equals(this.zipResultType)) {
 				final File zippedFile = new File(this.workDirectory, zipFileName);
 				FileCopyUtils.copy(zippedBytes, zippedFile);
 				zippedData = zippedFile;
 			}
-			else if (ZipResultType.BYTE_ARRAY.equals(zipResultType)) {
+			else if (ZipResultType.BYTE_ARRAY.equals(this.zipResultType)) {
 				zippedData = zippedBytes;
 			}
 			else {
-				throw new IllegalStateException("Unsupported zipResultType " + zipResultType);
+				throw new IllegalStateException("Unsupported zipResultType " + this.zipResultType);
 			}
 
-			return this.getMessageBuilderFactory()
-				.withPayload(zippedData).copyHeaders(message.getHeaders()).setHeader(FileHeaders.FILENAME, zipFileName).build();
+			return getMessageBuilderFactory()
+					.withPayload(zippedData)
+					.copyHeaders(message.getHeaders())
+					.setHeader(FileHeaders.FILENAME, zipFileName)
+					.build();
 		}
 		catch (Exception e) {
 			throw new MessageHandlingException(message, "Failed to apply Zip transformation.", e);
@@ -217,13 +219,12 @@ public class ZipTransformer extends AbstractZipTransformer {
 				bytesToCompress = (byte[]) item;
 			}
 
-			final ZipEntrySource zipEntrySource = new ByteSource(zipEntryName, bytesToCompress, lastModifiedDate.getTime());
-
-			return zipEntrySource;
+			return new ByteSource(zipEntryName, bytesToCompress, lastModifiedDate.getTime());
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported payload type. The only supported payloads are " +
 						"java.io.File, java.lang.String, and byte[]");
 		}
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  * Base class for transformers that provide Zip compression.
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  */
 public abstract class AbstractZipTransformer extends AbstractTransformer {
@@ -41,9 +42,10 @@ public abstract class AbstractZipTransformer extends AbstractTransformer {
 
 	protected volatile FileNameGenerator fileNameGenerator;
 
-	protected volatile ZipResultType zipResultType = ZipResultType.FILE;
+	protected ZipResultType zipResultType = ZipResultType.FILE;
 
-	protected volatile File workDirectory = new File(System.getProperty("java.io.tmpdir") + File.separator + "ziptransformer");
+	protected volatile File workDirectory =
+			new File(System.getProperty("java.io.tmpdir") + File.separator + "ziptransformer");
 
 	protected volatile boolean deleteFiles;
 
@@ -93,11 +95,11 @@ public abstract class AbstractZipTransformer extends AbstractTransformer {
 	protected void onInit() throws Exception {
 		super.onInit();
 
-		if (!workDirectory.exists()) {
+		if (!this.workDirectory.exists()) {
 			if (logger.isInfoEnabled()) {
 				logger.info(String.format("Creating work directory '%s'.", this.workDirectory));
 			}
-			workDirectory.mkdirs();
+			Assert.isTrue(this.workDirectory.mkdirs(), "Can't create the 'workDirectory': " + this.workDirectory);
 		}
 		final DefaultFileNameGenerator defaultFileNameGenerator = new DefaultFileNameGenerator();
 		defaultFileNameGenerator.setBeanFactory(getBeanFactory());

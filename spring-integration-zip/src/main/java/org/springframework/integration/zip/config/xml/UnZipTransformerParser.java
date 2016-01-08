@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
 
 package org.springframework.integration.zip.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.zip.transformer.UnZipTransformer;
-import org.springframework.integration.zip.transformer.ZipResultType;
-import org.springframework.util.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * Parser for the 'unzip-transformer' element.
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  */
 public class UnZipTransformerParser extends AbstractZipTransformerParser {
@@ -39,27 +39,7 @@ public class UnZipTransformerParser extends AbstractZipTransformerParser {
 
 	@Override
 	protected void postProcessTransformer(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		Object source = parserContext.extractSource(element);
-
-		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "charset");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "expect-single-result");
-
-		final String resultType     = element.getAttribute("result-type");
-
-		if (StringUtils.hasText(resultType)) {
-
-			final ZipResultType zipResultType = ZipResultType.convertToZipResultType(resultType);
-
-			if (zipResultType != null) {
-				builder.addPropertyValue("zipResultType", zipResultType);
-			}
-			else {
-				parserContext.getReaderContext().error(
-					String.format("Unable to convert the provided result-type '%s' " +
-							"to the respective ZipResultType enum.", resultType), source);
-			}
-
-		}
 	}
 
 }

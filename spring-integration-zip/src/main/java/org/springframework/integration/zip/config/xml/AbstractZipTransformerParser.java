@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import org.w3c.dom.Element;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.AbstractTransformerParser;
+import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.util.StringUtils;
 
 /**
  * Base class for Zip transformer parsers.
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  */
 public abstract class AbstractZipTransformerParser extends AbstractTransformerParser {
@@ -42,7 +44,9 @@ public abstract class AbstractZipTransformerParser extends AbstractTransformerPa
 		if (StringUtils.hasText(deleteFiles)) {
 			builder.addPropertyValue("deleteFiles", deleteFiles);
 		}
-		this.postProcessTransformer(element, parserContext, builder);
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "charset");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "result-type", "zipResultType");
+		postProcessTransformer(element, parserContext, builder);
 	}
 
 	/**

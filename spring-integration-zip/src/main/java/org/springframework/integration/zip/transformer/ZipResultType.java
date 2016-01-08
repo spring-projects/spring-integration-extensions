@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,48 +15,12 @@
  */
 package org.springframework.integration.zip.transformer;
 
-import org.springframework.util.Assert;
-
 /**
- *
  * @author Gunnar Hillert
  * @since 1.0
  */
 public enum ZipResultType {
 
-	FILE("FILE"),
-	BYTE_ARRAY("BYTE_ARRAY");
-
-	private String id;
-
-	private ZipResultType(String id) {
-		this.id = id;
-	}
-
-	/**
-	 * Retrieves the matching enum constant for a provided String representation
-	 * of the {@link ZipResultType}. The provided name must match exactly the identifier as
-	 * used to declare the enum constant.
-	 *
-	 * @param zipResultTypeAsString Name of the enum to convert. Must be not null and not empty.
-	 * @return The enumeration that matches. Returns Null of no match was found.
-	 *
-	 */
-	public static ZipResultType convertToZipResultType(String zipResultTypeAsString) {
-
-		Assert.hasText(zipResultTypeAsString, "Parameter zipResultTypeAsString must not be null or empty");
-
-		for (ZipResultType zipResultType : ZipResultType.values()) {
-			if (zipResultType.name().equalsIgnoreCase(zipResultTypeAsString)) {
-				return zipResultType;
-			}
-		}
-
-		return null;
-	}
-
-	public String getId() {
-		return id;
-	}
+	FILE, BYTE_ARRAY
 
 }

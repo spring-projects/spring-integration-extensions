@@ -12,9 +12,11 @@
  */
 package org.springframework.integration.zip.config.xml;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -24,7 +26,8 @@ import java.util.zip.Deflater;
 
 import org.junit.After;
 import org.junit.Test;
-import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
+
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.channel.AbstractMessageChannel;
@@ -38,10 +41,8 @@ import org.springframework.integration.zip.transformer.ZipTransformer;
 import org.springframework.util.Assert;
 
 /**
- *
  * @author Gunnar Hillert
  * @since 1.0
- *
  */
 public class ZipTransformerParserTests {
 
@@ -52,7 +53,7 @@ public class ZipTransformerParserTests {
 
 		setUp("ZipTransformerParserTests.xml", getClass());
 
-		EventDrivenConsumer consumer   = this.context.getBean("zipTransformerWithDefaults", EventDrivenConsumer.class);
+		EventDrivenConsumer consumer = this.context.getBean("zipTransformerWithDefaults", EventDrivenConsumer.class);
 
 		final AbstractMessageChannel inputChannel = TestUtils.getPropertyValue(consumer, "inputChannel", AbstractMessageChannel.class);
 		assertEquals("input", inputChannel.getComponentName());
@@ -93,7 +94,7 @@ public class ZipTransformerParserTests {
 
 		setUp("ZipTransformerParserTests.xml", getClass());
 
-		EventDrivenConsumer consumer   = this.context.getBean("zipTransformer", EventDrivenConsumer.class);
+		EventDrivenConsumer consumer = this.context.getBean("zipTransformer", EventDrivenConsumer.class);
 
 		final AbstractMessageChannel inputChannel = TestUtils.getPropertyValue(consumer, "inputChannel", AbstractMessageChannel.class);
 		assertEquals("input", inputChannel.getComponentName());
@@ -130,30 +131,27 @@ public class ZipTransformerParserTests {
 	}
 
 	@Test
-	public void testZiptransformerParserWithIncorrectResultType() {
+	public void testZipTransformerParserWithIncorrectResultType() {
 
 		try {
-		setUp("ZipTransformerParserTestsWithIncorrectResultType.xml", getClass());
+			setUp("ZipTransformerParserTestsWithIncorrectResultType.xml", getClass());
+			fail("Expected a BeanDefinitionParsingException to be thrown.");
 		}
-		catch (BeanDefinitionParsingException e) {
-			String expectedErrorMessage = "Unable to convert the provided result-type 'INCORRECT' " +
-					"to the respective ZipResultType enum.";
-			assertTrue(String.format("Expected exception message to contain '%s' but got '%s'", expectedErrorMessage, e.getMessage()),
-					e.getMessage().contains(expectedErrorMessage));
-			return;
+		catch (BeanCreationException e) {
+			assertThat(e.getMessage(), containsString("Failed to convert property value of type [java.lang.String] " +
+					"to required type [org.springframework.integration.zip.transformer.ZipResultType] "));
 		}
-
-		fail("Expected a BeanDefinitionParsingException to be thrown.");
 	}
+
 	@After
-	public void tearDown(){
-		if(context != null){
+	public void tearDown() {
+		if (context != null) {
 			context.close();
 		}
 	}
 
-	public void setUp(String name, Class<?> cls){
-		context    = new ClassPathXmlApplicationContext(name, cls);
+	public void setUp(String name, Class<?> cls) {
+		context = new ClassPathXmlApplicationContext(name, cls);
 	}
 
 }

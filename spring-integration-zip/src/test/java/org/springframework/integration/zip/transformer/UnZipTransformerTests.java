@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.springframework.integration.zip.transformer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -43,11 +43,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"classpath:org/springframework/integration/zip/transformer/UnZipTransformerTests.xml"})
+@ContextConfiguration
 public class UnZipTransformerTests {
 
 	@Rule
@@ -70,7 +71,7 @@ public class UnZipTransformerTests {
 	 * @throws IOException
 	 */
 	@Test
-	public void unzipSingleFileAsInputstreamToByteArray() throws IOException {
+	public void unzipSingleFileAsInputStreamToByteArray() throws IOException {
 
 		final Resource resource = resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
@@ -142,7 +143,9 @@ public class UnZipTransformerTests {
 
 		final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
 
-		IOUtils.copy(is, new FileOutputStream(inputFile));
+		FileOutputStream output = new FileOutputStream(inputFile);
+		IOUtils.copy(is, output);
+		output.close();
 
 		final Message<File> message = MessageBuilder.withPayload(inputFile).build();
 
@@ -172,7 +175,7 @@ public class UnZipTransformerTests {
 	 * @throws IOException
 	 */
 	@Test
-	public void unzipMultipleFilesAsInputstreamToByteArray() throws IOException {
+	public void unzipMultipleFilesAsInputStreamToByteArray() throws IOException {
 
 		final Resource resource = resourceLoader.getResource("classpath:testzipdata/countries.zip");
 		final InputStream is = resource.getInputStream();
@@ -228,26 +231,26 @@ public class UnZipTransformerTests {
 	}
 
 	@Test
-	public void unzipInvalidZipFile() throws FileNotFoundException, IOException, InterruptedException {
+	public void unzipInvalidZipFile() throws IOException, InterruptedException {
 
-		final File fileToUnzip = testFolder.newFile();
+		File fileToUnzip = testFolder.newFile();
 		FileUtils.writeStringToFile(fileToUnzip, "hello world");
 
-		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		UnZipTransformer unZipTransformer = new UnZipTransformer();
 		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
 		unZipTransformer.setExpectSingleResult(true);
 		unZipTransformer.afterPropertiesSet();
 
-		final Message<File> message = MessageBuilder.withPayload(fileToUnzip).build();
+		Message<File> message = MessageBuilder.withPayload(fileToUnzip).build();
 
 		try {
 			unZipTransformer.transform(message);
+			Assert.fail("Expected a MessagingException to be thrown.");
 		}
 		catch (MessagingException e) {
-			Assert.assertTrue(e.getMessage().contains(String.format("Not a zip file: '%s'.", fileToUnzip.getAbsolutePath())));
-			return;
+			Assert.assertTrue(e.getMessage().contains(String.format("Not a zip file: '%s'.",
+					fileToUnzip.getAbsolutePath())));
 		}
-
-		Assert.fail("Expected a MessagingException to be thrown.");
 	}
+
 }
