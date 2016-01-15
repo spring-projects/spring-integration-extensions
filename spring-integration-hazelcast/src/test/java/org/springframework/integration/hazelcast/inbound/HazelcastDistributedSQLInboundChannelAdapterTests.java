@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
@@ -78,7 +79,7 @@ public class HazelcastDistributedSQLInboundChannelAdapterTests {
 		dsDistributedMap1.put(4, new HazelcastIntegrationTestUser(4, "TestName4", "TestSurname4", 40));
 		dsDistributedMap1.put(5, new HazelcastIntegrationTestUser(5, "TestName5", "TestSurname5", 50));
 
-		Message<?> msg = dsMapChannel1.receive(2_000);
+		Message<?> msg = dsMapChannel1.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
@@ -99,7 +100,7 @@ public class HazelcastDistributedSQLInboundChannelAdapterTests {
 		dsDistributedMap2.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2", 20));
 		dsDistributedMap2.put(3, new HazelcastIntegrationTestUser(3, "TestName3", "TestSurname3", 30));
 
-		Message<?> msg = dsMapChannel2.receive(2_000);
+		Message<?> msg = dsMapChannel2.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
@@ -114,7 +115,7 @@ public class HazelcastDistributedSQLInboundChannelAdapterTests {
 		dsDistributedMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2", 20));
 		dsDistributedMap3.put(3, new HazelcastIntegrationTestUser(3, "TestName3", "TestSurname3", 30));
 
-		Message<?> msg = dsMapChannel3.receive(2_000);
+		Message<?> msg = dsMapChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
@@ -130,7 +131,7 @@ public class HazelcastDistributedSQLInboundChannelAdapterTests {
 		dsDistributedMap4.put(4, new HazelcastIntegrationTestUser(4, "TestName4", "TestSurname4", 40));
 		dsDistributedMap4.put(5, new HazelcastIntegrationTestUser(5, "TestName5", "TestSurname5", 50));
 
-		Message<?> msg = dsMapChannel4.receive(2_000);
+		Message<?> msg = dsMapChannel4.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());

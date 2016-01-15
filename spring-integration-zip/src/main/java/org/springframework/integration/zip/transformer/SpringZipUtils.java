@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,8 @@ import org.zeroturnaround.zip.ZipException;
 /**
  * Once the Spring Integration Zip support matures, we need to contribute the
  * methods in this utility class back to the ZT Zip project.
- *
  * @author Gunnar Hillert
  * @since 1.0
- *
  */
 public class SpringZipUtils {
 
@@ -60,18 +58,17 @@ public class SpringZipUtils {
 		return outputStream.toByteArray();
 	}
 
-	public static void pack(Collection<ZipEntrySource> entries, File zip,
-			int compressionLevel) {
+	public static void pack(Collection<ZipEntrySource> entries, File zip, int compressionLevel) {
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Creating '" + zip + "' from "
-					+ entries + ".");
+			logger.debug("Creating '" + zip + "' from " + entries + ".");
 		}
 
 		final FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(zip);
-		} catch (FileNotFoundException e) {
+		}
+		catch (FileNotFoundException e) {
 			throw new IllegalStateException(String.format("File '%s' not found.", zip.getAbsolutePath()), e);
 		}
 
@@ -90,9 +87,11 @@ public class SpringZipUtils {
 			for (ZipEntrySource entry : entries) {
 				addEntry(entry, out);
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw rethrow(e);
-		} finally {
+		}
+		finally {
 			IOUtils.closeQuietly(out);
 		}
 
@@ -105,7 +104,8 @@ public class SpringZipUtils {
 		if (in != null) {
 			try {
 				IOUtils.copy(in, out);
-			} finally {
+			}
+			finally {
 				IOUtils.closeQuietly(in);
 			}
 		}
@@ -120,7 +120,8 @@ public class SpringZipUtils {
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 		try {
 			IOUtils.copy(in, out);
-		} finally {
+		}
+		finally {
 			IOUtils.closeQuietly(out);
 		}
 	}
@@ -134,16 +135,13 @@ public class SpringZipUtils {
 		try {
 			zipfile = new ZipFile(file);
 			return true;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			return false;
-		} finally {
-			try {
-				if (zipfile != null) {
-					zipfile.close();
-					zipfile = null;
-				}
-			} catch (IOException e) {
-			}
+		}
+		finally {
+			IOUtils.closeQuietly(zipfile);
 		}
 	}
+
 }

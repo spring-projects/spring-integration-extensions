@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
@@ -35,13 +36,10 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.Client;
 import com.hazelcast.core.ClientType;
-import com.hazelcast.core.DistributedObjectEvent;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.LifecycleEvent;
-import com.hazelcast.core.Member;
 import com.hazelcast.core.LifecycleEvent.LifecycleState;
-import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MigrationEvent;
 
 /**
@@ -56,8 +54,6 @@ import com.hazelcast.core.MigrationEvent;
 public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	private static final String TEST_GROUP_NAME1 = "Test_Group_Name1";
-
-	private static final int TIMEOUT = 10_000;
 
 	@Autowired
 	private PollableChannel cmChannel1;
@@ -88,13 +84,15 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	@Test
 	public void testMembershipEvent() {
-		testMembershipEvent(hazelcastInstance, cmChannel1, "testKey1", "testValue1");
+		HazelcastIntegrationTestUtils.testMembershipEvent(hazelcastInstance, cmChannel1,
+				"testKey1", "testValue1");
 	}
 
 	@Test
 	public void testDistributedObjectEvent() {
-		testDistributedObjectEventByChannelAndHazelcastInstance(cmChannel2,
-				hazelcastInstance);
+		HazelcastIntegrationTestUtils
+				.testDistributedObjectEventByChannelAndHazelcastInstance(cmChannel2,
+						hazelcastInstance, "Test_Distributed_Map4");
 	}
 
 	@Test
@@ -105,7 +103,7 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		distributedMap.put(2, "TestValue2");
 
 		hazelcastInstance3.getLifecycleService().terminate();
-		final Message<?> msg = cmChannel3.receive(TIMEOUT);
+		final Message<?> msg = cmChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		verifyMigrationEvent(msg);
 	}
 
@@ -113,10 +111,10 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 	public void testLifecycleEvent() throws InterruptedException {
 		hazelcastInstance2.getLifecycleService().terminate();
 
-		Message<?> msg = cmChannel4.receive(TIMEOUT);
+		Message<?> msg = cmChannel4.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		verifyLifecycleEvent(msg, LifecycleState.SHUTTING_DOWN);
 
-		msg = cmChannel4.receive(TIMEOUT);
+		msg = cmChannel4.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		verifyLifecycleEvent(msg, LifecycleState.SHUTDOWN);
 	}
 
@@ -127,50 +125,25 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	@Test
 	public void testMultipleMonitorTypes() {
-		testDistributedObjectEventByChannelAndHazelcastInstance(cmChannel6,
-				hazelcastInstance);
+		HazelcastIntegrationTestUtils
+				.testDistributedObjectEventByChannelAndHazelcastInstance(cmChannel6,
+						hazelcastInstance, "Test_Distributed_Map5");
 
-		testMembershipEvent(hazelcastInstance, cmChannel6, "testKey2", "testValue2");
-	}
-
-	private void testMembershipEvent(
-			final HazelcastInstance instance, final PollableChannel channel,
-			final String key, final String value) {
-		Member member = instance.getCluster().getMembers().iterator().next();
-		member.setStringAttribute(key, value);
-
-		Message<?> msg = channel.receive(TIMEOUT);
-		verifyMembershipEvent(msg, MembershipEvent.MEMBER_ATTRIBUTE_CHANGED);
+		HazelcastIntegrationTestUtils.testMembershipEvent(hazelcastInstance, cmChannel6,
+				"testKey2", "testValue2");
 	}
 
 	private void testClientEventByChannelAndGroupName(final PollableChannel channel,
 			final String groupName) {
 		final HazelcastInstance client = getHazelcastClientByGroupName(groupName);
 
-		Message<?> msg = channel.receive(TIMEOUT);
+		Message<?> msg = channel.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		verifyClientEvent(msg);
 
 		client.getLifecycleService().terminate();
 
-		msg = channel.receive(TIMEOUT);
+		msg = channel.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		verifyClientEvent(msg);
-	}
-
-	private void testDistributedObjectEventByChannelAndHazelcastInstance(
-			final PollableChannel channel, final HazelcastInstance hazelcastInstance) {
-		final String distributedObjectName = "Test_Distributed_Map";
-		final IMap<Integer, String> distributedMap = hazelcastInstance
-				.getMap(distributedObjectName);
-
-		Message<?> msg = channel.receive(TIMEOUT);
-		verifyDistributedObjectEvent(msg, DistributedObjectEvent.EventType.CREATED,
-				distributedObjectName);
-
-		distributedMap.destroy();
-
-		msg = channel.receive(TIMEOUT);
-		verifyDistributedObjectEvent(msg, DistributedObjectEvent.EventType.DESTROYED,
-				distributedObjectName);
 	}
 
 	private HazelcastInstance getHazelcastClientByGroupName(final String groupName) {
@@ -182,27 +155,6 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		cfg.getNetworkConfig().addAddress("127.0.0.1:5701");
 
 		return HazelcastClient.newHazelcastClient(cfg);
-	}
-
-	private void verifyMembershipEvent(final Message<?> msg, final int membershipEvent) {
-		assertNotNull(msg);
-		assertNotNull(msg.getPayload());
-		assertTrue(msg.getPayload() instanceof MembershipEvent);
-		assertEquals(membershipEvent, ((MembershipEvent) msg.getPayload()).getEventType());
-		assertNotNull(((MembershipEvent) msg.getPayload()).getMember());
-	}
-
-	private void verifyDistributedObjectEvent(final Message<?> msg,
-			final DistributedObjectEvent.EventType eventType,
-			final String distributedObjectName) {
-		assertNotNull(msg);
-		assertNotNull(msg.getPayload());
-		assertTrue(msg.getPayload() instanceof DistributedObjectEvent);
-		assertEquals(eventType, ((DistributedObjectEvent) msg.getPayload()).getEventType());
-		assertNotNull(
-				(((DistributedObjectEvent) msg.getPayload()).getDistributedObject())
-						.getName(),
-				distributedObjectName);
 	}
 
 	private void verifyMigrationEvent(final Message<?> msg) {

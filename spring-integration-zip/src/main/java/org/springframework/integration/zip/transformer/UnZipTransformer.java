@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,19 @@ import java.util.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.zeroturnaround.zip.ZipEntryCallback;
+import org.zeroturnaround.zip.ZipUtil;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessagingException;
-import org.zeroturnaround.zip.ZipEntryCallback;
-import org.zeroturnaround.zip.ZipUtil;
 
 /**
  * Transformer implementation that applies an UnZip transformation to the message
  * payload.
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  *
  */
@@ -83,11 +85,13 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					final File filePayload = (File) payload;
 
 					if (filePayload.isDirectory()) {
-						throw new UnsupportedOperationException(String.format("Cannot unzip a directory: '%s'", filePayload.getAbsolutePath()));
+						throw new UnsupportedOperationException(String.format("Cannot unzip a directory: '%s'",
+								filePayload.getAbsolutePath()));
 					}
 
 					if (!SpringZipUtils.isValid(filePayload)) {
-						throw new IllegalStateException(String.format("Not a zip file: '%s'.", filePayload.getAbsolutePath()));
+						throw new IllegalStateException(String.format("Not a zip file: '%s'.",
+								filePayload.getAbsolutePath()));
 					}
 
 					inputStream = new FileInputStream(filePayload);
@@ -99,8 +103,9 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					inputStream = new ByteArrayInputStream((byte[]) payload);
 				}
 				else {
-					throw new IllegalArgumentException(String.format("Unsupported payload type '%s'. The only supported payload types are " +
-							"java.io.File, byte[] and java.io.InputStream", payload.getClass().getSimpleName()));
+					throw new IllegalArgumentException(String.format("Unsupported payload type '%s'. " +
+							"The only supported payload types are java.io.File, byte[] and java.io.InputStream",
+							payload.getClass().getSimpleName()));
 				}
 
 				final SortedMap<String, Object> uncompressedData = new TreeMap<String, Object>();
@@ -115,18 +120,19 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						final long zipEntryCompressedSize = zipEntry.getCompressedSize();
 						final String type = zipEntry.isDirectory() ? "directory" : "file";
 
-						if (logger.isWarnEnabled()) {
-							logger.warn(String.format("Unpacking Zip Entry - Name: '%s',Time: '%s', Compressed Size: '%s', Type: '%s'",
+						if (logger.isInfoEnabled()) {
+							logger.info(String.format("Unpacking Zip Entry - Name: '%s',Time: '%s', " +
+									"Compressed Size: '%s', Type: '%s'",
 									zipEntryName, zipEntryTime, zipEntryCompressedSize, type));
 						}
 
 						if (ZipResultType.FILE.equals(zipResultType)) {
 							final File tempDir = new File(workDirectory, message.getHeaders().getId().toString());
-							tempDir.mkdirs();
+							tempDir.mkdirs(); //NOSONAR false positive
 							final File destinationFile = new File(tempDir, zipEntryName);
 
 							if (zipEntry.isDirectory()) {
-								destinationFile.mkdirs();
+								destinationFile.mkdirs(); //NOSONAR false positive
 							}
 							else {
 								SpringZipUtils.copy(zipEntryInputStream, destinationFile);
@@ -168,7 +174,9 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					}
 
 				}
-
+			}
+			finally {
+				IOUtils.closeQuietly(inputStream);
 				if (payload instanceof File && this.deleteFiles) {
 					final File filePayload = (File) payload;
 					if (!filePayload.delete() && logger.isWarnEnabled()) {
@@ -178,13 +186,11 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					}
 				}
 			}
-			finally {
-				IOUtils.closeQuietly(inputStream);
-			}
 			return unzippedData;
 		}
 		catch (Exception e) {
 			throw new MessageHandlingException(message, "Failed to apply Zip transformation.", e);
 		}
 	}
+
 }

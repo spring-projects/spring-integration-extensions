@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.hazelcast.AbstractHazelcastTestSupport;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUtils;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
@@ -46,7 +46,7 @@ import com.hazelcast.core.ReplicatedMap;
 @ContextConfiguration
 @DirtiesContext
 @SuppressWarnings("unchecked")
-public class HazelcastReplicatedMapEventDrivenInboundChannelAdapterTests extends AbstractHazelcastTestSupport {
+public class HazelcastReplicatedMapEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
 	private PollableChannel edReplicatedMapChannel1;
@@ -74,14 +74,17 @@ public class HazelcastReplicatedMapEventDrivenInboundChannelAdapterTests extends
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {
-		edReplicatedMap1.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		Message<?> msg = edReplicatedMapChannel1.receive(2_000);
+		edReplicatedMap1.put(1, new HazelcastIntegrationTestUser(1, "TestName1",
+				"TestSurname1"));
+		Message<?> msg = edReplicatedMapChannel1.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.ADDED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
-		Assert.assertEquals("edReplicatedMap1", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
+		Assert.assertEquals(EntryEventType.ADDED.name(),
+				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("edReplicatedMap1",
+				msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 
 		Assert.assertEquals(Integer.valueOf(1),
 				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
@@ -99,16 +102,20 @@ public class HazelcastReplicatedMapEventDrivenInboundChannelAdapterTests extends
 
 	@Test
 	public void testEventDrivenForOnlyUPDATEDEntryEvent() {
-		edReplicatedMap2.put(2, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		edReplicatedMap2.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
-		Message<?> msg = edReplicatedMapChannel2.receive(2_000);
+		edReplicatedMap2.put(2, new HazelcastIntegrationTestUser(1, "TestName1",
+				"TestSurname1"));
+		edReplicatedMap2.put(2, new HazelcastIntegrationTestUser(2, "TestName2",
+				"TestSurname2"));
+		Message<?> msg = edReplicatedMapChannel2.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 
 		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.UPDATED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
-		Assert.assertEquals("edReplicatedMap2", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
+		Assert.assertEquals(EntryEventType.UPDATED.name(),
+				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("edReplicatedMap2",
+				msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 
 		Assert.assertEquals(Integer.valueOf(2),
 				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
@@ -135,16 +142,20 @@ public class HazelcastReplicatedMapEventDrivenInboundChannelAdapterTests extends
 
 	@Test
 	public void testEventDrivenForOnlyREMOVEDEntryEvent() {
-		edReplicatedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		edReplicatedMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
+		edReplicatedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1",
+				"TestSurname1"));
+		edReplicatedMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2",
+				"TestSurname2"));
 		edReplicatedMap3.remove(2);
-		Message<?> msg = edReplicatedMapChannel3.receive(2_000);
+		Message<?> msg = edReplicatedMapChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.REMOVED.name(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
-		Assert.assertEquals("edReplicatedMap3", msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
+		Assert.assertEquals(EntryEventType.REMOVED.name(),
+				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
+		Assert.assertEquals("edReplicatedMap3",
+				msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
 
 		Assert.assertEquals(Integer.valueOf(2),
 				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
@@ -162,22 +173,8 @@ public class HazelcastReplicatedMapEventDrivenInboundChannelAdapterTests extends
 
 	@Test
 	public void testEventDrivenForALLEntryEvent() {
-		edReplicatedMap4.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		Message<?> msg = edReplicatedMapChannel4.receive(2_000);
-		verifyEntryEvent(msg, "edReplicatedMap4", EntryEventType.ADDED);
-
-		edReplicatedMap4.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurnameUpdated"));
-		msg = edReplicatedMapChannel4.receive(2_000);
-		verifyEntryEvent(msg, "edReplicatedMap4", EntryEventType.UPDATED);
-
-		edReplicatedMap4.remove(1);
-		msg = edReplicatedMapChannel4.receive(2_000);
-		verifyEntryEvent(msg, "edReplicatedMap4", EntryEventType.REMOVED);
-
-		edReplicatedMap4.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
-		msg = edReplicatedMapChannel4.receive(2_000);
-		verifyEntryEvent(msg, "edReplicatedMap4", EntryEventType.ADDED);
-
+		HazelcastIntegrationTestUtils.testEventDrivenForReplicatedMapEntryEvents(
+				edReplicatedMap4, edReplicatedMapChannel4, "edReplicatedMap4");
 	}
 
 }

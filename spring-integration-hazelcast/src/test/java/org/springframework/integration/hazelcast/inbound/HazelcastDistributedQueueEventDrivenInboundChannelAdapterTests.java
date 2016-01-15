@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.hazelcast.AbstractHazelcastTestSupport;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUtils;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.messaging.Message;
@@ -44,7 +44,7 @@ import com.hazelcast.core.IQueue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 @DirtiesContext
-public class HazelcastDistributedQueueEventDrivenInboundChannelAdapterTests extends AbstractHazelcastTestSupport {
+public class HazelcastDistributedQueueEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
 	private PollableChannel edQueueChannel1;
@@ -66,47 +66,46 @@ public class HazelcastDistributedQueueEventDrivenInboundChannelAdapterTests exte
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {
-		edDistributedQueue1.add(new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		Message<?> msg = edQueueChannel1.receive(2_000);
+		edDistributedQueue1.add(new HazelcastIntegrationTestUser(1, "TestName1",
+				"TestSurname1"));
+		Message<?> msg = edQueueChannel1.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.ADDED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
-		Assert.assertEquals(1, (((HazelcastIntegrationTestUser) msg.getPayload()).getId()));
-		Assert.assertEquals("TestName1", (((HazelcastIntegrationTestUser) msg.getPayload()).getName()));
-		Assert.assertEquals("TestSurname1", (((HazelcastIntegrationTestUser) msg.getPayload()).getSurname()));
+		Assert.assertEquals(EntryEventType.ADDED.toString(),
+				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
+		Assert.assertEquals(1,
+				(((HazelcastIntegrationTestUser) msg.getPayload()).getId()));
+		Assert.assertEquals("TestName1",
+				(((HazelcastIntegrationTestUser) msg.getPayload()).getName()));
+		Assert.assertEquals("TestSurname1",
+				(((HazelcastIntegrationTestUser) msg.getPayload()).getSurname()));
 	}
 
 	@Test
 	public void testEventDrivenForOnlyREMOVEDEntryEvent() {
-		HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2");
+		HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(2,
+				"TestName2", "TestSurname2");
 		edDistributedQueue2.add(user);
 		edDistributedQueue2.remove(user);
-		Message<?> msg = edQueueChannel2.receive(2_000);
+		Message<?> msg = edQueueChannel2.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.REMOVED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
-		Assert.assertEquals(2, (((HazelcastIntegrationTestUser) msg.getPayload()).getId()));
-		Assert.assertEquals("TestName2", (((HazelcastIntegrationTestUser) msg.getPayload()).getName()));
-		Assert.assertEquals("TestSurname2", (((HazelcastIntegrationTestUser) msg.getPayload()).getSurname()));
+		Assert.assertEquals(EntryEventType.REMOVED.toString(),
+				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
+		Assert.assertEquals(2,
+				(((HazelcastIntegrationTestUser) msg.getPayload()).getId()));
+		Assert.assertEquals("TestName2",
+				(((HazelcastIntegrationTestUser) msg.getPayload()).getName()));
+		Assert.assertEquals("TestSurname2",
+				(((HazelcastIntegrationTestUser) msg.getPayload()).getSurname()));
 	}
 
 	@Test
 	public void testEventDrivenForALLEntryEvent() {
-		HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1");
-		edDistributedQueue3.add(user);
-		Message<?> msg = edQueueChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.ADDED);
-
-		edDistributedQueue3.remove(user);
-		msg = edQueueChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.REMOVED);
-
-		user = new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2");
-		edDistributedQueue3.add(user);
-		msg = edQueueChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.ADDED);
+		HazelcastIntegrationTestUtils.testEventDrivenForDistributedCollectionItemEvents(
+				edDistributedQueue3, edQueueChannel3);
 	}
 
 }

@@ -28,7 +28,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Hazelcast Distributed SQL Inbound Channel Adapter Parser parses
- * {@code <int-hazelcast:cq-inbound-channel-adapter/>} configuration.
+ * {@code <int-hazelcast:ds-inbound-channel-adapter/>} configuration.
  *
  * @author Eren Avsarogullari
  * @since 1.0.0

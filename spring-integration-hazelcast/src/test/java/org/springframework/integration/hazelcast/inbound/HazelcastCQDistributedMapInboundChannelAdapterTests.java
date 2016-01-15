@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.hazelcast.AbstractHazelcastTestSupport;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUtils;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.integration.hazelcast.message.EntryEventMessagePayload;
@@ -50,7 +50,7 @@ import com.hazelcast.core.IMap;
 @ContextConfiguration
 @DirtiesContext
 @SuppressWarnings("unchecked")
-public class HazelcastCQDistributedMapInboundChannelAdapterTests extends AbstractHazelcastTestSupport {
+public class HazelcastCQDistributedMapInboundChannelAdapterTests {
 
 	@Autowired
 	private PollableChannel cqMapChannel1;
@@ -87,7 +87,7 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests extends Abstrac
 		cqDistributedMap1.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		cqDistributedMap1.remove(1);
 		cqDistributedMap1.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
-		Message<?> msg = cqMapChannel1.receive(2_000);
+		Message<?> msg = cqMapChannel1.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
@@ -114,7 +114,7 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests extends Abstrac
 		cqDistributedMap2.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		cqDistributedMap2.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
 		cqDistributedMap2.remove(2);
-		Message<?> msg = cqMapChannel2.receive(2_000);
+		Message<?> msg = cqMapChannel2.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
@@ -139,31 +139,31 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests extends Abstrac
 	@Test
 	public void testContinuousQueryForALLEntryEvent() {
 		cqDistributedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		Message<?> msg = cqMapChannel3.receive(2_000);
-		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.ADDED);
+		Message<?> msg = cqMapChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
+		HazelcastIntegrationTestUtils.verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.ADDED);
 
 		cqDistributedMap3.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurnameUpdated"));
-		msg = cqMapChannel3.receive(2_000);
-		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.UPDATED);
+		msg = cqMapChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
+		HazelcastIntegrationTestUtils.verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.UPDATED);
 
 		cqDistributedMap3.remove(1);
-		msg = cqMapChannel3.receive(2_000);
-		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.REMOVED);
+		msg = cqMapChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
+		HazelcastIntegrationTestUtils.verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.REMOVED);
 
 		cqDistributedMap3.put(2, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
-		msg = cqMapChannel3.receive(2_000);
-		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.ADDED);
+		msg = cqMapChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
+		HazelcastIntegrationTestUtils.verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.ADDED);
 
 		cqDistributedMap3.clear();
-		msg = cqMapChannel3.receive(2_000);
-		verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.CLEAR_ALL);
+		msg = cqMapChannel3.receive(HazelcastIntegrationTestUtils.TIMEOUT);
+		HazelcastIntegrationTestUtils.verifyEntryEvent(msg, "cqDistributedMap3", EntryEventType.CLEAR_ALL);
 	}
 
 	@Test
 	public void testContinuousQueryForOnlyUPDATEDEntryEvent() {
 		cqDistributedMap4.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		cqDistributedMap4.put(1, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
-		Message<?> msg = cqMapChannel4.receive(2_000);
+		Message<?> msg = cqMapChannel4.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
@@ -198,7 +198,7 @@ public class HazelcastCQDistributedMapInboundChannelAdapterTests extends Abstrac
 	public void testContinuousQueryForOnlyUPDATEDEntryEventWhenIncludeValueIsFalse() {
 		cqDistributedMap5.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		cqDistributedMap5.put(1, new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2"));
-		Message<?> msg = cqMapChannel5.receive(2_000);
+		Message<?> msg = cqMapChannel5.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);

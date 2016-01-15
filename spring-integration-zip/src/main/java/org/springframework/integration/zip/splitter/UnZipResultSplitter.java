@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.zip.transformer.splitter;
+package org.springframework.integration.zip.splitter;
 
 import java.util.ArrayList;
 import java.util.List;

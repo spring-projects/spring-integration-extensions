@@ -26,7 +26,7 @@ The following input data types can be **compressed**:
 * Iterable
 
 In input data types can be mixed as part of an Iterable. E.g. you should be
-easily be able to compress a collection containing Strings, byte arrays and Files.
+easily able to compress a collection containing Strings, byte arrays and Files.
 It is important to note that nested Iterables are *NOT SUPPORTED* at present time.
 
 The zip transformer can be customized by setting several properties:
@@ -61,7 +61,8 @@ If the payload is an instance of `File`, this property specifies whether to dele
 
 ### workDirectory
 
-Set the work-directory. The work directory is used when the ZipResultType is set to ZipResultType.FILE. By default this property is set to the System temporary directory containing a sub-directory "ziptransformer".
+Set the work-directory. The work directory is used when the ZipResultType is set to ZipResultType.FILE.
+By default this property is set to the System temporary directory containing a sub-directory "ziptransformer".
 
 ### ZipResultType
 
@@ -120,7 +121,8 @@ To build complete distribution including `-dist` and `-schema` zip files (result
 
 # IDE Support
 
-While your custom Spring Integration Adapter is initially created with SpringSource Tool Suite, you in fact end up with a Gradle-based project. As such, the created project can be imported into other IDEs as well.
+While your custom Spring Integration Adapter is initially created with SpringSource Tool Suite, you in fact end up with a Gradle-based project.
+As such, the created project can be imported into other IDEs as well.
 
 ## Using Spring Tool Suite
 
@@ -155,17 +157,19 @@ Check out the [spring-integration][spring-integration tag] tag on [Stack Overflo
 * [Spring Integration][]
 * [Spring Integration Samples][]
 * [Spring Integration Templates][]
+* [Spring Integration Java DSL][]
 * [Spring Integration Dsl Groovy][]
 * [Spring Integration Dsl Scala][]
 
 For more information, please also don't forget to visit the [Spring Integration][] website.
 
-[Spring Integration]: https://github.com/SpringSource/spring-integration
+[Spring Integration]: https://github.com/spring-projects/spring-integration
 [spring-integration tag]: http://stackoverflow.com/questions/tagged/spring-integration
-[Spring Integration Samples]: https://github.com/SpringSource/spring-integration-samples
-[Spring Integration Templates]: https://github.com/SpringSource/spring-integration-templates/tree/master/si-sts-templates
-[Spring Integration Dsl Groovy]: https://github.com/SpringSource/spring-integration-dsl-groovy
-[Spring Integration Dsl Scala]: https://github.com/SpringSource/spring-integration-dsl-scala
+[Spring Integration Samples]: https://github.com/spring-projects/spring-integration-samples
+[Spring Integration Templates]: https://github.com/spring-projects/spring-integration-templates/tree/master/si-sts-templates
+[Spring Integration Java DSL]: https://github.com/spring-projects/spring-integration-java-dsl
+[Spring Integration Dsl Groovy]: https://github.com/spring-projects/spring-integration-dsl-groovy
+[Spring Integration Dsl Scala]: https://github.com/spring-projects/spring-integration-dsl-scala
 [Stack Overflow]: http://stackoverflow.com/faq
 
 [Zip]: http://en.wikipedia.org/wiki/Zip_%28file_format%29

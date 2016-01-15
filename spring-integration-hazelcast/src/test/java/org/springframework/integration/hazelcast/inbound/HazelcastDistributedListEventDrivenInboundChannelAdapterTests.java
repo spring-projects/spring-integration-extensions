@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.hazelcast.AbstractHazelcastTestSupport;
+import org.springframework.integration.hazelcast.HazelcastIntegrationTestUtils;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.messaging.Message;
@@ -46,7 +46,7 @@ import com.hazelcast.core.IList;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 @DirtiesContext
-public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests extends AbstractHazelcastTestSupport {
+public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
 	private PollableChannel edListChannel1;
@@ -69,7 +69,7 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests exten
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {
 		edDistributedList1.add(new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		Message<?> msg = edListChannel1.receive(2_000);
+		Message<?> msg = edListChannel1.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
@@ -84,7 +84,7 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests exten
 		HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2");
 		edDistributedList2.add(user);
 		edDistributedList2.remove(user);
-		Message<?> msg = edListChannel2.receive(2_000);
+		Message<?> msg = edListChannel2.receive(HazelcastIntegrationTestUtils.TIMEOUT);
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
@@ -96,19 +96,8 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests exten
 
 	@Test
 	public void testEventDrivenForALLEntryEvent() {
-		HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1");
-		edDistributedList3.add(user);
-		Message<?> msg = edListChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.ADDED);
-
-		edDistributedList3.remove(user);
-		msg = edListChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.REMOVED);
-
-		user = new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2");
-		edDistributedList3.add(user);
-		msg = edListChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.ADDED);
+		HazelcastIntegrationTestUtils.testEventDrivenForDistributedCollectionItemEvents(
+				edDistributedList3, edListChannel3);
 	}
 
 }

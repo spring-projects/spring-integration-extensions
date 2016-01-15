@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,15 +35,17 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.springframework.messaging.Message;
+import org.zeroturnaround.zip.ZipUtil;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.zip.ZipHeaders;
-import org.zeroturnaround.zip.ZipUtil;
+import org.springframework.messaging.Message;
 
 /**
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  *
  */
@@ -59,7 +61,7 @@ public class ZipTransformerTests {
 	 * @throws IOException
 	 */
 	@Test
-	public void zipString() throws FileNotFoundException, IOException {
+	public void zipString() throws IOException {
 		final ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
 		zipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
@@ -95,7 +97,7 @@ public class ZipTransformerTests {
 	}
 
 	@Test
-	public void zipStringCollection() throws FileNotFoundException, IOException {
+	public void zipStringCollection() throws IOException {
 		final ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
 		zipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
@@ -146,7 +148,8 @@ public class ZipTransformerTests {
 				Assert.assertTrue(file.isFile());
 
 				//See http://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
-				Assert.assertTrue(String.format("%s : %s", fileDate.getTime() - 4000, file.lastModified()), (fileDate.getTime() - 4000) < file.lastModified());
+				Assert.assertTrue(String.format("%s : %s", fileDate.getTime() - 4000, file.lastModified()),
+						(fileDate.getTime() - 4000) < file.lastModified());
 				Assert.assertTrue((fileDate.getTime() + 4000) > file.lastModified());
 
 				Assert.assertTrue(
@@ -161,10 +164,9 @@ public class ZipTransformerTests {
 	}
 
 	@Test
-	public void zipStringToFile() throws FileNotFoundException, IOException {
+	public void zipStringToFile() throws IOException {
 		final ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
-		zipTransformer.setZipResultType(ZipResultType.FILE);
 		zipTransformer.afterPropertiesSet();
 
 		final String stringToCompress = "Hello World";
@@ -240,8 +242,7 @@ public class ZipTransformerTests {
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
 		zipTransformer.afterPropertiesSet();
 
-		final Message<Collection<File>> message = MessageBuilder.withPayload(files)
-																.build();
+		final Message<Collection<File>> message = MessageBuilder.withPayload(files).build();
 
 		final Message<?> result = zipTransformer.transform(message);
 
@@ -258,7 +259,7 @@ public class ZipTransformerTests {
 
 	private File createTestFile(int size) throws IOException {
 
-		final File temporaryTestDirectory = testFolder.newFolder();
+		final File temporaryTestDirectory = this.testFolder.newFolder();
 
 		final File testFile = new File(temporaryTestDirectory, "testdata" + UUID.randomUUID().toString() + ".data");
 

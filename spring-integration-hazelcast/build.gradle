@@ -41,7 +41,7 @@ ext {
 	hazelcastVersion = '3.5'
 	jacocoVersion = '0.7.5.201505241946'
 	slf4jVersion = '1.7.12'
-	springIntegrationVersion = '4.1.5.RELEASE'
+	springIntegrationVersion = '4.2.4.RELEASE'
 
 	idPrefix = 'hazelcast'
 
