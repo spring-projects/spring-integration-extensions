@@ -19,7 +19,9 @@ It also provides event listeners in order to listen to the modifications perform
 * com.hazelcast.core.ItemListener<E>
 * com.hazelcast.core.MessageListener<E>
 
-Hazelcast Event-Driven Inbound Channel Adapter listens related cache events and sends event messages to defined channel. Its basic definition is as follows : 
+Hazelcast Event-Driven Inbound Channel Adapter listens related cache events and sends event messages to defined channel. It supports both XML and JavaConfig driven configurations.
+
+#### XML Driven Configuration :
 ```
    <int-hazelcast:inbound-channel-adapter channel="mapChannel" 
 					  cache="map" 
@@ -150,12 +152,46 @@ Sample definitions are as follows :
 	</constructor-arg> 
 </bean> 
 ```
-**Reference :** http://docs.hazelcast.org/docs/3.4/manual/html-single/hazelcast-documentation.html#distributed-data-structures 
+
+#### JavaConfig Driven Configuration :
+
+The following sample shows Distributed Map configuration. Same configuration can be used for other distributed data structures(IMap, MultiMap, ReplicatedMap, IList, ISet, IQueue and ITopic).
+```
+@Bean
+public PollableChannel distributedMapChannel() {
+	return new QueueChannel();
+}
+
+@Bean
+public IMap<Integer, String> distributedMap() {
+	return hazelcastInstance().getMap("Distributed_Map");
+}
+
+@Bean
+public HazelcastInstance hazelcastInstance() {
+	return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+public HazelcastEventDrivenMessageProducer hazelcastEventDrivenMessageProducer() {
+	final HazelcastEventDrivenMessageProducer producer = new HazelcastEventDrivenMessageProducer(distributedMap());
+	producer.setOutputChannel(distributedMapChannel());
+	producer.setCacheEventTypes("ADDED,REMOVED,UPDATED,CLEAR_ALL");
+	producer.setCacheListeningPolicy(CacheListeningPolicyType.SINGLE);
+
+	return producer;
+}
+
+```
+
+**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributed-data-structures.html
 
 
-## HAZELCAST CONTINUOUS QUERY INBOUND CHANNEL ADAPTER 
+## HAZELCAST CONTINUOUS QUERY INBOUND CHANNEL ADAPTER
 
-Hazelcast Continuous Query enables to listen to the modifications performed on specific map entries. Hazelcast Continuous Query Inbound Channel Adapter is an event-driven channel adapter and listens to related distributed map events in the light of defined predicate. Its basic definition is as follows : 
+Hazelcast Continuous Query enables to listen to the modifications performed on specific map entries. Hazelcast Continuous Query Inbound Channel Adapter is an event-driven channel adapter and listens to related distributed map events in the light of defined predicate. It supports both XML and JavaConfig driven configurations.
+
+#### XML Driven Configuration :
 ```
 <int-hazelcast:cq-inbound-channel-adapter 
 				channel="cqMapChannel" 
@@ -197,12 +233,43 @@ Sample definition is as follows :
 	</constructor-arg> 
 </bean> 
 ```
-**Reference :** http://docs.hazelcast.org/docs/3.4/manual/html-single/hazelcast-documentation.html#continuous-query 
 
+#### JavaConfig Driven Configuration :
+```
+@Bean
+public PollableChannel cqDistributedMapChannel() {
+	return new QueueChannel();
+}
+
+@Bean
+public IMap<Integer, String> cqDistributedMap() {
+	return hazelcastInstance().getMap("CQ_Distributed_Map");
+}
+
+@Bean
+public HazelcastInstance hazelcastInstance() {
+	return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+public HazelcastContinuousQueryMessageProducer hazelcastContinuousQueryMessageProducer() {
+	final HazelcastContinuousQueryMessageProducer producer =
+		new HazelcastContinuousQueryMessageProducer(cqDistributedMap(), "surname=TestSurname");
+	producer.setOutputChannel(cqDistributedMapChannel());
+	producer.setCacheEventTypes("UPDATED");
+	producer.setIncludeValue(false);
+
+	return producer;
+}
+
+```
+**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/continuousquery.html
 
 ## HAZELCAST CLUSTER MONITOR INBOUND CHANNEL ADAPTER 
 
-Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven channel adapter and listens to related Membership, Distributed Object, Migration, Lifecycle and Client events. Its basic definition is as follows : 
+Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven channel adapter and listens to related Membership, Distributed Object, Migration, Lifecycle and Client events. It supports both XML and JavaConfig driven configurations.
+
+#### XML Driven Configuration :
 ```
 <int-hazelcast:cm-inbound-channel-adapter 
 				 channel="monitorChannel" 
@@ -231,12 +298,36 @@ Sample definition is as follows :
 	</constructor-arg> 
 </bean> 
 ```
+
+#### JavaConfig Driven Configuration :
+```
+@Bean
+public PollableChannel cmonChannel() {
+	return new QueueChannel();
+}
+
+@Bean
+public HazelcastInstance hazelcastInstance() {
+	return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+public HazelcastClusterMonitorMessageProducer hazelcastClusterMonitorMessageProducer() {
+	final HazelcastClusterMonitorMessageProducer producer = new HazelcastClusterMonitorMessageProducer(hazelcastInstance());
+	producer.setOutputChannel(cmonChannel());
+	producer.setMonitorEventTypes("DISTRIBUTED_OBJECT");
+
+	return producer;
+}
+```
 **Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedevents.html 
 
 
 ## HAZELCAST DISTRIBUTED-SQL INBOUND CHANNEL ADAPTER 
 
-Hazelcast allows to run distributed queries on the distributed map. Hazelcast Distributed SQL Inbound Channel Adapter is a poller-driven inbound channel adapter. It runs defined distributed-sql and returns results in the light of iteration type. Its basic definition is as follows : 
+Hazelcast allows to run distributed queries on the distributed map. Hazelcast Distributed SQL Inbound Channel Adapter is a poller-driven inbound channel adapter. It runs defined distributed-sql and returns results in the light of iteration type. It supports both XML and JavaConfig driven configurations.
+
+#### XML Driven Configuration :
 ```
 <int-hazelcast:ds-inbound-channel-adapter  
 			     channel="dsMapChannel" 
@@ -276,12 +367,43 @@ Sample definition is as follows :
 	</constructor-arg> 
 </bean> 
 ```
-**Reference :** http://docs.hazelcast.org/docs/3.4/manual/html-single/hazelcast-documentation.html#query-overview 
+
+#### JavaConfig Driven Configuration :
+```
+@Bean
+public PollableChannel dsDistributedMapChannel() {
+	return new QueueChannel();
+}
+
+@Bean
+public IMap<Integer, String> dsDistributedMap() {
+	return hazelcastInstance().getMap("DS_Distributed_Map");
+}
+
+@Bean
+public HazelcastInstance hazelcastInstance() {
+	return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+@InboundChannelAdapter(value = "dsDistributedMapChannel", poller = @Poller(maxMessagesPerPoll = "1"))
+public HazelcastDistributedSQLMessageSource hazelcastDistributedSQLMessageSource() {
+	final HazelcastDistributedSQLMessageSource messageSource =
+		new HazelcastDistributedSQLMessageSource(dsDistributedMap(),
+			"name='TestName' AND surname='TestSurname'");
+	messageSource.setIterationType(DistributedSQLIterationType.ENTRY);
+
+	return messageSource;
+}
+```
+**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedquery.html
 
 
 ## HAZELCAST OUTBOUND CHANNEL ADAPTER 
 
-Hazelcast Outbound Channel Adapter listens its defined channel and writes incoming messages to related distributed cache. It expects one of cache, cache-expression or HazelcastHeaders.CACHE_NAME for distributed object definition. Supported Distributed Objects : IMap, MultiMap, ReplicatedMap, IList, ISet, IQueue and ITopic. Its sample definition is as follows :
+Hazelcast Outbound Channel Adapter listens its defined channel and writes incoming messages to related distributed cache. It expects one of cache, cache-expression or HazelcastHeaders.CACHE_NAME for distributed object definition. Supported Distributed Objects : IMap, MultiMap, ReplicatedMap, IList, ISet, IQueue and ITopic. It supports both XML and JavaConfig driven configurations.
+
+#### XML Driven Configuration :
 ```
 <int-hazelcast:outbound-channel-adapter channel="mapChannel" cache="distributedMap" key-expression="payload.id" extract-payload="false"/>
 ```
@@ -306,3 +428,33 @@ By setting distributed object name in the header, messages can be written to dif
 **OR**
 
 If **cache** or **cache-expression** attributes are not defined, HazelcastHeaders.CACHE_NAME has to be set in Message.
+
+#### JavaConfig Driven Configuration :
+```
+@Bean
+public MessageChannel distributedMapChannel() {
+	return new DirectChannel();
+}
+
+@Bean
+public IMap<Integer, String> distributedMap() {
+	return hzInstance().getMap("Distributed_Map");
+}
+
+@Bean
+public HazelcastInstance hzInstance() {
+	return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+@ServiceActivator(inputChannel = "distributedMapChannel")
+public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler() {
+	final HazelcastCacheWritingMessageHandler handler = new HazelcastCacheWritingMessageHandler();
+	handler.setDistributedObject(distributedMap());
+	handler.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+	handler.setExtractPayload(true);
+
+	return handler;
+}
+
+```

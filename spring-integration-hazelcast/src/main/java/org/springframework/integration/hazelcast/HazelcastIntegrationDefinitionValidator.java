@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import com.hazelcast.core.ReplicatedMap;
 public class HazelcastIntegrationDefinitionValidator {
 
 	public static <E extends Enum<E>> Set<String> validateEnumType(final Class<E> enumType, final String types) {
-		Set<String> typeSet = StringUtils.commaDelimitedListToSet(types);
+			Set<String> typeSet = StringUtils.commaDelimitedListToSet(StringUtils.trimAllWhitespace(types));
 		for (String type : typeSet) {
 			Enum.valueOf(enumType, type);
 		}
