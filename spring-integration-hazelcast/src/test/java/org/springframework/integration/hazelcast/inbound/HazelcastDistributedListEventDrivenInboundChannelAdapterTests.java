@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.hazelcast.AbstractHazelcastTestSupport;
 import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
+import org.springframework.integration.hazelcast.inbound.util.HazelcastInboundChannelAdapterTestUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
@@ -46,69 +46,58 @@ import com.hazelcast.core.IList;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 @DirtiesContext
-public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests extends AbstractHazelcastTestSupport {
+public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests {
 
-	@Autowired
-	private PollableChannel edListChannel1;
+		@Autowired
+		private PollableChannel edListChannel1;
 
-	@Autowired
-	private PollableChannel edListChannel2;
+		@Autowired
+		private PollableChannel edListChannel2;
 
-	@Autowired
-	private PollableChannel edListChannel3;
+		@Autowired
+		private PollableChannel edListChannel3;
 
-	@Resource
-	private IList<HazelcastIntegrationTestUser> edDistributedList1;
+		@Resource
+		private IList<HazelcastIntegrationTestUser> edDistributedList1;
 
-	@Resource
-	private IList<HazelcastIntegrationTestUser> edDistributedList2;
+		@Resource
+		private IList<HazelcastIntegrationTestUser> edDistributedList2;
 
-	@Resource
-	private IList<HazelcastIntegrationTestUser> edDistributedList3;
+		@Resource
+		private IList<HazelcastIntegrationTestUser> edDistributedList3;
 
-	@Test
-	public void testEventDrivenForOnlyADDEDEntryEvent() {
-		edDistributedList1.add(new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
-		Message<?> msg = edListChannel1.receive(2_000);
-		assertNotNull(msg);
-		assertNotNull(msg.getPayload());
-		assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		assertEquals(EntryEventType.ADDED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
-		assertEquals(1, ((HazelcastIntegrationTestUser) msg.getPayload()).getId());
-		assertEquals("TestName1", ((HazelcastIntegrationTestUser) msg.getPayload()).getName());
-		assertEquals("TestSurname1", ((HazelcastIntegrationTestUser) msg.getPayload()).getSurname());
-	}
+		@Test
+		public void testEventDrivenForOnlyADDEDEntryEvent() {
+				edDistributedList1.add(new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
+				Message<?> msg = edListChannel1.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
+				assertNotNull(msg);
+				assertNotNull(msg.getPayload());
+				assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
+				assertEquals(EntryEventType.ADDED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
+				assertEquals(1, ((HazelcastIntegrationTestUser) msg.getPayload()).getId());
+				assertEquals("TestName1", ((HazelcastIntegrationTestUser) msg.getPayload()).getName());
+				assertEquals("TestSurname1", ((HazelcastIntegrationTestUser) msg.getPayload()).getSurname());
+		}
 
-	@Test
-	public void testEventDrivenForOnlyREMOVEDEntryEvent() {
-		HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2");
-		edDistributedList2.add(user);
-		edDistributedList2.remove(user);
-		Message<?> msg = edListChannel2.receive(2_000);
-		assertNotNull(msg);
-		assertNotNull(msg.getPayload());
-		assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		assertEquals(EntryEventType.REMOVED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
-		assertEquals(2, ((HazelcastIntegrationTestUser) msg.getPayload()).getId());
-		assertEquals("TestName2", ((HazelcastIntegrationTestUser) msg.getPayload()).getName());
-		assertEquals("TestSurname2", ((HazelcastIntegrationTestUser) msg.getPayload()).getSurname());
-	}
+		@Test
+		public void testEventDrivenForOnlyREMOVEDEntryEvent() {
+				HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2");
+				edDistributedList2.add(user);
+				edDistributedList2.remove(user);
+				Message<?> msg = edListChannel2.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
+				assertNotNull(msg);
+				assertNotNull(msg.getPayload());
+				assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
+				assertEquals(EntryEventType.REMOVED.toString(), msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
+				assertEquals(2, ((HazelcastIntegrationTestUser) msg.getPayload()).getId());
+				assertEquals("TestName2", ((HazelcastIntegrationTestUser) msg.getPayload()).getName());
+				assertEquals("TestSurname2", ((HazelcastIntegrationTestUser) msg.getPayload()).getSurname());
+		}
 
-	@Test
-	public void testEventDrivenForALLEntryEvent() {
-		HazelcastIntegrationTestUser user = new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1");
-		edDistributedList3.add(user);
-		Message<?> msg = edListChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.ADDED);
-
-		edDistributedList3.remove(user);
-		msg = edListChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.REMOVED);
-
-		user = new HazelcastIntegrationTestUser(2, "TestName2", "TestSurname2");
-		edDistributedList3.add(user);
-		msg = edListChannel3.receive(2_000);
-		verifyItemEvent(msg, EntryEventType.ADDED);
-	}
+		@Test
+		public void testEventDrivenForALLEntryEvent() {
+				HazelcastInboundChannelAdapterTestUtils
+						.testEventDrivenForDistributedCollectionItemEvents(edDistributedList3, edListChannel3);
+		}
 
 }

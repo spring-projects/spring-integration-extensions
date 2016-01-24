@@ -14,44 +14,54 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.inbound;
-
-import javax.annotation.Resource;
+package org.springframework.integration.hazelcast.inbound.config;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.integration.hazelcast.inbound.util.HazelcastInboundChannelAdapterTestUtils;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.hazelcast.core.ITopic;
+import com.hazelcast.core.HazelcastInstance;
 
 /**
- * Hazelcast Distributed Topic Event Driven Inbound Channel Adapter Test
+ * Hazelcast Cluster Monitor Inbound Channel Adapter JavaConfig driven Unit Test Class
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class,
+    loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
-public class HazelcastDistributedTopicEventDrivenInboundChannelAdapterTests {
+public class HazelcastClusterMonitorInboundChannelAdapterConfigTests {
 
-		@Autowired
-		private PollableChannel edTopicChannel1;
+    @Autowired
+    private PollableChannel cmonChannel;
 
-		@Resource
-		private ITopic<HazelcastIntegrationTestUser> edDistributedTopic1;
+    @Autowired
+    private PollableChannel cmonChannel2;
 
-		@Test
-		public void testEventDrivenForOnlyADDEDEntryEvent() {
-				HazelcastInboundChannelAdapterTestUtils
-						.testEventDrivenForTopicMessageEvent(edDistributedTopic1, edTopicChannel1);
-		}
+    @Autowired
+    private HazelcastInstance testHazelcastInstance;
+
+    @Test
+    public void testConfigDrivenMembershipEvent() {
+        HazelcastInboundChannelAdapterTestUtils
+            .testMembershipEvent(testHazelcastInstance, cmonChannel, "testKey1",
+                "testValue1");
+    }
+
+    @Test
+    public void testConfigDrivenDistributedObjectEvent() {
+        HazelcastInboundChannelAdapterTestUtils
+            .testDistributedObjectEventByChannelAndHazelcastInstance(cmonChannel2,
+                testHazelcastInstance, "Test_Distributed_Map3");
+    }
 
 }
