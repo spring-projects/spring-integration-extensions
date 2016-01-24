@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.hazelcast.inbound;
+package org.springframework.integration.hazelcast.inbound.config;
 
 import javax.annotation.Resource;
 
@@ -28,66 +28,72 @@ import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.hazelcast.core.IMap;
 
 /**
- * Hazelcast Distributed SQL Inbound Channel Adapter Test
+ * Hazelcast Distributed SQL Inbound Channel Adapter JavaConfig driven Unit Test Class
  *
  * @author Eren Avsarogullari
  * @since 1.0.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class,
+    loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
-public class HazelcastDistributedSQLInboundChannelAdapterTests {
+public class HazelcastDistributedSQLInboundChannelAdapterConfigTests {
 
     @Autowired
-    private PollableChannel dsMapChannel1;
+    private PollableChannel dsDistributedMapChannel;
 
     @Autowired
-    private PollableChannel dsMapChannel2;
+    private PollableChannel dsDistributedMapChannel2;
 
     @Autowired
-    private PollableChannel dsMapChannel3;
+    private PollableChannel dsDistributedMapChannel3;
 
     @Autowired
-    private PollableChannel dsMapChannel4;
+    private PollableChannel dsDistributedMapChannel4;
 
     @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap1;
+    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap;
 
     @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap2;
+    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap2;
 
     @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap3;
+    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap3;
 
     @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap4;
+    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap4;
 
     @Test
-    public void testDistributedSQLForOnlyENTRYIterationType() {
+    public void testDistributedSQLForENTRYIterationType() {
         HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForENTRYIterationType(dsDistributedMap1, dsMapChannel1);
+            .testDistributedSQLForENTRYIterationType(testDSDistributedMap,
+                dsDistributedMapChannel);
     }
 
     @Test
-    public void testDistributedSQLForOnlyKEYIterationType() {
+    public void testDistributedSQLForKEYIterationType() {
         HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForKEYIterationType(dsDistributedMap2, dsMapChannel2);
+            .testDistributedSQLForKEYIterationType(testDSDistributedMap2,
+                dsDistributedMapChannel2);
     }
 
     @Test
-    public void testDistributedSQLForOnlyLOCAL_KEYIterationType() {
+    public void testDistributedSQLForLOCAL_KEYIterationType() {
         HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForLOCAL_KEYIterationType(dsDistributedMap3, dsMapChannel3);
+            .testDistributedSQLForLOCAL_KEYIterationType(testDSDistributedMap3,
+                dsDistributedMapChannel3);
     }
 
     @Test
-    public void testDistributedSQLForOnlyVALUEIterationType() {
+    public void testDistributedSQLForVALUEIterationType() {
         HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForVALUEIterationType(dsDistributedMap4, dsMapChannel4);
+            .testDistributedSQLForVALUEIterationType(testDSDistributedMap4,
+                dsDistributedMapChannel4);
     }
 
 }
