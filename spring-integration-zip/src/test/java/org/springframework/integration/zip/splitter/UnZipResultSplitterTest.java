@@ -53,8 +53,7 @@ public class UnZipResultSplitterTest {
         payload.put("file1", "data1");
         payload.put("file2", "data2");
 
-        Message<?> inMessage = MessageBuilder
-                .withPayload(payload)
+        Message<?> inMessage = MessageBuilder.withPayload(payload)
                 .setHeader(headerName, headerValue)
                 .build();
 

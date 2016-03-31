@@ -16,15 +16,16 @@
 
 package org.springframework.integration.zip.splitter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.zip.ZipHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -34,19 +35,35 @@ import org.springframework.messaging.Message;
  */
 public class UnZipResultSplitter {
 
-	public List<Message<Object>> splitUnzippedMap(Map<String, Object> unzippedEntries) {
+	public List<Message<Object>> splitUnzippedMap(Message<Map<String, Object>> message) {
+		return createMessages(message.getPayload(), message.getHeaders());
+	}
 
-		final List<Message<Object>> messages = new ArrayList<Message<Object>>(unzippedEntries.size());
-
+	private List<Message<Object>> createMessages(Map<String, Object> unzippedEntries, MessageHeaders headers) {
+		List<Message<Object>> messages = createList(unzippedEntries.size());
 		for (Map.Entry<String, Object> entry : unzippedEntries.entrySet()) {
-			final String path = FilenameUtils.getPath(entry.getKey());
-			final String filename = FilenameUtils.getName(entry.getKey());
-			final Message<Object> splitMessage = MessageBuilder.withPayload(entry.getValue())
-					.setHeader(FileHeaders.FILENAME, filename)
-					.setHeader(ZipHeaders.ZIP_ENTRY_PATH, path).build();
-			messages.add(splitMessage);
+			messages.add(createMessage(entry, headers));
 		}
 		return messages;
 	}
 
+	private static List<Message<Object>> createList(int initialCapacity) {
+		return new ArrayList<Message<Object>>(initialCapacity);
+	}
+
+	private static Message<Object> createMessage(Map.Entry<String, Object> entry, Map<String, ?> headers) {
+		return MessageBuilder.withPayload(entry.getValue())
+                .setHeader(FileHeaders.FILENAME, getName(entry))
+                .setHeader(ZipHeaders.ZIP_ENTRY_PATH, getPath(entry))
+				.copyHeaders(headers)
+                .build();
+	}
+
+	private static String getName(Map.Entry<String, Object> entry) {
+		return FilenameUtils.getName(entry.getKey());
+	}
+
+	private static String getPath(Map.Entry<String, Object> entry) {
+		return FilenameUtils.getPath(entry.getKey());
+	}
 }
