@@ -33,7 +33,7 @@ import java.util.Map;
  * @since 1.0
  *
  */
-public class UnZipResultSplitter {
+public final class UnZipResultSplitter {
 
 	public List<Message<Object>> splitUnzippedMap(Message<Map<String, Object>> message) {
 		return createMessages(message.getPayload(), message.getHeaders());
