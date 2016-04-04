@@ -16,24 +16,26 @@
 
 package org.springframework.integration.zip.splitter;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.FilenameUtils;
+
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.zip.ZipHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  *
  * @author Gunnar Hillert
+ * @author Andriy Kryvtsun
  * @since 1.0
  *
  */
-public final class UnZipResultSplitter {
+public class UnZipResultSplitter {
 
 	public List<Message<Object>> splitUnzippedMap(Message<Map<String, Object>> message) {
 		return createMessages(message.getPayload(), message.getHeaders());
@@ -53,10 +55,10 @@ public final class UnZipResultSplitter {
 
 	private static Message<Object> createMessage(Map.Entry<String, Object> entry, Map<String, ?> headers) {
 		return MessageBuilder.withPayload(entry.getValue())
-                .setHeader(FileHeaders.FILENAME, getName(entry))
-                .setHeader(ZipHeaders.ZIP_ENTRY_PATH, getPath(entry))
+				.setHeader(FileHeaders.FILENAME, getName(entry))
+				.setHeader(ZipHeaders.ZIP_ENTRY_PATH, getPath(entry))
 				.copyHeaders(headers)
-                .build();
+				.build();
 	}
 
 	private static String getName(Map.Entry<String, Object> entry) {

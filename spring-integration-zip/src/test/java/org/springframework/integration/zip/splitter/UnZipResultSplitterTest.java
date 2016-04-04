@@ -16,8 +16,14 @@
 
 package org.springframework.integration.zip.splitter;
 
+import static org.junit.Assert.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.messaging.Message;
@@ -27,50 +33,45 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+/**
+ * @author Andriy Kryvtsun
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("UnZipResultSplitterTest-context.xml")
+@ContextConfiguration
 public class UnZipResultSplitterTest {
 
-    @Autowired
-    private MessageChannel input;
+	@Autowired
+	private MessageChannel input;
 
-    @Autowired
-    private QueueChannel output;
+	@Autowired
+	private QueueChannel output;
 
-    @Test
-    public void splitUnZippedData() {
+	@Test
+	public void splitUnZippedData() {
 
-        final String headerName = "headerName";
-        final String headerValue = "headerValue";
+		final String headerName = "headerName";
+		final String headerValue = "headerValue";
 
-        Map<String, Object> payload = new HashMap<String, Object>();
-        payload.put("file1", "data1");
-        payload.put("file2", "data2");
+		Map<String, Object> payload = new HashMap<String, Object>();
+		payload.put("file1", "data1");
+		payload.put("file2", "data2");
 
-        Message<?> inMessage = MessageBuilder.withPayload(payload)
-                .setHeader(headerName, headerValue)
-                .build();
+		Message<?> inMessage = MessageBuilder.withPayload(payload)
+				.setHeader(headerName, headerValue)
+				.build();
 
-        input.send(inMessage);
+		input.send(inMessage);
 
-        // check message 1
-        Message<?> outMessage1 = output.receive();
-        assertNotNull(outMessage1);
-        MessageHeaders headers1 = outMessage1.getHeaders();
-        assertNotNull(headers1);
-        assertEquals(headerValue, headers1.get(headerName));
+		// check message 1
+		checkMessage(output.receive(), headerName, headerValue);
+		// check message 2
+		checkMessage(output.receive(), headerName, headerValue);
+	}
 
-        // check message 2
-        Message<?> outMessage2 = output.receive();
-        assertNotNull(outMessage2);
-        MessageHeaders headers2 = outMessage1.getHeaders();
-        assertNotNull(headers2);
-        assertEquals(headerValue, headers2.get(headerName));
-    }
+	private static void checkMessage(Message<?> message, String headerName, String headerValue) {
+		assertNotNull(message);
+		MessageHeaders headers = message.getHeaders();
+		assertNotNull(headers);
+		assertEquals(headerValue, headers.get(headerName));
+	}
 }
