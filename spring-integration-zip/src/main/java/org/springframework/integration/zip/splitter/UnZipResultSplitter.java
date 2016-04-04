@@ -21,20 +21,25 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
+
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.zip.ZipHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 
 /**
  *
  * @author Gunnar Hillert
+ * @author Andriy Kryvtsun
  * @since 1.0
  *
  */
 public class UnZipResultSplitter {
 
-	public List<Message<Object>> splitUnzippedMap(Map<String, Object> unzippedEntries) {
+	public List<Message<Object>> splitUnzippedMap(Message<Map<String, Object>> message) {
+		final MessageHeaders headers = message.getHeaders();
+		final Map<String, Object> unzippedEntries = message.getPayload();
 
 		final List<Message<Object>> messages = new ArrayList<Message<Object>>(unzippedEntries.size());
 
@@ -43,7 +48,9 @@ public class UnZipResultSplitter {
 			final String filename = FilenameUtils.getName(entry.getKey());
 			final Message<Object> splitMessage = MessageBuilder.withPayload(entry.getValue())
 					.setHeader(FileHeaders.FILENAME, filename)
-					.setHeader(ZipHeaders.ZIP_ENTRY_PATH, path).build();
+					.setHeader(ZipHeaders.ZIP_ENTRY_PATH, path)
+					.copyHeaders(headers)
+					.build();
 			messages.add(splitMessage);
 		}
 		return messages;
