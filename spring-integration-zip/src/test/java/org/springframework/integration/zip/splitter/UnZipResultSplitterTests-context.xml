@@ -9,11 +9,9 @@
 
 	<int:channel id="input"/>
 
-	<int:chain input-channel="input" output-channel="output">
-		<int:splitter>
-			<bean class="org.springframework.integration.zip.splitter.UnZipResultSplitter"/>
-		</int:splitter>
-	</int:chain>
+	<int:splitter input-channel="input" output-channel="output">
+		<bean class="org.springframework.integration.zip.splitter.UnZipResultSplitter"/>
+	</int:splitter>
 
 	<int:channel id="output">
 		<int:queue/>
