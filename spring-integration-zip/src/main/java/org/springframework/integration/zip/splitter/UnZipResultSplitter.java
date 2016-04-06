@@ -49,7 +49,7 @@ public class UnZipResultSplitter {
 			final Message<Object> splitMessage = MessageBuilder.withPayload(entry.getValue())
 					.setHeader(FileHeaders.FILENAME, filename)
 					.setHeader(ZipHeaders.ZIP_ENTRY_PATH, path)
-					.copyHeaders(headers)
+					.copyHeadersIfAbsent(headers)
 					.build();
 			messages.add(splitMessage);
 		}

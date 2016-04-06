@@ -19,7 +19,7 @@ package org.springframework.integration.zip.splitter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
@@ -27,7 +27,9 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.zip.ZipHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,6 +42,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration
 public class UnZipResultSplitterTests {
 
+	private static final String DIR_1 = "dir1/";
+	private static final String DIR_2 = "dir2/";
+
+	private static final String FILE_1 = "file1";
+	private static final String FILE_2 = "file2";
+
+	private static final String DATA_1 = "data1";
+	private static final String DATA_2 = "data2";
+
 	private static int TIMEOUT = 10000;
 
 	@Autowired
@@ -49,27 +60,66 @@ public class UnZipResultSplitterTests {
 	private QueueChannel output;
 
 	@Test
-	public void splitUnZippedDataWithPreservingHeaderValues() {
+	public void splitPreservingSourceMessageHeaderValues() {
 
 		final String headerName = "headerName";
 		final String headerValue = "headerValue";
 
-		Map<String, Object> payload = new HashMap<String, Object>();
-		payload.put("file1", "data1");
-		payload.put("file2", "data2");
-
-		Message<?> inMessage = MessageBuilder.withPayload(payload)
+		Message<?> inMessage = MessageBuilder.withPayload(createPayload())
 				.setHeader(headerName, headerValue)
 				.build();
 
 		input.send(inMessage);
 
-		checkMessage(output.receive(TIMEOUT), headerName, headerValue);
-		checkMessage(output.receive(TIMEOUT), headerName, headerValue);
+		Message<?> message1 = output.receive(TIMEOUT);
+		checkMessage(message1, headerName, headerValue, DATA_1);
+
+		Message<?> message2 = output.receive(TIMEOUT);
+		checkMessage(message2, headerName, headerValue, DATA_2);
 	}
 
-	private static void checkMessage(Message<?> message, String headerName, String headerValue) {
+	private static void checkMessage(Message<?> message, String headerName, String headerValue, String payload) {
 		assertNotNull(message);
+		checkHeaderValue(message, headerName, headerValue);
+		checkPayload(message, payload);
+	}
+
+	@Test
+	public void splitPreservingServiceHeaderValues() {
+
+		Message<?> inMessage = MessageBuilder.withPayload(createPayload())
+				.setHeader(ZipHeaders.ZIP_ENTRY_PATH, "dir")
+				.setHeader(FileHeaders.FILENAME, "filename")
+				.build();
+
+		input.send(inMessage);
+
+		Message<?> message1 = output.receive(TIMEOUT);
+		checkMessage(message1, DIR_1, FILE_1, DATA_1, true);
+
+		Message<?> message2 = output.receive(TIMEOUT);
+		checkMessage(message2, DIR_2, FILE_2, DATA_2, true);
+	}
+
+	private static void checkMessage(Message<?> message, String path, String filename, String payload, boolean flag) {
+		assertNotNull(message);
+		checkHeaderValue(message, ZipHeaders.ZIP_ENTRY_PATH, path);
+		checkHeaderValue(message, FileHeaders.FILENAME, filename);
+		checkPayload(message, payload);
+	}
+
+	private static Map<String, Object> createPayload() {
+		Map<String, Object> payload = new LinkedHashMap<String, Object>();
+		payload.put(DIR_1 + FILE_1, DATA_1);
+		payload.put(DIR_2 + FILE_2, DATA_2);
+		return payload;
+	}
+
+	private static void checkPayload(Message<?> message, String payload) {
+		assertEquals(payload, message.getPayload());
+	}
+
+	private static void checkHeaderValue(Message<?> message, String headerName, String headerValue) {
 		assertEquals(headerValue, message.getHeaders().get(headerName));
 	}
 }
