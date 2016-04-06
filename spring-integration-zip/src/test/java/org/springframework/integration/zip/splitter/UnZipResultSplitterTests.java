@@ -72,13 +72,13 @@ public class UnZipResultSplitterTests {
 		input.send(inMessage);
 
 		Message<?> message1 = output.receive(TIMEOUT);
-		checkMessage(message1, headerName, headerValue, DATA_1);
+		checkMessageWithHeaderValue(message1, headerName, headerValue, DATA_1);
 
 		Message<?> message2 = output.receive(TIMEOUT);
-		checkMessage(message2, headerName, headerValue, DATA_2);
+		checkMessageWithHeaderValue(message2, headerName, headerValue, DATA_2);
 	}
 
-	private static void checkMessage(Message<?> message, String headerName, String headerValue, String payload) {
+	private static void checkMessageWithHeaderValue(Message<?> message, String headerName, String headerValue, String payload) {
 		assertNotNull(message);
 		checkHeaderValue(message, headerName, headerValue);
 		checkPayload(message, payload);
@@ -95,13 +95,13 @@ public class UnZipResultSplitterTests {
 		input.send(inMessage);
 
 		Message<?> message1 = output.receive(TIMEOUT);
-		checkMessage(message1, DIR_1, FILE_1, DATA_1, true);
+		checkMessageWithServiceHeaderValues(message1, DIR_1, FILE_1, DATA_1);
 
 		Message<?> message2 = output.receive(TIMEOUT);
-		checkMessage(message2, DIR_2, FILE_2, DATA_2, true);
+		checkMessageWithServiceHeaderValues(message2, DIR_2, FILE_2, DATA_2);
 	}
 
-	private static void checkMessage(Message<?> message, String path, String filename, String payload, boolean flag) {
+	private static void checkMessageWithServiceHeaderValues(Message<?> message, String path, String filename, String payload) {
 		assertNotNull(message);
 		checkHeaderValue(message, ZipHeaders.ZIP_ENTRY_PATH, path);
 		checkHeaderValue(message, FileHeaders.FILENAME, filename);
