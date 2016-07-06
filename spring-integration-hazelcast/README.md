@@ -1,19 +1,19 @@
 SPRING INTEGRATION HAZELCAST SUPPORT
 ====================================
 
-## HAZELCAST EVENT-DRIVEN INBOUND CHANNEL ADAPTER 
+## HAZELCAST EVENT-DRIVEN INBOUND CHANNEL ADAPTER
 
-Hazelcast provides distributed data structures such as 
+Hazelcast provides distributed data structures such as
 
-* com.hazelcast.core.IMap, 
-* com.hazelcast.core.MultiMap, 
-* com.hazelcast.core.IList, 
-* com.hazelcast.core.ISet, 
-* com.hazelcast.core.IQueue, 
+* com.hazelcast.core.IMap,
+* com.hazelcast.core.MultiMap,
+* com.hazelcast.core.IList,
+* com.hazelcast.core.ISet,
+* com.hazelcast.core.IQueue,
 * com.hazelcast.core.ITopic,
-* com.hazelcast.core.ReplicatedMap. 
+* com.hazelcast.core.ReplicatedMap.
 
-It also provides event listeners in order to listen to the modifications performed on these data structures. 
+It also provides event listeners in order to listen to the modifications performed on these data structures.
 
 * com.hazelcast.core.EntryListener<K, V>
 * com.hazelcast.core.ItemListener<E>
@@ -23,134 +23,134 @@ Hazelcast Event-Driven Inbound Channel Adapter listens related cache events and 
 
 #### XML Driven Configuration :
 ```
-   <int-hazelcast:inbound-channel-adapter channel="mapChannel" 
-					  cache="map" 
+   <int-hazelcast:inbound-channel-adapter channel="mapChannel"
+					  cache="map"
 					  cache-events="UPDATED, REMOVED"
-					  cache-listening-policy="SINGLE" /> 
+					  cache-listening-policy="SINGLE" />
 ```
-Basically, Hazelcast Event-Driven Inbound Channel Adapter requires following attributes : 
+Basically, Hazelcast Event-Driven Inbound Channel Adapter requires following attributes :
 
 * **channel :** Specifies channel which message is sent.
 * **cache :** Specifies the distributed Object reference which is listened. It is mandatory attribute.
-* **cache-events :** Specifies cache events which are listened. It is optional attribute and its default value is ADDED. Its supported values are as follows : 
+* **cache-events :** Specifies cache events which are listened. It is optional attribute and its default value is ADDED. Its supported values are as follows :
 
-1. Supported cache event types for IMap and MultiMap : ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
-2. Supported cache event types for ReplicatedMap : ADDED, REMOVED, UPDATED, EVICTED. 
-3. Supported cache event types for IList, ISet and IQueue : ADDED, REMOVED. 
-4. There is no need to cache event type definition for ITopic. 
+1. Supported cache event types for IMap and MultiMap : ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL.
+2. Supported cache event types for ReplicatedMap : ADDED, REMOVED, UPDATED, EVICTED.
+3. Supported cache event types for IList, ISet and IQueue : ADDED, REMOVED.
+4. There is no need to cache event type definition for ITopic.
 
 * **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast inbound channel adapter listening same cache object with same cache-events attribute, can receive a single event message or all event messages. If it is ALL, all Hazelcast inbound channel adapters listening same cache object with same cache-events attribute, will receive same event messages. If it is SINGLE, they will receive unique event messages.
 
-Sample namespace and schemaLocation definitions are as follows : 
+Sample namespace and schemaLocation definitions are as follows :
 ```
 xmlns:int-hazelcast= “http://www.springframework.org/schema/integration/hazelcast”
 
 xsi:schemaLocation="http://www.springframework.org/schema/integration/hazelcast
 		  http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd”
 ```
-Sample definitions are as follows : 
+Sample definitions are as follows :
 
-**Distributed Map :** 
+**Distributed Map :**
 ```
-<int:channel id="mapChannel"/> 
+<int:channel id="mapChannel"/>
 
-<int-hazelcast:inbound-channel-adapter channel="mapChannel" 
-					          cache="map" 
-					          cache-events="UPDATED, REMOVED" /> 
+<int-hazelcast:inbound-channel-adapter channel="mapChannel"
+					          cache="map"
+					          cache-events="UPDATED, REMOVED" />
 
-<bean id="map" factory-bean="instance" factory-method="getMap"> 
-	<constructor-arg value="map"/> 
-</bean> 
+<bean id="map" factory-bean="instance" factory-method="getMap">
+	<constructor-arg value="map"/>
+</bean>
 
-<bean id="instance" class="com.hazelcast.core.Hazelcast" 
-			factory-method="newHazelcastInstance"> 
-	<constructor-arg> 
-		<bean class="com.hazelcast.config.Config" /> 
-	</constructor-arg> 
-</bean> 
-```
-
-**Distributed MultiMap :** 
-```
-<int:channel id="multiMapChannel"/> 
-
-<int-hazelcast:inbound-channel-adapter channel="multiMapChannel" 
-					          cache="multiMap" 
-					          cache-events="ADDED, REMOVED, CLEAR_ALL" /> 
-
-<bean id="multiMap" factory-bean="instance" factory-method="getMultiMap"> 
-	<constructor-arg value="multiMap"/> 
-</bean> 
+<bean id="instance" class="com.hazelcast.core.Hazelcast"
+			factory-method="newHazelcastInstance">
+	<constructor-arg>
+		<bean class="com.hazelcast.config.Config" />
+	</constructor-arg>
+</bean>
 ```
 
-**Distributed List :** 
+**Distributed MultiMap :**
 ```
-<int:channel id="listChannel"/> 
+<int:channel id="multiMapChannel"/>
 
-<int-hazelcast:inbound-channel-adapter  channel="listChannel" 
-					           cache="list" 
+<int-hazelcast:inbound-channel-adapter channel="multiMapChannel"
+					          cache="multiMap"
+					          cache-events="ADDED, REMOVED, CLEAR_ALL" />
+
+<bean id="multiMap" factory-bean="instance" factory-method="getMultiMap">
+	<constructor-arg value="multiMap"/>
+</bean>
+```
+
+**Distributed List :**
+```
+<int:channel id="listChannel"/>
+
+<int-hazelcast:inbound-channel-adapter  channel="listChannel"
+					           cache="list"
 					           cache-events="ADDED, REMOVED"
-					           cache-listening-policy="ALL" /> 
+					           cache-listening-policy="ALL" />
 
-<bean id="list" factory-bean="instance" factory-method="getList"> 
-	<constructor-arg value="list"/> 
-</bean> 
+<bean id="list" factory-bean="instance" factory-method="getList">
+	<constructor-arg value="list"/>
+</bean>
 ```
 
-**Distributed Set :** 
+**Distributed Set :**
 ```
-<int:channel id="setChannel"/> 
+<int:channel id="setChannel"/>
 
-<int-hazelcast:inbound-channel-adapter channel="setChannel" cache="set" /> 
+<int-hazelcast:inbound-channel-adapter channel="setChannel" cache="set" />
 
-<bean id="set" factory-bean="instance" factory-method="getSet"> 
-	<constructor-arg value="set"/> 
-</bean> 
+<bean id="set" factory-bean="instance" factory-method="getSet">
+	<constructor-arg value="set"/>
+</bean>
 ```
 
 **Distributed Queue :**
 ```
-<int:channel id="queueChannel"/> 
+<int:channel id="queueChannel"/>
 
-<int-hazelcast:inbound-channel-adapter  channel="queueChannel" 
-					           cache="queue" 
+<int-hazelcast:inbound-channel-adapter  channel="queueChannel"
+					           cache="queue"
 					           cache-events="REMOVED"
-					           cache-listening-policy="ALL" /> 
+					           cache-listening-policy="ALL" />
 
-<bean id="queue" factory-bean="instance" factory-method="getQueue"> 
-	<constructor-arg value="queue"/> 
+<bean id="queue" factory-bean="instance" factory-method="getQueue">
+	<constructor-arg value="queue"/>
 </bean>
 ```
 
-**Distributed Topic :** 
+**Distributed Topic :**
 ```
-<int:channel id="topicChannel"/> 
+<int:channel id="topicChannel"/>
 
-<int-hazelcast:inbound-channel-adapter channel="topicChannel" cache="topic" /> 
+<int-hazelcast:inbound-channel-adapter channel="topicChannel" cache="topic" />
 
-<bean id="topic" factory-bean="instance" factory-method="getTopic"> 
-	<constructor-arg value="topic"/> 
-</bean> 
+<bean id="topic" factory-bean="instance" factory-method="getTopic">
+	<constructor-arg value="topic"/>
+</bean>
 ```
 
-**Replicated Map :** 
+**Replicated Map :**
 ```
-<int:channel id="replicatedMapChannel"/> 
+<int:channel id="replicatedMapChannel"/>
 
-<int-hazelcast:inbound-channel-adapter channel="replicatedMapChannel" 
-					          cache="replicatedMap" 
+<int-hazelcast:inbound-channel-adapter channel="replicatedMapChannel"
+					          cache="replicatedMap"
 					          cache-events="ADDED, UPDATED, REMOVED"
- 					          cache-listening-policy="SINGLE"  /> 
+ 					          cache-listening-policy="SINGLE"  />
 
-<bean id="replicatedMap" factory-bean="instance" factory-method="getReplicatedMap"> 
-	<constructor-arg value="replicatedMap"/> 
-</bean> 
-<bean id="instance" class="com.hazelcast.core.Hazelcast" 
-			factory-method="newHazelcastInstance"> 
-	<constructor-arg> 
-		<bean class="com.hazelcast.config.Config" /> 
-	</constructor-arg> 
-</bean> 
+<bean id="replicatedMap" factory-bean="instance" factory-method="getReplicatedMap">
+	<constructor-arg value="replicatedMap"/>
+</bean>
+<bean id="instance" class="com.hazelcast.core.Hazelcast"
+			factory-method="newHazelcastInstance">
+	<constructor-arg>
+		<bean class="com.hazelcast.config.Config" />
+	</constructor-arg>
+</bean>
 ```
 
 #### JavaConfig Driven Configuration :
@@ -193,45 +193,45 @@ Hazelcast Continuous Query enables to listen to the modifications performed on s
 
 #### XML Driven Configuration :
 ```
-<int-hazelcast:cq-inbound-channel-adapter 
-				channel="cqMapChannel" 
-				cache="cqMap" 
-				cache-events="UPDATED, REMOVED" 
+<int-hazelcast:cq-inbound-channel-adapter
+				channel="cqMapChannel"
+				cache="cqMap"
+				cache-events="UPDATED, REMOVED"
 				predicate="name=TestName AND surname=TestSurname"
 				include-value="true"
-				cache-listening-policy="SINGLE" /> 
+				cache-listening-policy="SINGLE" />
 ```
-Basically, it requires four attributes as follows : 
+Basically, it requires four attributes as follows :
 
 * **channel :** Specifies channel which message is sent.
-* **cache :** Specifies distributed Map reference which is listened. It is mandatory attribute. 
-* **cache-events :** Specifies cache events which are listened. It is optional attribute with ADDED default value. Supported values are ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL. 
+* **cache :** Specifies distributed Map reference which is listened. It is mandatory attribute.
+* **cache-events :** Specifies cache events which are listened. It is optional attribute with ADDED default value. Supported values are ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL and CLEAR_ALL.
 * **predicate :** Specifies predicate to listen to the modifications performed on specific map entries. It is mandatory attribute.
 * **include-value :** Specifies including of value and oldValue in continuous query result. It is optional attribute with 'true' default value.
 * **cache-listening-policy :** Specifies cache listening policy as SINGLE or ALL. It is optional attribute and its default value is SINGLE. Each Hazelcast CQ inbound channel adapter listening same cache object with same cache-events attribute, can receive a single event message or all event messages. If it is ALL, all Hazelcast CQ inbound channel adapters listening same cache object with same cache-events attribute, will receive same event messages. If it is SINGLE, they will receive unique event messages.
 
-Sample definition is as follows : 
+Sample definition is as follows :
 ```
-<int:channel id="cqMapChannel"/> 
+<int:channel id="cqMapChannel"/>
 
-<int-hazelcast:cq-inbound-channel-adapter  
-				channel="cqMapChannel" 
-				cache="cqMap" 
-				cache-events="UPDATED, REMOVED" 
+<int-hazelcast:cq-inbound-channel-adapter
+				channel="cqMapChannel"
+				cache="cqMap"
+				cache-events="UPDATED, REMOVED"
 				predicate="name=TestName AND surname=TestSurname"
 				include-value="true"
-				cache-listening-policy="SINGLE"/> 
+				cache-listening-policy="SINGLE"/>
 
-<bean id="cqMap" factory-bean="instance" factory-method="getMap"> 
-	<constructor-arg value="cqMap"/> 
-</bean> 
+<bean id="cqMap" factory-bean="instance" factory-method="getMap">
+	<constructor-arg value="cqMap"/>
+</bean>
 
-<bean id="instance" class="com.hazelcast.core.Hazelcast" 
-			factory-method="newHazelcastInstance"> 
-	<constructor-arg> 
-		<bean class="com.hazelcast.config.Config" /> 
-	</constructor-arg> 
-</bean> 
+<bean id="instance" class="com.hazelcast.core.Hazelcast"
+			factory-method="newHazelcastInstance">
+	<constructor-arg>
+		<bean class="com.hazelcast.config.Config" />
+	</constructor-arg>
+</bean>
 ```
 
 #### JavaConfig Driven Configuration :
@@ -265,38 +265,38 @@ public HazelcastContinuousQueryMessageProducer hazelcastContinuousQueryMessagePr
 ```
 **Reference :** http://docs.hazelcast.org/docs/latest/manual/html/continuousquery.html
 
-## HAZELCAST CLUSTER MONITOR INBOUND CHANNEL ADAPTER 
+## HAZELCAST CLUSTER MONITOR INBOUND CHANNEL ADAPTER
 
 Hazelcast Cluster Monitor enables to listen to the modifications performed on cluster. Hazelcast Cluster Monitor Inbound Channel Adapter is an event-driven channel adapter and listens to related Membership, Distributed Object, Migration, Lifecycle and Client events. It supports both XML and JavaConfig driven configurations.
 
 #### XML Driven Configuration :
 ```
-<int-hazelcast:cm-inbound-channel-adapter 
-				 channel="monitorChannel" 
-				 hazelcast-instance="instance" 
-				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYCLE, CLIENT" /> 
+<int-hazelcast:cm-inbound-channel-adapter
+				 channel="monitorChannel"
+				 hazelcast-instance="instance"
+				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYCLE, CLIENT" />
 ```
-Basically, it requires four attributes as follows : 
+Basically, it requires four attributes as follows :
 
 * **channel :** Specifies channel which message is sent.
-* **hazelcast-instance :** Specifies Hazelcast Instance reference to listen cluster events. It is mandatory attribute. 
+* **hazelcast-instance :** Specifies Hazelcast Instance reference to listen cluster events. It is mandatory attribute.
 * **monitor-types :** Specifies monitor types which are listened. It is optional attribute with MEMBERSHIP default value. Supported values are MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYCLE, CLIENT.
 
-Sample definition is as follows : 
+Sample definition is as follows :
 ```
-<int:channel id="monitorChannel"/> 
+<int:channel id="monitorChannel"/>
 
-<int-hazelcast:cm-inbound-channel-adapter 
-				 channel="monitorChannel" 
-				 hazelcast-instance="instance" 
-				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT" /> 
+<int-hazelcast:cm-inbound-channel-adapter
+				 channel="monitorChannel"
+				 hazelcast-instance="instance"
+				 monitor-types="MEMBERSHIP, DISTRIBUTED_OBJECT" />
 
-<bean id="instance" class="com.hazelcast.core.Hazelcast" 
-			factory-method="newHazelcastInstance"> 
-	<constructor-arg> 
-		<bean class="com.hazelcast.config.Config" /> 
-	</constructor-arg> 
-</bean> 
+<bean id="instance" class="com.hazelcast.core.Hazelcast"
+			factory-method="newHazelcastInstance">
+	<constructor-arg>
+		<bean class="com.hazelcast.config.Config" />
+	</constructor-arg>
+</bean>
 ```
 
 #### JavaConfig Driven Configuration :
@@ -320,52 +320,52 @@ public HazelcastClusterMonitorMessageProducer hazelcastClusterMonitorMessageProd
 	return producer;
 }
 ```
-**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedevents.html 
+**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedevents.html
 
 
-## HAZELCAST DISTRIBUTED-SQL INBOUND CHANNEL ADAPTER 
+## HAZELCAST DISTRIBUTED-SQL INBOUND CHANNEL ADAPTER
 
 Hazelcast allows to run distributed queries on the distributed map. Hazelcast Distributed SQL Inbound Channel Adapter is a poller-driven inbound channel adapter. It runs defined distributed-sql and returns results in the light of iteration type. It supports both XML and JavaConfig driven configurations.
 
 #### XML Driven Configuration :
 ```
-<int-hazelcast:ds-inbound-channel-adapter  
-			     channel="dsMapChannel" 
+<int-hazelcast:ds-inbound-channel-adapter
+			     channel="dsMapChannel"
 			     cache="dsMap"
- 			     iteration-type="ENTRY" 
-                 distributed-sql="active=false OR age >= 25 OR name = 'TestName'"> 
+ 			     iteration-type="ENTRY"
+                 distributed-sql="active=false OR age >= 25 OR name = 'TestName'">
 	<int:poller fixed-delay="100"/>
-</int-hazelcast:ds-inbound-channel-adapter> 
+</int-hazelcast:ds-inbound-channel-adapter>
 ```
-Basically, it requires a poller and four attributes such as 
+Basically, it requires a poller and four attributes such as
 
-* **channel :** Specifies channel which message is sent. It is mandatory attribute. 
-* **cache :** Specifies distributed Map reference which is queried. It is mandatory attribute. 
-* **iteration-type :** Specifies result type. Distributed SQL can be run on EntrySet, KeySet, LocalKeySet or Values. It is optional attribute with VALUE default value. Supported values are ENTRY, KEY, LOCAL_KEY and VALUE. 
-* **distributed-sql :** Specifies where clause of sql statement. It is mandatory attribute. 
+* **channel :** Specifies channel which message is sent. It is mandatory attribute.
+* **cache :** Specifies distributed Map reference which is queried. It is mandatory attribute.
+* **iteration-type :** Specifies result type. Distributed SQL can be run on EntrySet, KeySet, LocalKeySet or Values. It is optional attribute with VALUE default value. Supported values are ENTRY, KEY, LOCAL_KEY and VALUE.
+* **distributed-sql :** Specifies where clause of sql statement. It is mandatory attribute.
 
-Sample definition is as follows : 
+Sample definition is as follows :
 ```
-<int:channel id="dsMapChannel"/> 
+<int:channel id="dsMapChannel"/>
 
-<int-hazelcast:ds-inbound-channel-adapter  
-			channel="dsMapChannel" 
-			cache="dsMap" 
-			iteration-type="ENTRY" 
-			distributed-sql="active=false OR age >= 25 OR name = 'TestName'"> 
+<int-hazelcast:ds-inbound-channel-adapter
+			channel="dsMapChannel"
+			cache="dsMap"
+			iteration-type="ENTRY"
+			distributed-sql="active=false OR age >= 25 OR name = 'TestName'">
 	<int:poller fixed-delay="100"/>
-</int-hazelcast:ds-inbound-channel-adapter> 
+</int-hazelcast:ds-inbound-channel-adapter>
 
-<bean id="dsMap" factory-bean="instance" factory-method="getMap"> 
-	<constructor-arg value="dsMap"/> 
-</bean> 
+<bean id="dsMap" factory-bean="instance" factory-method="getMap">
+	<constructor-arg value="dsMap"/>
+</bean>
 
-<bean id="instance" class="com.hazelcast.core.Hazelcast" 
-			factory-method="newHazelcastInstance"> 
-	<constructor-arg> 
-		<bean class="com.hazelcast.config.Config" /> 
-	</constructor-arg> 
-</bean> 
+<bean id="instance" class="com.hazelcast.core.Hazelcast"
+			factory-method="newHazelcastInstance">
+	<constructor-arg>
+		<bean class="com.hazelcast.config.Config" />
+	</constructor-arg>
+</bean>
 ```
 
 #### JavaConfig Driven Configuration :
@@ -399,7 +399,7 @@ public HazelcastDistributedSQLMessageSource hazelcastDistributedSQLMessageSource
 **Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedquery.html
 
 
-## HAZELCAST OUTBOUND CHANNEL ADAPTER 
+## HAZELCAST OUTBOUND CHANNEL ADAPTER
 
 Hazelcast Outbound Channel Adapter listens its defined channel and writes incoming messages to related distributed cache. It expects one of cache, cache-expression or HazelcastHeaders.CACHE_NAME for distributed object definition. Supported Distributed Objects : IMap, MultiMap, ReplicatedMap, IList, ISet, IQueue and ITopic. It supports both XML and JavaConfig driven configurations.
 
@@ -407,12 +407,12 @@ Hazelcast Outbound Channel Adapter listens its defined channel and writes incomi
 ```
 <int-hazelcast:outbound-channel-adapter channel="mapChannel" cache="distributedMap" key-expression="payload.id" extract-payload="false"/>
 ```
-Basically, it requires the following attributes : 
+Basically, it requires the following attributes :
 
 **channel :** Specifies channel which message is sent.
 * **cache :** Specifies distributed object reference. It is optional attribute.
-* **cache-expression :** Specifies distributed object via Spring Expression Language(SpEL). It is optional attribute. 
-* **key-expression :** Specifies key of K,V pair via Spring Expression Language(SpEL). It is optional attribute and required for just IMap, MultiMap and ReplicatedMap distributed data structures. 
+* **cache-expression :** Specifies distributed object via Spring Expression Language(SpEL). It is optional attribute.
+* **key-expression :** Specifies key of K,V pair via Spring Expression Language(SpEL). It is optional attribute and required for just IMap, MultiMap and ReplicatedMap distributed data structures.
 * **extract-payload :** Specifies whole message or just payload to send. It is optional attribute with  **true** default value. If it is true, just payload will be written to distributed object. Otherwise, whole message will be written by covering both message header and payload.
 
 **Sample Definitions :**
@@ -421,7 +421,7 @@ Basically, it requires the following attributes :
 ```
 **OR**
 ```
-<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache-expression="headers['CACHE_HEADER']" key-expression="payload.key" extract-payload="true"/> 
+<int-hazelcast:outbound-channel-adapter channel="mapChannel" cache-expression="headers['CACHE_HEADER']" key-expression="payload.key" extract-payload="true"/>
 ```
 By setting distributed object name in the header, messages can be written to different distributed objects via same channel.
 
@@ -467,13 +467,12 @@ you just need to create a `LeaderInitiator`. Example:
 ```java
 @Bean
 public HazelcastInstance hazelcastInstance() {
-	return Hazelcast.newHazelcastInstance();
+    return Hazelcast.newHazelcastInstance();
 }
 
 @Bean
 public LeaderInitiator initiator() {
-	LeaderInitiator initiator = new LeaderInitiator(hazelcastInstance());
-	return initiator;
+    return new LeaderInitiator(hazelcastInstance());
 }
 ```
 

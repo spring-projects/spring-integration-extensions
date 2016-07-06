@@ -1,21 +1,26 @@
-description = 'Spring Integration Hazelcast Support'
-
-apply plugin: 'java'
-apply from: "${rootProject.projectDir}/publish-maven.gradle"
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'jacoco'
-
-group = 'org.springframework.integration'
-
 buildscript {
 	repositories {
 		maven { url 'http://repo.spring.io/plugins-release' }
 	}
 	dependencies {
-		classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.5.RELEASE'
 	}
 }
+
+plugins {
+	id "org.sonarqube" version "1.2"
+}
+
+description = 'Spring Integration Hazelcast Support'
+
+apply plugin: 'java'
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
+apply plugin: 'eclipse'
+apply plugin: 'jacoco'
+apply plugin: 'idea'
+
+group = 'org.springframework.integration'
+
 
 repositories {
 	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
@@ -39,9 +44,9 @@ if (project.hasProperty('platformVersion')) {
 sourceCompatibility = targetCompatibility = 1.7
 
 ext {
-	hazelcastVersion = '3.6'
-	slf4jVersion = '1.7.13'
-	springIntegrationVersion = '4.2.4.RELEASE'
+	hazelcastVersion = '3.6.4'
+	slf4jVersion = '1.7.21'
+	springIntegrationVersion = '4.3.1.BUILD-SNAPSHOT'
 
 	idPrefix = 'hazelcast'
 
@@ -64,8 +69,11 @@ sourceSets {
 }
 
 jacoco {
-	toolVersion = "0.7.5.201505241946"
+	toolVersion = "0.7.6.201602180812"
 }
+
+// enable all compiler warnings; individual projects may customize further
+[compileJava, compileTestJava]*.options*.compilerArgs = ['-Xlint:all,-options,-processing']
 
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
@@ -116,10 +124,8 @@ artifacts {
 	archives javadocJar
 }
 
-apply plugin: 'sonar-runner'
-
-sonarRunner {
-	sonarProperties {
+sonarqube {
+	properties {
 		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
 		property "sonar.links.homepage", linkHomepage
 		property "sonar.links.ci", linkCi
