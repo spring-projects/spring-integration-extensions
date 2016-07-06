@@ -1,0 +1,189 @@
+description = 'Spring Integration Etcd Support'
+
+apply plugin: 'java'
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'jacoco'
+
+group = 'org.springframework.integration'
+
+buildscript {
+	repositories {
+		maven { url 'http://repo.spring.io/plugins-release' }
+        mavenCentral()
+	}
+	dependencies {
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
+	}
+}
+
+repositories {
+	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+		maven { url 'http://repo.spring.io/libs-snapshot' }
+	}
+	maven { url 'http://repo.spring.io/libs-milestone' }
+}
+
+if (project.hasProperty('platformVersion')) {
+	apply plugin: 'spring-io'
+
+	dependencyManagement {
+		springIoTestRuntime {
+			imports {
+				mavenBom "io.spring.platform:platform-bom:${platformVersion}"
+			}
+		}
+	}
+}
+
+sourceCompatibility = targetCompatibility = 1.7
+
+ext {
+	etcdVersion = '2.7.0'
+	slf4jVersion = '1.7.13'
+	springIntegrationVersion = '4.2.4.RELEASE'
+
+	idPrefix = 'etcd'
+
+	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkCi = 'https://build.spring.io/browse/INTEXT'
+	linkIssue = 'https://jira.spring.io/browse/INTEXT'
+	linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
+	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
+}
+
+eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
+
+sourceSets {
+	test {
+		resources {
+			srcDirs = ['src/test/resources', 'src/test/java']
+		}
+	}
+}
+
+jacoco {
+	toolVersion = "0.7.5.201505241946"
+}
+
+dependencies {
+	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
+	compile "org.mousio:etcd4j:$etcdVersion"
+
+	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
+
+	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+}
+
+// enable all compiler warnings; individual projects may customize further
+[compileJava, compileTestJava]*.options*.compilerArgs = ['-Xlint:all,-options']
+
+test {
+	// suppress all console output during testing unless running `gradle -i`
+	logging.captureStandardOutput(LogLevel.INFO)
+
+	maxHeapSize = "1024m"
+	jacoco {
+		append = false
+		destinationFile = file("$buildDir/jacoco.exec")
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination "${buildDir}/reports/jacoco/html"
+	}
+}
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+	classifier = 'javadoc'
+	from javadoc
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+apply plugin: 'sonar-runner'
+
+sonarRunner {
+	sonarProperties {
+		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
+		property "sonar.links.homepage", linkHomepage
+		property "sonar.links.ci", linkCi
+		property "sonar.links.issue", linkIssue
+		property "sonar.links.scm", linkScmUrl
+		property "sonar.links.scm_dev", linkScmDevConnection
+		property "sonar.java.coveragePlugin", "jacoco"
+	}
+}
+
+task distZip(type: Zip) {
+	group = 'Distribution'
+	classifier = 'dist'
+	description = "Builds -${classifier} archive, containing all jars and docs, " +
+			"suitable for community download page."
+
+	ext.baseDir = "${project.name}-${project.version}";
+
+	from('src/dist') {
+		include 'readme.txt'
+		include 'license.txt'
+		include 'notice.txt'
+		into "${baseDir}"
+	}
+
+	into("${baseDir}/libs") {
+		from project.jar
+		from project.sourcesJar
+		from project.javadocJar
+	}
+}
+
+// Create an optional "with dependencies" distribution.
+// Not published by default; only for use when building from source.
+task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
+	group = 'Distribution'
+	classifier = 'dist-with-deps'
+	description = "Builds -${classifier} archive, containing everything " +
+			"in the -${distZip.classifier} archive plus all dependencies."
+
+	from zipTree(distZip.archivePath)
+
+	gradle.taskGraph.whenReady { taskGraph ->
+		if (taskGraph.hasTask(":${zipTask.name}")) {
+			def projectName = rootProject.name
+			def artifacts = new HashSet()
+
+			rootProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+				def dependency = artifact.moduleVersion.id
+				if (!projectName.equals(dependency.name)) {
+					artifacts << artifact.file
+				}
+			}
+
+			zipTask.from(artifacts) {
+				into "${distZip.baseDir}/deps"
+			}
+		}
+	}
+}
+
+artifacts {
+	archives distZip
+}
+
+task dist(dependsOn: assemble) {
+	group = 'Distribution'
+	description = 'Builds -dist distribution archives.'
+}
