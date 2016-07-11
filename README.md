@@ -121,7 +121,7 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [Git]: http://help.github.com/set-up-git-redirect
 [Gradle build and release FAQ]: https://github.com/SpringSource/spring-framework/wiki/Gradle-build-and-release-FAQ
 [Pull requests]: http://help.github.com/send-pull-requests
-[contributor guidelines]: https://github.com/SpringSource/spring-integration/wiki/Contributor-guidelines
+[contributor guidelines]: https://github.com/spring-projects/spring-integration/blob/master/CONTRIBUTING.adoc
 [administrator guidelines]: https://github.com/SpringSource/spring-integration/wiki/Administrator-Guidelines
 [Spring Integration Samples]: https://github.com/SpringSource/spring-integration-samples
 [Spring Integration Templates]: https://github.com/SpringSource/spring-integration-templates/tree/master/si-sts-templates
