@@ -1,25 +1,42 @@
-description = 'Spring Integration Zip Adapter'
-
 buildscript {
 	repositories {
 		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 }
 
-apply plugin: 'java'
-apply from:   "${rootProject.projectDir}/publish-maven.gradle"
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'jacoco'
+plugins {
+	id 'java'
+	id 'eclipse'
+	id 'idea'
+	id 'jacoco'
+	id 'org.sonarqube' version '2.1-rc3'
+}
+
+description = 'Spring Integration Zip Adapter'
+
+
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
 
 group = 'org.springframework.integration'
 
 repositories {
-	if (version.endsWith('BUILD-SNAPSHOT')) {
-		maven { url 'https://repo.spring.io/libs-snapshot' }
+	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+		maven { url 'http://repo.spring.io/libs-snapshot' }
 	}
 	maven { url 'https://repo.spring.io/libs-milestone' }
-	mavenCentral()
+}
+
+if (project.hasProperty('platformVersion')) {
+	apply plugin: 'spring-io'
+
+	dependencyManagement {
+		springIoTestRuntime {
+			imports {
+				mavenBom "io.spring.platform:platform-bom:${platformVersion}"
+			}
+
+		}
+	}
 }
 
 sourceCompatibility=1.6
@@ -34,8 +51,8 @@ ext {
 	linkScmConnection    = 'https://github.com/spring-projects/spring-integration-extensions.git'
 	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
 
-	slf4jVersion = "1.7.13"
-	springIntegrationVersion = '4.2.4.RELEASE'
+	slf4jVersion = "1.7.21"
+	springIntegrationVersion = '4.3.1.RELEASE'
 	ztZipVersion = '1.9'
 
 	idPrefix = 'zip'
@@ -56,7 +73,7 @@ sourceSets {
 }
 
 jacoco {
-	toolVersion = "0.7.2.201409121644"
+	toolVersion = "0.7.6.201602180812"
 }
 
 dependencies {
@@ -73,14 +90,6 @@ dependencies {
 ext.xLintArg = '-Xlint:all,-options'
 [compileJava, compileTestJava]*.options*.compilerArgs = [xLintArg]
 
-jacocoTestReport {
-	reports {
-		xml.enabled false
-		csv.enabled false
-		html.destination "${buildDir}/reports/jacoco/html"
-	}
-}
-
 test {
 	// suppress all console output during testing unless running `gradle -i`
 	logging.captureStandardOutput(LogLevel.INFO)
@@ -88,6 +97,14 @@ test {
 	jacoco {
 		append = false
 		destinationFile = file("$buildDir/jacoco.exec")
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination "${buildDir}/reports/jacoco/html"
 	}
 }
 
@@ -108,10 +125,8 @@ artifacts {
 
 build.dependsOn jacocoTestReport
 
-apply plugin: 'sonar-runner'
-
-sonarRunner {
-	sonarProperties {
+sonarqube {
+	properties {
 		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
 		property "sonar.links.homepage", linkHomepage
 		property "sonar.links.ci", linkCi
@@ -244,10 +259,4 @@ artifacts {
 task dist(dependsOn: assemble) {
 	group = 'Distribution'
 	description = 'Builds -dist, -docs and -schema distribution archives.'
-}
-
-task wrapper(type: Wrapper) {
-	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '2.5'
-	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }

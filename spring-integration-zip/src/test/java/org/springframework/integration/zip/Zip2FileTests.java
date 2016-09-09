@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.springframework.integration.zip;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,12 +42,14 @@ import org.springframework.messaging.MessageChannel;
 /**
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  *
  */
 public class Zip2FileTests {
 
 	private AnnotationConfigApplicationContext context;
+
 	private MessageChannel input;
 
 	private static final Properties properties = new Properties();
@@ -61,7 +63,6 @@ public class Zip2FileTests {
 	public void setup() throws IOException {
 		this.workDir = testFolder.newFolder();
 		properties.put("workDir", workDir);
-		System.out.print(this.workDir.getAbsolutePath());
 
 		context = new AnnotationConfigApplicationContext();
 		context.register(ContextConfiguration.class);
@@ -77,7 +78,7 @@ public class Zip2FileTests {
 	}
 
 	@Test
-	public void zipStringWithDefaultFileName() throws FileNotFoundException, IOException, InterruptedException {
+	public void zipStringWithDefaultFileName() throws IOException, InterruptedException {
 
 		final Message<String> message = MessageBuilder.withPayload("Zip me up.").build();
 
@@ -89,28 +90,33 @@ public class Zip2FileTests {
 
 		Assert.assertTrue(fileInWorkDir.isFile());
 		Assert.assertTrue(fileInWorkDir.getName().contains(message.getHeaders().getId().toString()));
-		Assert.assertTrue("The created file should have a 'zip' file extension.", fileInWorkDir.getName().endsWith(".zip"));
+		Assert.assertTrue("The created file should have a 'zip' file extension.",
+				fileInWorkDir.getName().endsWith(".zip"));
 	}
 
 	@Test
-	public void zipStringWithExplicitFileName() throws FileNotFoundException, IOException, InterruptedException {
-		input.send(MessageBuilder.withPayload("Zip me up.").setHeader(FileHeaders.FILENAME, "zipString.zip").build());
+	public void zipStringWithExplicitFileName() throws IOException, InterruptedException {
+		input.send(MessageBuilder.withPayload("Zip me up.")
+				.setHeader(FileHeaders.FILENAME, "zipString.zip")
+				.build());
 
 		Assert.assertTrue(this.workDir.list().length == 1);
 		Assert.assertEquals("zipString.zip", this.workDir.listFiles()[0].getName());
 	}
 
 	@Test
-	public void zipBytesWithExplicitFileName() throws FileNotFoundException, IOException, InterruptedException {
+	public void zipBytesWithExplicitFileName() throws IOException, InterruptedException {
 
-		input.send(MessageBuilder.withPayload("Zip me up.".getBytes()).setHeader(FileHeaders.FILENAME, "zipString.zip").build());
+		input.send(MessageBuilder.withPayload("Zip me up.".getBytes())
+				.setHeader(FileHeaders.FILENAME, "zipString.zip")
+				.build());
 
 		Assert.assertTrue(this.workDir.list().length == 1);
 		Assert.assertEquals("zipString.zip", this.workDir.listFiles()[0].getName());
 	}
 
 	@Test
-	public void zipFile() throws FileNotFoundException, IOException, InterruptedException {
+	public void zipFile() throws IOException, InterruptedException {
 
 		final File fileToCompress = testFolder.newFile();
 		FileUtils.writeStringToFile(fileToCompress, "hello world");
@@ -122,7 +128,7 @@ public class Zip2FileTests {
 	}
 
 	@Test
-	public void zipIterableWithMultipleStrings() throws FileNotFoundException, IOException, InterruptedException {
+	public void zipIterableWithMultipleStrings() throws IOException, InterruptedException {
 
 		String stringToCompress1 = "String1";
 		String stringToCompress2 = "String2";
@@ -136,17 +142,19 @@ public class Zip2FileTests {
 		stringsToCompress.add(stringToCompress3);
 		stringsToCompress.add(stringToCompress4);
 
-		input.send(MessageBuilder.withPayload(stringsToCompress).setHeader(FileHeaders.FILENAME, "zipWith4Strings.zip").build());
+		input.send(MessageBuilder.withPayload(stringsToCompress)
+				.setHeader(FileHeaders.FILENAME, "zipWith4Strings.zip")
+				.build());
 
 		Assert.assertTrue(this.workDir.list().length == 1);
 		Assert.assertEquals("zipWith4Strings.zip", this.workDir.listFiles()[0].getName());
 	}
 
 	@Test
-	public void zipIterableWithDifferentTypes() throws FileNotFoundException, IOException, InterruptedException {
+	public void zipIterableWithDifferentTypes() throws IOException, InterruptedException {
 
 		String stringToCompress = "String1";
-		byte[] bytesToCompress  = "String2".getBytes();
+		byte[] bytesToCompress = "String2".getBytes();
 		final File fileToCompress = testFolder.newFile();
 		FileUtils.writeStringToFile(fileToCompress, "hello world");
 
@@ -156,7 +164,9 @@ public class Zip2FileTests {
 		objectsToCompress.add(bytesToCompress);
 		objectsToCompress.add(fileToCompress);
 
-		input.send(MessageBuilder.withPayload(objectsToCompress).setHeader(FileHeaders.FILENAME, "objects-to-compress.zip").build());
+		input.send(MessageBuilder.withPayload(objectsToCompress)
+				.setHeader(FileHeaders.FILENAME, "objects-to-compress.zip")
+				.build());
 
 		Assert.assertTrue(this.workDir.list().length == 1);
 		Assert.assertEquals("objects-to-compress.zip", this.workDir.listFiles()[0].getName());
@@ -172,4 +182,5 @@ public class Zip2FileTests {
 		}
 
 	}
+
 }
