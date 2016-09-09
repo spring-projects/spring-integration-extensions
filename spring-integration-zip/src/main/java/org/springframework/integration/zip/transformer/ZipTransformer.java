@@ -171,25 +171,21 @@ public class ZipTransformer extends AbstractZipTransformer {
 			throw new IllegalStateException("Unsupported zipResultType " + this.zipResultType);
 		}
 
-		try {
-			return getMessageBuilderFactory()
-					.withPayload(zippedData)
-					.copyHeaders(message.getHeaders())
-					.setHeader(FileHeaders.FILENAME, zipFileName)
-					.build();
-		}
-		finally {
-			if (this.deleteFiles) {
-				if (payload instanceof Iterable<?>) {
-					for (Object item : (Iterable<?>) payload) {
-						deleteFile(item);
-					}
-				}
-				else {
-					deleteFile(payload);
+		if (this.deleteFiles) {
+			if (payload instanceof Iterable<?>) {
+				for (Object item : (Iterable<?>) payload) {
+					deleteFile(item);
 				}
 			}
+			else {
+				deleteFile(payload);
+			}
 		}
+		return getMessageBuilderFactory()
+				.withPayload(zippedData)
+				.copyHeaders(message.getHeaders())
+				.setHeader(FileHeaders.FILENAME, zipFileName)
+				.build();
 	}
 
 	private void deleteFile(Object fileToDelete) {
