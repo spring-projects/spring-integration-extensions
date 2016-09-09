@@ -32,7 +32,6 @@ import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.transformer.Transformer;
 import org.springframework.integration.zip.ZipHeaders;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
@@ -49,6 +48,7 @@ import org.springframework.util.StringUtils;
  * See also: https://blogs.oracle.com/xuemingshen/entry/zip64_support_for_4g_zipfile
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
  * @since 1.0
  *
  */
@@ -98,90 +98,103 @@ public class ZipTransformer extends AbstractZipTransformer {
 	 */
 	@Override
 	protected Object doZipTransform(Message<?> message) throws Exception {
+		final Object payload = message.getPayload();
+		final Object zippedData;
+		final String baseFileName = this.fileNameGenerator.generateFileName(message);
+
+		final String zipEntryName;
+		final String zipFileName;
+
+		if (message.getHeaders().containsKey(ZipHeaders.ZIP_ENTRY_FILE_NAME)) {
+			zipEntryName = (String) message.getHeaders().get(ZipHeaders.ZIP_ENTRY_FILE_NAME);
+		}
+		else {
+			zipEntryName = baseFileName;
+		}
+
+		if (message.getHeaders().containsKey(FileHeaders.FILENAME)) {
+			zipFileName = baseFileName;
+		}
+		else {
+			zipFileName = baseFileName + ZIP_EXTENSION;
+		}
+
+		final Date lastModifiedDate;
+
+		if (message.getHeaders().containsKey(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE)) {
+			lastModifiedDate = (Date) message.getHeaders().get(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE);
+		}
+		else {
+			lastModifiedDate = new Date();
+		}
+
+		java.util.List<ZipEntrySource> entries = new ArrayList<ZipEntrySource>();
+
+		if (payload instanceof Iterable<?>) {
+			int counter = 1;
+
+			String baseName = FilenameUtils.getBaseName(zipEntryName);
+			String fileExtension = FilenameUtils.getExtension(zipEntryName);
+
+			if (StringUtils.hasText(fileExtension)) {
+				fileExtension = FilenameUtils.EXTENSION_SEPARATOR_STR + fileExtension;
+			}
+
+			for (Object item : (Iterable<?>) payload) {
+
+				final ZipEntrySource zipEntrySource = createZipEntrySource(item, lastModifiedDate, baseName + "_"
+						+ counter + fileExtension, this.useFileAttributes);
+				if (logger.isDebugEnabled()) {
+					logger.debug("ZipEntrySource path: '" + zipEntrySource.getPath() + "'");
+				}
+				entries.add(zipEntrySource);
+				counter++;
+			}
+		}
+		else {
+			final ZipEntrySource zipEntrySource =
+					createZipEntrySource(payload, lastModifiedDate, zipEntryName, this.useFileAttributes);
+			entries.add(zipEntrySource);
+		}
+
+		final byte[] zippedBytes = SpringZipUtils.pack(entries, this.compressionLevel);
+
+		if (ZipResultType.FILE.equals(this.zipResultType)) {
+			final File zippedFile = new File(this.workDirectory, zipFileName);
+			FileCopyUtils.copy(zippedBytes, zippedFile);
+			zippedData = zippedFile;
+		}
+		else if (ZipResultType.BYTE_ARRAY.equals(this.zipResultType)) {
+			zippedData = zippedBytes;
+		}
+		else {
+			throw new IllegalStateException("Unsupported zipResultType " + this.zipResultType);
+		}
 
 		try {
-
-			final Object payload = message.getPayload();
-			final Object zippedData;
-			final String baseFileName = this.fileNameGenerator.generateFileName(message);
-
-			final String zipEntryName;
-			final String zipFileName;
-
-			if (message.getHeaders().containsKey(ZipHeaders.ZIP_ENTRY_FILE_NAME)) {
-				zipEntryName = (String) message.getHeaders().get(ZipHeaders.ZIP_ENTRY_FILE_NAME);
-			}
-			else {
-				zipEntryName = baseFileName;
-			}
-
-			if (message.getHeaders().containsKey(FileHeaders.FILENAME)) {
-				zipFileName = baseFileName;
-			}
-			else {
-				zipFileName = baseFileName + ZIP_EXTENSION;
-			}
-
-			final Date lastModifiedDate;
-
-			if (message.getHeaders().containsKey(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE)) {
-				lastModifiedDate = (Date) message.getHeaders().get(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE);
-			}
-			else {
-				lastModifiedDate = new Date();
-			}
-
-			java.util.List<ZipEntrySource> entries = new ArrayList<ZipEntrySource>();
-
-			if (payload instanceof Iterable<?>) {
-				int counter = 1;
-
-				String baseName = FilenameUtils.getBaseName(zipEntryName);
-				String fileExtension = FilenameUtils.getExtension(zipEntryName);
-
-				if (StringUtils.hasText(fileExtension)) {
-					fileExtension = FilenameUtils.EXTENSION_SEPARATOR_STR + fileExtension;
-				}
-
-				for (Object item : (Iterable<?>) payload) {
-
-					final ZipEntrySource zipEntrySource = createZipEntrySource(item, lastModifiedDate, baseName + "_"
-							+ counter + fileExtension, this.useFileAttributes);
-					if (logger.isDebugEnabled()) {
-						logger.debug("ZipEntrySource path: '" + zipEntrySource.getPath() + "'");
-					}
-					entries.add(zipEntrySource);
-					counter++;
-				}
-			}
-			else {
-				final ZipEntrySource zipEntrySource =
-						createZipEntrySource(payload, lastModifiedDate, zipEntryName, this.useFileAttributes);
-				entries.add(zipEntrySource);
-			}
-
-			final byte[] zippedBytes = SpringZipUtils.pack(entries, this.compressionLevel);
-
-			if (ZipResultType.FILE.equals(this.zipResultType)) {
-				final File zippedFile = new File(this.workDirectory, zipFileName);
-				FileCopyUtils.copy(zippedBytes, zippedFile);
-				zippedData = zippedFile;
-			}
-			else if (ZipResultType.BYTE_ARRAY.equals(this.zipResultType)) {
-				zippedData = zippedBytes;
-			}
-			else {
-				throw new IllegalStateException("Unsupported zipResultType " + this.zipResultType);
-			}
-
 			return getMessageBuilderFactory()
 					.withPayload(zippedData)
 					.copyHeaders(message.getHeaders())
 					.setHeader(FileHeaders.FILENAME, zipFileName)
 					.build();
 		}
-		catch (Exception e) {
-			throw new MessageHandlingException(message, "Failed to apply Zip transformation.", e);
+		finally {
+			if (this.deleteFiles) {
+				if (payload instanceof Iterable<?>) {
+					for (Object item : (Iterable<?>) payload) {
+						deleteFile(item);
+					}
+				}
+				else {
+					deleteFile(payload);
+				}
+			}
+		}
+	}
+
+	private void deleteFile(Object fileToDelete) {
+		if (fileToDelete instanceof File && !((File) fileToDelete).delete() && logger.isWarnEnabled()) {
+			logger.warn("Failed to delete File '" + fileToDelete + "'");
 		}
 	}
 
@@ -197,15 +210,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 				throw new UnsupportedOperationException("Zipping of directories is not supported.");
 			}
 
-			final FileSource fileSource = new FileSource(fileName, filePayload);
-
-			if (this.deleteFiles) {
-				if (!filePayload.delete() && logger.isWarnEnabled()) {
-					logger.warn("failed to delete File '" + filePayload + "'");
-				}
-			}
-
-			return fileSource;
+			return new FileSource(fileName, filePayload);
 
 		}
 		else if (item instanceof byte[] || item instanceof String) {
@@ -223,7 +228,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported payload type. The only supported payloads are " +
-						"java.io.File, java.lang.String, and byte[]");
+					"java.io.File, java.lang.String, and byte[]");
 		}
 	}
 

@@ -20,7 +20,6 @@ import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -54,12 +53,6 @@ public class ZipTransformerTests {
 	@Rule
 	public TemporaryFolder testFolder = new TemporaryFolder();
 
-	/**
-	 * Compress a simple String. The result will be a byte array.
-	 *
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
 	@Test
 	public void zipString() throws IOException {
 		final ZipTransformer zipTransformer = new ZipTransformer();
@@ -198,8 +191,9 @@ public class ZipTransformerTests {
 	@Test
 	public void zipFile() throws IOException {
 
-		final ZipTransformer zipTransformer = new ZipTransformer();
+		ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
+		zipTransformer.setDeleteFiles(true);
 		zipTransformer.afterPropertiesSet();
 
 		final File testFile = createTestFile(10);

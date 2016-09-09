@@ -11,10 +11,14 @@
 		http://www.springframework.org/schema/integration/zip http://www.springframework.org/schema/integration/zip/spring-integration-zip.xsd
 		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
 
-	<int:channel id="input">
-	</int:channel>
+	<int:channel id="input"/>
 
-	<int-zip:zip-transformer input-channel="input" output-channel="write-file" result-type="BYTE_ARRAY"/>
+	<int-zip:zip-transformer input-channel="input" output-channel="write-file" result-type="BYTE_ARRAY">
+		<int-zip:request-handler-advice-chain>
+			<int:retry-advice/>
+		</int-zip:request-handler-advice-chain>
+	</int-zip:zip-transformer>
+
 	<int-file:outbound-channel-adapter id="write-file" directory="${workDir}" auto-create-directory="true"/>
 
 	<context:property-placeholder properties-ref="properties"/>
