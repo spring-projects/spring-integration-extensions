@@ -17,7 +17,6 @@
 	<int-smb:inbound-channel-adapter id="smbInbound"
 				channel="smbChannel"
 				session-factory="smbSessionFactory"
-				cache-sessions="false"
 				charset="UTF-8"
 				auto-create-local-directory="true"
 				delete-remote-files="true"

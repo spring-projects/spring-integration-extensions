@@ -21,7 +21,6 @@
 	<int-smb:inbound-channel-adapter id="smbInboundChannelAdapter"
 		channel="smbInboundChannel"
 		session-factory="smbSessionFactory"
-		cache-sessions="true"
 		charset="UTF-8"
 		remote-directory="test-temp/remote-4"
 		remote-file-separator="/"

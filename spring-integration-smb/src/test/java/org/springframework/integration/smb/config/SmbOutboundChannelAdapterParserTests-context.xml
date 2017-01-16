@@ -20,7 +20,6 @@
 	<int-smb:outbound-channel-adapter id="smbOutboundChannelAdapter"
 		channel="smbPubSubChannel"
 		session-factory="smbSessionFactory"
-		cache-sessions="false"
 		remote-directory="test-temp/remote-5"
 		charset="UTF-8"
 		remote-file-separator="."
