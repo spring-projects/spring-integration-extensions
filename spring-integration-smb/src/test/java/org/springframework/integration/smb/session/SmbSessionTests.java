@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2013 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.session;
+
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import jcifs.smb.SmbFile;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+
+import jcifs.smb.SmbFile;
 
 /**
  *
  * @author Gunnar Hillert
  *
  */
-public class SmbSessionTest {
+public class SmbSessionTests {
 
-	/**
-	 * Test Case reproduces INTEXT-37 (https://jira.springsource.org/browse/INTEXT-37)
-	 * @throws IOException
-	 */
 	@Test
 	public void testCreateSmbFileObjectWithBackSlash1() throws IOException {
 

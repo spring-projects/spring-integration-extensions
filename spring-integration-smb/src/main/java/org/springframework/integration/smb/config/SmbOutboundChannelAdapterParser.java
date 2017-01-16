@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,18 @@
 
 package org.springframework.integration.smb.config;
 
-import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHandler;
+import org.springframework.integration.file.config.RemoteFileOutboundChannelAdapterParser;
+import org.springframework.integration.file.remote.RemoteFileOperations;
+import org.springframework.integration.smb.session.SmbRemoteFileTemplate;
 
 /**
- * Provides namespace support for using SMB.
- *
- * @author Markus Spann
  * @author Artem Bilan
  */
-public class SmbNamespaceHandler extends AbstractIntegrationNamespaceHandler {
+public class SmbOutboundChannelAdapterParser extends RemoteFileOutboundChannelAdapterParser {
 
-	public void init() {
-		registerBeanDefinitionParser("inbound-channel-adapter", new SmbInboundChannelAdapterParser());
-		registerBeanDefinitionParser("outbound-channel-adapter", new SmbOutboundChannelAdapterParser());
+	@Override
+	protected Class<? extends RemoteFileOperations<?>> getTemplateClass() {
+		return SmbRemoteFileTemplate.class;
 	}
 
 }

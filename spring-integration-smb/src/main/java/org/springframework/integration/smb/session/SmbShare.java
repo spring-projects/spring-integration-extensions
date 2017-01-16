@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.session;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jcifs.smb.SmbException;
-import jcifs.smb.SmbFile;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.NestedIOException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import jcifs.smb.SmbException;
+import jcifs.smb.SmbFile;
 
 /**
  * @author Markus Spann
@@ -33,9 +35,9 @@ import org.springframework.util.StringUtils;
  */
 public class SmbShare extends SmbFile {
 
-	private final Log           logger      = LogFactory.getLog(SmbShare.class);
+	private static final Log logger = LogFactory.getLog(SmbShare.class);
 
-	private final AtomicBoolean open        = new AtomicBoolean(false);
+	private final AtomicBoolean open = new AtomicBoolean(false);
 
 	private final AtomicBoolean replaceFile = new AtomicBoolean(false);
 
@@ -57,15 +59,16 @@ public class SmbShare extends SmbFile {
 				mkdirs();
 			}
 			canRead = canRead();
-		} catch (SmbException _ex) {
+		}
+		catch (SmbException _ex) {
 			throw new NestedIOException("Unable to initialize share: " + this, _ex);
 		}
 		Assert.isTrue(canRead, "Share is not accessible " + this);
-		open.set(true);
+		this.open.set(true);
 	}
 
 	public boolean isReplaceFile() {
-		return replaceFile.get();
+		return this.replaceFile.get();
 	}
 
 	public void setReplaceFile(boolean _replace) {
@@ -73,7 +76,7 @@ public class SmbShare extends SmbFile {
 	}
 
 	public boolean isUseTempFile() {
-		return useTempFile.get();
+		return this.useTempFile.get();
 	}
 
 	public void setUseTempFile(boolean _useTempFile) {
@@ -86,7 +89,7 @@ public class SmbShare extends SmbFile {
 	 * @return true if open
 	 */
 	boolean isOpened() {
-		return open.get();
+		return this.open.get();
 	}
 
 	/**
@@ -94,16 +97,11 @@ public class SmbShare extends SmbFile {
 	 * Note: jcifs.smb.SmbFile defines a package-protected method close().
 	 */
 	void doClose() {
-		open.set(false);
+		this.open.set(false);
 	}
 
 	public String newTempFileSuffix() {
 		return "-" + Long.toHexString(Double.doubleToLongBits(Math.random())) + ".tmp";
-	}
-
-	@Override
-	public String toString() {
-		return super.toString();
 	}
 
 }

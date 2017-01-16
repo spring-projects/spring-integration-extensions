@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,41 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.inbound;
 
-import jcifs.smb.SmbFile;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizer;
+
+import jcifs.smb.SmbFile;
 
 /**
  * An implementation of {@link AbstractInboundFileSynchronizer} for SMB.
  *
  * @author Markus Spann
- * @since 1.0
+ * @author Artem Bilan
  */
 public class SmbInboundFileSynchronizer extends AbstractInboundFileSynchronizer<SmbFile> {
-
-	private final Log    logger = LogFactory.getLog(SmbInboundFileSynchronizer.class);
-
-	private final String toString;
 
 	/**
 	 * Create a synchronizer with the {@link SessionFactory} used to acquire
 	 * {@link org.springframework.integration.file.remote.session.Session} instances.
+	 * @param sessionFactory the {@link SessionFactory} to use.
 	 */
-	public SmbInboundFileSynchronizer(SessionFactory<SmbFile> _sessionFactory) {
-		super(_sessionFactory);
-		toString = getClass().getName() + "[sessionFactory=" + _sessionFactory + "]";
+	public SmbInboundFileSynchronizer(SessionFactory<SmbFile> sessionFactory) {
+		super(sessionFactory);
 	}
 
 	@Override
 	protected boolean isFile(SmbFile _file) {
 		try {
 			return _file != null && _file.isFile();
-		} catch (Exception _ex) {
+		}
+		catch (Exception _ex) {
 			logger.warn("Unable to get resource status [" + _file + "].", _ex);
 		}
 		return false;
@@ -59,8 +55,8 @@ public class SmbInboundFileSynchronizer extends AbstractInboundFileSynchronizer<
 	}
 
 	@Override
-	public String toString() {
-		return toString;
+	protected long getModified(SmbFile file) {
+		return file.getLastModified();
 	}
 
 }

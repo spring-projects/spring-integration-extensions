@@ -19,8 +19,8 @@
 
 	<section id="jpa-java-implementation">
 		<title>Java Implementation</title>
-		<para>Each of the provided components will use the
-			<classname>org.springframework.smb.core.SmbExecutor</classname>
+		<para>Each of the provided components use the
+			<classname>org.springframework.integration.smb.session.SmbSession</classname>
 			class...
 		</para>
 	</section>

@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2013 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb;
 
 import static org.junit.Assert.assertNotNull;
@@ -31,6 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
@@ -39,16 +41,16 @@ import org.springframework.util.StringUtils;
  * Assorted test utils for the library.
  * @author Markus Spann
  */
-public abstract class AbstractBaseTest {
+public abstract class AbstractBaseTests {
 
 	/** Instance logger. */
-	private final Log     logger         = LogFactory.getLog(this.getClass());
+	private final Log logger = LogFactory.getLog(this.getClass());
 
 	protected final Log getLogger() {
 		return logger;
 	}
 
-	@Rule // requires JUnit 4.7 or later
+	@Rule
 	public final TestName testMethodName = new TestName();
 
 	private String getTestMethodName() {
@@ -102,7 +104,8 @@ public abstract class AbstractBaseTest {
 		FileOutputStream fos = new FileOutputStream(_path);
 		try {
 			FileCopyUtils.copy(_inputStream, fos);
-		} finally {
+		}
+		finally {
 			fos.close();
 		}
 	}
@@ -230,7 +233,8 @@ public abstract class AbstractBaseTest {
 		assertNotNull("File object is null.", _file);
 		if (_exists) {
 			assertTrue("File [" + _file.getAbsolutePath() + "] does not exist.", _file.exists());
-		} else {
+		}
+		else {
 			assertTrue("File [" + _file.getAbsolutePath() + "] exists.", !_file.exists());
 		}
 		return _file;
@@ -246,34 +250,23 @@ public abstract class AbstractBaseTest {
 	 * @param _testClass test class object
 	 * @param _methodNames String method names to invoke in order, no parameters expected
 	 */
-	protected static void runTests(Class<? extends AbstractBaseTest> _testClass, String... _methodNames) {
-		AbstractBaseTest test;
+	protected static void runTests(Class<? extends AbstractBaseTests> _testClass, String... _methodNames)
+			throws Exception {
+		AbstractBaseTests test;
 		Method[] methods = new Method[_methodNames.length];
 		String methodName = null;
 
-		try {
-			test = _testClass.newInstance();
-			for (int i = 0; i < _methodNames.length; i++) {
-				methodName = _methodNames[i];
-				methods[i] = _testClass.getMethod(methodName, (Class<?>[]) null);
-			}
-		} catch (Exception _ex) {
-			System.err.println("Test setup failed for " + _testClass + "." + methodName + "().");
-			_ex.printStackTrace();
-			return;
+		test = _testClass.newInstance();
+		for (int i = 0; i < _methodNames.length; i++) {
+			methodName = _methodNames[i];
+			methods[i] = _testClass.getMethod(methodName, (Class<?>[]) null);
 		}
 
 		Method method = null;
-		try {
 
-			for (int i = 0; i < methods.length; i++) {
-				method = methods[i];
-				method.invoke(test, (Object[]) null);
-			}
-
-		} catch (Exception _ex) {
-			System.err.println("Test execution failed for " + _testClass + "." + method.getName() + ".");
-			_ex.printStackTrace();
+		for (int i = 0; i < methods.length; i++) {
+			method = methods[i];
+			method.invoke(test, (Object[]) null);
 		}
 
 	}

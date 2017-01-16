@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2013 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.inbound;
 
 import static org.mockito.Mockito.doAnswer;
@@ -24,27 +25,31 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import jcifs.smb.SmbFile;
-
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.integration.smb.AbstractBaseTest;
+
+import org.springframework.integration.smb.AbstractBaseTests;
 import org.springframework.integration.smb.session.SmbSession;
 import org.springframework.integration.smb.session.SmbSessionFactory;
+
+import jcifs.smb.SmbFile;
 
 /**
  * @author Markus Spann
  * @author Gunnar Hillert
  * @since 1.0
  */
-public class SmbInboundRemoteFileSystemSynchronizerTest extends AbstractBaseTest {
+public class SmbInboundRemoteFileSystemSynchronizerTests extends AbstractBaseTests {
 
-	private SmbSession        smbSession;
+	private SmbSession smbSession;
+
 	private SmbSessionFactory smbSessionFactory;
-	private String            testLocalDir  = "test-temp/local-9/";
-	private String            testRemoteDir = "test-temp/remote-9/";
+
+	private String testLocalDir = "test-temp/local-9/";
+
+	private String testRemoteDir = "test-temp/remote-9/";
 
 	@Before
 	public void prepare() {
@@ -105,6 +110,7 @@ public class SmbInboundRemoteFileSystemSynchronizerTest extends AbstractBaseTest
 					smbFiles.add(file);
 
 					doAnswer(new Answer<Object>() {
+
 						public Object answer(InvocationOnMock _invocation) throws Throwable {
 							String path = (String) _invocation.getArguments()[0];
 							OutputStream os = (OutputStream) _invocation.getArguments()[1];
@@ -114,11 +120,12 @@ public class SmbInboundRemoteFileSystemSynchronizerTest extends AbstractBaseTest
 					}).when(smbSession).read(Mockito.eq(testRemoteDir + "/" + fileName), Mockito.any(OutputStream.class));
 				}
 
-				when(smbSession.list(testRemoteDir)).thenReturn(smbFiles.toArray(new SmbFile[] {}));
+				when(smbSession.list(testRemoteDir)).thenReturn(smbFiles.toArray(new SmbFile[] { }));
 				when(smbSession.remove(Mockito.anyString())).thenReturn(true);
 				return smbSession;
 
-			} catch (Exception _ex) {
+			}
+			catch (Exception _ex) {
 				throw new RuntimeException("Failed to create mock session.", _ex);
 			}
 		}

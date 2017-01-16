@@ -23,7 +23,7 @@
 			<author><firstname>Markus Spann</firstname></author>
 		</authorgroup>
 		<legalnotice>
-			<para>© SpringSource Inc., 2012</para>
+			<para>Pivotal Software, Inc. All Rights Reserved., 2012-2017</para>
 		</legalnotice>
 	</bookinfo>
 
@@ -35,7 +35,7 @@
 			<para>
 				For those who are already familiar with Spring Integration, this
 				chapter
-				provides a brief overview of the new features of version 2.2. If you are
+				provides a brief overview of the new features of version 0.5. If you are
 				interested in the changes and features, that were introduced in
 				earlier
 				versions, please take a look at chapter:

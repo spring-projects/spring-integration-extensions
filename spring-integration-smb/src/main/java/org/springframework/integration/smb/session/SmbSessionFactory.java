@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.session;
 
 import java.io.IOException;
 
-import jcifs.smb.SmbFile;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.integration.file.remote.session.SessionFactory;
+
+import jcifs.smb.SmbFile;
 
 /**
  * The SMB session factory.
@@ -31,7 +33,7 @@ import org.springframework.integration.file.remote.session.SessionFactory;
  */
 public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFile> {
 
-	private final Log logger = LogFactory.getLog(this.getClass());
+	private static Log logger = LogFactory.getLog(SmbSessionFactory.class);
 
 	public SmbSessionFactory() {
 		logger.debug("New " + getClass().getName() + " created.");
@@ -40,27 +42,25 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 	public final SmbSession getSession() {
 		try {
 			return createSession();
-		} catch (Exception _ex) {
+		}
+		catch (Exception _ex) {
 			throw new IllegalStateException("Failed to create session.", _ex);
 		}
 	}
 
 	protected SmbSession createSession() throws IOException {
-		SmbShare smbShare = new SmbShare((SmbConfig) this);
-		smbShare.setReplaceFile(this.isReplaceFile());
-		smbShare.setUseTempFile(this.isUseTempFile());
+		SmbShare smbShare = new SmbShare(this);
+		smbShare.setReplaceFile(isReplaceFile());
+		smbShare.setUseTempFile(isUseTempFile());
 
-		logger.info(String.format("SMB share init: %s/%s", getHostPort(), getShareAndDir()));
+		if (logger.isInfoEnabled()) {
+			logger.info(String.format("SMB share init: %s/%s", getHostPort(), getShareAndDir()));
+		}
 
 		smbShare.init();
 		logger.debug("SMB share initialized.");
 
 		return new SmbSession(smbShare);
-	}
-
-	@Override
-	public String toString() {
-		return super.toString();
 	}
 
 }

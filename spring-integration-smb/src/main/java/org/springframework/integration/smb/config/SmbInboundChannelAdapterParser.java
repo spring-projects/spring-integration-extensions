@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,39 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.config;
 
 import org.springframework.integration.file.config.AbstractRemoteFileInboundChannelAdapterParser;
+import org.springframework.integration.file.filters.FileListFilter;
+import org.springframework.integration.file.remote.synchronizer.InboundFileSynchronizer;
+import org.springframework.integration.smb.filters.SmbRegexPatternFileListFilter;
+import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
+import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizer;
+import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizingMessageSource;
 
 /**
  * Parser for the SMB 'inbound-channel-adapter' element.
  *
  * @author Markus Spann
- * @since 1.0
+ * @author Artem Bilan
  */
 public class SmbInboundChannelAdapterParser extends AbstractRemoteFileInboundChannelAdapterParser {
 
-	private static final String BASE_PACKAGE = "org.springframework.integration.smb";
-
-
 	@Override
 	protected String getMessageSourceClassname() {
-		return BASE_PACKAGE + ".inbound.SmbInboundFileSynchronizingMessageSource";
+		return SmbInboundFileSynchronizingMessageSource.class.getName();
 	}
 
 	@Override
-	protected String getInboundFileSynchronizerClassname() {
-		return BASE_PACKAGE + ".inbound.SmbInboundFileSynchronizer";
+	protected Class<? extends InboundFileSynchronizer> getInboundFileSynchronizerClass() {
+		return SmbInboundFileSynchronizer.class;
 	}
 
 	@Override
-	protected String getSimplePatternFileListFilterClassname() {
-		return BASE_PACKAGE + ".filters.SmbSimplePatternFileListFilter";
+	protected Class<? extends FileListFilter<?>> getSimplePatternFileListFilterClass() {
+		return SmbSimplePatternFileListFilter.class;
 	}
 
 	@Override
-	protected String getRegexPatternFileListFilterClassname() {
-		return BASE_PACKAGE + ".filters.SmbRegexPatternFileListFilter";
+	protected Class<? extends FileListFilter<?>> getRegexPatternFileListFilterClass() {
+		return SmbRegexPatternFileListFilter.class;
 	}
 
 }

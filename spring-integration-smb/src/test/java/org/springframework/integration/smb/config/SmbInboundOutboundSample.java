@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2013 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.config;
 
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
+import org.junit.Ignore;
 import org.junit.Test;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.MessageChannel;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import org.springframework.integration.file.remote.handler.FileTransferringMessageHandler;
-import org.springframework.integration.message.GenericMessage;
-import org.springframework.integration.smb.AbstractBaseTest;
+import org.springframework.integration.smb.AbstractBaseTests;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizingMessageSource;
 import org.springframework.integration.smb.session.SmbSession;
 import org.springframework.integration.smb.session.SmbSessionFactory;
 import org.springframework.integration.test.util.TestUtils;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.GenericMessage;
 
 /**
  * System tests that perform SMB access without any mocking.
@@ -43,12 +46,12 @@ import org.springframework.integration.test.util.TestUtils;
  * @author Markus Spann
  * @author Gunnar Hillert
  */
-public class SmbInboundOutboundSample extends AbstractBaseTest {
+public class SmbInboundOutboundSample extends AbstractBaseTests {
 
 	private static final String INBOUND_APPLICATION_CONTEXT_XML  = "SmbInboundChannelAdapterSample-context.xml";
 	private static final String OUTBOUND_APPLICATION_CONTEXT_XML = "SmbOutboundChannelAdapterSample-context.xml";
 
-	@org.junit.Ignore("Actual SMB share must be configured in file [" + INBOUND_APPLICATION_CONTEXT_XML + "].")
+	@Ignore("Actual SMB share must be configured in file [" + INBOUND_APPLICATION_CONTEXT_XML + "].")
 	@Test
 	public void testSmbInboundChannelAdapter() throws Exception {
 		String testLocalDir = "test-temp/local-4/";
@@ -71,7 +74,8 @@ public class SmbInboundOutboundSample extends AbstractBaseTest {
 
 		String[] fileNames = createTestFileNames(5);
 		for (int i = 0; i < fileNames.length; i++) {
-			smbSession.write(("File [" + fileNames[i] + "] written by test case [" + getMethodName() + "].").getBytes(), testRemoteDir + fileNames[i]);
+			smbSession.write(("File [" + fileNames[i] + "] written by test case [" + getMethodName() + "].").getBytes(),
+					testRemoteDir + fileNames[i]);
 		}
 
 		// allow time for the files to arrive locally
@@ -84,7 +88,7 @@ public class SmbInboundOutboundSample extends AbstractBaseTest {
 
 	}
 
-	@org.junit.Ignore("Actual SMB share must be configured in file [" + OUTBOUND_APPLICATION_CONTEXT_XML + "].")
+	@Ignore("Actual SMB share must be configured in file [" + OUTBOUND_APPLICATION_CONTEXT_XML + "].")
 	@Test
 	public void testSmbOutboundChannelAdapter() throws Exception {
 		String testRemoteDir = "test-temp/remote-8/";
@@ -93,7 +97,8 @@ public class SmbInboundOutboundSample extends AbstractBaseTest {
 
 		String[] fileNames = createTestFileNames(5);
 		for (int i = 0; i < fileNames.length; i++) {
-			writeToFile(("File [" + fileNames[i] + "] written by test case [" + getMethodName() + "].").getBytes(), testLocalDir + fileNames[i]);
+			writeToFile(("File [" + fileNames[i] + "] written by test case [" + getMethodName() + "].").getBytes(),
+					testLocalDir + fileNames[i]);
 		}
 
 		ApplicationContext ac = new ClassPathXmlApplicationContext(OUTBOUND_APPLICATION_CONTEXT_XML, this.getClass());
@@ -131,7 +136,7 @@ public class SmbInboundOutboundSample extends AbstractBaseTest {
 		return fileNames;
 	}
 
-	public static void main(String[] _args) {
+	public static void main(String[] _args) throws Exception {
 		runTests(SmbInboundOutboundSample.class, "testSmbOutboundChannelAdapter", "testSmbInboundChannelAdapter");
 	}
 

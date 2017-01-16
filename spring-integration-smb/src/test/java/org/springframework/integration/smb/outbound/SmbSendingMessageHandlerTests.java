@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.outbound;
 
 import static org.mockito.Mockito.doAnswer;
@@ -24,28 +25,30 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import jcifs.smb.SmbFile;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.expression.common.LiteralExpression;
-import org.springframework.integration.Message;
-import org.springframework.integration.file.FileNameGenerator;
 import org.springframework.integration.file.remote.handler.FileTransferringMessageHandler;
-import org.springframework.integration.message.GenericMessage;
-import org.springframework.integration.smb.AbstractBaseTest;
+import org.springframework.integration.smb.AbstractBaseTests;
 import org.springframework.integration.smb.session.SmbSession;
 import org.springframework.integration.smb.session.SmbSessionFactory;
+import org.springframework.messaging.support.GenericMessage;
+
+import jcifs.smb.SmbFile;
 
 /**
  * @author Markus Spann
+ * @author Artem Bilan
  */
-public class SmbSendingMessageHandlerTest extends AbstractBaseTest {
+public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 
-	private SmbSession        smbSession;
+	private SmbSession smbSession;
+
 	private SmbSessionFactory smbSessionFactory;
 
 	@Before
@@ -66,12 +69,9 @@ public class SmbSendingMessageHandlerTest extends AbstractBaseTest {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
 		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
-		handler.setFileNameGenerator(new FileNameGenerator() {
-			public String generateFileName(Message<?> message) {
-				return "handlerContent.test";
-			}
-		});
+		handler.setFileNameGenerator(message -> "handlerContent.test");
 		handler.setAutoCreateDirectory(true);
+		handler.setBeanFactory(mock(BeanFactory.class));
 		handler.afterPropertiesSet();
 		handler.handleMessage(new GenericMessage<String>("hello"));
 		assertFileExists(file);
@@ -82,11 +82,8 @@ public class SmbSendingMessageHandlerTest extends AbstractBaseTest {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
 		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
-		handler.setFileNameGenerator(new FileNameGenerator() {
-			public String generateFileName(Message<?> message) {
-				return "handlerContent.test";
-			}
-		});
+		handler.setFileNameGenerator(message -> "handlerContent.test");
+		handler.setBeanFactory(mock(BeanFactory.class));
 		handler.afterPropertiesSet();
 		handler.handleMessage(new GenericMessage<byte[]>("hello".getBytes()));
 		assertFileExists(file);
@@ -116,6 +113,7 @@ public class SmbSendingMessageHandlerTest extends AbstractBaseTest {
 				when(smbSession.list(Mockito.anyString())).thenReturn(new SmbFile[0]);
 
 				doAnswer(new Answer<Object>() {
+
 					public Object answer(InvocationOnMock _invocation) throws Throwable {
 						String path = (String) _invocation.getArguments()[0];
 						OutputStream os = (OutputStream) _invocation.getArguments()[1];
@@ -124,20 +122,19 @@ public class SmbSendingMessageHandlerTest extends AbstractBaseTest {
 					}
 				}).when(smbSession).read(Mockito.anyString(), Mockito.any(OutputStream.class));
 
-				doAnswer(new Answer<Object>() {
-					public Object answer(InvocationOnMock _invocation) throws Throwable {
-						InputStream inputStream = (InputStream) _invocation.getArguments()[0];
-						String path = (String) _invocation.getArguments()[1];
-						writeToFile(inputStream, path);
-						return null;
-					}
-
-				}).when(smbSession).write(Mockito.any(InputStream.class), Mockito.anyString());
+				doAnswer(_invocation -> {
+					InputStream inputStream = (InputStream) _invocation.getArguments()[0];
+					String path = (String) _invocation.getArguments()[1];
+					writeToFile(inputStream, path);
+					return null;
+				}).when(smbSession)
+						.write(Mockito.any(InputStream.class), Mockito.anyString());
 
 				// when(smbSession.write(Mockito.any(byte[].class), Mockito.anyString())).thenReturn(null);
 				// when(smbSession.write(Mockito.any(File.class), Mockito.anyString())).thenReturn(null);
 
 				doAnswer(new Answer<Object>() {
+
 					public Object answer(InvocationOnMock _invocation) throws Throwable {
 						String path = (String) _invocation.getArguments()[0];
 						new File(path).mkdirs();
@@ -145,20 +142,20 @@ public class SmbSendingMessageHandlerTest extends AbstractBaseTest {
 					}
 				}).when(smbSession).mkdir(Mockito.anyString());
 
-				doAnswer(new Answer<Object>() {
-					public Object answer(InvocationOnMock _invocation) throws Throwable {
-						String pathFrom = (String) _invocation.getArguments()[0];
-						String pathTo = (String) _invocation.getArguments()[1];
-						new File(pathFrom).renameTo(new File(pathTo));
-						return null;
-					}
-				}).when(smbSession).rename(Mockito.anyString(), Mockito.anyString());
+				doAnswer(_invocation -> {
+					String pathFrom = (String) _invocation.getArguments()[0];
+					String pathTo = (String) _invocation.getArguments()[1];
+					new File(pathFrom).renameTo(new File(pathTo));
+					return null;
+				}).when(smbSession)
+						.rename(Mockito.anyString(), Mockito.anyString());
 
 				doNothing().when(smbSession).close();
 				when(smbSession.isOpen()).thenReturn(true);
 				return smbSession;
 
-			} catch (Exception _ex) {
+			}
+			catch (Exception _ex) {
 				throw new RuntimeException("Failed to create mock session.", _ex);
 			}
 		}

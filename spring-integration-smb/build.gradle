@@ -1,43 +1,62 @@
-description = 'Spring Integration SMB Support'
-
 buildscript {
 	repositories {
-		maven { url 'https://repo.springsource.org/plugins-snapshot' }
+		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 	dependencies {
-		classpath 'org.springframework.build.gradle:docbook-reference-plugin:0.1.5'
+		classpath 'io.spring.gradle:dependency-management-plugin:1.0.0.RC2'
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.6.RELEASE'
+		classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
 	}
 }
 
-apply plugin: 'java'
+plugins {
+	id 'java'
+	id 'eclipse'
+	id 'idea'
+	id 'jacoco'
+	id 'checkstyle'
+	id 'org.sonarqube' version '2.1'
+}
+
+description = 'Spring Integration SMB Support'
+
 apply from:   "${rootProject.projectDir}/publish-maven.gradle"
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 
 group = 'org.springframework.integration'
 
 repositories {
-	maven { url 'http://repo.springsource.org/libs-milestone' }
-	maven { url 'http://repo.springsource.org/plugins-release' } // for bundlor
+	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+		maven { url 'http://repo.spring.io/libs-snapshot' }
+	}
+	maven { url 'http://repo.spring.io/libs-milestone' }
 }
 
-// ensure JDK 5 compatibility (GRADLE-18; INT-1578)
-sourceCompatibility=1.6
-targetCompatibility=1.6
+if (project.hasProperty('platformVersion')) {
+	apply plugin: 'spring-io'
+
+	dependencyManagement {
+		springIoTestRuntime {
+			imports {
+				mavenBom "io.spring.platform:platform-bom:${platformVersion}"
+			}
+		}
+	}
+}
+
+compileJava {
+	sourceCompatibility = 1.7
+	targetCompatibility = 1.7
+}
+
+compileTestJava {
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+}
 
 ext {
-	aspectjVersion = '1.6.8'
-	cglibVersion = '2.2'
-	commonsNetVersion = '3.0.1'
-	groovyVersion = '1.8.5'
-	jacksonVersion = '1.9.2'
-	javaxActivationVersion = '1.1.1'
-	junitVersion = '4.11'
-	log4jVersion = '1.2.12'
-	mockitoVersion = '1.9.0'
-
-	springVersion = '3.1.3.RELEASE'
-	springIntegrationVersion = '2.2.1.RELEASE'
+	jcifsVersion = '1.3.18.2'
+	log4jVersion = '1.2.17'
+	springIntegrationVersion = '4.3.6.RELEASE'
 
 	idPrefix = 'smb'
 	
@@ -50,24 +69,7 @@ ext {
 
 }
 
-dependencies {
-
-	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile "org.springframework.integration:spring-integration-file:$springIntegrationVersion"
-	compile "org.springframework.integration:spring-integration-stream:$springIntegrationVersion"
-	compile "jcifs:jcifs:1.3.17"
-	compile "org.springframework:spring-context-support:$springVersion"
-	compile("javax.activation:activation:$javaxActivationVersion", optional)
-	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-
-}
-
-
-eclipse {
-	project {
-		natures += 'org.springframework.ide.eclipse.core.springnature'
-	}
-}
+eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
 
 sourceSets {
 	test {
@@ -77,31 +79,43 @@ sourceSets {
 	}
 }
 
-// See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
-// and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
-configurations {
-	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
+jacoco {
+	toolVersion = "0.7.8"
 }
 
-// dependencies that are common across all java projects
+checkstyle {
+	configFile = file("$rootDir/src/checkstyle/checkstyle.xml")
+	toolVersion = "6.16.1"
+}
+
 dependencies {
-	testCompile "cglib:cglib-nodep:$cglibVersion"
-	testCompile "junit:junit-dep:$junitVersion"
-	testCompile "log4j:log4j:$log4jVersion"
-	testCompile "org.hamcrest:hamcrest-all:1.1"
-	testCompile "org.mockito:mockito-all:$mockitoVersion"
-	testCompile "org.springframework:spring-test:$springVersion"
-	jacoco group: "org.jacoco", name: "org.jacoco.agent", version: "0.5.6.201201232323", classifier: "runtime"
+	compile "org.codelibs:jcifs:$jcifsVersion"
+	compile "org.springframework.integration:spring-integration-file:$springIntegrationVersion"
+	compile "org.springframework.integration:spring-integration-stream:$springIntegrationVersion"
+
+	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
+	testRuntime "log4j:log4j:$log4jVersion"
 }
 
 // enable all compiler warnings; individual projects may customize further
-ext.xLintArg = '-Xlint:all'
-[compileJava, compileTestJava]*.options*.compilerArgs = [xLintArg]
+[compileJava, compileTestJava]*.options*.compilerArgs = ['-Xlint:all,-options,-processing']
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination "${buildDir}/reports/jacoco/html"
+	}
+}
 
 test {
 	// suppress all console output during testing unless running `gradle -i`
 	logging.captureStandardOutput(LogLevel.INFO)
-	jvmArgs "-javaagent:${configurations.jacoco.asPath}=destfile=${buildDir}/jacoco.exec,includes=*"
+	maxHeapSize = "1024m"
+	jacoco {
+		append = false
+		destinationFile = file("$buildDir/jacoco.exec")
+	}
 }
 
 task sourcesJar(type: Jar) {
@@ -125,10 +139,8 @@ reference {
 	sourceDir = file('src/reference/docbook')
 }
 
-apply plugin: 'sonar-runner'
-
-sonarRunner {
-	sonarProperties {
+sonarqube {
+	properties {
 		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
 		property "sonar.links.homepage", linkHomepage
 		property "sonar.links.ci", linkCi
@@ -150,7 +162,7 @@ task api(type: Javadoc) {
 
 	source = sourceSets.main.allJava
 	classpath = project.sourceSets.main.compileClasspath
-	destinationDir = new File(buildDir, "api")
+	destinationDir = file("$buildDir/api")
 }
 
 task schemaZip(type: Zip) {
@@ -163,15 +175,15 @@ task schemaZip(type: Zip) {
 	def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
 
 	project.sourceSets.main.resources.find {
-		it.path.endsWith('META-INF/spring.schemas')
+		it.path.endsWith("META-INF${File.separator}spring.schemas")
 	}?.withInputStream { schemas.load(it) }
 
 	for (def key : schemas.keySet()) {
 		File xsdFile = project.sourceSets.main.resources.find {
-			it.path.endsWith(schemas.get(key))
+			it.path.replaceAll('\\\\', '/').endsWith(schemas.get(key))
 		}
 		assert xsdFile != null
-		into ("integration/${shortName}") {
+		into("integration/${shortName}") {
 			from xsdFile.path
 		}
 	}
@@ -265,9 +277,4 @@ artifacts {
 task dist(dependsOn: assemble) {
 	group = 'Distribution'
 	description = 'Builds -dist, -docs and -schema distribution archives.'
-}
-
-task wrapper(type: Wrapper) {
-	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '1.6'
 }

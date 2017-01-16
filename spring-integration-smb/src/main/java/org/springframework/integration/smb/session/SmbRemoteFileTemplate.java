@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.smb.config;
+package org.springframework.integration.smb.session;
 
-import org.springframework.integration.config.xml.AbstractIntegrationNamespaceHandler;
+import org.springframework.integration.file.remote.RemoteFileTemplate;
+import org.springframework.integration.file.remote.session.SessionFactory;
+
+import jcifs.smb.SmbFile;
 
 /**
- * Provides namespace support for using SMB.
- *
- * @author Markus Spann
  * @author Artem Bilan
  */
-public class SmbNamespaceHandler extends AbstractIntegrationNamespaceHandler {
+public class SmbRemoteFileTemplate extends RemoteFileTemplate<SmbFile> {
 
-	public void init() {
-		registerBeanDefinitionParser("inbound-channel-adapter", new SmbInboundChannelAdapterParser());
-		registerBeanDefinitionParser("outbound-channel-adapter", new SmbOutboundChannelAdapterParser());
+	/**
+	 * Construct a {@link SmbRemoteFileTemplate} with the supplied session factory.
+	 * @param sessionFactory the session factory.
+	 */
+	public SmbRemoteFileTemplate(SessionFactory<SmbFile> sessionFactory) {
+		super(sessionFactory);
 	}
 
 }

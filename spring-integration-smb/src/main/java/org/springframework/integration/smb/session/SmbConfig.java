@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.session;
 
 import java.io.UnsupportedEncodingException;
@@ -32,22 +33,27 @@ import org.springframework.util.StringUtils;
  */
 public class SmbConfig {
 
-	private String  host;
-	private int     port;
-	private String  domain;
-	private String  username;
-	private String  password;
-	private String  shareAndDir;
+	private String host;
+
+	private int port;
+
+	private String domain;
+
+	private String username;
+
+	private String password;
+
+	private String shareAndDir;
 
 	private boolean replaceFile = false;
+
 	private boolean useTempFile = false;
 
 	public SmbConfig() {
 	}
 
-	public SmbConfig(String _host, int _port, String _domain, String _username, String _password, String _shareAndDir) throws UnsupportedEncodingException {
-		this();
-
+	public SmbConfig(String _host, int _port, String _domain, String _username, String _password, String _shareAndDir)
+			throws UnsupportedEncodingException {
 		setHost(_host);
 		setPort(_port);
 		setDomain(_domain);
@@ -62,7 +68,7 @@ public class SmbConfig {
 	}
 
 	public String getHost() {
-		return host;
+		return this.host;
 	}
 
 	public void setPort(int _port) {
@@ -71,7 +77,7 @@ public class SmbConfig {
 	}
 
 	public int getPort() {
-		return port;
+		return this.port;
 	}
 
 	public void setDomain(String _domain) {
@@ -80,7 +86,7 @@ public class SmbConfig {
 	}
 
 	public String getDomain() {
-		return domain;
+		return this.domain;
 	}
 
 	public void setUsername(String _username) {
@@ -89,7 +95,7 @@ public class SmbConfig {
 	}
 
 	public String getUsername() {
-		return username;
+		return this.username;
 	}
 
 	public void setPassword(String _password) {
@@ -98,7 +104,7 @@ public class SmbConfig {
 	}
 
 	public String getPassword() {
-		return password;
+		return this.password;
 	}
 
 	public void setShareAndDir(String _shareAndDir) {
@@ -107,7 +113,7 @@ public class SmbConfig {
 	}
 
 	public String getShareAndDir() {
-		return shareAndDir;
+		return this.shareAndDir;
 	}
 
 	public void setReplaceFile(boolean _replaceFile) {
@@ -115,7 +121,7 @@ public class SmbConfig {
 	}
 
 	public boolean isReplaceFile() {
-		return replaceFile;
+		return this.replaceFile;
 	}
 
 	void setUseTempFile(boolean _useTempFile) {
@@ -123,7 +129,7 @@ public class SmbConfig {
 	}
 
 	public boolean isUseTempFile() {
-		return useTempFile;
+		return this.useTempFile;
 	}
 
 	String getDomainUserPass(boolean _includePassword) {
@@ -131,7 +137,8 @@ public class SmbConfig {
 		String user = _includePassword ? this.username : "********";
 		if (StringUtils.hasText(this.domain)) {
 			domainUserPass = String.format("%s;%s", this.domain, user);
-		} else {
+		}
+		else {
 			domainUserPass = user;
 		}
 		if (StringUtils.hasText(this.password)) {
@@ -176,7 +183,7 @@ public class SmbConfig {
 	public String toString() {
 		return getClass().getSimpleName()
 				+ "[url=" + getUrl(false)
-				+ ", replaceFile=" + replaceFile
+				+ ", replaceFile=" + this.replaceFile
 				+ "]";
 	}
 

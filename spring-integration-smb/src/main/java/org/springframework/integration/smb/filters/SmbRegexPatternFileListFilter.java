@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,47 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.filters;
 
 import java.util.regex.Pattern;
 
-import jcifs.smb.SmbFile;
-
 import org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter;
+
+import jcifs.smb.SmbFile;
 
 /**
  * Implementation of {@link AbstractRegexPatternFileListFilter} for SMB.
  *
  * @author Markus Spann
- * @since 1.0
  */
 public class SmbRegexPatternFileListFilter extends AbstractRegexPatternFileListFilter<SmbFile> {
 
-	private final String toString;
-
-	public SmbRegexPatternFileListFilter(String _pattern) {
-		this(Pattern.compile(_pattern));
+	public SmbRegexPatternFileListFilter(String pattern) {
+		this(Pattern.compile(pattern));
 	}
 
-	public SmbRegexPatternFileListFilter(Pattern _pattern) {
-		super(_pattern);
-		toString = getClass().getName() + "[pattern='" + _pattern + "']";
+	public SmbRegexPatternFileListFilter(Pattern pattern) {
+		super(pattern);
 	}
 
 	/**
 	 * Gets the specified SMB file's name.
-	 * @param _file SMB file object
+	 * @param file SMB file object
 	 * @return file name
-	 * @see org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter#getFilename(java.lang.Object)
+	 * @see AbstractRegexPatternFileListFilter#getFilename(java.lang.Object)
 	 */
 	@Override
-	protected String getFilename(SmbFile _file) {
-		return (_file != null) ? _file.getName() : null;
-	}
-
-	@Override
-	public String toString() {
-		return toString;
+	protected String getFilename(SmbFile file) {
+		return (file != null ? file.getName() : null);
 	}
 
 }

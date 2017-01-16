@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.session;
 
 import java.io.ByteArrayInputStream;
@@ -23,16 +24,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-import jcifs.smb.SmbException;
-import jcifs.smb.SmbFile;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.NestedIOException;
 import org.springframework.integration.file.remote.session.Session;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
+
+import jcifs.smb.SmbException;
+import jcifs.smb.SmbFile;
+import jcifs.smb.SmbFileOutputStream;
 
 /**
  * Implementation of the {@link Session} interface for Server Message Block (SMB)
@@ -45,19 +48,18 @@ import org.springframework.util.StringUtils;
  * See <a href="http://en.wikipedia.org/wiki/Server_Message_Block">Server Message Block</a>
  * for more details.
  *
- * Inspired by the spring-integration-ftp implementation done by Mark Fisher
- * and Oleg Zhurakousky.
- *
  * @author Markus Spann
  * @author Mark Fisher
  * @author Oleg Zhurakousky
+ * @author Artem Bilan
  *
- * @since 1.0
  */
 public class SmbSession implements Session<SmbFile> {
 
-	private final Log           logger         = LogFactory.getLog(SmbSession.class);
+	private static final Log logger = LogFactory.getLog(SmbSession.class);
+
 	private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+
 	private static final String SMB_FILE_SEPARATOR = "/";
 
 	static {
@@ -78,11 +80,12 @@ public class SmbSession implements Session<SmbFile> {
 	 * @param _useTempFile make use temporary files when writing
 	 * @throws IOException in case of I/O errors
 	 */
-	SmbSession(String _host, int _port, String _domain, String _user, String _password, String _shareAndDir, boolean _replaceFile, boolean _useTempFile) throws IOException {
+	SmbSession(String _host, int _port, String _domain, String _user, String _password, String _shareAndDir,
+			boolean _replaceFile, boolean _useTempFile) throws IOException {
 		this(new SmbShare(new SmbConfig(_host, _port, _domain, _user, _password, _shareAndDir)));
 
-		smbShare.setReplaceFile(_replaceFile);
-		smbShare.setUseTempFile(_useTempFile);
+		this.smbShare.setReplaceFile(_replaceFile);
+		this.smbShare.setUseTempFile(_useTempFile);
 	}
 
 	/**
@@ -91,8 +94,10 @@ public class SmbSession implements Session<SmbFile> {
 	 */
 	public SmbSession(SmbShare _smbShare) {
 		Assert.notNull(_smbShare, "smbShare must not be null");
-		smbShare = _smbShare;
-		logger.debug("New " + getClass().getName() + " created.");
+		this.smbShare = _smbShare;
+		if (logger.isDebugEnabled()) {
+			logger.debug("New " + getClass().getName() + " created.");
+		}
 	}
 
 	/**
@@ -100,8 +105,8 @@ public class SmbSession implements Session<SmbFile> {
 	 * @param _path path to a remote file or directory
 	 * @return true if delete successful, false if resource is non-existent
 	 * @throws IOException on error conditions returned by a CIFS server
-	 * @see org.springframework.integration.file.remote.session.Session#remove(java.lang.String)
 	 */
+	@Override
 	public boolean remove(String _path) throws IOException {
 		Assert.hasText(_path, "path must not be empty");
 
@@ -112,9 +117,10 @@ public class SmbSession implements Session<SmbFile> {
 			removeFile.delete();
 			removed = true;
 		}
-		if (!removed) {
+		if (!removed && logger.isInfoEnabled()) {
 			logger.info("Could not remove non-existing resource [" + _path + "].");
-		} else if (logger.isInfoEnabled()) {
+		}
+		else if (logger.isInfoEnabled()) {
 			logger.info("Successfully removed resource [" + _path + "].");
 		}
 		return removed;
@@ -126,29 +132,34 @@ public class SmbSession implements Session<SmbFile> {
 	 * @param _path path to a remote directory
 	 * @return array of SmbFile objects
 	 * @throws IOException on error conditions returned by a CIFS server or if the remote resource is not a directory.
-	 * @see org.springframework.integration.file.remote.session.Session#list(java.lang.String)
 	 */
+	@Override
 	public SmbFile[] list(String _path) throws IOException {
 		SmbFile[] files = new SmbFile[0];
 		try {
 			SmbFile smbDir = createSmbDirectoryObject(_path);
 			if (!smbDir.exists()) {
-				logger.warn("Remote directory [" + _path + "] does not exist. Cannot list resources.");
+				if (logger.isWarnEnabled()) {
+					logger.warn("Remote directory [" + _path + "] does not exist. Cannot list resources.");
+				}
 				return files;
-			} else if (!smbDir.isDirectory()) {
+			}
+			else if (!smbDir.isDirectory()) {
 				throw new NestedIOException("Resource [" + _path + "] is not a directory. Cannot list resources.");
 			}
 
 			files = smbDir.listFiles();
-
-		} catch (SmbException _ex) {
+		}
+		catch (SmbException _ex) {
 			throw new NestedIOException("Failed to list resources in [" + _path + "].", _ex);
 		}
-		String msg = "Successfully listed " + files.length + " resource(s) in [" + _path + "]";
+
 		if (logger.isDebugEnabled()) {
-			logger.debug(msg + ": " + Arrays.toString(files));
-		} else {
-			logger.info(msg + ".");
+			logger.debug("Successfully listed " + files.length + " resource(s) in [" + _path + "]"
+					+ ": " + Arrays.toString(files));
+		}
+		else if (logger.isInfoEnabled()) {
+			logger.info("Successfully listed " + files.length + " resource(s) in [" + _path + "]" + ".");
 		}
 
 		return files;
@@ -160,34 +171,36 @@ public class SmbSession implements Session<SmbFile> {
 	 * @param _path path to a remote file
 	 * @param _outputStream output stream
 	 * @throws IOException on error conditions returned by a CIFS server or if the remote resource is not a file.
-	 * @see org.springframework.integration.file.remote.session.Session#read(java.lang.String, java.io.OutputStream)
 	 */
+	@Override
 	public void read(String _path, OutputStream _outputStream) throws IOException {
 		Assert.hasText(_path, "path must not be empty");
 		Assert.notNull(_outputStream, "outputStream must not be null");
 
 		try {
-
 			SmbFile remoteFile = createSmbFileObject(_path);
 			if (!remoteFile.isFile()) {
 				throw new NestedIOException("Resource [" + _path + "] is not a file.");
 			}
 			FileCopyUtils.copy(remoteFile.getInputStream(), _outputStream);
-
-		} catch (SmbException _ex) {
+		}
+		catch (SmbException _ex) {
 			throw new NestedIOException("Failed to read resource [" + _path + "].", _ex);
 		}
-		logger.info("Successfully read resource [" + _path + "].");
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Successfully read resource [" + _path + "].");
+		}
 	}
 
 	/**
 	 * Writes contents of the specified {@link InputStream} to the remote resource
-	 * specified by path. Remote directories are created implicitely as required.
+	 * specified by path. Remote directories are created implicitly as required.
 	 * @param _inputStream input stream
 	 * @param _path remote path (of a file) to write to
 	 * @throws IOException on error conditions returned by a CIFS server
-	 * @see org.springframework.integration.file.remote.session.Session#write(java.io.InputStream, java.lang.String)
 	 */
+	@Override
 	public void write(InputStream _inputStream, String _path) throws IOException {
 		Assert.notNull(_inputStream, "inputStream must not be empty");
 		Assert.hasText(_path, "path must not be null");
@@ -198,35 +211,39 @@ public class SmbSession implements Session<SmbFile> {
 
 			SmbFile targetFile = createSmbFileObject(_path);
 
-			if (smbShare.isUseTempFile()) {
+			if (this.smbShare.isUseTempFile()) {
 
-				String tempFileName = _path + smbShare.newTempFileSuffix();
+				String tempFileName = _path + this.smbShare.newTempFileSuffix();
 				SmbFile tempFile = createSmbFileObject(tempFileName);
 				tempFile.createNewFile();
 				Assert.isTrue(tempFile.canWrite(), "Temporary file [" + tempFileName + "] is not writable.");
 
 				FileCopyUtils.copy(_inputStream, tempFile.getOutputStream());
 
-				if (targetFile.exists() && smbShare.isReplaceFile()) {
+				if (targetFile.exists() && this.smbShare.isReplaceFile()) {
 					targetFile.delete();
 				}
 				tempFile.renameTo(targetFile);
-
-			} else {
-
+			}
+			else {
 				FileCopyUtils.copy(_inputStream, targetFile.getOutputStream());
-
 			}
 
-		} catch (SmbException _ex) {
+		}
+		catch (SmbException _ex) {
 			throw new NestedIOException("Failed to write resource [" + _path + "].", _ex);
 		}
-		logger.info("Successfully wrote remote file [" + _path + "].");
+		if (logger.isInfoEnabled()) {
+			logger.info("Successfully wrote remote file [" + _path + "].");
+		}
 	}
 
 	/**
 	 * Convenience method to write a local file object to a remote location.
-	 * @see org.springframework.integration.smb.session.SmbSession#write(InputStream, String)
+	 * @param _file the local file
+	 * @param _path the remote path to write to
+	 * @return the {@link SmbFile} for remote file
+	 * @throws IOException the IO exception
 	 */
 	public SmbFile write(File _file, String _path) throws IOException {
 		return writeAndClose(new FileInputStream(_file), _path);
@@ -234,7 +251,10 @@ public class SmbSession implements Session<SmbFile> {
 
 	/**
 	 * Convenience method to write a byte array to a remote location.
-	 * @see org.springframework.integration.smb.session.SmbSession#write(InputStream, String)
+	 * @param _contents the {@code byte[]} to write
+	 * @param _path the remote file to write to
+	 * @return the {@link SmbFile} for remote file
+	 * @throws IOException the IO exception
 	 */
 	public SmbFile write(byte[] _contents, String _path) throws IOException {
 		return writeAndClose(new ByteArrayInputStream(_contents), _path);
@@ -247,19 +267,25 @@ public class SmbSession implements Session<SmbFile> {
 	 * @param _path remote path to create
 	 * @return always true (error states are express by exceptions)
 	 * @throws IOException on error conditions returned by a CIFS server
-	 * @see org.springframework.integration.file.remote.session.Session#mkdir(java.lang.String)
 	 */
+	@Override
 	public boolean mkdir(String _path) throws IOException {
 		try {
 			SmbFile dir = createSmbDirectoryObject(_path);
 			if (!dir.exists()) {
 				dir.mkdirs();
-				logger.info("Successfully created remote directory [" + _path + "] in share [" + smbShare + "].");
-			} else {
-				logger.info("Remote directory [" + _path + "] exists in share [" + smbShare + "].");
+				if (logger.isInfoEnabled()) {
+					logger.info("Successfully created remote directory [" + _path + "] in share [" + this.smbShare + "].");
+				}
+			}
+			else {
+				if (logger.isInfoEnabled()) {
+					logger.info("Remote directory [" + _path + "] exists in share [" + this.smbShare + "].");
+				}
 			}
 			return true;
-		} catch (SmbException _ex) {
+		}
+		catch (SmbException _ex) {
 			throw new NestedIOException("Failed to create directory [" + _path + "].", _ex);
 		}
 	}
@@ -269,8 +295,8 @@ public class SmbSession implements Session<SmbFile> {
 	 * @param _path remote path
 	 * @return true if exists, false otherwise
 	 * @throws IOException  on error conditions returned by a CIFS server
-	 * @see org.springframework.integration.file.remote.session.Session#exists(java.lang.String)
 	 */
+	@Override
 	public boolean exists(String _path) throws IOException {
 		return createSmbFileObject(_path).exists();
 	}
@@ -313,54 +339,93 @@ public class SmbSession implements Session<SmbFile> {
 		return null;
 	}
 
-	/**
-	 * Renames a remote resource.
-	 * @param _pathFrom remote source path
-	 * @param _pathTo remote target path
-	 * @throws IOException on error conditions returned by a CIFS server
-	 * @see org.springframework.integration.file.remote.session.Session#rename(java.lang.String, java.lang.String)
-	 */
+	@Override
 	public void rename(String _pathFrom, String _pathTo) throws IOException {
 		try {
 
 			SmbFile smbFileFrom = createSmbFileObject(_pathFrom);
 			SmbFile smbFileTo = createSmbFileObject(_pathTo);
-			if (smbShare.isReplaceFile() && smbFileTo.exists()) {
+			if (this.smbShare.isReplaceFile() && smbFileTo.exists()) {
 				smbFileTo.delete();
 			}
 			smbFileFrom.renameTo(smbFileTo);
 
-		} catch (SmbException _ex) {
+		}
+		catch (SmbException _ex) {
 			throw new NestedIOException("Failed to rename [" + _pathFrom + "] to [" + _pathTo + "].", _ex);
 		}
-		logger.info("Successfully renamed remote resource [" + _pathFrom + "] to [" + _pathTo + "].");
+		if (logger.isInfoEnabled()) {
+			logger.info("Successfully renamed remote resource [" + _pathFrom + "] to [" + _pathTo + "].");
+		}
 
 	}
 
-	/**
-	 * Closes this SMB session.
-	 * @see org.springframework.integration.file.remote.session.Session#close()
-	 */
+	@Override
+	public void append(InputStream inputStream, String destination) throws IOException {
+		SmbFile smbFile = createSmbFileObject(destination);
+		OutputStream fileOutputStream = new SmbFileOutputStream(smbFile, true);
+		FileCopyUtils.copy(inputStream, fileOutputStream);
+	}
+
+	@Override
+	public boolean rmdir(String directory) throws IOException {
+		SmbFile dir = createSmbDirectoryObject(directory);
+		try {
+			dir.delete();
+		}
+		catch (SmbException e) {
+			if (logger.isWarnEnabled()) {
+				logger.info("Failed to remove remote directory [" + directory + "]: " + e);
+			}
+			return false;
+		}
+		if (logger.isInfoEnabled()) {
+			logger.info("Successfully removed remote directory [" + directory + "].");
+		}
+		return true;
+	}
+
+	@Override
+	public InputStream readRaw(String source) throws IOException {
+		SmbFile remoteFile = createSmbFileObject(source);
+		if (!remoteFile.isFile()) {
+			throw new NestedIOException("Resource [" + source + "] is not a file.");
+		}
+		return remoteFile.getInputStream();
+	}
+
+	@Override
+	public boolean finalizeRaw() throws IOException {
+		return true;
+	}
+
+	@Override
+	public Object getClientInstance() {
+		return this.smbShare;
+	}
+
+	@Override
 	public void close() {
-		smbShare.doClose();
+		this.smbShare.doClose();
 	}
 
 	/**
 	 * Checks with this SMB session is open and ready for work by attempting
 	 * to list remote files and checking for error conditions..
 	 * @return true if the session is open, false otherwise
-	 * @see org.springframework.integration.file.remote.session.Session#isOpen()
 	 */
+	@Override
 	public boolean isOpen() {
-		if (!smbShare.isOpened()) {
+		if (!this.smbShare.isOpened()) {
 			return false;
 		}
 		try {
-			smbShare.listFiles();
-		} catch (Exception _ex) {
+			this.smbShare.listFiles();
+		}
+		catch (Exception _ex) {
 			close();
 		}
-		return smbShare.isOpened();
+		return this.smbShare.isOpened();
 	}
 
 	/**
@@ -389,17 +454,18 @@ public class SmbSession implements Session<SmbFile> {
 		final String cleanedPath = StringUtils.cleanPath(path);
 
 		if (!StringUtils.hasText(cleanedPath)) {
-			return smbShare;
+			return this.smbShare;
 		}
 
-		SmbFile smbFile = new SmbFile(smbShare, cleanedPath);
+		SmbFile smbFile = new SmbFile(this.smbShare, cleanedPath);
 
 		boolean appendFileSeparator = !cleanedPath.endsWith(SMB_FILE_SEPARATOR);
 		if (appendFileSeparator) {
 			try {
-					appendFileSeparator = smbFile.isDirectory() || (isDirectory != null && isDirectory);
-			} catch (SmbException ex) {
-					appendFileSeparator = false;
+				appendFileSeparator = smbFile.isDirectory() || (isDirectory != null && isDirectory);
+			}
+			catch (SmbException ex) {
+				appendFileSeparator = false;
 			}
 		}
 		if (appendFileSeparator) {
@@ -413,6 +479,9 @@ public class SmbSession implements Session<SmbFile> {
 
 	/**
 	 * Creates an SMB file object pointing to a remote file.
+	 * @param _path the remote file path
+	 * @return the {@link SmbFile} for remote path
+	 * @throws IOException the IO exception
 	 */
 	public SmbFile createSmbFileObject(String _path) throws IOException {
 		return createSmbFileObject(_path, null);
@@ -420,6 +489,9 @@ public class SmbSession implements Session<SmbFile> {
 
 	/**
 	 * Creates an SMB file object pointing to a remote directory.
+	 * @param _path the remote directory path
+	 * @return the {@link SmbFile} for remote path
+	 * @throws IOException the IO exception
 	 */
 	public SmbFile createSmbDirectoryObject(String _path) throws IOException {
 		return createSmbFileObject(_path, true);
@@ -441,9 +513,11 @@ public class SmbSession implements Session<SmbFile> {
 			Log log = LogFactory.getLog(SmbSession.class);
 			if (log.isTraceEnabled()) {
 				jcifs.Config.setProperty(sysPropLogLevel, "N");
-			} else if (log.isDebugEnabled()) {
+			}
+			else if (log.isDebugEnabled()) {
 				jcifs.Config.setProperty(sysPropLogLevel, "3");
-			} else {
+			}
+			else {
 				jcifs.Config.setProperty(sysPropLogLevel, "1");
 			}
 		}

@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,42 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.filters;
 
-import jcifs.smb.SmbFile;
-
 import org.springframework.integration.file.filters.AbstractSimplePatternFileListFilter;
+
+import jcifs.smb.SmbFile;
 
 /**
  * Implementation of {@link AbstractSimplePatternFileListFilter} for SMB.
  *
  * @author Markus Spann
- * @since 1.0
  *
  */
 public class SmbSimplePatternFileListFilter extends AbstractSimplePatternFileListFilter<SmbFile> {
 
-	private final String toString;
-
-	public SmbSimplePatternFileListFilter(String _pathPattern) {
-		super(_pathPattern);
-		toString = getClass().getName() + "[pattern='" + _pathPattern + "']";
+	public SmbSimplePatternFileListFilter(String pathPattern) {
+		super(pathPattern);
 	}
 
 	/**
 	 * Gets the specified SMB file's name.
-	 * @param _file SMB file object
+	 * @param file SMB file object
 	 * @return file name
-	 * @see org.springframework.integration.file.filters.AbstractSimplePatternFileListFilter#getFilename(java.lang.Object)
+	 * @see AbstractSimplePatternFileListFilter#getFilename(java.lang.Object)
 	 */
 	@Override
-	protected String getFilename(SmbFile _file) {
-		return (_file != null) ? _file.getName() : null;
-	}
-
-	@Override
-	public String toString() {
-		return toString;
+	protected String getFilename(SmbFile file) {
+		return (file != null) ? file.getName() : null;
 	}
 
 }

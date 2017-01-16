@@ -1,5 +1,5 @@
-/**
- * Copyright 2002-2012 the original author or authors.
+/*
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.smb.inbound;
 
 import java.io.File;
 import java.util.Comparator;
 
-import jcifs.smb.SmbFile;
-
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizer;
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizingMessageSource;
+
+import jcifs.smb.SmbFile;
 
 /**
  * A {@link org.springframework.integration.core.MessageSource} implementation for SMB.
@@ -31,26 +32,18 @@ import org.springframework.integration.file.remote.synchronizer.AbstractInboundF
  */
 public class SmbInboundFileSynchronizingMessageSource extends AbstractInboundFileSynchronizingMessageSource<SmbFile> {
 
-	private final static String componentType = "smb:inbound-channel-adapter";
-	private final String        toString;
-
 	public SmbInboundFileSynchronizingMessageSource(AbstractInboundFileSynchronizer<SmbFile> _synchronizer) {
 		this(_synchronizer, null);
 	}
 
-	public SmbInboundFileSynchronizingMessageSource(AbstractInboundFileSynchronizer<SmbFile> _synchronizer, Comparator<File> _comparator) {
+	public SmbInboundFileSynchronizingMessageSource(AbstractInboundFileSynchronizer<SmbFile> _synchronizer,
+			Comparator<File> _comparator) {
 		super(_synchronizer, _comparator);
-		toString = getClass().getName() + "[componentType=" + componentType + ", synchronizer=" + _synchronizer + ", comparator=" + _comparator + "]";
 	}
 
 	@Override
 	public String getComponentType() {
-		return componentType;
-	}
-
-	@Override
-	public String toString() {
-		return toString;
+		return "smb:inbound-channel-adapter";
 	}
 
 }
