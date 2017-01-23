@@ -166,7 +166,6 @@ public class LeaderInitiatorTests {
 		initiator1.getContext().yield();
 
 		assertThat(revoked11.await(10, TimeUnit.SECONDS), is(true));
-		assertThat(initiator1.getContext().isLeader(), is(false));
 
 		initiator1.destroy();
 	}
