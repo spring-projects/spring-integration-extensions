@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,60 +40,60 @@ import com.hazelcast.core.IMap;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class,
-    loader = AnnotationConfigContextLoader.class)
+		loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
 public class HazelcastDistributedSQLInboundChannelAdapterConfigTests {
 
-    @Autowired
-    private PollableChannel dsDistributedMapChannel;
+	@Autowired
+	private PollableChannel dsDistributedMapChannel;
 
-    @Autowired
-    private PollableChannel dsDistributedMapChannel2;
+	@Autowired
+	private PollableChannel dsDistributedMapChannel2;
 
-    @Autowired
-    private PollableChannel dsDistributedMapChannel3;
+	@Autowired
+	private PollableChannel dsDistributedMapChannel3;
 
-    @Autowired
-    private PollableChannel dsDistributedMapChannel4;
+	@Autowired
+	private PollableChannel dsDistributedMapChannel4;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap2;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap2;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap3;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap3;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap4;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testDSDistributedMap4;
 
-    @Test
-    public void testDistributedSQLForENTRYIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForENTRYIterationType(testDSDistributedMap,
-                dsDistributedMapChannel);
-    }
+	@Test
+	public void testDistributedSQLForENTRYIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForENTRYIterationType(testDSDistributedMap,
+						dsDistributedMapChannel);
+	}
 
-    @Test
-    public void testDistributedSQLForKEYIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForKEYIterationType(testDSDistributedMap2,
-                dsDistributedMapChannel2);
-    }
+	@Test
+	public void testDistributedSQLForKEYIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForKEYIterationType(testDSDistributedMap2,
+						dsDistributedMapChannel2);
+	}
 
-    @Test
-    public void testDistributedSQLForLOCAL_KEYIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForLOCAL_KEYIterationType(testDSDistributedMap3,
-                dsDistributedMapChannel3);
-    }
+	@Test
+	public void testDistributedSQLForLOCAL_KEYIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForLOCAL_KEYIterationType(testDSDistributedMap3,
+						dsDistributedMapChannel3);
+	}
 
-    @Test
-    public void testDistributedSQLForVALUEIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForVALUEIterationType(testDSDistributedMap4,
-                dsDistributedMapChannel4);
-    }
+	@Test
+	public void testDistributedSQLForVALUEIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForVALUEIterationType(testDSDistributedMap4,
+						dsDistributedMapChannel4);
+	}
 
 }

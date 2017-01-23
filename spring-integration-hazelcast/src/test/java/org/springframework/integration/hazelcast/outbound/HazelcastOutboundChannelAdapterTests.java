@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
 
 /**
- * Hazelcast Outbound Channel Adapter Test Class
+ * Hazelcast Outbound Channel Adapter Test Class.
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
@@ -69,405 +69,405 @@ import com.hazelcast.core.ReplicatedMap;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 @DirtiesContext
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class HazelcastOutboundChannelAdapterTests {
 
-    private static final String DISTRIBUTED_MAP = "distributedMap";
+	private static final String DISTRIBUTED_MAP = "distributedMap";
 
-    private static final String CACHE_HEADER = "CACHE_HEADER";
+	private static final String CACHE_HEADER = "CACHE_HEADER";
 
-    private final MessageBuilderFactory messageBuilderFactory =
-        new DefaultMessageBuilderFactory();
+	private final MessageBuilderFactory messageBuilderFactory =
+			new DefaultMessageBuilderFactory();
 
-    @Autowired
-    @Qualifier("firstMapChannel")
-    private MessageChannel firstMapChannel;
+	@Autowired
+	@Qualifier("firstMapChannel")
+	private MessageChannel firstMapChannel;
 
-    @Autowired
-    @Qualifier("secondMapChannel")
-    private MessageChannel secondMapChannel;
+	@Autowired
+	@Qualifier("secondMapChannel")
+	private MessageChannel secondMapChannel;
 
-    @Autowired
-    @Qualifier("thirdMapChannel")
-    private MessageChannel thirdMapChannel;
+	@Autowired
+	@Qualifier("thirdMapChannel")
+	private MessageChannel thirdMapChannel;
 
-    @Autowired
-    @Qualifier("fourthMapChannel")
-    private MessageChannel fourthMapChannel;
+	@Autowired
+	@Qualifier("fourthMapChannel")
+	private MessageChannel fourthMapChannel;
 
-    @Autowired
-    @Qualifier("fifthMapChannel")
-    private MessageChannel fifthMapChannel;
+	@Autowired
+	@Qualifier("fifthMapChannel")
+	private MessageChannel fifthMapChannel;
 
-    @Autowired
-    @Qualifier("sixthMapChannel")
-    private MessageChannel sixthMapChannel;
+	@Autowired
+	@Qualifier("sixthMapChannel")
+	private MessageChannel sixthMapChannel;
 
-    @Autowired
-    @Qualifier("bulkMapChannel")
-    private MessageChannel bulkMapChannel;
+	@Autowired
+	@Qualifier("bulkMapChannel")
+	private MessageChannel bulkMapChannel;
 
-    @Autowired
-    @Qualifier("multiMapChannel")
-    private MessageChannel multiMapChannel;
+	@Autowired
+	@Qualifier("multiMapChannel")
+	private MessageChannel multiMapChannel;
 
-    @Autowired
-    @Qualifier("replicatedMapChannel")
-    private MessageChannel replicatedMapChannel;
+	@Autowired
+	@Qualifier("replicatedMapChannel")
+	private MessageChannel replicatedMapChannel;
 
-    @Autowired
-    @Qualifier("bulkReplicatedMapChannel")
-    private MessageChannel bulkReplicatedMapChannel;
+	@Autowired
+	@Qualifier("bulkReplicatedMapChannel")
+	private MessageChannel bulkReplicatedMapChannel;
 
-    @Autowired
-    @Qualifier("listChannel")
-    private MessageChannel listChannel;
+	@Autowired
+	@Qualifier("listChannel")
+	private MessageChannel listChannel;
 
-    @Autowired
-    @Qualifier("bulkListChannel")
-    private MessageChannel bulkListChannel;
+	@Autowired
+	@Qualifier("bulkListChannel")
+	private MessageChannel bulkListChannel;
 
-    @Autowired
-    @Qualifier("setChannel")
-    private MessageChannel setChannel;
+	@Autowired
+	@Qualifier("setChannel")
+	private MessageChannel setChannel;
 
-    @Autowired
-    @Qualifier("bulkSetChannel")
-    private MessageChannel bulkSetChannel;
+	@Autowired
+	@Qualifier("bulkSetChannel")
+	private MessageChannel bulkSetChannel;
 
-    @Autowired
-    @Qualifier("queueChannel")
-    private MessageChannel queueChannel;
+	@Autowired
+	@Qualifier("queueChannel")
+	private MessageChannel queueChannel;
 
-    @Autowired
-    @Qualifier("bulkQueueChannel")
-    private MessageChannel bulkQueueChannel;
+	@Autowired
+	@Qualifier("bulkQueueChannel")
+	private MessageChannel bulkQueueChannel;
 
-    @Autowired
-    @Qualifier("topicChannel")
-    private MessageChannel topicChannel;
+	@Autowired
+	@Qualifier("topicChannel")
+	private MessageChannel topicChannel;
 
-    @Autowired
-    @Qualifier("lockChannel")
-    private MessageChannel lockChannel;
+	@Autowired
+	@Qualifier("lockChannel")
+	private MessageChannel lockChannel;
 
-    @Resource
-    private Map<?, ?> distributedMap;
+	@Resource
+	private Map<?, ?> distributedMap;
 
-    @Resource
-    private Map<?, ?> distributedBulkMap;
+	@Resource
+	private Map<?, ?> distributedBulkMap;
 
-    @Resource
-    private MultiMap<Integer, HazelcastIntegrationTestUser> multiMap;
+	@Resource
+	private MultiMap<Integer, HazelcastIntegrationTestUser> multiMap;
 
-    @Resource
-    private ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap;
+	@Resource
+	private ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap;
 
-    @Resource
-    private ReplicatedMap<Integer, HazelcastIntegrationTestUser> bulkReplicatedMap;
+	@Resource
+	private ReplicatedMap<Integer, HazelcastIntegrationTestUser> bulkReplicatedMap;
 
-    @Resource
-    private List<HazelcastIntegrationTestUser> distributedList;
+	@Resource
+	private List<HazelcastIntegrationTestUser> distributedList;
 
-    @Resource
-    private List<HazelcastIntegrationTestUser> distributedBulkList;
+	@Resource
+	private List<HazelcastIntegrationTestUser> distributedBulkList;
 
-    @Resource
-    private Set<HazelcastIntegrationTestUser> distributedSet;
-
-    @Resource
-    private Set<HazelcastIntegrationTestUser> distributedBulkSet;
-
-    @Resource
-    private Queue<HazelcastIntegrationTestUser> distributedQueue;
-
-    @Resource
-    private Queue<HazelcastIntegrationTestUser> distributedBulkQueue;
-
-    @Resource
-    private ITopic<HazelcastIntegrationTestUser> topic;
-
-    @Autowired
-    @Qualifier("testFirstMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testFirstMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testSecondMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testSecondMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testThirdMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testThirdMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testFourthMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testFourthMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testBulkMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testBulkMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testMultiMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testMultiMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testReplicatedMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testReplicatedMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testBulkReplicatedMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testBulkReplicatedMapRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testListRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testListRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testBulkListRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testBulkListRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testSetRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testSetRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testBulkSetRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testBulkSetRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testQueueRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testQueueRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testBulkQueueRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testBulkQueueRequestHandlerAdvice;
-
-    @Autowired
-    @Qualifier("testTopicRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice testTopicRequestHandlerAdvice;
-
-    @Before
-    public void setUp() {
-        this.distributedMap.clear();
-        this.distributedBulkMap.clear();
-        this.distributedList.clear();
-        this.distributedBulkList.clear();
-        this.distributedSet.clear();
-        this.distributedBulkSet.clear();
-        this.distributedQueue.clear();
-        this.distributedBulkQueue.clear();
-        this.multiMap.clear();
-        this.replicatedMap.clear();
-        this.bulkReplicatedMap.clear();
-    }
-
-    @Test
-    public void testWriteToDistributedMap() throws InterruptedException {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedMap(this.firstMapChannel, this.distributedMap,
-                this.testFirstMapRequestHandlerAdvice);
-    }
-
-    @Test
-    public void testBulkWriteToDistributedMap() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testBulkWriteToDistributedMap(this.bulkMapChannel, this.distributedBulkMap,
-                this.testBulkMapRequestHandlerAdvice);
-    }
-
-    @Test
-    public void testWriteToDistributedMapWhenCacheExpressionIsSet()
-        throws InterruptedException {
-        sendMessageWithCacheHeaderToChannel(this.secondMapChannel, CACHE_HEADER,
-            DISTRIBUTED_MAP);
-        assertTrue(this.testSecondMapRequestHandlerAdvice.executeLatch
-            .await(10, TimeUnit.SECONDS));
-        HazelcastOutboundChannelAdapterTestUtils
-            .verifyMapForPayload(new TreeMap(this.distributedMap));
-    }
-
-    @Test
-    public void testWriteToDistributedMapWhenHazelcastHeaderIsSet()
-        throws InterruptedException {
-        sendMessageWithCacheHeaderToChannel(this.thirdMapChannel,
-            HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP);
-        assertTrue(this.testThirdMapRequestHandlerAdvice.executeLatch
-            .await(10, TimeUnit.SECONDS));
-        HazelcastOutboundChannelAdapterTestUtils
-            .verifyMapForPayload(new TreeMap(this.distributedMap));
-    }
-
-    @Test
-    public void testWriteToDistributedMapWhenExtractPayloadIsFalse()
-        throws InterruptedException {
-        sendMessageWithCacheHeaderToChannel(this.fourthMapChannel,
-            HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP);
-        assertTrue(this.testFourthMapRequestHandlerAdvice.executeLatch
-            .await(10, TimeUnit.SECONDS));
-        verifyMapForMessage(new TreeMap(this.distributedMap));
-    }
-
-    @Test
-    public void testWriteToMultiMap() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToMultiMap(this.multiMapChannel, this.multiMap,
-                this.testMultiMapRequestHandlerAdvice);
-    }
-
-    @Test
-    public void testWriteToReplicatedMap() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToReplicatedMap(this.replicatedMapChannel, this.replicatedMap,
-                this.testReplicatedMapRequestHandlerAdvice);
-    }
-
-    @Test
-    public void testBulkWriteToReplicatedMap() throws InterruptedException {
-        Map<Integer, HazelcastIntegrationTestUser> userMap =
-            new HashMap<>(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-        for (int index = 1;
-             index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
-            userMap
-                .put(index, HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
-        }
-
-        this.bulkReplicatedMapChannel.send(new GenericMessage<>(userMap));
-
-        assertTrue(this.testBulkReplicatedMapRequestHandlerAdvice.executeLatch
-            .await(10, TimeUnit.SECONDS));
-        HazelcastOutboundChannelAdapterTestUtils
-            .verifyMapForPayload(new TreeMap(this.bulkReplicatedMap));
-    }
-
-
-    @Test
-    public void testWriteToDistributedList() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedList(this.listChannel, this.distributedList,
-                this.testListRequestHandlerAdvice);
-    }
-
-    @Test
-    public void testBulkWriteToDistributedList() throws InterruptedException {
-        List<HazelcastIntegrationTestUser> userList =
-            new ArrayList<>(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-        for (int index = 1;
-             index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
-            userList.add(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
-        }
-
-        this.bulkListChannel.send(new GenericMessage<>(userList));
-
-        assertTrue(this.testBulkListRequestHandlerAdvice.executeLatch
-            .await(10, TimeUnit.SECONDS));
-        HazelcastOutboundChannelAdapterTestUtils
-            .verifyCollection(this.distributedBulkList,
-                HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
-
-    @Test
-    public void testWriteToDistributedSet() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedSet(this.setChannel, this.distributedSet,
-                this.testSetRequestHandlerAdvice);
-    }
-
-    @Test
-    public void testBulkWriteToDistributedSet() throws InterruptedException {
-        Set<HazelcastIntegrationTestUser> userSet =
-            new HashSet<>(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-        for (int index = 1;
-             index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
-            userSet.add(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
-        }
-
-        this.bulkSetChannel.send(new GenericMessage<>(userSet));
-
-        assertTrue(this.testBulkSetRequestHandlerAdvice.executeLatch
-            .await(10, TimeUnit.SECONDS));
-        final List<HazelcastIntegrationTestUser> list =
-            new ArrayList(this.distributedBulkSet);
-        Collections.sort(list);
-        HazelcastOutboundChannelAdapterTestUtils
-            .verifyCollection(list, HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
-
-    @Test
-    public void testWriteToDistributedQueue() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedQueue(this.queueChannel, this.distributedQueue,
-                this.testQueueRequestHandlerAdvice);
-    }
-
-    @Test
-    public void testBulkWriteToDistributedQueue() throws InterruptedException {
-        Queue<HazelcastIntegrationTestUser> userQueue =
-            new ArrayBlockingQueue(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-        for (int index = 1;
-             index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
-            userQueue.add(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
-        }
-
-        this.bulkQueueChannel.send(new GenericMessage<>(userQueue));
-
-        assertTrue(this.testBulkQueueRequestHandlerAdvice.executeLatch
-            .await(10, TimeUnit.SECONDS));
-        HazelcastOutboundChannelAdapterTestUtils
-            .verifyCollection(this.distributedBulkQueue,
-                HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
-
-    @Test
-    public void testWriteToTopic() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToTopic(this.topicChannel, this.topic,
-                this.testTopicRequestHandlerAdvice);
-    }
-
-    @Test(expected = MessageHandlingException.class)
-    public void testWriteToDistributedMapWhenCacheIsNotSet() {
-        this.fifthMapChannel.send(new GenericMessage<>(
-            HazelcastOutboundChannelAdapterTestUtils.getTestUser(1)));
-    }
-
-    @Test(expected = MessageHandlingException.class)
-    public void testWriteToDistributedMapWhenKeyExpressionIsNotSet() {
-        Message<HazelcastIntegrationTestUser> message = this.messageBuilderFactory
-            .withPayload(HazelcastOutboundChannelAdapterTestUtils.getTestUser(1))
-            .setHeader(HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP).build();
-        this.sixthMapChannel.send(message);
-    }
-
-    @Test(expected = MessageHandlingException.class)
-    public void testWriteToLock() {
-        this.lockChannel.send(new GenericMessage<>("foo"));
-    }
-
-    private void sendMessageWithCacheHeaderToChannel(final MessageChannel channel,
-        final String headerName, final String distributedObjectName) {
-        for (int index = 1;
-             index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
-            Message<HazelcastIntegrationTestUser> message = this.messageBuilderFactory
-                .withPayload(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index))
-                .setHeader(headerName, distributedObjectName).build();
-            channel.send(message);
-        }
-    }
-
-    private void verifyMapForMessage(
-        final Map<Integer, Message<HazelcastIntegrationTestUser>> map) {
-        int index = 1;
-        assertNotNull(map);
-        assertEquals(true, map.size() == HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-        for (Entry<Integer, Message<HazelcastIntegrationTestUser>> entry : map.entrySet()) {
-            assertNotNull(entry);
-            assertEquals(index, entry.getKey().intValue());
-            assertTrue(entry.getValue().getHeaders().size() > 0);
-            HazelcastOutboundChannelAdapterTestUtils
-                .verifyHazelcastIntegrationTestUser(entry.getValue().getPayload(), index);
-            index++;
-        }
-    }
+	@Resource
+	private Set<HazelcastIntegrationTestUser> distributedSet;
+
+	@Resource
+	private Set<HazelcastIntegrationTestUser> distributedBulkSet;
+
+	@Resource
+	private Queue<HazelcastIntegrationTestUser> distributedQueue;
+
+	@Resource
+	private Queue<HazelcastIntegrationTestUser> distributedBulkQueue;
+
+	@Resource
+	private ITopic<HazelcastIntegrationTestUser> topic;
+
+	@Autowired
+	@Qualifier("testFirstMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testFirstMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testSecondMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testSecondMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testThirdMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testThirdMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testFourthMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testFourthMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testBulkMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testBulkMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testMultiMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testMultiMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testReplicatedMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testReplicatedMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testBulkReplicatedMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testBulkReplicatedMapRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testListRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testListRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testBulkListRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testBulkListRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testSetRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testSetRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testBulkSetRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testBulkSetRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testQueueRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testQueueRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testBulkQueueRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testBulkQueueRequestHandlerAdvice;
+
+	@Autowired
+	@Qualifier("testTopicRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice testTopicRequestHandlerAdvice;
+
+	@Before
+	public void setUp() {
+		this.distributedMap.clear();
+		this.distributedBulkMap.clear();
+		this.distributedList.clear();
+		this.distributedBulkList.clear();
+		this.distributedSet.clear();
+		this.distributedBulkSet.clear();
+		this.distributedQueue.clear();
+		this.distributedBulkQueue.clear();
+		this.multiMap.clear();
+		this.replicatedMap.clear();
+		this.bulkReplicatedMap.clear();
+	}
+
+	@Test
+	public void testWriteToDistributedMap() throws InterruptedException {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedMap(this.firstMapChannel, this.distributedMap,
+						this.testFirstMapRequestHandlerAdvice);
+	}
+
+	@Test
+	public void testBulkWriteToDistributedMap() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testBulkWriteToDistributedMap(this.bulkMapChannel, this.distributedBulkMap,
+						this.testBulkMapRequestHandlerAdvice);
+	}
+
+	@Test
+	public void testWriteToDistributedMapWhenCacheExpressionIsSet()
+			throws InterruptedException {
+		sendMessageWithCacheHeaderToChannel(this.secondMapChannel, CACHE_HEADER,
+				DISTRIBUTED_MAP);
+		assertTrue(this.testSecondMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS));
+		HazelcastOutboundChannelAdapterTestUtils
+				.verifyMapForPayload(new TreeMap(this.distributedMap));
+	}
+
+	@Test
+	public void testWriteToDistributedMapWhenHazelcastHeaderIsSet()
+			throws InterruptedException {
+		sendMessageWithCacheHeaderToChannel(this.thirdMapChannel,
+				HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP);
+		assertTrue(this.testThirdMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS));
+		HazelcastOutboundChannelAdapterTestUtils
+				.verifyMapForPayload(new TreeMap(this.distributedMap));
+	}
+
+	@Test
+	public void testWriteToDistributedMapWhenExtractPayloadIsFalse()
+			throws InterruptedException {
+		sendMessageWithCacheHeaderToChannel(this.fourthMapChannel,
+				HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP);
+		assertTrue(this.testFourthMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS));
+		verifyMapForMessage(new TreeMap(this.distributedMap));
+	}
+
+	@Test
+	public void testWriteToMultiMap() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToMultiMap(this.multiMapChannel, this.multiMap,
+						this.testMultiMapRequestHandlerAdvice);
+	}
+
+	@Test
+	public void testWriteToReplicatedMap() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToReplicatedMap(this.replicatedMapChannel, this.replicatedMap,
+						this.testReplicatedMapRequestHandlerAdvice);
+	}
+
+	@Test
+	public void testBulkWriteToReplicatedMap() throws InterruptedException {
+		Map<Integer, HazelcastIntegrationTestUser> userMap =
+				new HashMap<>(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+		for (int index = 1;
+				index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
+			userMap
+					.put(index, HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
+		}
+
+		this.bulkReplicatedMapChannel.send(new GenericMessage<>(userMap));
+
+		assertTrue(this.testBulkReplicatedMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS));
+		HazelcastOutboundChannelAdapterTestUtils
+				.verifyMapForPayload(new TreeMap(this.bulkReplicatedMap));
+	}
+
+
+	@Test
+	public void testWriteToDistributedList() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedList(this.listChannel, this.distributedList,
+						this.testListRequestHandlerAdvice);
+	}
+
+	@Test
+	public void testBulkWriteToDistributedList() throws InterruptedException {
+		List<HazelcastIntegrationTestUser> userList =
+				new ArrayList<>(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+		for (int index = 1;
+				index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
+			userList.add(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
+		}
+
+		this.bulkListChannel.send(new GenericMessage<>(userList));
+
+		assertTrue(this.testBulkListRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS));
+		HazelcastOutboundChannelAdapterTestUtils
+				.verifyCollection(this.distributedBulkList,
+						HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
+
+	@Test
+	public void testWriteToDistributedSet() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedSet(this.setChannel, this.distributedSet,
+						this.testSetRequestHandlerAdvice);
+	}
+
+	@Test
+	public void testBulkWriteToDistributedSet() throws InterruptedException {
+		Set<HazelcastIntegrationTestUser> userSet =
+				new HashSet<>(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+		for (int index = 1;
+				index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
+			userSet.add(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
+		}
+
+		this.bulkSetChannel.send(new GenericMessage<>(userSet));
+
+		assertTrue(this.testBulkSetRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS));
+		final List<HazelcastIntegrationTestUser> list =
+				new ArrayList(this.distributedBulkSet);
+		Collections.sort(list);
+		HazelcastOutboundChannelAdapterTestUtils
+				.verifyCollection(list, HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
+
+	@Test
+	public void testWriteToDistributedQueue() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedQueue(this.queueChannel, this.distributedQueue,
+						this.testQueueRequestHandlerAdvice);
+	}
+
+	@Test
+	public void testBulkWriteToDistributedQueue() throws InterruptedException {
+		Queue<HazelcastIntegrationTestUser> userQueue =
+				new ArrayBlockingQueue(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+		for (int index = 1;
+				index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
+			userQueue.add(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index));
+		}
+
+		this.bulkQueueChannel.send(new GenericMessage<>(userQueue));
+
+		assertTrue(this.testBulkQueueRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS));
+		HazelcastOutboundChannelAdapterTestUtils
+				.verifyCollection(this.distributedBulkQueue,
+						HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
+
+	@Test
+	public void testWriteToTopic() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToTopic(this.topicChannel, this.topic,
+						this.testTopicRequestHandlerAdvice);
+	}
+
+	@Test(expected = MessageHandlingException.class)
+	public void testWriteToDistributedMapWhenCacheIsNotSet() {
+		this.fifthMapChannel.send(new GenericMessage<>(
+				HazelcastOutboundChannelAdapterTestUtils.getTestUser(1)));
+	}
+
+	@Test(expected = MessageHandlingException.class)
+	public void testWriteToDistributedMapWhenKeyExpressionIsNotSet() {
+		Message<HazelcastIntegrationTestUser> message = this.messageBuilderFactory
+				.withPayload(HazelcastOutboundChannelAdapterTestUtils.getTestUser(1))
+				.setHeader(HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP).build();
+		this.sixthMapChannel.send(message);
+	}
+
+	@Test(expected = MessageHandlingException.class)
+	public void testWriteToLock() {
+		this.lockChannel.send(new GenericMessage<>("foo"));
+	}
+
+	private void sendMessageWithCacheHeaderToChannel(final MessageChannel channel,
+			final String headerName, final String distributedObjectName) {
+		for (int index = 1;
+				index <= HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT; index++) {
+			Message<HazelcastIntegrationTestUser> message = this.messageBuilderFactory
+					.withPayload(HazelcastOutboundChannelAdapterTestUtils.getTestUser(index))
+					.setHeader(headerName, distributedObjectName).build();
+			channel.send(message);
+		}
+	}
+
+	private void verifyMapForMessage(
+			final Map<Integer, Message<HazelcastIntegrationTestUser>> map) {
+		int index = 1;
+		assertNotNull(map);
+		assertEquals(true, map.size() == HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+		for (Entry<Integer, Message<HazelcastIntegrationTestUser>> entry : map.entrySet()) {
+			assertNotNull(entry);
+			assertEquals(index, entry.getKey().intValue());
+			assertTrue(entry.getValue().getHeaders().size() > 0);
+			HazelcastOutboundChannelAdapterTestUtils
+					.verifyHazelcastIntegrationTestUser(entry.getValue().getPayload(), index);
+			index++;
+		}
+	}
 
 }

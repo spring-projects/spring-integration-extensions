@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,151 +49,151 @@ import com.hazelcast.core.ReplicatedMap;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HazelcastIntegrationOutboundTestConfiguration.class,
-    loader = AnnotationConfigContextLoader.class)
+		loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
 public class HazelcastOutboundChannelAdapterConfigTests {
 
-    @Autowired
-    @Qualifier("distMapChannel")
-    private MessageChannel distMapChannel;
+	@Autowired
+	@Qualifier("distMapChannel")
+	private MessageChannel distMapChannel;
 
-    @Autowired
-    @Qualifier("distMapBulkChannel")
-    private MessageChannel distMapBulkChannel;
+	@Autowired
+	@Qualifier("distMapBulkChannel")
+	private MessageChannel distMapBulkChannel;
 
-    @Autowired
-    @Qualifier("distListChannel")
-    private MessageChannel distListChannel;
+	@Autowired
+	@Qualifier("distListChannel")
+	private MessageChannel distListChannel;
 
-    @Autowired
-    @Qualifier("distSetChannel")
-    private MessageChannel distSetChannel;
+	@Autowired
+	@Qualifier("distSetChannel")
+	private MessageChannel distSetChannel;
 
-    @Autowired
-    @Qualifier("distQueueChannel")
-    private MessageChannel distQueueChannel;
+	@Autowired
+	@Qualifier("distQueueChannel")
+	private MessageChannel distQueueChannel;
 
-    @Autowired
-    @Qualifier("topicChannel2")
-    private MessageChannel topicChannel2;
+	@Autowired
+	@Qualifier("topicChannel2")
+	private MessageChannel topicChannel2;
 
-    @Autowired
-    @Qualifier("multiMapChannel2")
-    private MessageChannel multiMapChannel2;
+	@Autowired
+	@Qualifier("multiMapChannel2")
+	private MessageChannel multiMapChannel2;
 
-    @Autowired
-    @Qualifier("replicatedMapChannel2")
-    private MessageChannel replicatedMapChannel2;
+	@Autowired
+	@Qualifier("replicatedMapChannel2")
+	private MessageChannel replicatedMapChannel2;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> distMap;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> distMap;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> distBulkMap;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> distBulkMap;
 
-    @Resource
-    private List<HazelcastIntegrationTestUser> distList;
+	@Resource
+	private List<HazelcastIntegrationTestUser> distList;
 
-    @Resource
-    private Set<HazelcastIntegrationTestUser> distSet;
+	@Resource
+	private Set<HazelcastIntegrationTestUser> distSet;
 
-    @Resource
-    private Queue<HazelcastIntegrationTestUser> distQueue;
+	@Resource
+	private Queue<HazelcastIntegrationTestUser> distQueue;
 
-    @Resource
-    private ITopic<HazelcastIntegrationTestUser> topic;
+	@Resource
+	private ITopic<HazelcastIntegrationTestUser> topic;
 
-    @Resource
-    private MultiMap<Integer, HazelcastIntegrationTestUser> multiMap;
+	@Resource
+	private MultiMap<Integer, HazelcastIntegrationTestUser> multiMap;
 
-    @Resource
-    private ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap;
+	@Resource
+	private ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap;
 
-    @Autowired
-    @Qualifier("distMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice distMapRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("distMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice distMapRequestHandlerAdvice;
 
-    @Autowired
-    @Qualifier("distBulkMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice distBulkMapRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("distBulkMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice distBulkMapRequestHandlerAdvice;
 
-    @Autowired
-    @Qualifier("distListRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice distListRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("distListRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice distListRequestHandlerAdvice;
 
-    @Autowired
-    @Qualifier("distSetRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice distSetRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("distSetRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice distSetRequestHandlerAdvice;
 
-    @Autowired
-    @Qualifier("distQueueRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice distQueueRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("distQueueRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice distQueueRequestHandlerAdvice;
 
-    @Autowired
-    @Qualifier("topicRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice topicRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("topicRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice topicRequestHandlerAdvice;
 
-    @Autowired
-    @Qualifier("multiMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice multiMapRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("multiMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice multiMapRequestHandlerAdvice;
 
-    @Autowired
-    @Qualifier("replicatedMapRequestHandlerAdvice")
-    private HazelcastTestRequestHandlerAdvice replicatedMapRequestHandlerAdvice;
+	@Autowired
+	@Qualifier("replicatedMapRequestHandlerAdvice")
+	private HazelcastTestRequestHandlerAdvice replicatedMapRequestHandlerAdvice;
 
-    @Test
-    public void testWriteToDistributedMap() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedMap(this.distMapChannel, this.distMap,
-                this.distMapRequestHandlerAdvice);
-    }
+	@Test
+	public void testWriteToDistributedMap() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedMap(this.distMapChannel, this.distMap,
+						this.distMapRequestHandlerAdvice);
+	}
 
-    @Test
-    public void testBulkWriteToDistributedMap() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testBulkWriteToDistributedMap(this.distMapBulkChannel, this.distBulkMap,
-                this.distBulkMapRequestHandlerAdvice);
-    }
+	@Test
+	public void testBulkWriteToDistributedMap() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testBulkWriteToDistributedMap(this.distMapBulkChannel, this.distBulkMap,
+						this.distBulkMapRequestHandlerAdvice);
+	}
 
-    @Test
-    public void testWriteToDistributedList() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedList(this.distListChannel, this.distList,
-                this.distListRequestHandlerAdvice);
-    }
+	@Test
+	public void testWriteToDistributedList() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedList(this.distListChannel, this.distList,
+						this.distListRequestHandlerAdvice);
+	}
 
-    @Test
-    public void testWriteToDistributedSet() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedSet(this.distSetChannel, this.distSet,
-                this.distSetRequestHandlerAdvice);
-    }
+	@Test
+	public void testWriteToDistributedSet() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedSet(this.distSetChannel, this.distSet,
+						this.distSetRequestHandlerAdvice);
+	}
 
-    @Test
-    public void testWriteToDistributedQueue() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToDistributedQueue(this.distQueueChannel, this.distQueue,
-                this.distQueueRequestHandlerAdvice);
-    }
+	@Test
+	public void testWriteToDistributedQueue() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToDistributedQueue(this.distQueueChannel, this.distQueue,
+						this.distQueueRequestHandlerAdvice);
+	}
 
-    @Test
-    public void testWriteToTopic() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToTopic(this.topicChannel2, this.topic, this.topicRequestHandlerAdvice);
-    }
+	@Test
+	public void testWriteToTopic() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToTopic(this.topicChannel2, this.topic, this.topicRequestHandlerAdvice);
+	}
 
-    @Test
-    public void testWriteToMultiMap() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToMultiMap(this.multiMapChannel2, this.multiMap,
-                this.multiMapRequestHandlerAdvice);
-    }
+	@Test
+	public void testWriteToMultiMap() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToMultiMap(this.multiMapChannel2, this.multiMap,
+						this.multiMapRequestHandlerAdvice);
+	}
 
-    @Test
-    public void testWriteToReplicatedMap() {
-        HazelcastOutboundChannelAdapterTestUtils
-            .testWriteToReplicatedMap(this.replicatedMapChannel2, this.replicatedMap,
-                this.replicatedMapRequestHandlerAdvice);
-    }
+	@Test
+	public void testWriteToReplicatedMap() {
+		HazelcastOutboundChannelAdapterTestUtils
+				.testWriteToReplicatedMap(this.replicatedMapChannel2, this.replicatedMap,
+						this.replicatedMapRequestHandlerAdvice);
+	}
 
 }

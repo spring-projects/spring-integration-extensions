@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,11 @@ import com.hazelcast.core.ReplicatedMap;
  * Common Validator for Hazelcast Integration. It validates cache types and events.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
-public class HazelcastIntegrationDefinitionValidator {
+public final class HazelcastIntegrationDefinitionValidator {
 
 	public static <E extends Enum<E>> Set<String> validateEnumType(final Class<E> enumType, final String types) {
 			Set<String> typeSet = StringUtils.commaDelimitedListToSet(StringUtils.trimAllWhitespace(types));
@@ -98,6 +100,9 @@ public class HazelcastIntegrationDefinitionValidator {
 			throw new IllegalArgumentException("'cache-events' attribute of "
 					+ distributedObject.getName() + " can be set as " + supportedCacheEventTypes);
 		}
+	}
+
+	private HazelcastIntegrationDefinitionValidator() {
 	}
 
 }

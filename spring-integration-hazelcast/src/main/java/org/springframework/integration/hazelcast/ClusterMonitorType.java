@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 package org.springframework.integration.hazelcast;
 
 /**
- * Enumeration of Hazelcast Cluster Monitor Types
+ * Enumeration of Hazelcast Cluster Monitor Types.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
+ *
  * @see org.springframework.integration.hazelcast.inbound.HazelcastClusterMonitorMessageProducer
  * @see com.hazelcast.core.MembershipListener
  * @see com.hazelcast.core.DistributedObjectListener
@@ -30,6 +33,29 @@ package org.springframework.integration.hazelcast;
  */
 public enum ClusterMonitorType {
 
-	MEMBERSHIP, DISTRIBUTED_OBJECT, MIGRATION, LIFECYCLE, CLIENT;
+	/**
+	 * The membership listener mode.
+	 */
+	MEMBERSHIP,
+
+	/**
+	 * The distributed object listener mode.
+	 */
+	DISTRIBUTED_OBJECT,
+
+	/**
+	 * The migration listener mode.
+	 */
+	MIGRATION,
+
+	/**
+	 * The listener listener mode.
+	 */
+	LIFECYCLE,
+
+	/**
+	 * The client listener mode.
+	 */
+	CLIENT
 
 }

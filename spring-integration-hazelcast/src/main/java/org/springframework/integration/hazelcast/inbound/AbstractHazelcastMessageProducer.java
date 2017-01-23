@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	protected Set<String> getCacheEvents() {
-		return cacheEvents;
+		return this.cacheEvents;
 	}
 
 	public void setCacheEventTypes(String cacheEventTypes) {
@@ -79,7 +79,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	protected CacheListeningPolicyType getCacheListeningPolicy() {
-		return cacheListeningPolicy;
+		return this.cacheListeningPolicy;
 	}
 
 	public void setCacheListeningPolicy(CacheListeningPolicyType cacheListeningPolicy) {
@@ -88,13 +88,18 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 	}
 
 	protected String getHazelcastRegisteredEventListenerId() {
-		return hazelcastRegisteredEventListenerId;
+		return this.hazelcastRegisteredEventListenerId;
 	}
 
 	protected void setHazelcastRegisteredEventListenerId(String hazelcastRegisteredEventListenerId) {
 		this.hazelcastRegisteredEventListenerId = hazelcastRegisteredEventListenerId;
 	}
 
+	/**
+	 * A base event listener abstraction.
+	 *
+	 * @param <E> the event type
+	 */
 	protected abstract class AbstractHazelcastEventListener<E> {
 
 		protected abstract void processEvent(E event);
@@ -102,7 +107,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		protected abstract Message<?> toMessage(E event);
 
 		protected void sendMessage(E event, InetSocketAddress socketAddress,
-								   CacheListeningPolicyType cacheListeningPolicyType) {
+				CacheListeningPolicyType cacheListeningPolicyType) {
 			if (CacheListeningPolicyType.ALL == cacheListeningPolicyType || isEventAcceptable(socketAddress)) {
 				AbstractHazelcastMessageProducer.this.sendMessage(toMessage(event));
 			}
@@ -141,6 +146,12 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 	}
 
+	/**
+	 * The {@link AbstractHazelcastEventListener} implementation for the {@link AbstractIMapEvent}s.
+	 *
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 */
 	protected final class HazelcastEntryListener<K, V> extends
 			AbstractHazelcastEventListener<AbstractIMapEvent> implements EntryListener<K, V> {
 
@@ -177,8 +188,8 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		@Override
 		protected void processEvent(AbstractIMapEvent event) {
 			if (getCacheEvents().contains(event.getEventType().toString())) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Received Event : " + event);
+				if (AbstractHazelcastMessageProducer.this.logger.isDebugEnabled()) {
+					AbstractHazelcastMessageProducer.this.logger.debug("Received Event : " + event);
 				}
 				sendMessage(event, event.getMember().getSocketAddress(), getCacheListeningPolicy());
 			}

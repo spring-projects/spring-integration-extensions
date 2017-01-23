@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +51,8 @@ import com.hazelcast.core.ReplicatedMap;
  *
  * @since 1.0.0
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
-public class HazelcastOutboundChannelAdapterTestUtils {
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public final class HazelcastOutboundChannelAdapterTestUtils {
 
 	public static final int DATA_COUNT = 100;
 
@@ -63,14 +63,14 @@ public class HazelcastOutboundChannelAdapterTestUtils {
 	public static final String TEST_SURNAME = "Test_Surname";
 
 	public static void testWriteToDistributedMap(MessageChannel channel,
-	                                             Map<?, ?> distributedMap,
-	                                             HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			Map<?, ?> distributedMap,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		testWriteToMap(channel, distributedMap, requestHandlerAdvice);
 	}
 
 	private static void testWriteToMap(MessageChannel channel,
-	                                             Map<?, ?> distributedMap,
-	                                             HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			Map<?, ?> distributedMap,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
 			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
@@ -82,8 +82,8 @@ public class HazelcastOutboundChannelAdapterTestUtils {
 	}
 
 	public static void testBulkWriteToDistributedMap(MessageChannel channel,
-	                                                 Map<?, ?> distributedMap,
-	                                                 HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			Map<?, ?> distributedMap,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			Map<Integer, HazelcastIntegrationTestUser> userMap =
 					new HashMap<>(DATA_COUNT);
@@ -102,8 +102,8 @@ public class HazelcastOutboundChannelAdapterTestUtils {
 	}
 
 	public static void testWriteToMultiMap(MessageChannel channel,
-	                                       MultiMap<Integer, HazelcastIntegrationTestUser> multiMap,
-	                                       HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			MultiMap<Integer, HazelcastIntegrationTestUser> multiMap,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
 			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
@@ -115,20 +115,20 @@ public class HazelcastOutboundChannelAdapterTestUtils {
 	}
 
 	public static void testWriteToReplicatedMap(MessageChannel channel,
-	                                            ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap,
-	                                            HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		testWriteToMap(channel, replicatedMap, requestHandlerAdvice);
 	}
 
 	public static void testWriteToDistributedList(MessageChannel channel,
-	                                              List<HazelcastIntegrationTestUser> distributedList,
-	                                              HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			List<HazelcastIntegrationTestUser> distributedList,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		testWriteToDistributedCollection(channel, distributedList, requestHandlerAdvice);
 	}
 
 	private static void testWriteToDistributedCollection(MessageChannel channel,
-	                                                     Collection<HazelcastIntegrationTestUser> distributedList,
-	                                                     HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			Collection<HazelcastIntegrationTestUser> distributedList,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
 			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
@@ -140,8 +140,8 @@ public class HazelcastOutboundChannelAdapterTestUtils {
 	}
 
 	public static void testWriteToDistributedSet(MessageChannel channel,
-	                                             Set<HazelcastIntegrationTestUser> distributedSet,
-	                                             HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			Set<HazelcastIntegrationTestUser> distributedSet,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
 			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
@@ -155,14 +155,14 @@ public class HazelcastOutboundChannelAdapterTestUtils {
 	}
 
 	public static void testWriteToDistributedQueue(MessageChannel channel,
-	                                               Queue<HazelcastIntegrationTestUser> distributedQueue,
-	                                               HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			Queue<HazelcastIntegrationTestUser> distributedQueue,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		testWriteToDistributedCollection(channel, distributedQueue, requestHandlerAdvice);
 	}
 
 	public static void testWriteToTopic(MessageChannel channel,
-	                                    ITopic<HazelcastIntegrationTestUser> topic,
-	                                    HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
+			ITopic<HazelcastIntegrationTestUser> topic,
+			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			topic.addMessageListener(new MessageListener() {
 
@@ -242,6 +242,9 @@ public class HazelcastOutboundChannelAdapterTestUtils {
 			verifyHazelcastIntegrationTestUser(user, index);
 			index++;
 		}
+	}
+
+	private HazelcastOutboundChannelAdapterTestUtils() {
 	}
 
 }

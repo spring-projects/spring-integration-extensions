@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,48 +40,48 @@ import com.hazelcast.core.IMap;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class,
-    loader = AnnotationConfigContextLoader.class)
+		loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
 public class HazelcastCQDistributedMapInboundChannelAdapterConfigTests {
 
-    @Autowired
-    private PollableChannel cqDistributedMapChannel1;
+	@Autowired
+	private PollableChannel cqDistributedMapChannel1;
 
-    @Autowired
-    private PollableChannel cqDistributedMapChannel2;
+	@Autowired
+	private PollableChannel cqDistributedMapChannel2;
 
-    @Autowired
-    private PollableChannel cqDistributedMapChannel3;
+	@Autowired
+	private PollableChannel cqDistributedMapChannel3;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap1;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap1;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap2;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap2;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap3;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap3;
 
-    @Test
-    public void testContinuousQueryForADDEDEntryEvent() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForADDEDDistributedMapEntryEvent(testCQDistributedMap1,
-                cqDistributedMapChannel1, "Test_CQ_Distributed_Map1");
-    }
+	@Test
+	public void testContinuousQueryForADDEDEntryEvent() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForADDEDDistributedMapEntryEvent(testCQDistributedMap1,
+						cqDistributedMapChannel1, "Test_CQ_Distributed_Map1");
+	}
 
-    @Test
-    public void testContinuousQueryForALLEntryEvent() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForDistributedMapEntryEvents(testCQDistributedMap2,
-                cqDistributedMapChannel2, "Test_CQ_Distributed_Map2");
-    }
+	@Test
+	public void testContinuousQueryForALLEntryEvent() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForDistributedMapEntryEvents(testCQDistributedMap2,
+						cqDistributedMapChannel2, "Test_CQ_Distributed_Map2");
+	}
 
-    @Test
-    public void testContinuousQueryForUPDATEDEntryEventWhenIncludeValueIsFalse() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testContinuousQueryForUPDATEDEntryEventWhenIncludeValueIsFalse(
-                testCQDistributedMap3, cqDistributedMapChannel3,
-                "Test_CQ_Distributed_Map3");
-    }
+	@Test
+	public void testContinuousQueryForUPDATEDEntryEventWhenIncludeValueIsFalse() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testContinuousQueryForUPDATEDEntryEventWhenIncludeValueIsFalse(
+						testCQDistributedMap3, cqDistributedMapChannel3,
+						"Test_CQ_Distributed_Map3");
+	}
 
 }

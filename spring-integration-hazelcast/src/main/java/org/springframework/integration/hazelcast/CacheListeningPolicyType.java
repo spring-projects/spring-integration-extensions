@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,25 @@
 package org.springframework.integration.hazelcast;
 
 /**
- * Enumeration of Cache Listening Policy Type
+ * Enumeration of Cache Listening Policy Type.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
+ *
  * @see org.springframework.integration.hazelcast.inbound.AbstractHazelcastMessageProducer
  */
 public enum CacheListeningPolicyType {
 
-	SINGLE, ALL;
+	/**
+	 * Only the local Hazelcast node can accept event.
+	 */
+	SINGLE,
+
+	/**
+	 * All subscribed members can accept event.
+	 */
+	ALL
 
 }

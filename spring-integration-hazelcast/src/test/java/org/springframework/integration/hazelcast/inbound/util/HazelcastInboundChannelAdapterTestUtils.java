@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,17 +48,18 @@ import com.hazelcast.core.ReplicatedMap;
 import com.hazelcast.spi.exception.DistributedObjectDestroyedException;
 
 /**
- * Util Class for Hazelcast Inbound Channel Adapters Test Support
+ * Util Class for Hazelcast Inbound Channel Adapters Test Support.
+ *
  * @author Eren Avsarogullari
  * @since 1.0.0
  */
 @SuppressWarnings("unchecked")
-public class HazelcastInboundChannelAdapterTestUtils {
+public final class HazelcastInboundChannelAdapterTestUtils {
 
 	public static final int TIMEOUT = 20_000;
 
 	public static void verifyEntryEvent(Message<?> msg, String cacheName,
-	                                    EntryEventType event) {
+			EntryEventType event) {
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getPayload());
 		if (event == EntryEventType.CLEAR_ALL || event == EntryEventType.EVICT_ALL) {
@@ -348,7 +349,7 @@ public class HazelcastInboundChannelAdapterTestUtils {
 	}
 
 	public static void testMembershipEvent(final HazelcastInstance instance,
-	                                       final PollableChannel channel, final String key, final String value) {
+			final PollableChannel channel, final String key, final String value) {
 		Member member = instance.getCluster().getMembers().iterator().next();
 		member.setStringAttribute(key, value);
 
@@ -380,7 +381,7 @@ public class HazelcastInboundChannelAdapterTestUtils {
 	}
 
 	private static void verifyMembershipEvent(final Message<?> msg,
-	                                          final int membershipEvent) {
+			final int membershipEvent) {
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof MembershipEvent);
@@ -390,8 +391,8 @@ public class HazelcastInboundChannelAdapterTestUtils {
 	}
 
 	private static void verifyDistributedObjectEvent(final Message<?> msg,
-	                                                 final DistributedObjectEvent.EventType eventType,
-	                                                 final String distributedObjectName) {
+			final DistributedObjectEvent.EventType eventType,
+			final String distributedObjectName) {
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof DistributedObjectEvent);
@@ -399,6 +400,9 @@ public class HazelcastInboundChannelAdapterTestUtils {
 				((DistributedObjectEvent) msg.getPayload()).getEventType());
 		assertNotNull((((DistributedObjectEvent) msg.getPayload()).getDistributedObject())
 				.getName(), distributedObjectName);
+	}
+
+	private HazelcastInboundChannelAdapterTestUtils() {
 	}
 
 }

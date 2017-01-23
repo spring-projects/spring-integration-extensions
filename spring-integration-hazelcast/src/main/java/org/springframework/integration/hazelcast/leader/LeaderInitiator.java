@@ -1,11 +1,11 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -97,25 +97,14 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 
 	private boolean customPublisher = false;
 
-	/**
-	 * @see SmartLifecycle
-	 */
 	private volatile boolean autoStartup = true;
 
-	/**
-	 * @see SmartLifecycle which is an extension of org.springframework.context.Phased
-	 */
 	private volatile int phase;
 
-	/**
-	 * Flag that indicates whether the leadership election for
-	 * this {@link #candidate} is running.
-	 */
 	private volatile boolean running;
 
 	/**
 	 * Construct a {@link LeaderInitiator} with a default candidate.
-	 *
 	 * @param client     Hazelcast client
 	 */
 	public LeaderInitiator(HazelcastInstance client) {
@@ -124,7 +113,6 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 
 	/**
 	 * Construct a {@link LeaderInitiator}.
-	 *
 	 * @param client     Hazelcast client
 	 * @param candidate  leadership election candidate
 	 */
@@ -146,6 +134,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	}
 
 	/**
+	 * The context of the initiator or null if not running.
 	 * @return the context (or null if not running)
 	 */
 	public Context getContext() {
@@ -214,6 +203,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	}
 
 	/**
+	 * {@code true} if leadership election for this {@link #candidate} is running.
 	 * @return true if leadership election for this {@link #candidate} is running
 	 */
 	@Override
@@ -248,7 +238,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 						if (this.locked) {
 							LeaderInitiator.this.leaderEventPublisher.publishOnGranted(LeaderInitiator.this,
 									this.context, this.role);
-							LeaderInitiator.this.candidate.onGranted(context);
+							LeaderInitiator.this.candidate.onGranted(this.context);
 							Thread.sleep(Long.MAX_VALUE);
 						}
 					}

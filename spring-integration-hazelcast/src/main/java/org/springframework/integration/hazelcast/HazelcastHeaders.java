@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,35 @@
 package org.springframework.integration.hazelcast;
 
 /**
- * Hazelcast Message Headers
+ * Hazelcast Message Headers.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public abstract class HazelcastHeaders {
 
 	private static final String PREFIX = "hazelcast_";
 
+	/**
+	 * The event type header name.
+	 */
 	public static final String EVENT_TYPE = PREFIX + "eventType";
 
+	/**
+	 * The member header name.
+	 */
 	public static final String MEMBER = PREFIX + "member";
 
+	/**
+	 * The cache name header name.
+	 */
 	public static final String CACHE_NAME = PREFIX + "cacheName";
 
+	/**
+	 * The publishing time header name.
+	 */
 	public static final String PUBLISHING_TIME = PREFIX + "publishingTime";
 
 }

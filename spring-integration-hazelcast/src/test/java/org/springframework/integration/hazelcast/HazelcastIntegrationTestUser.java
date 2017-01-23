@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.integration.hazelcast;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * User Bean for Hazelcast Integration Unit Tests
@@ -88,47 +89,28 @@ public class HazelcastIntegrationTestUser implements Comparable<HazelcastIntegra
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + age;
-		result = prime * result + id;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((surname == null) ? 0 : surname.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		HazelcastIntegrationTestUser other = (HazelcastIntegrationTestUser) obj;
-		if (age != other.age)
-			return false;
-		if (id != other.id)
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		}
-		else if (!name.equals(other.name))
-			return false;
-		if (surname == null) {
-			if (other.surname != null)
-				return false;
-		}
-		else if (!surname.equals(other.surname))
-			return false;
-		return true;
-	}
-
-	@Override
 	public int compareTo(HazelcastIntegrationTestUser user) {
-		return (this.id < user.getId()) ? -1: (this.id > user.getId()) ? 1 : 0;
+		return (this.id < user.getId()) ? -1 : (this.id > user.getId()) ? 1 : 0;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		HazelcastIntegrationTestUser that = (HazelcastIntegrationTestUser) o;
+		return id == that.id &&
+				age == that.age &&
+				Objects.equals(name, that.name) &&
+				Objects.equals(surname, that.surname);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, name, surname, age);
 	}
 
 }

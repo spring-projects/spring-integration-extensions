@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,13 @@ import org.springframework.integration.hazelcast.outbound.HazelcastCacheWritingM
 import org.springframework.integration.hazelcast.outbound.util.HazelcastOutboundChannelAdapterTestUtils;
 import org.springframework.messaging.MessageChannel;
 
+import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
-import com.hazelcast.core.DistributedObject;
 
 /**
  * Configuration Class for Hazelcast Integration Outbound Test
@@ -49,252 +49,252 @@ import com.hazelcast.core.DistributedObject;
  * @since 1.0.0
  */
 @Configuration
-@ComponentScan(basePackages = {"org.springframework.integration.hazelcast.*"})
+@ComponentScan(basePackages = { "org.springframework.integration.hazelcast.*" })
 @EnableIntegration
 @IntegrationComponentScan("org.springframework.integration.hazelcast.outbound")
 public class HazelcastIntegrationOutboundTestConfiguration {
 
-    @Bean
-    public MessageChannel distMapChannel() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel distMapChannel() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public MessageChannel distMapBulkChannel() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel distMapBulkChannel() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public MessageChannel distListChannel() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel distListChannel() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public MessageChannel distSetChannel() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel distSetChannel() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public MessageChannel distQueueChannel() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel distQueueChannel() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public MessageChannel topicChannel2() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel topicChannel2() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public MessageChannel multiMapChannel2() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel multiMapChannel2() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public MessageChannel replicatedMapChannel2() {
-        return new DirectChannel();
-    }
+	@Bean
+	public MessageChannel replicatedMapChannel2() {
+		return new DirectChannel();
+	}
 
-    @Bean
-    public IMap<Integer, HazelcastIntegrationTestUser> distMap() {
-        return testHzInstance().getMap("Distributed_Map1");
-    }
+	@Bean
+	public IMap<Integer, HazelcastIntegrationTestUser> distMap() {
+		return testHzInstance().getMap("Distributed_Map1");
+	}
 
-    @Bean
-    public IMap<Integer, HazelcastIntegrationTestUser> distBulkMap() {
-        return testHzInstance().getMap("Distributed_Bulk_Map1");
-    }
+	@Bean
+	public IMap<Integer, HazelcastIntegrationTestUser> distBulkMap() {
+		return testHzInstance().getMap("Distributed_Bulk_Map1");
+	}
 
-    @Bean
-    public List<HazelcastIntegrationTestUser> distList() {
-        return testHzInstance().getList("Distributed_List1");
-    }
+	@Bean
+	public List<HazelcastIntegrationTestUser> distList() {
+		return testHzInstance().getList("Distributed_List1");
+	}
 
-    @Bean
-    public Set<HazelcastIntegrationTestUser> distSet() {
-        return testHzInstance().getSet("Distributed_Set1");
-    }
+	@Bean
+	public Set<HazelcastIntegrationTestUser> distSet() {
+		return testHzInstance().getSet("Distributed_Set1");
+	}
 
-    @Bean
-    public Queue<HazelcastIntegrationTestUser> distQueue() {
-        return testHzInstance().getQueue("Distributed_Queue1");
-    }
+	@Bean
+	public Queue<HazelcastIntegrationTestUser> distQueue() {
+		return testHzInstance().getQueue("Distributed_Queue1");
+	}
 
-    @Bean
-    public ITopic<HazelcastIntegrationTestUser> topic() {
-        return testHzInstance().getTopic("Topic1");
-    }
+	@Bean
+	public ITopic<HazelcastIntegrationTestUser> topic() {
+		return testHzInstance().getTopic("Topic1");
+	}
 
-    @Bean
-    public MultiMap<Integer, HazelcastIntegrationTestUser> multiMap() {
-        return testHzInstance().getMultiMap("Multi_Map1");
-    }
+	@Bean
+	public MultiMap<Integer, HazelcastIntegrationTestUser> multiMap() {
+		return testHzInstance().getMultiMap("Multi_Map1");
+	}
 
-    @Bean
-    public ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap() {
-        return testHzInstance().getReplicatedMap("Replicated_Map1");
-    }
+	@Bean
+	public ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap() {
+		return testHzInstance().getReplicatedMap("Replicated_Map1");
+	}
 
-    @Bean
-    public HazelcastInstance testHzInstance() {
-        return Hazelcast.newHazelcastInstance();
-    }
+	@Bean
+	public HazelcastInstance testHzInstance() {
+		return Hazelcast.newHazelcastInstance();
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice distMapRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(
-            HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice distMapRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(
+				HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice distBulkMapRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(1);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice distBulkMapRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(1);
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice distListRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(
-            HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice distListRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(
+				HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice distSetRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(
-            HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice distSetRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(
+				HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice distQueueRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(
-            HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice distQueueRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(
+				HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice topicRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(
-            HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice topicRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(
+				HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice multiMapRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(
-            HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice multiMapRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(
+				HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
 
-    @Bean
-    public HazelcastTestRequestHandlerAdvice replicatedMapRequestHandlerAdvice() {
-        return new HazelcastTestRequestHandlerAdvice(
-            HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
-    }
+	@Bean
+	public HazelcastTestRequestHandlerAdvice replicatedMapRequestHandlerAdvice() {
+		return new HazelcastTestRequestHandlerAdvice(
+				HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "distMapChannel", adviceChain = "distMapRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject(distMap());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "distMapChannel", adviceChain = "distMapRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject(distMap());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "distMapBulkChannel",
-        adviceChain = "distBulkMapRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler2() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject(distBulkMap());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "distMapBulkChannel",
+			adviceChain = "distBulkMapRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler2() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject(distBulkMap());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "distListChannel",
-        adviceChain = "distListRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler3() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject((DistributedObject) distList());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "distListChannel",
+			adviceChain = "distListRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler3() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject((DistributedObject) distList());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "distSetChannel",
-        adviceChain = "distSetRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler4() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject((DistributedObject) distSet());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "distSetChannel",
+			adviceChain = "distSetRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler4() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject((DistributedObject) distSet());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "distQueueChannel",
-        adviceChain = "distQueueRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler5() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject((DistributedObject) distQueue());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "distQueueChannel",
+			adviceChain = "distQueueRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler5() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject((DistributedObject) distQueue());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "topicChannel2",
-        adviceChain = "topicRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler6() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject(topic());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "topicChannel2",
+			adviceChain = "topicRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler6() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject(topic());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "multiMapChannel2",
-        adviceChain = "multiMapRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler7() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject(multiMap());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "multiMapChannel2",
+			adviceChain = "multiMapRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler7() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject(multiMap());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
-    @Bean
-    @ServiceActivator(inputChannel = "replicatedMapChannel2",
-        adviceChain = "replicatedMapRequestHandlerAdvice")
-    public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler8() {
-        final HazelcastCacheWritingMessageHandler handler =
-            new HazelcastCacheWritingMessageHandler();
-        handler.setDistributedObject(replicatedMap());
-        handler
-            .setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
-        handler.setExtractPayload(true);
+	@Bean
+	@ServiceActivator(inputChannel = "replicatedMapChannel2",
+			adviceChain = "replicatedMapRequestHandlerAdvice")
+	public HazelcastCacheWritingMessageHandler hazelcastCacheWritingMessageHandler8() {
+		final HazelcastCacheWritingMessageHandler handler =
+				new HazelcastCacheWritingMessageHandler();
+		handler.setDistributedObject(replicatedMap());
+		handler
+				.setKeyExpression(new SpelExpressionParser().parseExpression("payload.id"));
+		handler.setExtractPayload(true);
 
-        return handler;
-    }
+		return handler;
+	}
 
 }

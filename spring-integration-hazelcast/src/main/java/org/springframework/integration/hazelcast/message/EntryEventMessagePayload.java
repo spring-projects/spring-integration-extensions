@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.hazelcast.message;
 
 import org.springframework.util.Assert;
 
 /**
- * Hazelcast Message Payload for Entry Events
+ * Hazelcast Message Payload for Entry Events.
+ *
+ * @param <K> the entry key type
+ * @param <V> the entry value type
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class EntryEventMessagePayload<K, V> {
 
+	/**
+	 * The entry key.
+	 */
 	public final K key;
 
+	/**
+	 * The entry value.
+	 */
 	public final V value;
 
+	/**
+	 * The entry old value if any.
+	 */
 	public final V oldValue;
 
 	public EntryEventMessagePayload(final K key, final V value, final V oldValue) {
@@ -40,27 +55,31 @@ public class EntryEventMessagePayload<K, V> {
 
 	@Override
 	public String toString() {
-		return "EntryEventMessagePayload [key=" + key + ", value=" + value + ", oldValue=" + oldValue + "]";
+		return "EntryEventMessagePayload [key=" + this.key + ", value=" + this.value + ", oldValue=" + this.oldValue + "]";
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 
 		EntryEventMessagePayload<?, ?> that = (EntryEventMessagePayload<?, ?>) o;
 
-		return key.equals(that.key) && !(value != null ? !value.equals(that.value)
-				: that.value != null) && !(oldValue != null
-				? !oldValue.equals(that.oldValue) : that.oldValue != null);
+		return this.key.equals(that.key) && !(this.value != null ? !this.value.equals(that.value)
+				: that.value != null) && !(this.oldValue != null
+				? !this.oldValue.equals(that.oldValue) : that.oldValue != null);
 
 	}
 
 	@Override
 	public int hashCode() {
-		int result = key.hashCode();
-		result = 31 * result + (value != null ? value.hashCode() : 0);
-		result = 31 * result + (oldValue != null ? oldValue.hashCode() : 0);
+		int result = this.key.hashCode();
+		result = 31 * result + (this.value != null ? this.value.hashCode() : 0);
+		result = 31 * result + (this.oldValue != null ? this.oldValue.hashCode() : 0);
 		return result;
 	}
 

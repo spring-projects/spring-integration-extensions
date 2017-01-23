@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,52 +42,52 @@ import com.hazelcast.core.IMap;
 @DirtiesContext
 public class HazelcastDistributedSQLInboundChannelAdapterTests {
 
-    @Autowired
-    private PollableChannel dsMapChannel1;
+	@Autowired
+	private PollableChannel dsMapChannel1;
 
-    @Autowired
-    private PollableChannel dsMapChannel2;
+	@Autowired
+	private PollableChannel dsMapChannel2;
 
-    @Autowired
-    private PollableChannel dsMapChannel3;
+	@Autowired
+	private PollableChannel dsMapChannel3;
 
-    @Autowired
-    private PollableChannel dsMapChannel4;
+	@Autowired
+	private PollableChannel dsMapChannel4;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap1;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap1;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap2;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap2;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap3;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap3;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap4;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap4;
 
-    @Test
-    public void testDistributedSQLForOnlyENTRYIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForENTRYIterationType(dsDistributedMap1, dsMapChannel1);
-    }
+	@Test
+	public void testDistributedSQLForOnlyENTRYIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForENTRYIterationType(dsDistributedMap1, dsMapChannel1);
+	}
 
-    @Test
-    public void testDistributedSQLForOnlyKEYIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForKEYIterationType(dsDistributedMap2, dsMapChannel2);
-    }
+	@Test
+	public void testDistributedSQLForOnlyKEYIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForKEYIterationType(dsDistributedMap2, dsMapChannel2);
+	}
 
-    @Test
-    public void testDistributedSQLForOnlyLOCAL_KEYIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForLOCAL_KEYIterationType(dsDistributedMap3, dsMapChannel3);
-    }
+	@Test
+	public void testDistributedSQLForOnlyLOCAL_KEYIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForLOCAL_KEYIterationType(dsDistributedMap3, dsMapChannel3);
+	}
 
-    @Test
-    public void testDistributedSQLForOnlyVALUEIterationType() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testDistributedSQLForVALUEIterationType(dsDistributedMap4, dsMapChannel4);
-    }
+	@Test
+	public void testDistributedSQLForOnlyVALUEIterationType() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testDistributedSQLForVALUEIterationType(dsDistributedMap4, dsMapChannel4);
+	}
 
 }

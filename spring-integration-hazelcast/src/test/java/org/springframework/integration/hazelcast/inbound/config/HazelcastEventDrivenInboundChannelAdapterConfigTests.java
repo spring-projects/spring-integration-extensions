@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,111 +46,111 @@ import com.hazelcast.core.ReplicatedMap;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class,
-    loader = AnnotationConfigContextLoader.class)
+		loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
 public class HazelcastEventDrivenInboundChannelAdapterConfigTests {
 
-    @Autowired
-    private PollableChannel distributedMapChannel;
+	@Autowired
+	private PollableChannel distributedMapChannel;
 
-    @Autowired
-    private PollableChannel distributedMapChannel2;
+	@Autowired
+	private PollableChannel distributedMapChannel2;
 
-    @Autowired
-    private PollableChannel distributedListChannel;
+	@Autowired
+	private PollableChannel distributedListChannel;
 
-    @Autowired
-    private PollableChannel distributedSetChannel;
+	@Autowired
+	private PollableChannel distributedSetChannel;
 
-    @Autowired
-    private PollableChannel distributedQueueChannel;
+	@Autowired
+	private PollableChannel distributedQueueChannel;
 
-    @Autowired
-    private PollableChannel topicChannel;
+	@Autowired
+	private PollableChannel topicChannel;
 
-    @Autowired
-    private PollableChannel replicatedMapChannel;
+	@Autowired
+	private PollableChannel replicatedMapChannel;
 
-    @Autowired
-    private PollableChannel multiMapChannel;
+	@Autowired
+	private PollableChannel multiMapChannel;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testDistributedMap;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testDistributedMap;
 
-    @Resource
-    private IMap<Integer, HazelcastIntegrationTestUser> testDistributedMap2;
+	@Resource
+	private IMap<Integer, HazelcastIntegrationTestUser> testDistributedMap2;
 
-    @Resource
-    private IList<HazelcastIntegrationTestUser> testDistributedList;
+	@Resource
+	private IList<HazelcastIntegrationTestUser> testDistributedList;
 
-    @Resource
-    private ISet<HazelcastIntegrationTestUser> testDistributedSet;
+	@Resource
+	private ISet<HazelcastIntegrationTestUser> testDistributedSet;
 
-    @Resource
-    private IQueue<HazelcastIntegrationTestUser> testDistributedQueue;
+	@Resource
+	private IQueue<HazelcastIntegrationTestUser> testDistributedQueue;
 
-    @Resource
-    private ITopic<HazelcastIntegrationTestUser> testTopic;
+	@Resource
+	private ITopic<HazelcastIntegrationTestUser> testTopic;
 
-    @Resource
-    private ReplicatedMap<Integer, HazelcastIntegrationTestUser> testReplicatedMap;
+	@Resource
+	private ReplicatedMap<Integer, HazelcastIntegrationTestUser> testReplicatedMap;
 
-    @Resource
-    private MultiMap<Integer, HazelcastIntegrationTestUser> testMultiMap;
+	@Resource
+	private MultiMap<Integer, HazelcastIntegrationTestUser> testMultiMap;
 
-    @Test
-    public void testEventDrivenForADDEDEntryEvent() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForADDEDDistributedMapEntryEvent(testDistributedMap,
-                distributedMapChannel, "Test_Distributed_Map");
-    }
+	@Test
+	public void testEventDrivenForADDEDEntryEvent() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForADDEDDistributedMapEntryEvent(testDistributedMap,
+						distributedMapChannel, "Test_Distributed_Map");
+	}
 
-    @Test
-    public void testEventDrivenForEntryEvents() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForDistributedMapEntryEvents(testDistributedMap2,
-                distributedMapChannel2, "Test_Distributed_Map2");
-    }
+	@Test
+	public void testEventDrivenForEntryEvents() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForDistributedMapEntryEvents(testDistributedMap2,
+						distributedMapChannel2, "Test_Distributed_Map2");
+	}
 
-    @Test
-    public void testEventDrivenForDistributedListItemEvents() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForDistributedCollectionItemEvents(testDistributedList,
-                distributedListChannel);
-    }
+	@Test
+	public void testEventDrivenForDistributedListItemEvents() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForDistributedCollectionItemEvents(testDistributedList,
+						distributedListChannel);
+	}
 
-    @Test
-    public void testEventDrivenForDistributedSetItemEvents() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForDistributedCollectionItemEvents(testDistributedSet,
-                distributedSetChannel);
-    }
+	@Test
+	public void testEventDrivenForDistributedSetItemEvents() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForDistributedCollectionItemEvents(testDistributedSet,
+						distributedSetChannel);
+	}
 
-    @Test
-    public void testEventDrivenForDistributedQueueItemEvents() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForDistributedCollectionItemEvents(testDistributedQueue,
-                distributedQueueChannel);
-    }
+	@Test
+	public void testEventDrivenForDistributedQueueItemEvents() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForDistributedCollectionItemEvents(testDistributedQueue,
+						distributedQueueChannel);
+	}
 
-    @Test
-    public void testEventDrivenForADDEDMessageEvent() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForTopicMessageEvent(testTopic, topicChannel);
-    }
+	@Test
+	public void testEventDrivenForADDEDMessageEvent() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForTopicMessageEvent(testTopic, topicChannel);
+	}
 
-    @Test
-    public void testEventDrivenForReplicatedMapEntryEvents() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForReplicatedMapEntryEvents(testReplicatedMap,
-                replicatedMapChannel, "Test_Replicated_Map");
-    }
+	@Test
+	public void testEventDrivenForReplicatedMapEntryEvents() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForReplicatedMapEntryEvents(testReplicatedMap,
+						replicatedMapChannel, "Test_Replicated_Map");
+	}
 
-    @Test
-    public void testEventDrivenForMultiMapEntryEvents() {
-        HazelcastInboundChannelAdapterTestUtils
-            .testEventDrivenForMultiMapEntryEvents(testMultiMap, multiMapChannel,
-                "Test_Multi_Map");
-    }
+	@Test
+	public void testEventDrivenForMultiMapEntryEvents() {
+		HazelcastInboundChannelAdapterTestUtils
+				.testEventDrivenForMultiMapEntryEvents(testMultiMap, multiMapChannel,
+						"Test_Multi_Map");
+	}
 
 }

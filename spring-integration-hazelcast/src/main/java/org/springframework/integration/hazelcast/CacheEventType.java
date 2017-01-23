@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,45 @@
 package org.springframework.integration.hazelcast;
 
 /**
- * Enumeration of Cache Event Types
+ * Enumeration of Cache Event Types.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
+ *
  * @see org.springframework.integration.hazelcast.inbound.AbstractHazelcastMessageProducer
  */
 public enum CacheEventType {
 
-	ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL, CLEAR_ALL;
+	/**
+	 * The Hazelcast ADDED event.
+	 */
+	ADDED,
+
+	/**
+	 * The Hazelcast REMOVED event.
+	 */
+	REMOVED,
+
+	/**
+	 * The Hazelcast UPDATED event.
+	 */
+	UPDATED,
+
+	/**
+	 * The Hazelcast EVICTED event.
+	 */
+	EVICTED,
+
+	/**
+	 * The Hazelcast EVICT_ALL event.
+	 */
+	EVICT_ALL,
+
+	/**
+	 * The Hazelcast CLEAR_ALL event.
+	 */
+	CLEAR_ALL
 
 }

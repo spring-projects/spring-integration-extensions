@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,36 @@
 package org.springframework.integration.hazelcast;
 
 /**
- * Enumeration of Distributed SQL Iteration Type
+ * Enumeration of Distributed SQL Iteration Type.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
+ *
  * @see org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQLMessageSource
+ * @see com.hazelcast.core.IMap
  */
 public enum DistributedSQLIterationType {
 
-	ENTRY, KEY, LOCAL_KEY, VALUE
+	/**
+	 * The {@link com.hazelcast.core.IMap#entrySet()} to iterate.
+	 */
+	ENTRY,
+
+	/**
+	 * The {@link com.hazelcast.core.IMap#keySet()} to iterate.
+	 */
+	KEY,
+
+	/**
+	 * The {@link com.hazelcast.core.IMap#localKeySet()} to iterate.
+	 */
+	LOCAL_KEY,
+
+	/**
+	 * The {@link com.hazelcast.core.IMap#values()} to iterate.
+	 */
+	VALUE
 
 }
