@@ -20,6 +20,9 @@ package org.springframework.integration.hazelcast.leader;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.willAnswer;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.spy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.leader.Context;
 import org.springframework.integration.leader.DefaultCandidate;
 import org.springframework.integration.leader.event.AbstractLeaderEvent;
+import org.springframework.integration.leader.event.DefaultLeaderEventPublisher;
 import org.springframework.integration.leader.event.LeaderEventPublisher;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -168,7 +172,42 @@ public class LeaderInitiatorTests {
 		assertThat(revoked11.await(10, TimeUnit.SECONDS), is(true));
 
 		initiator1.destroy();
+
+
+
+		CountDownLatch onGranted = new CountDownLatch(1);
+
+		DefaultCandidate candidate = spy(new DefaultCandidate());
+		willAnswer(invocation -> {
+			try {
+				return invocation.callRealMethod();
+			}
+			finally {
+				onGranted.countDown();
+			}
+		})
+				.given(candidate).onGranted(any(Context.class));
+
+		LeaderInitiator initiator = new LeaderInitiator(this.hazelcastInstance, candidate);
+
+		initiator.setLeaderEventPublisher(new DefaultLeaderEventPublisher() {
+
+			@Override
+			public void publishOnGranted(Object source, Context context, String role) {
+				throw new RuntimeException("intentional");
+			}
+
+		});
+
+		initiator.start();
+
+		assertThat(onGranted.await(5, TimeUnit.SECONDS), is(true));
+
+		assertThat(initiator.getContext().isLeader(), is(true));
+
+		initiator.destroy();
 	}
+
 
 	@Configuration
 	public static class TestConfig {

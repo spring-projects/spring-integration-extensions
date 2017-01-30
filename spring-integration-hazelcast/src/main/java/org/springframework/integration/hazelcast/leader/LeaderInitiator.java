@@ -23,6 +23,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -48,6 +51,8 @@ import com.hazelcast.core.ILock;
  * @author Artem Bilan
  */
 public class LeaderInitiator implements SmartLifecycle, DisposableBean, ApplicationEventPublisherAware {
+
+	private static final Log logger = LogFactory.getLog(LeaderInitiator.class);
 
 	private static int threadNameCount = 0;
 
@@ -236,8 +241,13 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 					try {
 						this.locked = LeaderInitiator.this.lock.tryLock(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 						if (this.locked) {
-							LeaderInitiator.this.leaderEventPublisher.publishOnGranted(LeaderInitiator.this,
-									this.context, this.role);
+							try {
+								LeaderInitiator.this.leaderEventPublisher.publishOnGranted(LeaderInitiator.this,
+										this.context, this.role);
+							}
+							catch (Exception e) {
+								logger.warn("Error publishing OnGranted event.", e);
+							}
 							LeaderInitiator.this.candidate.onGranted(this.context);
 							Thread.sleep(Long.MAX_VALUE);
 						}
@@ -249,9 +259,14 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 							// The lock was broken and we are no longer leader
 							LeaderInitiator.this.candidate.onRevoked(this.context);
 							if (LeaderInitiator.this.leaderEventPublisher != null) {
-								LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
-										LeaderInitiator.this, this.context,
-										LeaderInitiator.this.candidate.getRole());
+								try {
+									LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
+											LeaderInitiator.this, this.context,
+											LeaderInitiator.this.candidate.getRole());
+								}
+								catch (Exception ex) {
+									logger.warn("Error publishing OnRevoked event.", ex);
+								}
 							}
 							Thread.currentThread().interrupt();
 							return null;
@@ -266,8 +281,13 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 					// We are stopping, therefore not leading any more
 					LeaderInitiator.this.candidate.onRevoked(this.context);
 					if (LeaderInitiator.this.leaderEventPublisher != null) {
-						LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
-								LeaderInitiator.this, this.context, this.role);
+						try {
+							LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
+									LeaderInitiator.this, this.context, this.role);
+						}
+						catch (Exception e) {
+							logger.warn("Error publishing OnRevoked event.", e);
+						}
 					}
 				}
 			}
