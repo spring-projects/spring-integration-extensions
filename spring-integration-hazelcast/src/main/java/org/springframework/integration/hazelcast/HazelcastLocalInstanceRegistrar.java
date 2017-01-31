@@ -19,6 +19,9 @@ package org.springframework.integration.hazelcast;
 import java.net.SocketAddress;
 import java.util.concurrent.locks.Lock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.integration.hazelcast.listener.HazelcastMembershipListener;
 
@@ -33,9 +36,18 @@ import com.hazelcast.core.MultiMap;
  * membership updates.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class HazelcastLocalInstanceRegistrar implements SmartInitializingSingleton {
+
+	private static final Log logger = LogFactory.getLog(HazelcastLocalInstanceRegistrar.class);
+
+	/**
+	 * The bean name for the {@link HazelcastLocalInstanceRegistrar} instance.
+	 */
+	public static final String BEAN_NAME = "hazelcastLocalInstanceRegistrar";
 
 	/**
 	 * The name for the Hazelcast MultiMap used for membership registration.
@@ -48,15 +60,38 @@ public class HazelcastLocalInstanceRegistrar implements SmartInitializingSinglet
 	 */
 	public static final String SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK = "SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK";
 
+	private final HazelcastInstance hazelcastInstance;
+
+	/**
+	 * Construct {@link HazelcastLocalInstanceRegistrar} based on the local JVM {@link HazelcastInstance}s if any.
+	 */
+	public HazelcastLocalInstanceRegistrar() {
+		this.hazelcastInstance = null;
+	}
+
+	/**
+	 * Construct {@link HazelcastLocalInstanceRegistrar} based on the provided {@link HazelcastInstance}.
+	 * @param hazelcastInstance the {@link HazelcastInstance} to use.
+	 */
+	public HazelcastLocalInstanceRegistrar(HazelcastInstance hazelcastInstance) {
+		this.hazelcastInstance = hazelcastInstance;
+	}
+
 	@Override
 	public void afterSingletonsInstantiated() {
-		if (!Hazelcast.getAllHazelcastInstances().isEmpty()) {
-			HazelcastInstance hazelcastInstance = Hazelcast.getAllHazelcastInstances().iterator().next();
-			hazelcastInstance.getCluster().addMembershipListener(new HazelcastMembershipListener());
-			syncConfigurationMultiMap(hazelcastInstance);
+		if (this.hazelcastInstance == null) {
+			if (!Hazelcast.getAllHazelcastInstances().isEmpty()) {
+				HazelcastInstance hazelcastInstance = Hazelcast.getAllHazelcastInstances().iterator().next();
+				hazelcastInstance.getCluster().addMembershipListener(new HazelcastMembershipListener());
+				syncConfigurationMultiMap(hazelcastInstance);
+			}
+			else {
+				logger.warn("No HazelcastInstances for MembershipListener registration");
+			}
 		}
 		else {
-			throw new IllegalStateException("No Active Local Hazelcast Instance found.");
+			syncConfigurationMultiMap(this.hazelcastInstance);
+			this.hazelcastInstance.getCluster().addMembershipListener(new HazelcastMembershipListener());
 		}
 	}
 

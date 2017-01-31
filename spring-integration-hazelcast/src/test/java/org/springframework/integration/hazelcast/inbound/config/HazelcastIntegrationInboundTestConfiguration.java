@@ -24,6 +24,7 @@ import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.hazelcast.DistributedSQLIterationType;
 import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
+import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar;
 import org.springframework.integration.hazelcast.inbound.HazelcastClusterMonitorMessageProducer;
 import org.springframework.integration.hazelcast.inbound.HazelcastContinuousQueryMessageProducer;
 import org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQLMessageSource;
@@ -213,6 +214,11 @@ public class HazelcastIntegrationInboundTestConfiguration {
 	@Bean
 	public HazelcastInstance testHazelcastInstance() {
 		return Hazelcast.newHazelcastInstance();
+	}
+
+	@Bean(HazelcastLocalInstanceRegistrar.BEAN_NAME)
+	public HazelcastLocalInstanceRegistrar hazelcastLocalInstanceRegistrar() {
+		return new HazelcastLocalInstanceRegistrar(testHazelcastInstance());
 	}
 
 	@Bean
