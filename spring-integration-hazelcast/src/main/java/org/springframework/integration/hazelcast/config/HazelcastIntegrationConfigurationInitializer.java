@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,18 +27,17 @@ import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar
  * The Hazelcast Integration infrastructure {@code beanFactory} initializer.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class HazelcastIntegrationConfigurationInitializer implements IntegrationConfigurationInitializer {
 
-	private static final String HAZELCAST_LOCAL_INSTANCE_REGISTRAR_BEAN_NAME =
-			HazelcastLocalInstanceRegistrar.class.getName();
-
 	@Override
 	public void initialize(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		BeanDefinitionRegistry beanDefinitionRegistry = (BeanDefinitionRegistry) beanFactory;
-		if (!beanDefinitionRegistry.containsBeanDefinition(HAZELCAST_LOCAL_INSTANCE_REGISTRAR_BEAN_NAME)) {
-			beanDefinitionRegistry.registerBeanDefinition(HAZELCAST_LOCAL_INSTANCE_REGISTRAR_BEAN_NAME,
+		if (!beanDefinitionRegistry.containsBeanDefinition(HazelcastLocalInstanceRegistrar.BEAN_NAME)) {
+			beanDefinitionRegistry.registerBeanDefinition(HazelcastLocalInstanceRegistrar.BEAN_NAME,
 					new RootBeanDefinition(HazelcastLocalInstanceRegistrar.class));
 		}
 	}

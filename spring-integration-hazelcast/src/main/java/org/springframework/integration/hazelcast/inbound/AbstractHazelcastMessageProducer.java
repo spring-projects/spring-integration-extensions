@@ -48,6 +48,7 @@ import com.hazelcast.core.MultiMap;
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public abstract class AbstractHazelcastMessageProducer extends MessageProducerSupport {
@@ -116,10 +117,11 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		private boolean isEventAcceptable(final InetSocketAddress socketAddress) {
 			final Set<HazelcastInstance> hazelcastInstanceSet = Hazelcast.getAllHazelcastInstances();
 			final Set<SocketAddress> localSocketAddressesSet = getLocalSocketAddresses(hazelcastInstanceSet);
-			return (!localSocketAddressesSet.isEmpty())
-					&& (localSocketAddressesSet.contains(socketAddress) ||
-					isEventComingFromNonRegisteredHazelcastInstance(hazelcastInstanceSet.iterator().next(),
-							localSocketAddressesSet, socketAddress));
+			return localSocketAddressesSet.isEmpty() ||
+					(!localSocketAddressesSet.isEmpty()
+							&& (localSocketAddressesSet.contains(socketAddress) ||
+							isEventComingFromNonRegisteredHazelcastInstance(hazelcastInstanceSet.iterator().next(),
+									localSocketAddressesSet, socketAddress)));
 
 		}
 
