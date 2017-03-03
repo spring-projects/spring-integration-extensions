@@ -1,0 +1,232 @@
+description = 'Spring Integration Zookeeper'
+
+apply plugin: 'java'
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+group = 'org.springframework.integration'
+
+repositories {
+	maven {
+		url 'https://repository.apache.org/content/groups/public'
+	}
+	maven { url 'http://repo.spring.io/libs-milestone' }
+}
+
+sourceCompatibility = targetCompatibility = 1.7
+
+ext {
+	springIntegrationVersion = '4.1.2.RELEASE'
+	zookeeperVersion = "3.4.6"
+	curatorVersion = '2.6.0'
+
+	jacocoVersion = '0.7.0.201403182114'
+
+	idPrefix = 'zookeeper'
+
+	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkCi = 'https://build.spring.io/browse/INTEXT'
+	linkIssue = 'https://jira.spring.io/browse/INTEXT'
+	linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
+	linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
+	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
+
+}
+
+eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
+
+sourceSets {
+	test {
+		resources {
+			srcDirs = ['src/test/resources', 'src/test/java']
+		}
+	}
+}
+
+// See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
+// and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
+configurations {
+	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
+}
+
+dependencies {
+	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
+	compile "org.apache.zookeeper:zookeeper:$zookeeperVersion"
+
+	compile("org.apache.curator:curator-recipes:$curatorVersion") {
+		exclude group: 'org.apache.zookeeper', module: 'zookeeper'
+		exclude group: 'org.jboss.netty', module: 'netty'
+	}
+
+	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
+	testCompile "org.apache.curator:curator-test:$curatorVersion"
+	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+}
+
+// enable all compiler warnings; individual projects may customize further
+[compileJava, compileTestJava]*.options*.compilerArgs = ['-Xlint:all,-options']
+
+test {
+	// suppress all console output during testing unless running `gradle -i`
+	logging.captureStandardOutput(LogLevel.INFO)
+	jvmArgs "-javaagent:${configurations.jacoco.asPath}=destfile=${buildDir}/jacoco.exec,includes=*"
+}
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+	classifier = 'javadoc'
+	from javadoc
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+apply plugin: 'sonar-runner'
+
+sonarRunner {
+	sonarProperties {
+		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
+		property "sonar.links.homepage", linkHomepage
+		property "sonar.links.ci", linkCi
+		property "sonar.links.issue", linkIssue
+		property "sonar.links.scm", linkScmUrl
+		property "sonar.links.scm_dev", linkScmDevConnection
+		property "sonar.java.coveragePlugin", "jacoco"
+	}
+}
+
+task api(type: Javadoc) {
+	group = 'Documentation'
+	description = 'Generates the Javadoc API documentation.'
+	title = "${rootProject.description} ${version} API"
+	options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+	options.author = true
+	options.header = rootProject.description
+	options.overview = 'src/api/overview.html'
+
+	source = sourceSets.main.allJava
+	classpath = project.sourceSets.main.compileClasspath
+	destinationDir = new File(buildDir, "api")
+}
+
+task schemaZip(type: Zip) {
+	group = 'Distribution'
+	classifier = 'schema'
+	description = "Builds -${classifier} archive containing all " +
+			"XSDs for deployment at static.springframework.org/schema."
+
+	def Properties schemas = new Properties();
+	def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
+
+	project.sourceSets.main.resources.find {
+		it.path.endsWith('META-INF/spring.schemas')
+	}?.withInputStream { schemas.load(it) }
+
+	for (def key : schemas.keySet()) {
+		File xsdFile = project.sourceSets.main.resources.find {
+			it.path.endsWith(schemas.get(key))
+		}
+		assert xsdFile != null
+		into("integration/${shortName}") {
+			from xsdFile.path
+		}
+	}
+
+}
+
+task docsZip(type: Zip) {
+	group = 'Distribution'
+	classifier = 'docs'
+	description = "Builds -${classifier} archive containing api " +
+			"for deployment at static.spring.io/spring-integration/docs."
+
+	from('src/dist') {
+		include 'changelog.txt'
+	}
+
+	from(api) {
+		into 'api'
+	}
+}
+
+task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
+	group = 'Distribution'
+	classifier = 'dist'
+	description = "Builds -${classifier} archive, containing all jars and docs, " +
+			"suitable for community download page."
+
+	ext.baseDir = "${project.name}-${project.version}";
+
+	from('src/dist') {
+		include 'readme.txt'
+		include 'license.txt'
+		include 'notice.txt'
+		into "${baseDir}"
+	}
+
+	from(zipTree(docsZip.archivePath)) {
+		into "${baseDir}/docs"
+	}
+
+	from(zipTree(schemaZip.archivePath)) {
+		into "${baseDir}/schema"
+	}
+
+	into("${baseDir}/libs") {
+		from project.jar
+		from project.sourcesJar
+		from project.javadocJar
+	}
+}
+
+// Create an optional "with dependencies" distribution.
+// Not published by default; only for use when building from source.
+task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
+	group = 'Distribution'
+	classifier = 'dist-with-deps'
+	description = "Builds -${classifier} archive, containing everything " +
+			"in the -${distZip.classifier} archive plus all dependencies."
+
+	from zipTree(distZip.archivePath)
+
+	gradle.taskGraph.whenReady { taskGraph ->
+		if (taskGraph.hasTask(":${zipTask.name}")) {
+			def projectName = rootProject.name
+			def artifacts = new HashSet()
+
+			rootProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+				def dependency = artifact.moduleVersion.id
+				if (!projectName.equals(dependency.name)) {
+					artifacts << artifact.file
+				}
+			}
+
+			zipTask.from(artifacts) {
+				into "${distZip.baseDir}/deps"
+			}
+		}
+	}
+}
+
+artifacts {
+	archives distZip
+	archives docsZip
+}
+
+task dist(dependsOn: assemble) {
+	group = 'Distribution'
+	description = 'Builds -dist, -docs and distribution archives.'
+}
+
+task wrapper(type: Wrapper) {
+	description = 'Generates gradlew[.bat] scripts'
+	gradleVersion = '1.12'
+	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
