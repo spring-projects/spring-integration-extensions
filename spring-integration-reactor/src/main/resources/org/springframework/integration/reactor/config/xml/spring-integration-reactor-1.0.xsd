@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/integration/reactor"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            targetNamespace="http://www.springframework.org/schema/integration/reactor"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+  <xsd:import namespace="http://www.springframework.org/schema/beans"/>
+  <xsd:import namespace="http://www.springframework.org/schema/tool"/>
+  <xsd:import namespace="http://www.springframework.org/schema/integration"
+              schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd"/>
+
+  <xsd:annotation>
+    <xsd:documentation><![CDATA[
+			Defines the configuration elements for the Spring Integration
+			Reactor Adapters.
+		]]></xsd:documentation>
+  </xsd:annotation>
+
+  <xsd:element name="tcp-inbound-channel-adapter">
+    <xsd:annotation>
+      <xsd:documentation>
+        The definition for the Reactor TcpServer
+        Inbound Channel Adapter.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:attributeGroup ref="tcpChannelAdapterAttributes"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="channel">
+    <xsd:annotation>
+      <xsd:documentation>
+        The definition for the Reactor Message Channel.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:attributeGroup ref="reactorMessageChannelAttributes"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:attributeGroup name="reactorMessageChannelAttributes">
+    <xsd:attribute name="id" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>
+          Identifies the underlying Spring bean definition, which is an
+          instance of either 'EventDrivenConsumer' or 'PollingConsumer',
+          depending on whether the component's input channel is a
+          'SubscribableChannel' or 'PollableChannel'.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="env" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          The Reactor Environment to use.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ref" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          The Reactor to use to publish events.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <tool:annotation kind="ref">
+            <tool:expected-type type="reactor.core.Reactor"/>
+          </tool:annotation>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dispatcher" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>
+          The Reactor Dispatcher type to use.
+        </xsd:documentation>
+      </xsd:annotation>
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="eventLoop"/>
+          <xsd:enumeration value="ringBuffer"/>
+          <xsd:enumeration value="threadPoolExecutor"/>
+          <xsd:enumeration value="sync"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+
+  <xsd:attributeGroup name="tcpChannelAdapterAttributes">
+    <xsd:attribute name="id" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>
+          Identifies the underlying Spring bean definition, which is an
+          instance of either 'EventDrivenConsumer' or 'PollingConsumer',
+          depending on whether the component's input channel is a
+          'SubscribableChannel' or 'PollableChannel'.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="env" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          The Reactor Environment to use.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ref" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          The Reactor to use to publish events.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <tool:annotation kind="ref">
+            <tool:expected-type type="reactor.core.Reactor"/>
+          </tool:annotation>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="channel" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          Channel to which messages will be output.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <tool:annotation kind="ref">
+            <tool:expected-type type="org.springframework.integration.MessageChannel"/>
+          </tool:annotation>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="error-channel" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:appinfo>
+          <xsd:documentation>
+            Channel to which error messages will be output.
+          </xsd:documentation>
+          <tool:annotation kind="ref">
+            <tool:expected-type type="org.springframework.integration.MessageChannel"/>
+          </tool:annotation>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bind-host" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          TcpServer bind address hostname.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bind-port" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          TcpServer bind address port.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="codec" use="optional" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>
+          The codec to use.
+        </xsd:documentation>
+        <xsd:appinfo>
+          <tool:annotation kind="ref">
+            <tool:expected-type type="reactor.tcp.encoding.Codec"/>
+          </tool:annotation>
+        </xsd:appinfo>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="auto-startup" default="true" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>
+          Flag to indicate that the component should start automatically
+          on startup (default true).
+        </xsd:documentation>
+      </xsd:annotation>
+      <xsd:simpleType>
+        <xsd:union memberTypes="xsd:boolean xsd:string"/>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute name="phase" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>
+          Flag to indicate the phase in which the component should start automatically
+          on startup. See SmartLifecycle.
+        </xsd:documentation>
+      </xsd:annotation>
+      <xsd:simpleType>
+        <xsd:union memberTypes="xsd:integer xsd:string"/>
+      </xsd:simpleType>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+
+</xsd:schema>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:reactor="http://www.springframework.org/schema/integration/reactor"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+       http://www.springframework.org/schema/integration/reactor http://www.springframework.org/schema/integration/reactor/spring-integration-reactor.xsd">
+
+  <!-- randomUUID() is slow, so replace id generation with time-based UUIDs -->
+  <bean id="idgen" class="org.springframework.integration.reactor.support.Type1UUIDIdGenerator"/>
+
+  <!-- CountDownLatch for determining when a message is delivered into this channel -->
+  <bean id="latch" class="java.util.concurrent.CountDownLatch">
+    <constructor-arg value="1"/>
+  </bean>
+  <int:channel id="output"/>
+  <int:service-activator input-channel="output" ref="latch" method="countDown"/>
+
+  <!-- Reactor -->
+  <bean id="reactorEnv" class="reactor.core.Environment"/>
+  <bean id="eventsReactor" class="reactor.spring.context.ReactorFactoryBean">
+    <constructor-arg ref="reactorEnv"/>
+  </bean>
+
+  <!-- Codec -->
+  <bean id="stringCodec" class="reactor.tcp.encoding.StringCodec"/>
+
+  <!-- Reactor TcpServer Inbound Channel Adapter -->
+  <reactor:tcp-inbound-channel-adapter id="server"
+                                       env="reactorEnv"
+                                       ref="eventsReactor"
+                                       channel="output"
+                                       bind-port="3000"
+                                       codec="stringCodec"/>
+
+</beans>

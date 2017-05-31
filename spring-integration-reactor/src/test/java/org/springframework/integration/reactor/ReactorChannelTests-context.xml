@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:reactor="http://www.springframework.org/schema/integration/reactor"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+                  http://www.springframework.org/schema/beans/spring-beans.xsd
+                  http://www.springframework.org/schema/integration
+                  http://www.springframework.org/schema/integration/spring-integration.xsd
+                  http://www.springframework.org/schema/integration/reactor
+                  http://www.springframework.org/schema/integration/reactor/spring-integration-reactor.xsd">
+
+  <beans:bean id="counter" class="java.util.concurrent.CountDownLatch">
+    <beans:constructor-arg value="1"/>
+  </beans:bean>
+
+  <reactor:channel id="reactor" dispatcher="ringBuffer"/>
+
+  <service-activator input-channel="reactor" ref="counter" method="countDown"/>
+
+</beans:beans>
