@@ -2,6 +2,10 @@ buildscript {
 	repositories {
 		maven { url 'https://repo.spring.io/plugins-release' }
 	}
+	dependencies {
+		classpath 'io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE'
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.7.RELEASE'
+	}
 }
 
 plugins {
@@ -9,7 +13,7 @@ plugins {
 	id 'eclipse'
 	id 'idea'
 	id 'jacoco'
-	id 'org.sonarqube' version '2.1-rc3'
+	id "org.sonarqube" version "2.5"
 }
 
 description = 'Spring Integration Zip Adapter'
@@ -37,6 +41,12 @@ if (project.hasProperty('platformVersion')) {
 
 		}
 	}
+
+	springIoDependencyVersionMappingCheck {
+		configuration = configurations.testRuntime
+		failOnUnmappedDirectDependency = false
+		failOnUnmappedTransitiveDependency = true
+	}
 }
 
 sourceCompatibility=1.6
@@ -52,7 +62,7 @@ ext {
 	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
 
 	slf4jVersion = "1.7.21"
-	springIntegrationVersion = '4.3.1.RELEASE'
+	springIntegrationVersion = '4.3.10.RELEASE'
 	ztZipVersion = '1.9'
 
 	idPrefix = 'zip'
@@ -73,7 +83,7 @@ sourceSets {
 }
 
 jacoco {
-	toolVersion = "0.7.6.201602180812"
+	toolVersion = "0.7.8"
 }
 
 dependencies {
@@ -104,7 +114,7 @@ jacocoTestReport {
 	reports {
 		xml.enabled false
 		csv.enabled false
-		html.destination "${buildDir}/reports/jacoco/html"
+		html.destination file("${buildDir}/reports/jacoco/html")
 	}
 }
 
