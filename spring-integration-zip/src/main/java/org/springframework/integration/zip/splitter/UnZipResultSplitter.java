@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,37 +23,44 @@ import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
 
 import org.springframework.integration.file.FileHeaders;
+import org.springframework.integration.splitter.AbstractMessageSplitter;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.zip.ZipHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.util.Assert;
 
 /**
  *
  * @author Gunnar Hillert
  * @author Andriy Kryvtsun
+ * @author Artem Bilan
  *
  * @since 1.0
  */
-public class UnZipResultSplitter {
+public class UnZipResultSplitter extends AbstractMessageSplitter {
 
-	public List<Message<Object>> splitUnzippedMap(Message<Map<String, Object>> message) {
+	@Override
+	@SuppressWarnings("unchecked")
+	protected Object splitMessage(Message<?> message) {
+		Assert.state(message.getPayload() instanceof Map,
+				"The UnZipResultSplitter supports only Map<String, Object> payload");
+		Map<String, Object> unzippedEntries = (Map<String, Object>) message.getPayload();
 		MessageHeaders headers = message.getHeaders();
-		Map<String, Object> unzippedEntries = message.getPayload();
 
-		List<Message<Object>> messages = new ArrayList<Message<Object>>(unzippedEntries.size());
+		List<MessageBuilder<Object>> messageBuilders = new ArrayList<MessageBuilder<Object>>(unzippedEntries.size());
 
 		for (Map.Entry<String, Object> entry : unzippedEntries.entrySet()) {
-			final String path = FilenameUtils.getPath(entry.getKey());
-			final String filename = FilenameUtils.getName(entry.getKey());
-			final Message<Object> splitMessage = MessageBuilder.withPayload(entry.getValue())
+			String path = FilenameUtils.getPath(entry.getKey());
+			String filename = FilenameUtils.getName(entry.getKey());
+			MessageBuilder<Object> messageBuilder = MessageBuilder.withPayload(entry.getValue())
 					.setHeader(FileHeaders.FILENAME, filename)
 					.setHeader(ZipHeaders.ZIP_ENTRY_PATH, path)
-					.copyHeadersIfAbsent(headers)
-					.build();
-			messages.add(splitMessage);
+					.copyHeadersIfAbsent(headers);
+			messageBuilders.add(messageBuilder);
 		}
-		return messages;
+
+		return messageBuilders;
 	}
 
 }

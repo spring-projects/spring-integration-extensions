@@ -63,7 +63,7 @@ ext {
 
 	slf4jVersion = "1.7.21"
 	springIntegrationVersion = '4.3.10.RELEASE'
-	ztZipVersion = '1.9'
+	ztZipVersion = '1.11'
 
 	idPrefix = 'zip'
 }

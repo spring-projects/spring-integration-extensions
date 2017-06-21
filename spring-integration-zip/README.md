@@ -1,20 +1,15 @@
 Spring Integration Zip Support
 ==============================
 
-|               | Build Status    |
-| ------------- | :-------------: |
-| Linux         | [![Build Status](http://build.spring.io/plugins/servlet/buildStatusImage/INTEXT-ZIP)](https://build.spring.io/browse/INTEXT-ZIP)  |
-| Windows       | [![Build Status](http://build.spring.io/plugins/servlet/buildStatusImage/INTEXT-ZIPWIN)](https://build.spring.io/browse/INTEXT-ZIPWIN)  |
+Build Status : [![Build Status](http://build.spring.io/plugins/servlet/buildStatusImage/INTEXT-ZIP)](https://build.spring.io/browse/INTEXT-ZIP)
 
 ## Introduction
 
 This *Spring Integration Extension* provides [Zip][] (un-) compression support. The following components are provided:
 
-* Zip transformer
-* Unzip transformer
-* UnZipResultSplitter
-
-**Important!** This module is currently under active development and not all functionality is provided or stable, yet.
+* Zip Transformer
+* UnZip Transformer
+* UnZip Result Splitter
 
 ## ZIP Compression Support
 
