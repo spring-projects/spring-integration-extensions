@@ -477,5 +477,24 @@ public LeaderInitiator initiator() {
 ```
 
 Then when a node is elected leader it will send `OnGrantedEvent` to all application listeners. See
-the [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/htmlsingle/#endpoint-roles)
+the [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/#endpoint-roles)
 for more information on how to use those events to control messaging endpoints.
+
+## HAZELCAST MESSAGE STORE
+
+For distributed messaging state management, for example for persistent `QueueChannel` or tracking `Aggregator` message groups, the `HazelcastMessageStore` implementation is provided:
+```java
+@Bean
+public HazelcastInstance hazelcastInstance() {
+    return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+public MessageGroupStore messageStore() {
+    return new HazelcastMessageStore(hazelcastInstance());
+}
+```
+
+By default the `SPRING_INTEGRATION_MESSAGE_STORE` `IMap` is used to store messages and groups key/value manner.
+Any custom `IMap` can be provided to the `HazelcastMessageStore`.
+See [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#message-store) for more information about `MessageStore`.
