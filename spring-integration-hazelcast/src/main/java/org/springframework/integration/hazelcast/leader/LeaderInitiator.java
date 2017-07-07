@@ -133,7 +133,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	 * @param leaderEventPublisher the event publisher
 	 */
 	public void setLeaderEventPublisher(LeaderEventPublisher leaderEventPublisher) {
-		Assert.notNull(leaderEventPublisher);
+		Assert.notNull(leaderEventPublisher, "'leaderEventPublisher' must not be null");
 		this.leaderEventPublisher = leaderEventPublisher;
 		this.customPublisher = true;
 	}

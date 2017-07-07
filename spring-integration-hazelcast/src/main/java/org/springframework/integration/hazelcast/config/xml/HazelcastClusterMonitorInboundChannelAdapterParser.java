@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.integration.config.xml.IntegrationNamespaceUtils;
 import org.springframework.integration.hazelcast.inbound.HazelcastClusterMonitorMessageProducer;
-
 import org.springframework.util.StringUtils;
 
 /**
