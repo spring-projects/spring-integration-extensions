@@ -1,35 +1,52 @@
+/*
+ * Copyright 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.integration.hazelcast.metadata;
 
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-
-import static org.mockito.Mockito.*;
-
 
 import org.springframework.integration.metadata.MetadataStoreListener;
 
-import static org.junit.Assert.*;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 
 /**
  * @author Vinicius Carvalho
  */
 public class HazelcastMetadataStoreTests {
 
-	HazelcastMetadataStore metadataStore;
-
 	private static HazelcastInstance instance;
 
 	private static IMap<String, String> map;
 
+	HazelcastMetadataStore metadataStore;
+
 	@BeforeClass
-	public static void init(){
+	public static void init() {
 		instance = Hazelcast.newHazelcastInstance();
 		map = instance.getMap("customTestsMetadataStore");
 	}
@@ -40,9 +57,9 @@ public class HazelcastMetadataStoreTests {
 	}
 
 	@Before
-	public void setup() throws Exception{
+	public void setup() throws Exception {
 		this.metadataStore = new HazelcastMetadataStore(map);
-		metadataStore.afterPropertiesSet();
+		this.metadataStore.afterPropertiesSet();
 	}
 
 	@After
@@ -52,35 +69,37 @@ public class HazelcastMetadataStoreTests {
 
 	@Test
 	public void testGetNonExistingKeyValue() {
-		String retrievedValue = metadataStore.get("does-not-exist");
+		String retrievedValue = this.metadataStore.get("does-not-exist");
 		assertNull(retrievedValue);
 	}
 
 	@Test
 	public void testPersistKeyValue() {
-		metadataStore.put("HazelcastMetadataStoreTests-Spring", "Integration");
+		this.metadataStore.put("HazelcastMetadataStoreTests-Spring", "Integration");
 		assertEquals("Integration", map.get("HazelcastMetadataStoreTests-Spring"));
 	}
 
 	@Test
 	public void testGetValueFromMetadataStore() {
-		metadataStore.put("HazelcastMetadataStoreTests-GetValue", "Hello Hazelcast");
-		String retrievedValue = metadataStore.get("HazelcastMetadataStoreTests-GetValue");
+		this.metadataStore.put("HazelcastMetadataStoreTests-GetValue", "Hello Hazelcast");
+		String retrievedValue = this.metadataStore
+				.get("HazelcastMetadataStoreTests-GetValue");
 		assertEquals("Hello Hazelcast", retrievedValue);
 	}
 
 	@Test
 	public void testPersistEmptyStringToMetadataStore() {
-		metadataStore.put("HazelcastMetadataStoreTests-PersistEmpty", "");
+		this.metadataStore.put("HazelcastMetadataStoreTests-PersistEmpty", "");
 
-		String retrievedValue = metadataStore.get("HazelcastMetadataStoreTests-PersistEmpty");
+		String retrievedValue = this.metadataStore
+				.get("HazelcastMetadataStoreTests-PersistEmpty");
 		assertEquals("", retrievedValue);
 	}
 
 	@Test
 	public void testPersistNullStringToMetadataStore() {
 		try {
-			metadataStore.put("HazelcastMetadataStoreTests-PersistEmpty", null);
+			this.metadataStore.put("HazelcastMetadataStoreTests-PersistEmpty", null);
 			fail("Expected an IllegalArgumentException to be thrown.");
 		}
 		catch (IllegalArgumentException e) {
@@ -90,16 +109,16 @@ public class HazelcastMetadataStoreTests {
 
 	@Test
 	public void testPersistWithEmptyKeyToMetadataStore() {
-		metadataStore.put("", "PersistWithEmptyKey");
+		this.metadataStore.put("", "PersistWithEmptyKey");
 
-		String retrievedValue = metadataStore.get("");
+		String retrievedValue = this.metadataStore.get("");
 		assertEquals("PersistWithEmptyKey", retrievedValue);
 	}
 
 	@Test
 	public void testPersistWithNullKeyToMetadataStore() {
 		try {
-			metadataStore.put(null, "something");
+			this.metadataStore.put(null, "something");
 			fail("Expected an IllegalArgumentException to be thrown.");
 
 		}
@@ -111,7 +130,7 @@ public class HazelcastMetadataStoreTests {
 	@Test
 	public void testGetValueWithNullKeyFromMetadataStore() {
 		try {
-			metadataStore.get(null);
+			this.metadataStore.get(null);
 		}
 		catch (IllegalArgumentException e) {
 			assertEquals("'key' must not be null.", e.getMessage());
@@ -126,37 +145,38 @@ public class HazelcastMetadataStoreTests {
 		String testKey = "HazelcastMetadataStoreTests-Remove";
 		String testValue = "Integration";
 
-		metadataStore.put(testKey, testValue);
+		this.metadataStore.put(testKey, testValue);
 
-		assertEquals(testValue, metadataStore.remove(testKey));
-		assertNull(metadataStore.remove(testKey));
+		assertEquals(testValue, this.metadataStore.remove(testKey));
+		assertNull(this.metadataStore.remove(testKey));
 	}
 
 	@Test
 	public void testPersistKeyValueIfAbsent() {
-		metadataStore.putIfAbsent("HazelcastMetadataStoreTests-Spring", "Integration");
+		this.metadataStore.putIfAbsent("HazelcastMetadataStoreTests-Spring",
+				"Integration");
 		assertEquals("Integration", map.get("HazelcastMetadataStoreTests-Spring"));
 	}
 
 	@Test
 	public void testReplaceValue() {
-		metadataStore.put("key","old");
-		assertEquals("old",map.get("key"));
-		metadataStore.replace("key","old","new");
-		assertEquals("new",map.get("key"));
+		this.metadataStore.put("key", "old");
+		assertEquals("old", map.get("key"));
+		this.metadataStore.replace("key", "old", "new");
+		assertEquals("new", map.get("key"));
 	}
 
 	@Test
 	public void testListener() {
 		MetadataStoreListener listener = mock(MetadataStoreListener.class);
-		metadataStore.addListener(listener);
+		this.metadataStore.addListener(listener);
 
-		metadataStore.put("foo","bar");
-		metadataStore.replace("foo","bar","baz");
-		metadataStore.remove("foo");
-		verify(listener).onAdd("foo","bar");
-		verify(listener).onUpdate("foo","baz");
-		verify(listener).onRemove("foo","baz");
+		this.metadataStore.put("foo", "bar");
+		this.metadataStore.replace("foo", "bar", "baz");
+		this.metadataStore.remove("foo");
+		verify(listener).onAdd("foo", "bar");
+		verify(listener).onUpdate("foo", "baz");
+		verify(listener).onRemove("foo", "baz");
 	}
 
 }
