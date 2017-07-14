@@ -14,23 +14,33 @@
  * limitations under the License.
  */
 
-
 package org.springframework.integration.hazelcast.metadata;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.map.listener.EntryAddedListener;
+import com.hazelcast.map.listener.EntryRemovedListener;
+import com.hazelcast.map.listener.EntryUpdatedListener;
 
-import org.springframework.integration.metadata.ConcurrentMetadataStore;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.integration.metadata.ListenableMetadataStore;
+import org.springframework.integration.metadata.MetadataStoreListener;
 import org.springframework.util.Assert;
 
 /**
  * @author Vinicius Carvalho
  */
-public class HazelcastMetadataStore implements ConcurrentMetadataStore{
+public class HazelcastMetadataStore implements ListenableMetadataStore, InitializingBean{
 
 	private static final String METADATA_STORE_MAP_NAME = "SPRING_INTEGRATION_METADATA_STORE";
 
 	private final IMap<String, String> map;
+
+	private final List<MetadataStoreListener> listeners = new CopyOnWriteArrayList<MetadataStoreListener>();
 
 	public HazelcastMetadataStore(HazelcastInstance hazelcastInstance){
 		Assert.notNull(hazelcastInstance, "Hazelcast instance can't be null");
@@ -75,5 +85,47 @@ public class HazelcastMetadataStore implements ConcurrentMetadataStore{
 		Assert.notNull(key, "'key' must not be null.");
 		return this.map.remove(key);
 	}
+
+	@Override
+	public void addListener(MetadataStoreListener callback) {
+		this.listeners.add(callback);
+	}
+
+	@Override
+	public void removeListener(MetadataStoreListener callback) {
+		this.listeners.remove(callback);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		this.map.addEntryListener(new MapListener(),true);
+	}
+
+	final class MapListener implements  EntryAddedListener<String,String>,
+										EntryRemovedListener<String,String>,
+										EntryUpdatedListener<String,String> {
+
+		@Override
+		public void entryAdded(EntryEvent<String, String> event) {
+			for(MetadataStoreListener listener : HazelcastMetadataStore.this.listeners){
+				listener.onAdd(event.getKey(),event.getValue());
+			}
+		}
+
+		@Override
+		public void entryRemoved(EntryEvent<String, String> event) {
+			for(MetadataStoreListener listener : HazelcastMetadataStore.this.listeners){
+				listener.onRemove(event.getKey(),event.getOldValue());
+			}
+		}
+
+		@Override
+		public void entryUpdated(EntryEvent<String, String> event) {
+			for(MetadataStoreListener listener : HazelcastMetadataStore.this.listeners){
+				listener.onUpdate(event.getKey(),event.getValue());
+			}
+		}
+	}
+
 
 }
