@@ -498,3 +498,24 @@ public MessageGroupStore messageStore() {
 By default the `SPRING_INTEGRATION_MESSAGE_STORE` `IMap` is used to store messages and groups key/value manner.
 Any custom `IMap` can be provided to the `HazelcastMessageStore`.
 See [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#message-store) for more information about `MessageStore`.
+
+## HAZELCAST METADATA STORE
+An implementation of a [MetadataStore](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#metadata-store) is available using a backing Hazelcast `IMap`
+
+You can provide your own implementation of an `IMap` or rely on the default map created with name `SPRING_INTEGRATION_METADATA_STORE`.
+
+```java
+@Bean
+public HazelcastInstance hazelcastInstance() {
+    return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+public MetadataStore metadataStore() {
+    return new HazelcastMetadataStore(hazelcastInstance());
+}
+```
+
+The `HazelcastMetadataStore` implements `ListenableMetadataStore` which allows you to register your own listeners of type `MetadataStoreListener` to listen for events via `addListener(MetadataStoreListener callback)`
+
+See [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#metadatastore-listener) for more information about the `MetadataStoreListener` interface. 
