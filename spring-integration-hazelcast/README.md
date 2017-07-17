@@ -519,3 +519,20 @@ public MetadataStore metadataStore() {
 The `HazelcastMetadataStore` implements `ListenableMetadataStore` which allows you to register your own listeners of type `MetadataStoreListener` to listen for events via `addListener(MetadataStoreListener callback)`
 
 See [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#metadatastore-listener) for more information about the `MetadataStoreListener` interface. 
+
+## HAZELCAST LOCK REGISTRY
+An implementation of a `LockRegistry` is available using a backing Hazelcast distributed `ILock` support: 
+
+```java
+@Bean
+public HazelcastInstance hazelcastInstance() {
+    return Hazelcast.newHazelcastInstance();
+}
+
+@Bean
+public LockRegistry lockRegistry() {
+    return new HazelcastLockRegistry(hazelcastInstance());
+}
+```
+
+When used with a shared `MessageGroupStore` (e.g. `Aggregator` store management), the `HazelcastLockRegistry` can be use to provide this functionality across multiple application instances, such that only one instance can manipulate the group at a time. 
