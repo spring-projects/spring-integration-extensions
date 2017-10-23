@@ -113,7 +113,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 		}
 
 		if (message.getHeaders().containsKey(FileHeaders.FILENAME)) {
-			zipFileName = baseFileName;
+			zipFileName = (String) message.getHeaders().get(FileHeaders.FILENAME);
 		}
 		else {
 			zipFileName = baseFileName + ZIP_EXTENSION;
