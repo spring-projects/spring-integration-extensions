@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.integration.leader.Context;
 import org.springframework.integration.leader.DefaultCandidate;
 import org.springframework.integration.leader.event.DefaultLeaderEventPublisher;
 import org.springframework.integration.leader.event.LeaderEventPublisher;
+import org.springframework.integration.support.leader.LockRegistryLeaderInitiator;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -58,8 +59,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 
 	private static final Context NULL_CONTEXT = new NullContext();
 
-	/**
-	 * Hazelcast client.
+	/*** Hazelcast client.
 	 */
 	private final HazelcastInstance client;
 
@@ -82,6 +82,21 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 
 	});
 
+	private long heartBeatMillis = LockRegistryLeaderInitiator.DEFAULT_HEART_BEAT_TIME;
+
+	private long busyWaitMillis = LockRegistryLeaderInitiator.DEFAULT_BUSY_WAIT_TIME;
+
+	private LeaderSelector leaderSelector;
+
+	/**
+	 * Leader event publisher.
+	 */
+	private LeaderEventPublisher leaderEventPublisher = new DefaultLeaderEventPublisher();
+
+	private boolean autoStartup = true;
+
+	private int phase;
+
 	/**
 	 * Future returned by submitting an {@link LeaderSelector} to {@link #executorService}.
 	 * This is used to cancel leadership.
@@ -93,24 +108,13 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	 */
 	private volatile ILock lock;
 
-	private LeaderSelector leaderSelector;
-
-	/**
-	 * Leader event publisher.
-	 */
-	private volatile LeaderEventPublisher leaderEventPublisher = new DefaultLeaderEventPublisher();
-
 	private boolean customPublisher = false;
-
-	private volatile boolean autoStartup = true;
-
-	private volatile int phase;
 
 	private volatile boolean running;
 
 	/**
 	 * Construct a {@link LeaderInitiator} with a default candidate.
-	 * @param client     Hazelcast client
+	 * @param client Hazelcast client
 	 */
 	public LeaderInitiator(HazelcastInstance client) {
 		this(client, new DefaultCandidate());
@@ -118,8 +122,8 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 
 	/**
 	 * Construct a {@link LeaderInitiator}.
-	 * @param client     Hazelcast client
-	 * @param candidate  leadership election candidate
+	 * @param client Hazelcast client
+	 * @param candidate leadership election candidate
 	 */
 	public LeaderInitiator(HazelcastInstance client, Candidate candidate) {
 		Assert.notNull(client, "'client' must not be null");
@@ -139,14 +143,29 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	}
 
 	/**
-	 * The context of the initiator or null if not running.
-	 * @return the context (or null if not running)
+	 * Time in milliseconds to wait in between attempts to re-acquire the lock, once it is
+	 * held. The heartbeat time has to be less than the remote lock expiry period, if
+	 * there is one, otherwise other nodes can steal the lock while we are sleeping here.
+	 * @param heartBeatMillis the heart-beat timeout in milliseconds.
+	 * Defaults to {@link LockRegistryLeaderInitiator#DEFAULT_HEART_BEAT_TIME}
+	 * @since 1.0.1
 	 */
-	public Context getContext() {
-		if (this.leaderSelector == null) {
-			return NULL_CONTEXT;
-		}
-		return this.leaderSelector.context;
+	public void setHeartBeatMillis(long heartBeatMillis) {
+		this.heartBeatMillis = heartBeatMillis;
+	}
+
+	/**
+	 * Time in milliseconds to wait in between attempts to acquire the lock, if it is not
+	 * held. The longer this is, the longer the system can be leaderless, if the leader
+	 * dies. If a leader dies without releasing its lock, the system might still have to
+	 * wait for the old lock to expire, but after that it should not have to wait longer
+	 * than the busy wait time to get a new leader.
+	 * @param busyWaitMillis the busy-wait timeout in milliseconds
+	 * Defaults to {@link LockRegistryLeaderInitiator#DEFAULT_BUSY_WAIT_TIME}
+	 * @since 1.0.1
+	 */
+	public void setBusyWaitMillis(long busyWaitMillis) {
+		this.busyWaitMillis = busyWaitMillis;
 	}
 
 	@Override
@@ -175,14 +194,25 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	}
 
 	/**
+	 * The context of the initiator or null if not running.
+	 * @return the context (or null if not running)
+	 */
+	public Context getContext() {
+		if (this.leaderSelector == null) {
+			return NULL_CONTEXT;
+		}
+		return this.leaderSelector.context;
+	}
+
+	/**
 	 * Start the registration of the {@link #candidate} for leader election.
 	 */
 	@Override
 	public synchronized void start() {
 		if (!this.running) {
 			this.lock = this.client.getLock(this.candidate.getRole());
-			this.running = true;
 			this.leaderSelector = new LeaderSelector();
+			this.running = true;
 			this.future = this.executorService.submit(this.leaderSelector);
 		}
 	}
@@ -203,7 +233,10 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	public synchronized void stop() {
 		if (this.running) {
 			this.running = false;
-			this.future.cancel(true);
+			if (this.future != null) {
+				this.future.cancel(true);
+			}
+			this.future = null;
 		}
 	}
 
@@ -237,38 +270,49 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 		@Override
 		public Void call() throws Exception {
 			try {
-				while (LeaderInitiator.this.running) {
+				while (isRunning()) {
 					try {
-						this.locked = LeaderInitiator.this.lock.tryLock(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-						if (this.locked) {
-							try {
-								LeaderInitiator.this.leaderEventPublisher.publishOnGranted(LeaderInitiator.this,
-										this.context, this.role);
+						// We always try to acquire the lock, in case it expired
+						boolean acquired =
+								LeaderInitiator.this.lock.tryLock(LeaderInitiator.this.heartBeatMillis,
+										TimeUnit.MILLISECONDS);
+						if (!this.locked) {
+							if (acquired) {
+								// Success: we are now leader
+								this.locked = true;
+								handleGranted();
 							}
-							catch (Exception e) {
-								logger.warn("Error publishing OnGranted event.", e);
-							}
-							LeaderInitiator.this.candidate.onGranted(this.context);
-							Thread.sleep(Long.MAX_VALUE);
+						}
+						else if (acquired) {
+							// If we were able to acquire it but we were already locked we
+							// should release it
+							LeaderInitiator.this.lock.unlock();
+							// Give it a chance to expire.
+							Thread.sleep(LeaderInitiator.this.heartBeatMillis);
+						}
+						else {
+							this.locked = false;
+							// We were not able to acquire it, therefore not leading any more
+							handleRevoked();
+							// Try again quickly in case the lock holder dropped it
+							Thread.sleep(LeaderInitiator.this.busyWaitMillis);
 						}
 					}
-					catch (InterruptedException e) {
+					catch (Exception e) {
 						if (this.locked) {
 							LeaderInitiator.this.lock.unlock();
 							this.locked = false;
 							// The lock was broken and we are no longer leader
-							LeaderInitiator.this.candidate.onRevoked(this.context);
-							if (LeaderInitiator.this.leaderEventPublisher != null) {
-								try {
-									LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
-											LeaderInitiator.this, this.context,
-											LeaderInitiator.this.candidate.getRole());
-								}
-								catch (Exception ex) {
-									logger.warn("Error publishing OnRevoked event.", ex);
-								}
+							handleRevoked();
+							// Give it a chance to elect some other leader.
+							Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+							if (isRunning()) {
+								logger.warn("Restarting LeaderSelector because of error.", e);
+								LeaderInitiator.this.future = LeaderInitiator.this.executorService.submit(this);
 							}
-							Thread.currentThread().interrupt();
+							if (e instanceof InterruptedException) {
+								Thread.currentThread().interrupt();
+							}
 							return null;
 						}
 					}
@@ -277,21 +321,39 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 			finally {
 				if (this.locked) {
 					LeaderInitiator.this.lock.unlock();
-					this.locked = false;
 					// We are stopping, therefore not leading any more
-					LeaderInitiator.this.candidate.onRevoked(this.context);
-					if (LeaderInitiator.this.leaderEventPublisher != null) {
-						try {
-							LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
-									LeaderInitiator.this, this.context, this.role);
-						}
-						catch (Exception e) {
-							logger.warn("Error publishing OnRevoked event.", e);
-						}
-					}
+					handleRevoked();
 				}
+				this.locked = false;
 			}
 			return null;
+		}
+
+
+		private void handleGranted() throws InterruptedException {
+			LeaderInitiator.this.candidate.onGranted(this.context);
+			if (LeaderInitiator.this.leaderEventPublisher != null) {
+				try {
+					LeaderInitiator.this.leaderEventPublisher.publishOnGranted(
+							LeaderInitiator.this, this.context, this.role);
+				}
+				catch (Exception e) {
+					logger.warn("Error publishing OnGranted event.", e);
+				}
+			}
+		}
+
+		private void handleRevoked() {
+			LeaderInitiator.this.candidate.onRevoked(this.context);
+			if (LeaderInitiator.this.leaderEventPublisher != null) {
+				try {
+					LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
+							LeaderInitiator.this, this.context, role);
+				}
+				catch (Exception e) {
+					logger.warn("Error publishing OnRevoked event.", e);
+				}
+			}
 		}
 
 	}
@@ -310,8 +372,6 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 		public void yield() {
 			if (LeaderInitiator.this.future != null) {
 				LeaderInitiator.this.future.cancel(true);
-				LeaderInitiator.this.future =
-						LeaderInitiator.this.executorService.submit(LeaderInitiator.this.leaderSelector);
 			}
 		}
 
