@@ -287,15 +287,19 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 							// If we were able to acquire it but we were already locked we
 							// should release it
 							LeaderInitiator.this.lock.unlock();
-							// Give it a chance to expire.
-							Thread.sleep(LeaderInitiator.this.heartBeatMillis);
+							if (isRunning()) {
+								// Give it a chance to expire.
+								Thread.sleep(LeaderInitiator.this.heartBeatMillis);
+							}
 						}
 						else {
 							this.locked = false;
 							// We were not able to acquire it, therefore not leading any more
 							handleRevoked();
-							// Try again quickly in case the lock holder dropped it
-							Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+							if (isRunning()) {
+								// Try again quickly in case the lock holder dropped it
+								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+							}
 						}
 					}
 					catch (Exception e) {
@@ -304,14 +308,17 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 							this.locked = false;
 							// The lock was broken and we are no longer leader
 							handleRevoked();
-							// Give it a chance to elect some other leader.
-							Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+							if (isRunning()) {
+								// Give it a chance to elect some other leader.
+								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+							}
+						}
+
+						if (e instanceof InterruptedException) {
+							Thread.currentThread().interrupt();
 							if (isRunning()) {
 								logger.warn("Restarting LeaderSelector because of error.", e);
 								LeaderInitiator.this.future = LeaderInitiator.this.executorService.submit(this);
-							}
-							if (e instanceof InterruptedException) {
-								Thread.currentThread().interrupt();
 							}
 							return null;
 						}
