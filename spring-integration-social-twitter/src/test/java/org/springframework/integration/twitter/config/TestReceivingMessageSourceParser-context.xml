@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+		xmlns="http://www.springframework.org/schema/integration"
+		xmlns:beans="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:twitter="http://www.springframework.org/schema/integration/twitter"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+						http://www.springframework.org/schema/integration/twitter http://www.springframework.org/schema/integration/twitter/spring-integration-social-twitter.xsd">
+
+	<beans:bean id="twitter" class="org.mockito.Mockito" factory-method="mock">
+		<beans:constructor-arg value="org.springframework.social.twitter.api.Twitter"/>
+	</beans:bean>
+
+	<channel id="inbound_mentions"/>
+
+	<twitter:mentions-inbound-channel-adapter id="mentionAdapter"
+											  twitter-template="twitter"
+											  channel="inbound_mentions"
+											  page-size="23"
+											  auto-startup="false">
+		<poller fixed-rate="5000" max-messages-per-poll="3"/>
+	</twitter:mentions-inbound-channel-adapter>
+
+	<twitter:dm-inbound-channel-adapter id="dmAdapter"
+										twitter-template="twitter"
+										channel="inbound_mentions"
+										page-size="45"
+										auto-startup="false">
+		<poller fixed-rate="5000" max-messages-per-poll="3"/>
+	</twitter:dm-inbound-channel-adapter>
+	<twitter:inbound-channel-adapter id="updateAdapter"
+									 twitter-template="twitter"
+									 channel="inbound_mentions"
+									 page-size="67"
+									 auto-startup="false">
+		<poller fixed-rate="5000" max-messages-per-poll="3"/>
+	</twitter:inbound-channel-adapter>
+
+</beans:beans>
+
+
