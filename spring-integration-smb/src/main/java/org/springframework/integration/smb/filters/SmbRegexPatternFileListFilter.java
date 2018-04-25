@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.springframework.integration.smb.filters;
 
+import java.io.UncheckedIOException;
 import java.util.regex.Pattern;
 
+import jcifs.smb.SmbException;
 import org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter;
 
 import jcifs.smb.SmbFile;
@@ -26,6 +28,7 @@ import jcifs.smb.SmbFile;
  * Implementation of {@link AbstractRegexPatternFileListFilter} for SMB.
  *
  * @author Markus Spann
+ * @author Prafull Kumar Soni
  */
 public class SmbRegexPatternFileListFilter extends AbstractRegexPatternFileListFilter<SmbFile> {
 
@@ -48,4 +51,13 @@ public class SmbRegexPatternFileListFilter extends AbstractRegexPatternFileListF
 		return (file != null ? file.getName() : null);
 	}
 
+	@Override
+	protected boolean isDirectory(SmbFile file) {
+		try {
+			return file.isDirectory();
+		}
+		catch (SmbException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
 }

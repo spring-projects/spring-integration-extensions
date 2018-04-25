@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
  *      smb://[[[domain;]username[:password]@]server[:port]/[[share/[dir/]file]]][?[param=value[param2=value2[...]]]
  *
  * @author Markus Spann
+ * @author Prafull Kumar Soni
  * @since 1.0
  */
 public class SmbConfig {
@@ -52,8 +53,7 @@ public class SmbConfig {
 	public SmbConfig() {
 	}
 
-	public SmbConfig(String _host, int _port, String _domain, String _username, String _password, String _shareAndDir)
-			throws UnsupportedEncodingException {
+	public SmbConfig(String _host, int _port, String _domain, String _username, String _password, String _shareAndDir) {
 		setHost(_host);
 		setPort(_port);
 		setDomain(_domain);
@@ -81,7 +81,7 @@ public class SmbConfig {
 	}
 
 	public void setDomain(String _domain) {
-		Assert.notNull(_domain);
+		Assert.notNull(_domain, "_domain can't be null");
 		this.domain = _domain;
 	}
 

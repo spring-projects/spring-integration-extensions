@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author Markus Spann
+ * @author Prafull Kumar Soni
  *
  */
 public class SmbParserInboundTests extends AbstractBaseTests {
@@ -38,7 +39,7 @@ public class SmbParserInboundTests extends AbstractBaseTests {
 	}
 
 	@Test
-	public void testLocalFilesAutoCreationTrue() throws Exception {
+	public void testLocalFilesAutoCreationTrue() {
 		assertFileNotExists(new File("test-temp/local-10"));
 		new ClassPathXmlApplicationContext(getApplicationContextXmlFile(), this.getClass());
 		assertFileExists(new File("test-temp/local-10"));
@@ -46,7 +47,7 @@ public class SmbParserInboundTests extends AbstractBaseTests {
 	}
 
 	@Test(expected = BeanCreationException.class)
-	public void testLocalFilesAutoCreationFalse() throws Exception {
+	public void testLocalFilesAutoCreationFalse() {
 		assertFileNotExists(new File("test-temp/local-6"));
 		new ClassPathXmlApplicationContext(getApplicationContextXmlFile("-fail"), this.getClass())
 				.close();

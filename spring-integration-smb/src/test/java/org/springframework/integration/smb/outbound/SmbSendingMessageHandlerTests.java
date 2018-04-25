@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import jcifs.smb.SmbFile;
 /**
  * @author Markus Spann
  * @author Artem Bilan
+ * @author Prafull Kumar Soni
  */
 public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 
@@ -65,7 +66,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 	}
 
 	@Test
-	public void testHandleFileContentMessage() throws Exception {
+	public void testHandleFileContentMessage() {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
 		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
@@ -78,7 +79,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 	}
 
 	@Test
-	public void testHandleFileAsByte() throws Exception {
+	public void testHandleFileAsByte() {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
 		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
@@ -135,7 +136,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 
 				doAnswer(new Answer<Object>() {
 
-					public Object answer(InvocationOnMock _invocation) throws Throwable {
+					public Object answer(InvocationOnMock _invocation) {
 						String path = (String) _invocation.getArguments()[0];
 						new File(path).mkdirs();
 						return null;

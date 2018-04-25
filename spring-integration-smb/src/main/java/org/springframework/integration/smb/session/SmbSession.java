@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import jcifs.smb.SmbFileOutputStream;
  * @author Mark Fisher
  * @author Oleg Zhurakousky
  * @author Artem Bilan
+ * @author Prafull Kumar Soni
  *
  */
 public class SmbSession implements Session<SmbFile> {
@@ -395,7 +396,7 @@ public class SmbSession implements Session<SmbFile> {
 	}
 
 	@Override
-	public boolean finalizeRaw() throws IOException {
+	public boolean finalizeRaw() {
 		return true;
 	}
 
@@ -524,7 +525,7 @@ public class SmbSession implements Session<SmbFile> {
 	}
 
 	@Override
-	public String[] listNames(String path) throws IOException {
+	public String[] listNames(String path) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 

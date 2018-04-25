@@ -3,8 +3,8 @@ buildscript {
 		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 	dependencies {
-		classpath 'io.spring.gradle:dependency-management-plugin:1.0.0.RC2'
-		classpath 'io.spring.gradle:spring-io-plugin:0.0.6.RELEASE'
+		classpath 'io.spring.gradle:dependency-management-plugin:1.0.5.RELEASE'
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.8.RELEASE'
 		classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
 	}
 }
@@ -44,8 +44,8 @@ if (project.hasProperty('platformVersion')) {
 }
 
 compileJava {
-	sourceCompatibility = 1.7
-	targetCompatibility = 1.7
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 }
 
 compileTestJava {
@@ -54,9 +54,9 @@ compileTestJava {
 }
 
 ext {
-	jcifsVersion = '1.3.18.2'
+	jcifsVersion = '1.3.18.3'
 	log4jVersion = '1.2.17'
-	springIntegrationVersion = '4.3.6.RELEASE'
+	springIntegrationVersion = '5.0.4.RELEASE'
 
 	idPrefix = 'smb'
 	
@@ -171,7 +171,7 @@ task schemaZip(type: Zip) {
 	description = "Builds -${classifier} archive containing all " +
 		"XSDs for deployment at static.springframework.org/schema."
 
-	def Properties schemas = new Properties();
+	Properties schemas = new Properties()
 	def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
 
 	project.sourceSets.main.resources.find {
@@ -215,7 +215,7 @@ task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
 	description = "Builds -${classifier} archive, containing all jars and docs, " +
 		"suitable for community download page."
 
-	ext.baseDir = "${project.name}-${project.version}";
+	ext.baseDir = "${project.name}-${project.version}"
 
 	from('src/dist') {
 		include 'readme.txt'

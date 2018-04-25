@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,11 +39,12 @@ import org.springframework.messaging.MessageHandler;
  * @author Markus Spann
  * @author Gunnar Hillert
  * @author Artem Bilan
+ * @author Prafull Kumar Soni
  */
 public class SmbOutboundChannelAdapterParserTests extends AbstractBaseTests {
 
 	@Test
-	public void testSmbOutboundChannelAdapterComplete() throws Exception {
+	public void testSmbOutboundChannelAdapterComplete() {
 		ApplicationContext ac = getApplicationContext();
 
 		Object consumer = ac.getBean("smbOutboundChannelAdapter");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 package org.springframework.integration.smb.config;
 
 import org.springframework.integration.file.config.AbstractRemoteFileInboundChannelAdapterParser;
+import org.springframework.integration.file.filters.AbstractPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.file.filters.FileListFilter;
 import org.springframework.integration.file.remote.synchronizer.InboundFileSynchronizer;
+import org.springframework.integration.smb.filters.SmbPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.smb.filters.SmbRegexPatternFileListFilter;
 import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizer;
@@ -29,6 +31,7 @@ import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizingMe
  *
  * @author Markus Spann
  * @author Artem Bilan
+ * @author Prafull Kumar Soni
  */
 public class SmbInboundChannelAdapterParser extends AbstractRemoteFileInboundChannelAdapterParser {
 
@@ -50,6 +53,11 @@ public class SmbInboundChannelAdapterParser extends AbstractRemoteFileInboundCha
 	@Override
 	protected Class<? extends FileListFilter<?>> getRegexPatternFileListFilterClass() {
 		return SmbRegexPatternFileListFilter.class;
+	}
+
+	@Override
+	protected Class<? extends AbstractPersistentAcceptOnceFileListFilter<?>> getPersistentAcceptOnceFileListFilterClass() {
+		return SmbPersistentAcceptOnceFileListFilter.class;
 	}
 
 }

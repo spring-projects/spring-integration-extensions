@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,13 @@ import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 
 /**
  * @author Markus Spann
+ * @author Prafull Kumar Soni
  *
  */
 public class SmbMessageHistoryTests extends AbstractBaseTests {
 
 	@Test
-	public void testMessageHistory() throws Exception {
+	public void testMessageHistory() {
 		SourcePollingChannelAdapter adapter = getApplicationContext()
 				.getBean("smbInboundChannelAdapter", SourcePollingChannelAdapter.class);
 		assertEquals("smbInboundChannelAdapter", adapter.getComponentName());

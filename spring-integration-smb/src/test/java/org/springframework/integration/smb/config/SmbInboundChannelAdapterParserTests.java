@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.junit.Test;
@@ -34,6 +36,9 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
+import org.springframework.integration.file.filters.CompositeFileListFilter;
+import org.springframework.integration.file.filters.FileListFilter;
+import org.springframework.integration.smb.filters.SmbPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizer;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizingMessageSource;
@@ -47,6 +52,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Markus Spann
  * @author Gunnar Hillert
  * @author Artem Bilan
+ * @author Prafull Kumar Soni
  */
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -56,11 +62,10 @@ public class SmbInboundChannelAdapterParserTests {
 	ApplicationContext applicationContext;
 
 	@Test(timeout = 100000)
-	public void testSmbInboundChannelAdapterComplete() throws Exception {
+	public void testSmbInboundChannelAdapterComplete() {
 
 		final SourcePollingChannelAdapter adapter = this.applicationContext.getBean("smbInbound", SourcePollingChannelAdapter.class);
 		final PriorityBlockingQueue<?> queue = TestUtils.getPropertyValue(adapter, "source.fileSource.toBeReceived", PriorityBlockingQueue.class);
-
 		assertNotNull(queue.comparator());
 		assertEquals("smbInbound", adapter.getComponentName());
 		assertEquals("smb:inbound-channel-adapter", adapter.getComponentType());
@@ -75,14 +80,20 @@ public class SmbInboundChannelAdapterParserTests {
 		String remoteFileSeparator = (String) TestUtils.getPropertyValue(fisync, "remoteFileSeparator");
 		assertNotNull(remoteFileSeparator);
 		assertEquals("", remoteFileSeparator);
-		SmbSimplePatternFileListFilter filter = (SmbSimplePatternFileListFilter) TestUtils.getPropertyValue(fisync, "filter");
+		FileListFilter<?> filter = TestUtils.getPropertyValue(fisync, "filter", FileListFilter.class);
 		assertNotNull(filter);
+		assertThat(filter, instanceOf(CompositeFileListFilter.class));
+		Set<?> fileFilters = TestUtils.getPropertyValue(filter, "fileFilters", Set.class);
+
+		Iterator<?> filtersIterator = fileFilters.iterator();
+		assertThat(filtersIterator.next(), instanceOf(SmbSimplePatternFileListFilter.class));
+		assertThat(filtersIterator.next(), instanceOf(SmbPersistentAcceptOnceFileListFilter.class));
 		Object sessionFactory = TestUtils.getPropertyValue(fisync, "remoteFileTemplate.sessionFactory");
 		assertTrue(SmbSessionFactory.class.isAssignableFrom(sessionFactory.getClass()));
 	}
 
 	@Test
-	public void testNoCachingSessionFactoryByDefault() throws Exception {
+	public void testNoCachingSessionFactoryByDefault() {
 		SourcePollingChannelAdapter adapter = applicationContext.getBean("simpleAdapter", SourcePollingChannelAdapter.class);
 		Object sessionFactory = TestUtils.getPropertyValue(adapter, "source.synchronizer.remoteFileTemplate.sessionFactory");
 		assertThat(sessionFactory, instanceOf(SmbSessionFactory.class));
@@ -94,7 +105,7 @@ public class SmbInboundChannelAdapterParserTests {
 	}
 
 	@Test(timeout = 10000)
-	public void testSmbInboundChannelAdapterCompleteNoId() throws Exception {
+	public void testSmbInboundChannelAdapterCompleteNoId() {
 
 		Map<String, SourcePollingChannelAdapter> spcas = applicationContext.getBeansOfType(SourcePollingChannelAdapter.class);
 		SourcePollingChannelAdapter adapter = null;
@@ -109,7 +120,7 @@ public class SmbInboundChannelAdapterParserTests {
 
 	public static class TestSessionFactoryBean implements FactoryBean<SmbSessionFactory> {
 
-		public SmbSessionFactory getObject() throws Exception {
+		public SmbSessionFactory getObject() {
 			SmbSessionFactory smbFactory = mock(SmbSessionFactory.class);
 			SmbSession session = mock(SmbSession.class);
 			when(smbFactory.getSession()).thenReturn(session);
