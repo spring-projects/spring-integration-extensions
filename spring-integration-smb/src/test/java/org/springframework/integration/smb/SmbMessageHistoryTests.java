@@ -29,7 +29,7 @@ import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 public class SmbMessageHistoryTests extends AbstractBaseTests {
 
 	@Test
-	public void testMessageHistory() throws Exception {
+	public void testMessageHistory() {
 		SourcePollingChannelAdapter adapter = getApplicationContext()
 				.getBean("smbInboundChannelAdapter", SourcePollingChannelAdapter.class);
 		assertEquals("smbInboundChannelAdapter", adapter.getComponentName());

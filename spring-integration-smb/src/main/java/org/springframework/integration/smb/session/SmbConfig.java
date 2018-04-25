@@ -52,8 +52,7 @@ public class SmbConfig {
 	public SmbConfig() {
 	}
 
-	public SmbConfig(String _host, int _port, String _domain, String _username, String _password, String _shareAndDir)
-			throws UnsupportedEncodingException {
+	public SmbConfig(String _host, int _port, String _domain, String _username, String _password, String _shareAndDir) {
 		setHost(_host);
 		setPort(_port);
 		setDomain(_domain);
@@ -81,7 +80,7 @@ public class SmbConfig {
 	}
 
 	public void setDomain(String _domain) {
-		Assert.notNull(_domain);
+		Assert.notNull(_domain, "_domain can't be null");
 		this.domain = _domain;
 	}
 

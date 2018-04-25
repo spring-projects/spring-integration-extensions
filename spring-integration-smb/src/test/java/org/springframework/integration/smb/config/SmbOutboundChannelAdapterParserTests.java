@@ -43,7 +43,7 @@ import org.springframework.messaging.MessageHandler;
 public class SmbOutboundChannelAdapterParserTests extends AbstractBaseTests {
 
 	@Test
-	public void testSmbOutboundChannelAdapterComplete() throws Exception {
+	public void testSmbOutboundChannelAdapterComplete() {
 		ApplicationContext ac = getApplicationContext();
 
 		Object consumer = ac.getBean("smbOutboundChannelAdapter");

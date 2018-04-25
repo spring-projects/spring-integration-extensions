@@ -17,8 +17,10 @@
 package org.springframework.integration.smb.config;
 
 import org.springframework.integration.file.config.AbstractRemoteFileInboundChannelAdapterParser;
+import org.springframework.integration.file.filters.AbstractPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.file.filters.FileListFilter;
 import org.springframework.integration.file.remote.synchronizer.InboundFileSynchronizer;
+import org.springframework.integration.smb.filters.SmbPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.smb.filters.SmbRegexPatternFileListFilter;
 import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizer;
@@ -50,6 +52,11 @@ public class SmbInboundChannelAdapterParser extends AbstractRemoteFileInboundCha
 	@Override
 	protected Class<? extends FileListFilter<?>> getRegexPatternFileListFilterClass() {
 		return SmbRegexPatternFileListFilter.class;
+	}
+
+	@Override
+	protected Class<? extends AbstractPersistentAcceptOnceFileListFilter<?>> getPersistentAcceptOnceFileListFilterClass() {
+		return SmbPersistentAcceptOnceFileListFilter.class;
 	}
 
 }

@@ -65,7 +65,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 	}
 
 	@Test
-	public void testHandleFileContentMessage() throws Exception {
+	public void testHandleFileContentMessage() {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
 		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
@@ -78,7 +78,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 	}
 
 	@Test
-	public void testHandleFileAsByte() throws Exception {
+	public void testHandleFileAsByte() {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
 		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
@@ -135,7 +135,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 
 				doAnswer(new Answer<Object>() {
 
-					public Object answer(InvocationOnMock _invocation) throws Throwable {
+					public Object answer(InvocationOnMock _invocation) {
 						String path = (String) _invocation.getArguments()[0];
 						new File(path).mkdirs();
 						return null;

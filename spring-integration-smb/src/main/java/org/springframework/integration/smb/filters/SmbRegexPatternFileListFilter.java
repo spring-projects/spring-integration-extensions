@@ -16,8 +16,11 @@
 
 package org.springframework.integration.smb.filters;
 
+import java.io.UncheckedIOException;
 import java.util.regex.Pattern;
 
+import jcifs.smb.SmbException;
+import org.springframework.integration.file.filters.AbstractDirectoryAwareFileListFilter;
 import org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter;
 
 import jcifs.smb.SmbFile;
@@ -48,4 +51,19 @@ public class SmbRegexPatternFileListFilter extends AbstractRegexPatternFileListF
 		return (file != null ? file.getName() : null);
 	}
 
+	/**
+	 * Indicates whether the file is a directory or not.
+	 * @param file SMB file object
+	 * @return true if it's a directory.
+	 * @see AbstractDirectoryAwareFileListFilter#isDirectory(java.lang.Object)
+	 */
+	@Override
+	protected boolean isDirectory(SmbFile file) {
+		try {
+			return file.isDirectory();
+		}
+		catch (SmbException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
 }

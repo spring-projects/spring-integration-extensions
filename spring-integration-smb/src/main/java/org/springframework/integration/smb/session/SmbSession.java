@@ -395,7 +395,7 @@ public class SmbSession implements Session<SmbFile> {
 	}
 
 	@Override
-	public boolean finalizeRaw() throws IOException {
+	public boolean finalizeRaw() {
 		return true;
 	}
 
@@ -524,7 +524,7 @@ public class SmbSession implements Session<SmbFile> {
 	}
 
 	@Override
-	public String[] listNames(String path) throws IOException {
+	public String[] listNames(String path) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 

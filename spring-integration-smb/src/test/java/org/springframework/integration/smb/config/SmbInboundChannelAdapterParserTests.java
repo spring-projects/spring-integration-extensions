@@ -34,7 +34,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
-import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
+//import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizer;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizingMessageSource;
 import org.springframework.integration.smb.session.SmbSession;
@@ -56,11 +56,10 @@ public class SmbInboundChannelAdapterParserTests {
 	ApplicationContext applicationContext;
 
 	@Test(timeout = 100000)
-	public void testSmbInboundChannelAdapterComplete() throws Exception {
+	public void testSmbInboundChannelAdapterComplete() {
 
 		final SourcePollingChannelAdapter adapter = this.applicationContext.getBean("smbInbound", SourcePollingChannelAdapter.class);
 		final PriorityBlockingQueue<?> queue = TestUtils.getPropertyValue(adapter, "source.fileSource.toBeReceived", PriorityBlockingQueue.class);
-
 		assertNotNull(queue.comparator());
 		assertEquals("smbInbound", adapter.getComponentName());
 		assertEquals("smb:inbound-channel-adapter", adapter.getComponentType());
@@ -75,14 +74,14 @@ public class SmbInboundChannelAdapterParserTests {
 		String remoteFileSeparator = (String) TestUtils.getPropertyValue(fisync, "remoteFileSeparator");
 		assertNotNull(remoteFileSeparator);
 		assertEquals("", remoteFileSeparator);
-		SmbSimplePatternFileListFilter filter = (SmbSimplePatternFileListFilter) TestUtils.getPropertyValue(fisync, "filter");
-		assertNotNull(filter);
+		//SmbSimplePatternFileListFilter filter = (SmbSimplePatternFileListFilter) TestUtils.getPropertyValue(fisync, "filter");
+		assertNotNull(TestUtils.getPropertyValue(fisync, "filter"));
 		Object sessionFactory = TestUtils.getPropertyValue(fisync, "remoteFileTemplate.sessionFactory");
 		assertTrue(SmbSessionFactory.class.isAssignableFrom(sessionFactory.getClass()));
 	}
 
 	@Test
-	public void testNoCachingSessionFactoryByDefault() throws Exception {
+	public void testNoCachingSessionFactoryByDefault() {
 		SourcePollingChannelAdapter adapter = applicationContext.getBean("simpleAdapter", SourcePollingChannelAdapter.class);
 		Object sessionFactory = TestUtils.getPropertyValue(adapter, "source.synchronizer.remoteFileTemplate.sessionFactory");
 		assertThat(sessionFactory, instanceOf(SmbSessionFactory.class));
@@ -94,7 +93,7 @@ public class SmbInboundChannelAdapterParserTests {
 	}
 
 	@Test(timeout = 10000)
-	public void testSmbInboundChannelAdapterCompleteNoId() throws Exception {
+	public void testSmbInboundChannelAdapterCompleteNoId() {
 
 		Map<String, SourcePollingChannelAdapter> spcas = applicationContext.getBeansOfType(SourcePollingChannelAdapter.class);
 		SourcePollingChannelAdapter adapter = null;
@@ -109,7 +108,7 @@ public class SmbInboundChannelAdapterParserTests {
 
 	public static class TestSessionFactoryBean implements FactoryBean<SmbSessionFactory> {
 
-		public SmbSessionFactory getObject() throws Exception {
+		public SmbSessionFactory getObject() {
 			SmbSessionFactory smbFactory = mock(SmbSessionFactory.class);
 			SmbSession session = mock(SmbSession.class);
 			when(smbFactory.getSession()).thenReturn(session);

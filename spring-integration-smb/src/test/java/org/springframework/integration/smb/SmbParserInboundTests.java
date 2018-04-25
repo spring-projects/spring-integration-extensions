@@ -38,7 +38,7 @@ public class SmbParserInboundTests extends AbstractBaseTests {
 	}
 
 	@Test
-	public void testLocalFilesAutoCreationTrue() throws Exception {
+	public void testLocalFilesAutoCreationTrue() {
 		assertFileNotExists(new File("test-temp/local-10"));
 		new ClassPathXmlApplicationContext(getApplicationContextXmlFile(), this.getClass());
 		assertFileExists(new File("test-temp/local-10"));
@@ -46,7 +46,7 @@ public class SmbParserInboundTests extends AbstractBaseTests {
 	}
 
 	@Test(expected = BeanCreationException.class)
-	public void testLocalFilesAutoCreationFalse() throws Exception {
+	public void testLocalFilesAutoCreationFalse() {
 		assertFileNotExists(new File("test-temp/local-6"));
 		new ClassPathXmlApplicationContext(getApplicationContextXmlFile("-fail"), this.getClass())
 				.close();
