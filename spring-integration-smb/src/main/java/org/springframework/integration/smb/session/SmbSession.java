@@ -458,7 +458,7 @@ public class SmbSession implements Session<SmbFile> {
 			return this.smbShare;
 		}
 
-		SmbFile smbFile = new SmbFile(this.smbShare, cleanedPath);
+		SmbFile smbFile = new SmbFile(this.smbShare, cleanedPath, SmbFile.FILE_SHARE_READ);
 
 		boolean appendFileSeparator = !cleanedPath.endsWith(SMB_FILE_SEPARATOR);
 		if (appendFileSeparator) {
