@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -69,7 +70,6 @@ public class SmbInboundChannelAdapterParserTests {
 		assertNotNull(queue.comparator());
 		assertEquals("smbInbound", adapter.getComponentName());
 		assertEquals("smb:inbound-channel-adapter", adapter.getComponentType());
-		assertNotNull(TestUtils.getPropertyValue(adapter, "poller"));
 		assertEquals(applicationContext.getBean("smbChannel"), TestUtils.getPropertyValue(adapter, "outputChannel"));
 		SmbInboundFileSynchronizingMessageSource inbound =
 				(SmbInboundFileSynchronizingMessageSource) TestUtils.getPropertyValue(adapter, "source");
@@ -90,6 +90,10 @@ public class SmbInboundChannelAdapterParserTests {
 		assertThat(filtersIterator.next(), instanceOf(SmbPersistentAcceptOnceFileListFilter.class));
 		Object sessionFactory = TestUtils.getPropertyValue(fisync, "remoteFileTemplate.sessionFactory");
 		assertTrue(SmbSessionFactory.class.isAssignableFrom(sessionFactory.getClass()));
+
+		FileListFilter<?> acceptAllFilter = this.applicationContext.getBean("acceptAllFilter", FileListFilter.class);
+		assertTrue(TestUtils.getPropertyValue(inbound, "fileSource.scanner.filter.fileFilters", Collection.class)
+				.contains(acceptAllFilter));
 	}
 
 	@Test

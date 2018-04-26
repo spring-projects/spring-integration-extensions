@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:int="http://www.springframework.org/schema/integration"
-	xmlns:int-smb="http://www.springframework.org/schema/integration/smb"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:int="http://www.springframework.org/schema/integration"
+	   xmlns:int-smb="http://www.springframework.org/schema/integration/smb"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/integration
 		http://www.springframework.org/schema/integration/spring-integration.xsd
@@ -12,20 +11,24 @@
 		http://www.springframework.org/schema/integration/smb/spring-integration-smb.xsd">
 
 	<bean id="smbSessionFactory"
-		class="org.springframework.integration.smb.config.SmbInboundChannelAdapterParserTests.TestSessionFactoryBean"/>
+		  class="org.springframework.integration.smb.config.SmbInboundChannelAdapterParserTests.TestSessionFactoryBean"/>
+
+	<bean id="acceptAllFilter" class="org.springframework.integration.file.filters.AcceptAllFileListFilter"/>
 
 	<int-smb:inbound-channel-adapter id="smbInbound"
-				channel="smbChannel"
-				session-factory="smbSessionFactory"
-				charset="UTF-8"
-				auto-create-local-directory="true"
-				delete-remote-files="true"
-				filename-pattern="*.txt"
-				local-directory="file:test-temp/local-1"
-				remote-file-separator=""
-				comparator="comparator"
-				temporary-file-suffix=".working.tmp"
-				remote-directory="test-temp/remote-1">
+									 auto-startup="false"
+									 channel="smbChannel"
+									 session-factory="smbSessionFactory"
+									 charset="UTF-8"
+									 auto-create-local-directory="true"
+									 delete-remote-files="true"
+									 filename-pattern="*.txt"
+									 local-filter="acceptAllFilter"
+									 local-directory="file:test-temp/local-1"
+									 remote-file-separator=""
+									 comparator="comparator"
+									 temporary-file-suffix=".working.tmp"
+									 remote-directory="test-temp/remote-1">
 	</int-smb:inbound-channel-adapter>
 
 	<bean id="comparator" class="org.mockito.Mockito" factory-method="mock">
@@ -33,21 +36,23 @@
 	</bean>
 
 	<int-smb:inbound-channel-adapter
-		channel="smbChannel"
-		session-factory="smbSessionFactory"
-		charset="UTF-8"
-		auto-create-local-directory="true"
-		delete-remote-files="true"
-		filter="entryListFilter"
-		local-directory="file:test-temp/local-2"
-		remote-directory="test-temp/remote-2">
+			channel="smbChannel"
+			auto-startup="false"
+			session-factory="smbSessionFactory"
+			charset="UTF-8"
+			auto-create-local-directory="true"
+			delete-remote-files="true"
+			filter="entryListFilter"
+			local-directory="file:test-temp/local-2"
+			remote-directory="test-temp/remote-2">
 	</int-smb:inbound-channel-adapter>
 
 	<int-smb:inbound-channel-adapter id="simpleAdapter"
-		channel="smbChannel"
-		session-factory="smbSessionFactory"
-		local-directory="file:test-temp/local-3"
-		remote-directory="test-temp/remote-3">
+									 channel="smbChannel"
+									 auto-startup="false"
+									 session-factory="smbSessionFactory"
+									 local-directory="file:test-temp/local-3"
+									 remote-directory="test-temp/remote-3">
 	</int-smb:inbound-channel-adapter>
 
 	<int:channel id="smbChannel">
