@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package org.springframework.integration.smb.filters;
 
-import jcifs.smb.SmbException;
+import java.io.UncheckedIOException;
+
 import org.springframework.integration.file.filters.AbstractSimplePatternFileListFilter;
 
+import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-
-import java.io.UncheckedIOException;
 
 /**
  * Implementation of {@link AbstractSimplePatternFileListFilter} for SMB.
@@ -57,4 +57,5 @@ public class SmbSimplePatternFileListFilter extends AbstractSimplePatternFileLis
 			throw new UncheckedIOException(e);
 		}
 	}
+
 }

@@ -16,12 +16,13 @@
 
 package org.springframework.integration.smb.filters;
 
-import jcifs.smb.SmbFile;
+import java.util.Map;
+import java.util.function.Function;
+
 import org.springframework.integration.file.filters.AbstractMarkerFilePresentFileListFilter;
 import org.springframework.integration.file.filters.FileListFilter;
 
-import java.util.Map;
-import java.util.function.Function;
+import jcifs.smb.SmbFile;
 
 /**
  * Implementation of {@link AbstractMarkerFilePresentFileListFilter} for SMB.
@@ -50,4 +51,5 @@ public class SmbSystemMarkerFilePresentFileListFilter extends AbstractMarkerFile
 	protected String getFilename(SmbFile file) {
 		return file.getName();
 	}
+
 }

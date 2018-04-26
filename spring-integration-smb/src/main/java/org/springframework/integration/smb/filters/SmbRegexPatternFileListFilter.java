@@ -19,9 +19,9 @@ package org.springframework.integration.smb.filters;
 import java.io.UncheckedIOException;
 import java.util.regex.Pattern;
 
-import jcifs.smb.SmbException;
 import org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter;
 
+import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
 /**
@@ -60,4 +60,5 @@ public class SmbRegexPatternFileListFilter extends AbstractRegexPatternFileListF
 			throw new UncheckedIOException(e);
 		}
 	}
+
 }

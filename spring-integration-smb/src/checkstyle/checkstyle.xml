@@ -24,11 +24,11 @@
  			<property name="elementStyle" value="compact" />
  		</module>
  		<module name="MissingOverride" />
-<!-- 		<module name="PackageAnnotation" /> -->
-<!-- 		<module name="AnnotationLocation"> -->
-<!-- 			<property name="allowSamelineSingleParameterlessAnnotation" -->
-<!-- 				value="false" /> -->
-<!-- 		</module> -->
+ 		<module name="PackageAnnotation" />
+ 		<module name="AnnotationLocation">
+ 			<property name="allowSamelineSingleParameterlessAnnotation"
+ 				value="false" />
+ 		</module>
 
 		<!-- Block Checks -->
 		<module name="EmptyBlock">
@@ -53,7 +53,7 @@
 		<module name="CovariantEquals" />
 		<module name="EmptyStatement" />
 		<module name="EqualsHashCode" />
-<!-- 		<module name="InnerAssignment" /> -->
+ 		<module name="InnerAssignment" />
 		<module name="SimplifyBooleanExpression" />
 		<module name="SimplifyBooleanReturn" />
 		<module name="StringLiteralEquality" />
@@ -94,13 +94,13 @@
 		<module name="UnusedImports">
 			<property name="processJavadoc" value="true" />
 		</module>
-<!-- 		<module name="ImportOrder"> -->
-<!-- 			<property name="groups" value="java,/^javax?\./,*,org.springframework" /> -->
-<!-- 			<property name="ordered" value="true" /> -->
-<!-- 			<property name="separated" value="true" /> -->
-<!-- 			<property name="option" value="bottom" /> -->
-<!-- 			<property name="sortStaticImportsAlphabetically" value="true" /> -->
-<!-- 		</module> -->
+		<module name="ImportOrder">
+			<property name="groups" value="java,/^javax?\./,org,org.springframework,*" />
+			<property name="ordered" value="true" />
+			<property name="separated" value="true" />
+			<property name="option" value="top" />
+			<property name="sortStaticImportsAlphabetically" value="true" />
+		</module>
 
 		<!-- Javadoc Comments -->
 <!-- 		<module name="JavadocType"> -->
