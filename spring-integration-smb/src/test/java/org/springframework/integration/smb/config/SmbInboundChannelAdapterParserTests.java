@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.junit.Test;
@@ -34,7 +36,10 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
-//import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
+import org.springframework.integration.file.filters.CompositeFileListFilter;
+import org.springframework.integration.file.filters.FileListFilter;
+import org.springframework.integration.smb.filters.SmbPersistentAcceptOnceFileListFilter;
+import org.springframework.integration.smb.filters.SmbSimplePatternFileListFilter;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizer;
 import org.springframework.integration.smb.inbound.SmbInboundFileSynchronizingMessageSource;
 import org.springframework.integration.smb.session.SmbSession;
@@ -47,6 +52,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Markus Spann
  * @author Gunnar Hillert
  * @author Artem Bilan
+ * @author Prafull Kumar Soni
  */
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -74,8 +80,14 @@ public class SmbInboundChannelAdapterParserTests {
 		String remoteFileSeparator = (String) TestUtils.getPropertyValue(fisync, "remoteFileSeparator");
 		assertNotNull(remoteFileSeparator);
 		assertEquals("", remoteFileSeparator);
-		//SmbSimplePatternFileListFilter filter = (SmbSimplePatternFileListFilter) TestUtils.getPropertyValue(fisync, "filter");
-		assertNotNull(TestUtils.getPropertyValue(fisync, "filter"));
+		FileListFilter<?> filter = TestUtils.getPropertyValue(fisync, "filter", FileListFilter.class);
+		assertNotNull(filter);
+		assertThat(filter, instanceOf(CompositeFileListFilter.class));
+		Set<?> fileFilters = TestUtils.getPropertyValue(filter, "fileFilters", Set.class);
+
+		Iterator<?> filtersIterator = fileFilters.iterator();
+		assertThat(filtersIterator.next(), instanceOf(SmbSimplePatternFileListFilter.class));
+		assertThat(filtersIterator.next(), instanceOf(SmbPersistentAcceptOnceFileListFilter.class));
 		Object sessionFactory = TestUtils.getPropertyValue(fisync, "remoteFileTemplate.sessionFactory");
 		assertTrue(SmbSessionFactory.class.isAssignableFrom(sessionFactory.getClass()));
 	}

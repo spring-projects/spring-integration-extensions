@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.springframework.integration.smb.filters;
 
 import jcifs.smb.SmbException;
-import org.springframework.integration.file.filters.AbstractDirectoryAwareFileListFilter;
 import org.springframework.integration.file.filters.AbstractSimplePatternFileListFilter;
 
 import jcifs.smb.SmbFile;
@@ -28,6 +27,7 @@ import java.io.UncheckedIOException;
  * Implementation of {@link AbstractSimplePatternFileListFilter} for SMB.
  *
  * @author Markus Spann
+ * @author Prafull Kumar Soni
  *
  */
 public class SmbSimplePatternFileListFilter extends AbstractSimplePatternFileListFilter<SmbFile> {
@@ -47,12 +47,7 @@ public class SmbSimplePatternFileListFilter extends AbstractSimplePatternFileLis
 		return (file != null) ? file.getName() : null;
 	}
 
-	/**
-	 * Indicates whether the file is a directory or not.
-	 * @param file SMB file object
-	 * @return true if it's a directory.
-	 * @see AbstractDirectoryAwareFileListFilter#isDirectory(java.lang.Object)
-	 */
+
 	@Override
 	protected boolean isDirectory(SmbFile file) {
 		try {

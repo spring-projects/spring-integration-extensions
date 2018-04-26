@@ -171,8 +171,8 @@ task schemaZip(type: Zip) {
 	description = "Builds -${classifier} archive containing all " +
 		"XSDs for deployment at static.springframework.org/schema."
 
-    Properties schemas = new Properties()
-    def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
+	Properties schemas = new Properties()
+	def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
 
 	project.sourceSets.main.resources.find {
 		it.path.endsWith("META-INF${File.separator}spring.schemas")
