@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package org.springframework.integration.zip.transformer;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,12 +33,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.zeroturnaround.zip.ZipException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.transformer.MessageTransformationException;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessagingException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -44,6 +50,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
+ *
  * @since 1.0
  *
  */
@@ -253,4 +260,25 @@ public class UnZipTransformerTests {
 		}
 	}
 
+	@Test
+	public void testUnzipMaliciousTraversalZipFile() throws IOException {
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/zip-malicious-traversal.zip");
+		final InputStream is = resource.getInputStream();
+
+		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
+
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.afterPropertiesSet();
+
+		try {
+			unZipTransformer.transform(message);
+		}
+		catch (Exception e) {
+			Assert.assertThat(e, instanceOf(MessageTransformationException.class));
+			Assert.assertThat(e.getCause(), instanceOf(MessageHandlingException.class));
+			Assert.assertThat(e.getCause().getCause(), instanceOf(ZipException.class));
+			Assert.assertThat(e.getCause().getCause().getMessage(),
+					containsString("is trying to leave the target output directory"));
+		}
+	}
 }

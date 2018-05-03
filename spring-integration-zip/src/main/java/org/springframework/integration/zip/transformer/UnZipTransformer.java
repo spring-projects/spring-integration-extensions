@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.zeroturnaround.zip.ZipEntryCallback;
+import org.zeroturnaround.zip.ZipException;
 import org.zeroturnaround.zip.ZipUtil;
 
 import org.springframework.messaging.Message;
@@ -41,6 +42,7 @@ import org.springframework.messaging.MessagingException;
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
+ *
  * @since 1.0
  *
  */
@@ -104,7 +106,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 				}
 				else {
 					throw new IllegalArgumentException(String.format("Unsupported payload type '%s'. " +
-							"The only supported payload types are java.io.File, byte[] and java.io.InputStream",
+									"The only supported payload types are java.io.File, byte[] and java.io.InputStream",
 							payload.getClass().getSimpleName()));
 				}
 
@@ -122,7 +124,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 
 						if (logger.isInfoEnabled()) {
 							logger.info(String.format("Unpacking Zip Entry - Name: '%s',Time: '%s', " +
-									"Compressed Size: '%s', Type: '%s'",
+											"Compressed Size: '%s', Type: '%s'",
 									zipEntryName, zipEntryTime, zipEntryCompressedSize, type));
 						}
 
@@ -130,6 +132,16 @@ public class UnZipTransformer extends AbstractZipTransformer {
 							final File tempDir = new File(workDirectory, message.getHeaders().getId().toString());
 							tempDir.mkdirs(); //NOSONAR false positive
 							final File destinationFile = new File(tempDir, zipEntryName);
+
+							/* If we see the relative traversal string of ".." we need to make sure
+							 * that the outputdir + name doesn't leave the outputdir.
+							 */
+							if (zipEntryName.contains("..") &&
+									!destinationFile.getCanonicalPath().startsWith(workDirectory.getCanonicalPath())) {
+								throw new ZipException("The file " + zipEntryName +
+										" is trying to leave the target output directory of " + workDirectory
+										+ ". Ignoring this file.");
+							}
 
 							if (zipEntry.isDirectory()) {
 								destinationFile.mkdirs(); //NOSONAR false positive
@@ -165,8 +177,8 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						}
 						else {
 							throw new MessagingException(message,
-								String.format("The UnZip operation extracted %s "
-							  + "result objects but expectSingleResult was 'true'.", uncompressedData.size()));
+									String.format("The UnZip operation extracted %s "
+											+ "result objects but expectSingleResult was 'true'.", uncompressedData.size()));
 						}
 					}
 					else {
