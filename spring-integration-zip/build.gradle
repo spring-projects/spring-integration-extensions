@@ -4,7 +4,7 @@ buildscript {
 	}
 	dependencies {
 		classpath 'io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE'
-		classpath 'io.spring.gradle:spring-io-plugin:0.0.7.RELEASE'
+		classpath 'io.spring.gradle:spring-io-plugin:0.0.8.RELEASE'
 	}
 }
 
