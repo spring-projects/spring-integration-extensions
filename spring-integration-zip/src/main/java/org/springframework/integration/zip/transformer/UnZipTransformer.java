@@ -136,8 +136,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 							/* If we see the relative traversal string of ".." we need to make sure
 							 * that the outputdir + name doesn't leave the outputdir.
 							 */
-							if (zipEntryName.contains("..") &&
-									!destinationFile.getCanonicalPath().startsWith(workDirectory.getCanonicalPath())) {
+							if (!destinationFile.getCanonicalPath().startsWith(workDirectory.getCanonicalPath())) {
 								throw new ZipException("The file " + zipEntryName +
 										" is trying to leave the target output directory of " + workDirectory);
 							}
