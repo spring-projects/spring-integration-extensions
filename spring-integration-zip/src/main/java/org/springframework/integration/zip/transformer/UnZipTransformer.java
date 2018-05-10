@@ -129,17 +129,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						}
 
 						if (ZipResultType.FILE.equals(zipResultType)) {
-							final File tempDir = new File(workDirectory, message.getHeaders().getId().toString());
-							tempDir.mkdirs(); //NOSONAR false positive
-							final File destinationFile = new File(tempDir, zipEntryName);
-
-							/* If we see the relative traversal string of ".." we need to make sure
-							 * that the outputdir + name doesn't leave the outputdir.
-							 */
-							if (!destinationFile.getCanonicalPath().startsWith(workDirectory.getCanonicalPath())) {
-								throw new ZipException("The file " + zipEntryName +
-										" is trying to leave the target output directory of " + workDirectory);
-							}
+							final File destinationFile = checkPath(message, zipEntryName);
 
 							if (zipEntry.isDirectory()) {
 								destinationFile.mkdirs(); //NOSONAR false positive
@@ -151,6 +141,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						}
 						else if (ZipResultType.BYTE_ARRAY.equals(zipResultType)) {
 							if (!zipEntry.isDirectory()) {
+								checkPath(message, zipEntryName);
 								byte[] data = IOUtils.toByteArray(zipEntryInputStream);
 								uncompressedData.put(zipEntryName, data);
 							}
@@ -158,6 +149,21 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						else {
 							throw new IllegalStateException("Unsupported zipResultType " + zipResultType);
 						}
+					}
+
+					public File checkPath(final Message<?> message, final String zipEntryName) throws IOException {
+						final File tempDir = new File(workDirectory, message.getHeaders().getId().toString());
+						tempDir.mkdirs(); //NOSONAR false positive
+						final File destinationFile = new File(tempDir, zipEntryName);
+
+						/* If we see the relative traversal string of ".." we need to make sure
+						 * that the outputdir + name doesn't leave the outputdir.
+						 */
+						if (!destinationFile.getCanonicalPath().startsWith(workDirectory.getCanonicalPath())) {
+							throw new ZipException("The file " + zipEntryName +
+									" is trying to leave the target output directory of " + workDirectory);
+						}
+						return destinationFile;
 					}
 				});
 

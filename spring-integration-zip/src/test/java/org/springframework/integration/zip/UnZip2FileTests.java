@@ -16,6 +16,10 @@
 
 package org.springframework.integration.zip;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +32,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.zeroturnaround.zip.ZipException;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -36,8 +41,10 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.integration.transformer.MessageTransformationException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHandlingException;
 
 /**
  *
@@ -144,6 +151,25 @@ public class UnZip2FileTests {
 		Assert.assertTrue(fr);
 		Assert.assertTrue(pl);
 
+	}
+
+	@Test
+	public void unZipTraversal() throws Exception {
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/zip-malicious-traversal.zip");
+		final InputStream is = resource.getInputStream();
+		byte[] zipdata = IOUtils.toByteArray(is);
+		final Message<byte[]> message = MessageBuilder.withPayload(zipdata).build();
+		try {
+			input.send(message);
+			fail("Expected Exception");
+		}
+		catch (Exception e) {
+			Assert.assertThat(e, instanceOf(MessageTransformationException.class));
+			Assert.assertThat(e.getCause(), instanceOf(MessageHandlingException.class));
+			Assert.assertThat(e.getCause().getCause(), instanceOf(ZipException.class));
+			Assert.assertThat(e.getCause().getCause().getMessage(),
+					containsString("is trying to leave the target output directory"));
+		}
 	}
 
 	@Configuration
