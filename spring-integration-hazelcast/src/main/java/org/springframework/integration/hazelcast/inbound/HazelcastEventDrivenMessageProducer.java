@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import com.hazelcast.map.listener.MapListener;
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessageProducer {
@@ -61,7 +62,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 	}
 
 	@Override
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void doStart() {
 		if (this.distributedObject instanceof IMap) {
 			setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject)
@@ -168,7 +169,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 
 		@Override
 		protected void processEvent(Message<E> event) {
-			sendMessage(event, event.getPublishingMember().getSocketAddress(), null);
+			sendMessage(event, event.getPublishingMember().getSocketAddress(), getCacheListeningPolicy());
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Received Message : " + event);

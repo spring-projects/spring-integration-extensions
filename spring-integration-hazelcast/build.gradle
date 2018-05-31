@@ -55,7 +55,7 @@ compileTestJava {
 ext {
 	hazelcastVersion = '3.8.9'
 	slf4jVersion = '1.7.25'
-	springIntegrationVersion = '4.3.14.RELEASE'
+	springIntegrationVersion = '4.3.16.RELEASE'
 
 	idPrefix = 'hazelcast'
 
