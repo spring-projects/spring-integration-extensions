@@ -16,8 +16,8 @@
 
 package org.springframework.integration.smb.session;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -30,6 +30,8 @@ import org.springframework.util.StringUtils;
  *
  * @author Markus Spann
  * @author Prafull Kumar Soni
+ * @author Artem Bilan
+ *
  * @since 1.0
  */
 public class SmbConfig {
@@ -134,15 +136,14 @@ public class SmbConfig {
 
 	String getDomainUserPass(boolean _includePassword) {
 		String domainUserPass;
-		String user = _includePassword ? this.username : "********";
 		if (StringUtils.hasText(this.domain)) {
-			domainUserPass = String.format("%s;%s", this.domain, user);
+			domainUserPass = String.format("%s;%s", this.domain, this.username);
 		}
 		else {
-			domainUserPass = user;
+			domainUserPass = this.username;
 		}
 		if (StringUtils.hasText(this.password)) {
-			domainUserPass += ":" + this.password;
+			domainUserPass += ":" + (_includePassword ? this.password : "********");
 		}
 		return domainUserPass;
 	}
@@ -168,15 +169,21 @@ public class SmbConfig {
 
 	public final String getUrl(boolean _includePassword) {
 		String domainUserPass = getDomainUserPass(_includePassword);
-		if (domainUserPass != null) {
-			try {
-				domainUserPass = URLEncoder.encode(domainUserPass, "UTF8");
-			}
-			catch (UnsupportedEncodingException ex) {
-				throw new IllegalStateException(ex);
-			}
+
+		String path = StringUtils.cleanPath(this.shareAndDir);
+
+		if (!path.startsWith("/")) {
+			path = "/" + path;
 		}
-		return String.format("smb://%s@%s/%s", domainUserPass, getHostPort(), StringUtils.cleanPath(this.shareAndDir));
+
+		try {
+			return new URI("smb", domainUserPass, this.host, this.port, path, null, null)
+					.toASCIIString();
+		}
+		catch (URISyntaxException e) {
+			throw new IllegalArgumentException(e);
+		}
+
 	}
 
 	@Override

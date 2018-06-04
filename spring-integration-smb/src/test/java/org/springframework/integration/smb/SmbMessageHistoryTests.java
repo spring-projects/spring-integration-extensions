@@ -18,22 +18,38 @@ package org.springframework.integration.smb;
 
 import static org.junit.Assert.assertEquals;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.junit.Test;
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
+import org.springframework.integration.smb.session.SmbSessionFactory;
 
 /**
  * @author Markus Spann
  * @author Prafull Kumar Soni
+ * @author Artem Bilan
  *
  */
 public class SmbMessageHistoryTests extends AbstractBaseTests {
 
 	@Test
-	public void testMessageHistory() {
-		SourcePollingChannelAdapter adapter = getApplicationContext()
+	public void testMessageHistory() throws URISyntaxException {
+		ClassPathXmlApplicationContext applicationContext = getApplicationContext();
+		SourcePollingChannelAdapter adapter = applicationContext
 				.getBean("smbInboundChannelAdapter", SourcePollingChannelAdapter.class);
 		assertEquals("smbInboundChannelAdapter", adapter.getComponentName());
 		assertEquals("smb:inbound-channel-adapter", adapter.getComponentType());
+
+		SmbSessionFactory smbSessionFactory = applicationContext.getBean(SmbSessionFactory.class);
+
+		String url = smbSessionFactory.getUrl();
+		URI uri = new URI(url);
+		assertEquals("sambagu%40est:sambag%25uest", uri.getRawUserInfo());
+		assertEquals("sambagu@est:sambag%uest", uri.getUserInfo());
+
+		applicationContext.close();
 	}
 }
