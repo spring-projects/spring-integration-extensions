@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.samples.smb;
 
 import java.util.Scanner;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.integration.smb.session.SmbSessionFactory;
 
@@ -26,12 +29,14 @@ import org.springframework.integration.smb.session.SmbSessionFactory;
  * Starts the Spring Context and will initialize the Spring Integration routes.
  *
  * @author Gunnar Hillert
+ * @author Artem Bilan
+ *
  * @since 1.0
  *
  */
 public final class Main {
 
-	private static final Logger LOGGER = Logger.getLogger(Main.class);
+	private static final Log LOGGER = LogFactory.getLog(Main.class);
 
 	private Main() { }
 
@@ -115,4 +120,5 @@ public final class Main {
 		System.exit(0);
 
 	}
+
 }
