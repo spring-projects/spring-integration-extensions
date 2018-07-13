@@ -304,34 +304,70 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 					}
 					catch (Exception e) {
 						if (this.locked) {
-							LeaderInitiator.this.lock.unlock();
 							this.locked = false;
+							try {
+								LeaderInitiator.this.lock.unlock();
+							}
+							catch (Exception e1) {
+								logger.debug("Could not unlock - treat as broken " + this.context +
+										". Revoking " + (isRunning() ? " and retrying..." : "..."), e1);
+
+							}
 							// The lock was broken and we are no longer leader
 							handleRevoked();
-							if (isRunning()) {
-								// Give it a chance to elect some other leader.
-								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
-							}
 						}
 
-						if (e instanceof InterruptedException) {
+						if (e instanceof InterruptedException || Thread.currentThread().isInterrupted()) {
 							Thread.currentThread().interrupt();
 							if (isRunning()) {
-								logger.warn("Restarting LeaderSelector because of error.", e);
-								LeaderInitiator.this.future = LeaderInitiator.this.executorService.submit(this);
+								logger.warn("Restarting LeaderSelector for " + this.context + " because of error.", e);
+								LeaderInitiator.this.future =
+										LeaderInitiator.this.executorService.submit(
+												new Callable<Void>() {
+
+													@Override
+													public Void call() throws Exception {
+														// Give it a chance to elect some other leader.
+														Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+														return LeaderSelector.this.call();
+													}
+
+												});
 							}
 							return null;
+						}
+						else {
+							if (isRunning()) {
+								// Give it a chance to elect some other leader.
+								try {
+									Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+								}
+								catch (InterruptedException e1) {
+									// Ignore interruption and let it to be caught on the next cycle.
+									Thread.currentThread().interrupt();
+								}
+							}
+							if (logger.isDebugEnabled()) {
+								logger.debug("Error acquiring the lock for " + this.context +
+										". " + (isRunning() ? "Retrying..." : ""), e);
+							}
 						}
 					}
 				}
 			}
 			finally {
 				if (this.locked) {
-					LeaderInitiator.this.lock.unlock();
+					this.locked = false;
+					try {
+						LeaderInitiator.this.lock.unlock();
+					}
+					catch (Exception e) {
+						logger.debug("Could not unlock during stop for " + this.context
+								+ " - treat as broken. Revoking...", e);
+					}
 					// We are stopping, therefore not leading any more
 					handleRevoked();
 				}
-				this.locked = false;
 			}
 			return null;
 		}
