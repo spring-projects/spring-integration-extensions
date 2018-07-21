@@ -49,12 +49,11 @@ def customizePom(pom, gradleProject) {
 				connection = 'scm:git:' + linkScmConnection
 				developerConnection = 'scm:git:' + linkScmDevConnection
 			}
-
 			developers {
 				developer {
-					id = 'erenavsarogullari'
-					name = 'Eren Avsarogullari'
-					email = 'erenavsarogullari@gmail.com'
+					id = 'abilan'
+					name = 'Artem Bilan'
+					email = 'abilan@pivotal.io'
 				}
 			}
 		}
