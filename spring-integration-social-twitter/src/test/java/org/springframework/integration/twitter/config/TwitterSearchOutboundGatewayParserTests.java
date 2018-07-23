@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -39,6 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Gary Russell
+ * @author Artem Bilan
  */
 @ContextConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -73,7 +74,7 @@ public class TwitterSearchOutboundGatewayParserTests {
 	@Test
 	public void testAdvised() {
 		assertSame(twitter, TestUtils.getPropertyValue(polledAndAdvisedTSOG, "handler.twitter"));
-		assertThat(TestUtils.getPropertyValue(polledAndAdvisedTSOG, "handler.adviceChain", ArrayList.class).get(0),
+		assertThat(TestUtils.getPropertyValue(polledAndAdvisedTSOG, "handler.adviceChain", List.class).get(0),
 				Matchers.instanceOf(RequestHandlerRetryAdvice.class));
 	}
 
