@@ -14,6 +14,7 @@ apply from: "${rootProject.projectDir}/publish-maven.gradle"
 group = 'org.springframework.integration'
 
 repositories {
+//	maven { url 'http://repo.spring.io/libs-staging-local' }
 	if (version.endsWith('BUILD-SNAPSHOT')) {
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 	}
@@ -26,10 +27,10 @@ compileJava {
 }
 
 ext {
-	jackson2Version = '2.9.5'
-	springIntegrationVersion = '5.1.0.BUILD-SNAPSHOT'
+	jackson2Version = '2.9.6'
+	springIntegrationVersion = '5.1.0.M1'
 	springSocialTwitterVersion = '1.1.2.RELEASE'
-	springVersion = '5.1.0.BUILD-SNAPSHOT'
+	springVersion = '5.1.0.RC1'
 
 	idPrefix = 'twitter'
 
@@ -57,7 +58,7 @@ jacoco {
 
 checkstyle {
 	configFile = file("$rootDir/src/checkstyle/checkstyle.xml")
-	toolVersion = "8.9"
+	toolVersion = "8.11"
 }
 
 // enable all compiler warnings; individual projects may customize further
@@ -75,7 +76,6 @@ dependencies {
 			exclude group: 'org.springframework', module: 'spring-web'
 			exclude group: 'org.springframework', module: 'spring-webmvc'
 		}
-		//compile("javax.activation:activation:$javaxActivationVersion", optional)
 
 		testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 		testCompile "com.fasterxml.jackson.core:jackson-databind:$jackson2Version"
