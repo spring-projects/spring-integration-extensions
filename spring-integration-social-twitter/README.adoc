@@ -19,7 +19,7 @@ You can enable it by adding the following within your XML header.
 ----
 xmlns:int-twitter="http://www.springframework.org/schema/integration/twitter"
 xsi:schemaLocation="http://www.springframework.org/schema/integration/twitter
-http://www.springframework.org/schema/integration/twitter/spring-integration-twitter.xsd"
+http://www.springframework.org/schema/integration/twitter/spring-integration-social-twitter.xsd"
 ----
 
 === Twitter OAuth Configuration
