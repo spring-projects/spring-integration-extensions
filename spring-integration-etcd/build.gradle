@@ -40,7 +40,7 @@ if (project.hasProperty('platformVersion')) {
 sourceCompatibility = targetCompatibility = 1.7
 
 ext {
-	etcdVersion = '2.7.0'
+	etcdVersion = '0.0.7'
 	slf4jVersion = '1.7.13'
 	springIntegrationVersion = '4.2.4.RELEASE'
 
@@ -70,7 +70,8 @@ jacoco {
 
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-	compile "org.mousio:etcd4j:$etcdVersion"
+	compile "com.ibm.etcd:etcd-java:$etcdVersion"
+	compile "org.slf4j:slf4j-api:$slf4jVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 

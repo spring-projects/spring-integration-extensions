@@ -18,12 +18,10 @@ package org.springframework.integration.etcd.leader;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
-import java.net.URI;
+import com.ibm.etcd.client.EtcdClient;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -31,16 +29,12 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.etcd.leader.LeaderInitiator;
 import org.springframework.integration.leader.AbstractCandidate;
 import org.springframework.integration.leader.Context;
 import org.springframework.integration.leader.DefaultCandidate;
 import org.springframework.integration.leader.event.AbstractLeaderEvent;
 import org.springframework.integration.leader.event.DefaultLeaderEventPublisher;
 import org.springframework.integration.leader.event.LeaderEventPublisher;
-
-import mousio.etcd4j.EtcdClient;
-import mousio.etcd4j.responses.EtcdException;
 
 /**
  * Tests for etcd leader election.
@@ -73,7 +67,7 @@ public class EtcdTests {
 	}
 
 	@Test
-	public void testBlockingThreadLeader() throws InterruptedException, IOException, EtcdException, TimeoutException {
+	public void testBlockingThreadLeader() throws InterruptedException {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(BlockingThreadTestConfig.class);
 		BlockingThreadTestCandidate candidate = ctx.getBean(BlockingThreadTestCandidate.class);
 		YieldTestEventListener listener = ctx.getBean(YieldTestEventListener.class);
@@ -108,7 +102,7 @@ public class EtcdTests {
 
 		@Bean
 		public EtcdClient etcdInstance() {
-			return new EtcdClient(URI.create("http://localhost:4001"));
+			return EtcdClient.forEndpoint("localhost",2379).withPlainText().build();
 		}
 
 		@Bean
@@ -160,7 +154,7 @@ public class EtcdTests {
 
 		@Bean
 		public EtcdClient etcdInstance() {
-			return new EtcdClient(URI.create("http://localhost:4001"));
+			return EtcdClient.forEndpoint("localhost",2379).withPlainText().build();
 		}
 
 		@Bean
@@ -226,7 +220,7 @@ public class EtcdTests {
 
 		@Bean
 		public EtcdClient etcdInstance() {
-			return new EtcdClient(URI.create("http://localhost:4001"));
+			return EtcdClient.forEndpoint("localhost",2379).withPlainText().build();
 		}
 
 		@Bean
@@ -289,7 +283,7 @@ public class EtcdTests {
 
 		@Bean
 		public EtcdClient etcdInstance() {
-			return new EtcdClient(URI.create("http://localhost:4001"));
+			return EtcdClient.forEndpoint("localhost",2379).withPlainText().build();
 		}
 
 		@Bean

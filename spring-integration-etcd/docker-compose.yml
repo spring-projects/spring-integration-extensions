@@ -1,6 +1,8 @@
-etcd:
-  image: microbox/etcd
-  ports:
-    - "4001:4001"
-    - "7001:7001"
-  command: "--name spring-cloud-cluster-etcd --data-dir=/data"
+version: '3'
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.3
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    command: /usr/local/bin/etcd --name spring-integration-etcd-test --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379 --debug

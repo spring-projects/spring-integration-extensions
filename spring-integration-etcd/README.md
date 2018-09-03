@@ -9,7 +9,7 @@ you just need to create a `LeaderInitiator`. Example:
 ```java
 @Bean
 public EtcdClient etcdClient() {
-	return new EtcdClient(URI.create("http://localhost:4001"));
+	return new EtcdClient(URI.create("http://localhost:2379"));
 }
 
 @Bean
