@@ -1,0 +1,6 @@
+etcd:
+  image: microbox/etcd
+  ports:
+    - "4001:4001"
+    - "7001:7001"
+  command: "--name spring-cloud-cluster-etcd --data-dir=/data"
