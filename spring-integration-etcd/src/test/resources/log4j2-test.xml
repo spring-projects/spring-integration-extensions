@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d %5p %c [%t] : %m%n" />
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Logger name="etcd" level="warn"/>
+    <Logger name="com.ibm.etcd" level="warn"/>
+    <Logger name="org.springframework.integration.etcd" level="warn"/>
+    <Logger name="org.springframework.integration" level="warn"/>
+    <Root level="warn">
+      <AppenderRef ref="STDOUT" />
+    </Root>
+  </Loggers>
+</Configuration>
