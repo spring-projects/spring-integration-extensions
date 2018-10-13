@@ -23,8 +23,9 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,7 @@ import org.springframework.integration.leader.event.LeaderEventPublisher;
  * Tests for etcd leader election.
  *
  * @author Venil Noronha
+ * @author Lewis Headden
  */
 public class EtcdTests {
 
@@ -108,6 +110,7 @@ public class EtcdTests {
 		@Bean
 		public LeaderInitiator initiator() {
 			LeaderInitiator initiator = new LeaderInitiator(etcdInstance(), candidate(), "etcd-test");
+			initiator.start();
 			return initiator;
 		}
 
@@ -161,6 +164,7 @@ public class EtcdTests {
 		public LeaderInitiator initiator() {
 			LeaderInitiator initiator = new LeaderInitiator(etcdInstance(), candidate(), "etcd-yield-test");
 			initiator.setLeaderEventPublisher(leaderEventPublisher());
+			initiator.start();
 			return initiator;
 		}
 
@@ -227,6 +231,7 @@ public class EtcdTests {
 		public LeaderInitiator initiator() {
 			LeaderInitiator initiator = new LeaderInitiator(etcdInstance(), candidate(), "etcd-blocking-thread-test");
 			initiator.setLeaderEventPublisher(leaderEventPublisher());
+			initiator.start();
 			return initiator;
 		}
 
@@ -243,23 +248,23 @@ public class EtcdTests {
 	}
 
 	static class BlockingThreadTestCandidate extends AbstractCandidate {
-
-		CountDownLatch onGrantedLatch = new CountDownLatch(1);
+    private final Log logger = LogFactory.getLog(getClass());
+    CountDownLatch onGrantedLatch = new CountDownLatch(1);
 		CountDownLatch onRevokedLatch = new CountDownLatch(1);
 		Context ctx = null;
 
 		@Override
 		public void onGranted(Context ctx) throws InterruptedException {
 			this.ctx = ctx;
-			LoggerFactory.getLogger(getClass()).info("{} has been granted leadership; context: {}", this, ctx);
+			logger.info(this + " has been granted leadership; context: " + ctx);
 			this.onGrantedLatch.countDown();
 			while (true) {
-				LoggerFactory.getLogger(getClass()).info("{} is doing some heavy lifting", this);
+        logger.info(this + " is doing some heavy lifting");
 				try {
 					Thread.sleep(1000); // Mock heavy lifting
 				}
 				catch (InterruptedException e) {
-					LoggerFactory.getLogger(getClass()).info("{} was interrupted, rethrowing the exception", this);
+          logger.info(this + " was interrupted, rethrowing the exception");
 					throw e;
 				}
 			}
@@ -267,7 +272,7 @@ public class EtcdTests {
 
 		@Override
 		public void onRevoked(Context ctx) {
-			LoggerFactory.getLogger(getClass()).info("{} leadership has been revoked", this, ctx);
+			logger.info(this + " leadership has been revoked");
 			this.onRevokedLatch.countDown();
 		}
 
@@ -290,6 +295,7 @@ public class EtcdTests {
 		public LeaderInitiator initiator() {
 			LeaderInitiator initiator = new LeaderInitiator(etcdInstance(), candidate(), "etcd-failing-candidate-test");
 			initiator.setLeaderEventPublisher(leaderEventPublisher());
+			initiator.start();
 			return initiator;
 		}
 

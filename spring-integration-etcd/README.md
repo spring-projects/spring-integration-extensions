@@ -20,5 +20,5 @@ public LeaderInitiator initiator() {
 ```
 
 Then when a node is elected leader it will send `OnGrantedEvent` to all application listeners. See
-the [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/htmlsingle/#endpoint-roles)
+the [Spring Integration User Guide](https://docs.spring.io/spring-integration/reference/html/messaging-endpoints-chapter.html#endpoint-roles)
 for more information on how to use those events to control messaging endpoints.

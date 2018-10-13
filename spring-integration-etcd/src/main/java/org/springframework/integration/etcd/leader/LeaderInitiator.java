@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
@@ -52,11 +51,11 @@ import static com.ibm.etcd.client.KeyUtils.bs;
  *
  * @author Venil Noronha
  * @author Patrick Peralta
+ * @author Lewis Headden
  */
-public class LeaderInitiator
-    implements Lifecycle, InitializingBean, DisposableBean, ApplicationEventPublisherAware {
+public class LeaderInitiator implements Lifecycle, DisposableBean, ApplicationEventPublisherAware {
 
-  private static final Logger logger = LoggerFactory.getLogger(LeaderInitiator.class);
+  private final Log logger = LogFactory.getLog(getClass());
 
   /** TTL for etcd entry in seconds. */
   private static final int TTL = 10;
@@ -65,7 +64,7 @@ public class LeaderInitiator
   private static final int HEART_BEAT_SLEEP = TTL / 2;
 
   /** Default namespace for etcd entry. */
-  private static final String DEFAULT_NAMESPACE = "spring-cloud";
+  private static final String DEFAULT_NAMESPACE = "spring-integration";
 
   /** {@link EtcdClient} instance. */
   private final EtcdClient client;
@@ -76,25 +75,19 @@ public class LeaderInitiator
   /** Executor service for running leadership daemon. */
   private final ExecutorService leaderExecutorService =
       Executors.newSingleThreadExecutor(
-          new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-              Thread thread = new Thread(r, "Etcd-Leadership");
-              thread.setDaemon(true);
-              return thread;
-            }
+          r -> {
+            Thread thread = new Thread(r, "Etcd-Leadership");
+            thread.setDaemon(true);
+            return thread;
           });
 
   /** Executor service for running leadership worker daemon. */
   private final ExecutorService workerExecutorService =
       Executors.newSingleThreadExecutor(
-          new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-              Thread thread = new Thread(r, "Etcd-Leadership-Worker");
-              thread.setDaemon(true);
-              return thread;
-            }
+          r -> {
+            Thread thread = new Thread(r, "Etcd-Leadership-Worker");
+            thread.setDaemon(true);
+            return thread;
           });
 
   /** Flag that indicates whether the current candidate is the leader. */
@@ -189,11 +182,6 @@ public class LeaderInitiator
   }
 
   @Override
-  public void afterPropertiesSet() throws Exception {
-    start();
-  }
-
-  @Override
   public void destroy() throws Exception {
     stop();
     this.workerExecutorService.shutdown();
@@ -208,7 +196,7 @@ public class LeaderInitiator
    * @param leaderEventPublisher the event publisher
    */
   public void setLeaderEventPublisher(LeaderEventPublisher leaderEventPublisher) {
-    Assert.notNull(leaderEventPublisher);
+    Assert.notNull(leaderEventPublisher, "leaderEventPublisher cannot be null");
     this.leaderEventPublisher = leaderEventPublisher;
   }
 

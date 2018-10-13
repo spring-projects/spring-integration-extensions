@@ -1,48 +1,30 @@
-description = 'Spring Integration Etcd Support'
-
-apply plugin: 'java'
-apply from: "${rootProject.projectDir}/publish-maven.gradle"
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'jacoco'
-
-group = 'org.springframework.integration'
-
-buildscript {
-	repositories {
-		maven { url 'http://repo.spring.io/plugins-release' }
-        mavenCentral()
-	}
-	dependencies {
-		classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
-	}
+plugins {
+	id 'java'
+	id 'eclipse'
+	id 'idea'
+	id 'jacoco'
+	id 'org.sonarqube' version '2.6.2'
 }
 
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
+
+description = 'Spring Integration Etcd Support'
+group = 'org.springframework.integration'
+
 repositories {
-	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+	if (version.endsWith('BUILD-SNAPSHOT')) {
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 	}
 	maven { url 'http://repo.spring.io/libs-milestone' }
 }
 
-if (project.hasProperty('platformVersion')) {
-	apply plugin: 'spring-io'
-
-	dependencyManagement {
-		springIoTestRuntime {
-			imports {
-				mavenBom "io.spring.platform:platform-bom:${platformVersion}"
-			}
-		}
-	}
-}
-
-sourceCompatibility = targetCompatibility = 1.7
+sourceCompatibility = targetCompatibility = 1.8
 
 ext {
 	etcdVersion = '0.0.7'
-	slf4jVersion = '1.7.13'
-	springIntegrationVersion = '4.2.4.RELEASE'
+	log4jVersion = '2.11.1'
+	springIntegrationVersion = '5.0.8.RELEASE'
+
 
 	idPrefix = 'etcd'
 
@@ -71,11 +53,10 @@ jacoco {
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "com.ibm.etcd:etcd-java:$etcdVersion"
-	compile "org.slf4j:slf4j-api:$slf4jVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 
-	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+	testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
 }
 
 // enable all compiler warnings; individual projects may customize further
@@ -96,7 +77,7 @@ jacocoTestReport {
 	reports {
 		xml.enabled false
 		csv.enabled false
-		html.destination "${buildDir}/reports/jacoco/html"
+		html.destination file("${buildDir}/reports/jacoco/html")
 	}
 }
 
@@ -115,10 +96,8 @@ artifacts {
 	archives javadocJar
 }
 
-apply plugin: 'sonar-runner'
-
-sonarRunner {
-	sonarProperties {
+sonarqube {
+	properties {
 		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
 		property "sonar.links.homepage", linkHomepage
 		property "sonar.links.ci", linkCi
