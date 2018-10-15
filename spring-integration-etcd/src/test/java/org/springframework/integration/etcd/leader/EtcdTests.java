@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.context.ApplicationListener;
@@ -46,6 +47,7 @@ import com.ibm.etcd.client.EtcdClient;
  * @author Venil Noronha
  * @author Lewis Headden
  */
+@Ignore("Need a docker image for ETCD node")
 public class EtcdTests {
 
 	@Test
