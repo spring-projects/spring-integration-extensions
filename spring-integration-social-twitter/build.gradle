@@ -14,7 +14,7 @@ apply from: "${rootProject.projectDir}/publish-maven.gradle"
 group = 'org.springframework.integration'
 
 repositories {
-//	maven { url 'http://repo.spring.io/libs-staging-local' }
+	maven { url 'http://repo.spring.io/libs-staging-local' }
 	if (version.endsWith('BUILD-SNAPSHOT')) {
 		maven { url 'http://repo.spring.io/libs-snapshot' }
 	}
@@ -28,9 +28,9 @@ compileJava {
 
 ext {
 	jackson2Version = '2.9.6'
-	springIntegrationVersion = '5.1.0.M1'
+	springIntegrationVersion = '5.1.0.RELEASE'
 	springSocialTwitterVersion = '1.1.2.RELEASE'
-	springVersion = '5.1.0.RC1'
+	springVersion = '5.1.2.RELEASE'
 
 	idPrefix = 'twitter'
 
