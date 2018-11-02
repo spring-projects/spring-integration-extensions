@@ -23,8 +23,8 @@
 
 	<int:chain id="unzipFiles" input-channel="zipFilesIn" output-channel="decompressedFilesOut">
 		<int-zip:unzip-transformer result-type="BYTE_ARRAY"/>
-		<int:splitter method="splitUnzippedMap">
-			<bean class="org.springframework.integration.zip.transformer.splitter.UnZipResultSplitter"/>
+		<int:splitter>
+			<bean class="org.springframework.integration.zip.splitter.UnZipResultSplitter"/>
 		</int:splitter>
 	</int:chain>
 
