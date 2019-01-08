@@ -1,7 +1,7 @@
 Spring Integration Cassandra Adapter
 =================================================
 
-Welcome to the *Spring Integration Cassandra adapter*.
+Welcome to the *Spring Integration Cassandra* extension.
 
 Checking out and building
 -----------------------------

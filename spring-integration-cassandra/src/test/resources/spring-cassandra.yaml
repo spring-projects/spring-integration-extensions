@@ -1,6 +1,5 @@
 # Cassandra storage config YAML
 
-# NOTE:
 #   See http://wiki.apache.org/cassandra/StorageConfiguration for
 #   full explanations of configuration directives
 # /NOTE
@@ -37,7 +36,8 @@ cluster_name: 'Test Cluster'
 initial_token:
 
 # See http://wiki.apache.org/cassandra/HintedHandoff
-hinted_handoff_enabled: true
+hinted_handoff_enabled: false
+
 # this defines the maximum amount of time a dead host will have hints
 # generated.  After it has been dead this long, new hints for it will not be
 # created until it has been seen alive and gone down again.
@@ -105,8 +105,34 @@ partitioner: org.apache.cassandra.dht.Murmur3Partitioner
 # Directories where Cassandra should store data on disk.  Cassandra
 # will spread data evenly across them, subject to the granularity of
 # the configured compaction strategy.
+# If not set, the default directory is $CASSANDRA_HOME/data/data.
+# data_file_directories:
+#     - /var/lib/cassandra/data
+
+# commit log.  when running on magnetic HDD, this should be a
+# separate spindle than the data directories.
+# If not set, the default directory is $CASSANDRA_HOME/data/commitlog.
+# commitlog_directory: /var/lib/cassandra/commitlog
+
+# Enable / disable CDC functionality on a per-node basis. This modifies the logic used
+# for write path allocation rejection (standard: never reject. cdc: reject Mutation
+# containing a CDC-enabled table if at space limit in cdc_raw_directory).
+cdc_enabled: false
+
+# CommitLogSegments are moved to this directory on flush if cdc_enabled: true and the
+# segment contains mutations for a CDC-enabled table. This should be placed on a
+# separate spindle than the data directories. If not set, the default directory is
+# $CASSANDRA_HOME/data/cdc_raw.
+cdc_raw_directory: build/embeddedCassandra/data/cdc_raw
+
+
+# Directories where Cassandra should store data on disk.  Cassandra
+# will spread data evenly across them, subject to the granularity of
+# the configured compaction strategy.
 data_file_directories:
-    - build/embeddedCassandra/data
+  - build/embeddedCassandra/data
+
+hints_directory: build/embeddedCassandra/hints
 
 # commit log
 commitlog_directory: build/embeddedCassandra/commitlog
@@ -186,7 +212,7 @@ saved_caches_directory: build/embeddedCassandra/saved_caches
 # and the CommitLog is simply synced every commitlog_sync_period_in_ms
 # milliseconds.
 commitlog_sync: periodic
-commitlog_sync_period_in_ms: 10000
+commitlog_sync_period_in_ms: 5000
 
 # The size of the individual commitlog file segments.  A commitlog
 # segment may be archived, deleted, or recycled once all the data
@@ -197,20 +223,20 @@ commitlog_sync_period_in_ms: 10000
 # archiving commitlog segments (see commitlog_archiving.properties),
 # then you probably want a finer granularity of archiving; 8 or 16 MB
 # is reasonable.
-commitlog_segment_size_in_mb: 32
+commitlog_segment_size_in_mb: 8
 
 # any class that implements the SeedProvider interface and has a
 # constructor that takes a Map<String, String> of parameters will do.
 seed_provider:
-    # Addresses of hosts that are deemed contact points.
-    # Cassandra nodes use this list of hosts to find each other and learn
-    # the topology of the ring.  You must change this if you are running
-    # multiple nodes!
-    - class_name: org.apache.cassandra.locator.SimpleSeedProvider
-      parameters:
-          # seeds is actually a comma-delimited list of addresses.
-          # Ex: "<ip1>,<ip2>,<ip3>"
-          - seeds: "127.0.0.1"
+# Addresses of hosts that are deemed contact points.
+# Cassandra nodes use this list of hosts to find each other and learn
+# the topology of the ring.  You must change this if you are running
+# multiple nodes!
+- class_name: org.apache.cassandra.locator.SimpleSeedProvider
+  parameters:
+  # seeds is actually a comma-delimited list of addresses.
+  # Ex: "<ip1>,<ip2>,<ip3>"
+  - seeds: "127.0.0.1"
 
 # For workloads with more data than can fit in memory, Cassandra's
 # bottleneck will be reads that need to fetch data from
@@ -221,8 +247,8 @@ seed_provider:
 # On the other hand, since writes are almost never IO bound, the ideal
 # number of "concurrent_writes" is dependent on the number of cores in
 # your system; (8 * number_of_cores) is a good rule of thumb.
-concurrent_reads: 32
-concurrent_writes: 32
+concurrent_reads: 4
+concurrent_writes: 4
 
 # Total memory to use for memtables.  Cassandra will flush the largest
 # memtable when this much memory is used.
@@ -237,7 +263,7 @@ concurrent_writes: 32
 # segment multiple), Cassandra will flush every dirty CF in the oldest
 # segment and remove it.  So a small total commitlog space will tend
 # to cause more flush activity on less-active columnfamilies.
-# commitlog_total_space_in_mb: 4096
+commitlog_total_space_in_mb: 4096
 
 # This sets the amount of memtable flush writer threads.  These will
 # be blocked by disk io, and each one will hold a memtable in memory
@@ -295,10 +321,10 @@ native_transport_port: 9043
 # transport is used. They are similar to rpc_min_threads and rpc_max_threads,
 # though the defaults differ slightly.
 # native_transport_min_threads: 16
-# native_transport_max_threads: 128
+#native_transport_max_threads: 48
 
 # Whether to start the thrift rpc server.
-start_rpc: true
+start_rpc: false
 
 # The address to bind the Thrift RPC service to -- clients connect
 # here. Unlike ListenAddress above, you _can_ specify 0.0.0.0 here if
@@ -385,7 +411,7 @@ snapshot_before_compaction: false
 # or dropping of column families. The STRONGLY advised default of true
 # should be used to provide data safety. If you set this flag to false, you will
 # lose data on truncation or drop.
-auto_snapshot: true
+auto_snapshot: false
 
 # Add column indexes to a row after its contents reach this size.
 # Increase if your column values are large, or if you have a very large
@@ -425,17 +451,17 @@ compaction_throughput_mb_per_sec: 16
 # stream_throughput_outbound_megabits_per_sec: 200
 
 # How long the coordinator should wait for read operations to complete
-read_request_timeout_in_ms: 10000
+read_request_timeout_in_ms: 120000
 # How long the coordinator should wait for seq or index scans to complete
-range_request_timeout_in_ms: 10000
+range_request_timeout_in_ms: 120000
 # How long the coordinator should wait for writes to complete
-write_request_timeout_in_ms: 10000
+write_request_timeout_in_ms: 120000
 # How long the coordinator should wait for truncates to complete
 # (This can be much longer, because unless auto_snapshot is disabled
 # we need to flush first so we can snapshot before removing the data.)
-truncate_request_timeout_in_ms: 60000
+truncate_request_timeout_in_ms: 120000
 # The default timeout for other, miscellaneous operations
-request_timeout_in_ms: 10000
+request_timeout_in_ms: 120000
 
 # Enable operation timeout information exchange between nodes to accurately
 # measure request timeouts, If disabled cassandra will assuming the request
@@ -572,7 +598,7 @@ request_scheduler: org.apache.cassandra.scheduler.NoScheduler
 # offs.  This value is not often changed, however if you have many
 # very small rows (many to an OS page), then increasing this will
 # often lower memory usage without a impact on performance.
-index_interval: 128
+# index_interval: 128
 
 # Enable or disable inter-node encryption
 # Default settings are TLS v1, RSA 1024-bit keys (it is imperative that
@@ -621,7 +647,7 @@ client_encryption_options:
 # can be:  all  - all traffic is compressed
 #          dc   - traffic between different datacenters is compressed
 #          none - nothing is compressed.
-internode_compression: all
+internode_compression: none
 
 # Enable or disable tcp_nodelay for inter-dc communication.
 # Disabling it will result in larger (but fewer) network packets being sent,

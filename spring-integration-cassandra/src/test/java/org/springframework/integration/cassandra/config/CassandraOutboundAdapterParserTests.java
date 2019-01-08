@@ -1,11 +1,11 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 
 package org.springframework.integration.cassandra.config;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,15 +25,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.cassandra.outbound.CassandraMessageHandler;
 import org.springframework.integration.test.util.TestUtils;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Filippo Balicchia
+ * @author Artem Bilan
  */
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@RunWith(SpringRunner.class)
 public class CassandraOutboundAdapterParserTests {
 
 	@Autowired
@@ -41,46 +40,52 @@ public class CassandraOutboundAdapterParserTests {
 
 	@Test
 	public void minimalConfig() {
+		CassandraMessageHandler handler =
+				TestUtils.getPropertyValue(this.context.getBean("outbound1.adapter"), "handler",
+						CassandraMessageHandler.class);
 
-		CassandraMessageHandler<?> handler = TestUtils.getPropertyValue(context.getBean("outbound1.adapter"), "handler",
-				CassandraMessageHandler.class);
-
-		assertEquals("outbound1.adapter", TestUtils.getPropertyValue(handler, "componentName"));
-		assertEquals(CassandraMessageHandler.Type.INSERT, TestUtils.getPropertyValue(handler, "mode"));
-		assertEquals(context.getBean("cassandraTemplate"), TestUtils.getPropertyValue(handler, "cassandraTemplate"));
-		assertEquals(context.getBean("writeOptions"), TestUtils.getPropertyValue(handler, "writeOptions"));
+		assertThat(TestUtils.getPropertyValue(handler, "componentName")).isEqualTo("outbound1.adapter");
+		assertThat(TestUtils.getPropertyValue(handler, "mode")).isEqualTo(CassandraMessageHandler.Type.INSERT);
+		assertThat(TestUtils.getPropertyValue(handler, "cassandraOperations"))
+				.isSameAs(this.context.getBean("cassandraTemplate"));
+		assertThat(TestUtils.getPropertyValue(handler, "writeOptions")).isSameAs(this.context.getBean("writeOptions"));
+		assertThat(TestUtils.getPropertyValue(handler, "async", Boolean.class)).isFalse();
 	}
 
 	@Test
 	public void ingestConfig() {
-		CassandraMessageHandler<?> handler = TestUtils.getPropertyValue(context.getBean("outbound2"), "handler",
-				CassandraMessageHandler.class);
+		CassandraMessageHandler handler =
+				TestUtils.getPropertyValue(this.context.getBean("outbound2"), "handler",
+						CassandraMessageHandler.class);
 
-		assertEquals("insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)",
-				TestUtils.getPropertyValue(handler, "ingestQuery"));
-		assertEquals(Boolean.FALSE, TestUtils.getPropertyValue(handler, "producesReply"));
+		assertThat(TestUtils.getPropertyValue(handler, "ingestQuery"))
+				.isEqualTo("insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, " +
+						"?)");
+		assertThat(TestUtils.getPropertyValue(handler, "producesReply", Boolean.class)).isFalse();
 	}
 
 	@Test
 	public void fullConfig() {
-		CassandraMessageHandler<?> handler = TestUtils.getPropertyValue(context.getBean("outgateway"), "handler",
-				CassandraMessageHandler.class);
+		CassandraMessageHandler handler =
+				TestUtils.getPropertyValue(this.context.getBean("outgateway"), "handler",
+						CassandraMessageHandler.class);
 
-		assertEquals(Boolean.TRUE, TestUtils.getPropertyValue(handler, "producesReply"));
-		assertEquals(CassandraMessageHandler.Type.STATEMENT, TestUtils.getPropertyValue(handler, "mode"));
-		assertEquals(context.getBean("writeOptions"), TestUtils.getPropertyValue(handler, "writeOptions"));
+		assertThat(TestUtils.getPropertyValue(handler, "producesReply", Boolean.class)).isTrue();
+		assertThat(TestUtils.getPropertyValue(handler, "mode")).isEqualTo(CassandraMessageHandler.Type.STATEMENT);
+		assertThat(TestUtils.getPropertyValue(handler, "writeOptions")).isSameAs(this.context.getBean("writeOptions"));
 	}
 
 	@Test
 	public void statementConfig() {
+		CassandraMessageHandler handler =
+				TestUtils.getPropertyValue(this.context.getBean("outbound4.adapter"), "handler",
+						CassandraMessageHandler.class);
 
-		CassandraMessageHandler<?> handler = TestUtils.getPropertyValue(context.getBean("outbound4.adapter"), "handler",
-				CassandraMessageHandler.class);
-		assertEquals("outbound4.adapter", TestUtils.getPropertyValue(handler, "componentName"));
-		assertEquals(CassandraMessageHandler.Type.STATEMENT, TestUtils.getPropertyValue(handler, "mode"));
-		assertEquals(context.getBean("cassandraTemplate"), TestUtils.getPropertyValue(handler, "cassandraTemplate"));
-		assertEquals(context.getBean("writeOptions"), TestUtils.getPropertyValue(handler, "writeOptions"));
-
+		assertThat(TestUtils.getPropertyValue(handler, "componentName")).isEqualTo("outbound4.adapter");
+		assertThat(TestUtils.getPropertyValue(handler, "mode")).isEqualTo(CassandraMessageHandler.Type.STATEMENT);
+		assertThat(TestUtils.getPropertyValue(handler, "cassandraOperations"))
+				.isSameAs(this.context.getBean("cassandraTemplate"));
+		assertThat(TestUtils.getPropertyValue(handler, "writeOptions")).isSameAs(this.context.getBean("writeOptions"));
 	}
 
 }

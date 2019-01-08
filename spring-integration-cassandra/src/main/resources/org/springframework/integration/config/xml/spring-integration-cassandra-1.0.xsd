@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema
-	xmlns="http://www.springframework.org/schema/integration/cassandra"
-	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:beans="http://www.springframework.org/schema/beans"
-	xmlns:tool="http://www.springframework.org/schema/tool"
-	xmlns:integration="http://www.springframework.org/schema/integration"
-	targetNamespace="http://www.springframework.org/schema/integration/cassandra"
-	elementFormDefault="qualified" attributeFormDefault="unqualified">
-	<xsd:import namespace="http://www.springframework.org/schema/beans" />
-	<xsd:import namespace="http://www.springframework.org/schema/tool" />
+		xmlns="http://www.springframework.org/schema/integration/cassandra"
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		xmlns:tool="http://www.springframework.org/schema/tool"
+		xmlns:integration="http://www.springframework.org/schema/integration"
+		targetNamespace="http://www.springframework.org/schema/integration/cassandra"
+		elementFormDefault="qualified">
+	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
+	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
 	<xsd:import namespace="http://www.springframework.org/schema/integration"
-		schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd" />
+				schemaLocation="http://www.springframework.org/schema/integration/spring-integration.xsd"/>
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -29,20 +29,21 @@
 			<xsd:complexContent>
 				<xsd:extension base="outboundType">
 					<xsd:choice minOccurs="0" maxOccurs="2">
-					<xsd:element name="parameter-expression" type="queryParameterType" minOccurs="0" maxOccurs="unbounded">
-					<xsd:annotation>
-						<xsd:documentation>
-							Specify an expression for parameter variable placeholder in cql statement.
-						</xsd:documentation>
-					</xsd:annotation>
-				    </xsd:element>
+						<xsd:element name="parameter-expression" type="queryParameterType" minOccurs="0"
+									 maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>
+									Specify an expression for parameter variable placeholder in cql statement.
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
 					</xsd:choice>
-					<xsd:attributeGroup ref="integration:channelAdapterAttributes" />
+					<xsd:attributeGroup ref="integration:channelAdapterAttributes"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:element name="outbound-gateway">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -55,23 +56,25 @@
 			<xsd:complexContent>
 				<xsd:extension base="outboundType">
 					<xsd:choice minOccurs="0" maxOccurs="2">
-					<xsd:element name="parameter-expression" type="queryParameterType" minOccurs="0" maxOccurs="unbounded">
-					<xsd:annotation>
-						<xsd:documentation>
-							Specify an expression for parameter variable placeholder in cql statement.
-						</xsd:documentation>
-					</xsd:annotation>
-				    </xsd:element>
+						<xsd:element name="parameter-expression" type="queryParameterType" minOccurs="0"
+									 maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation>
+									Specify an expression for parameter variable placeholder in cql statement.
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
 					</xsd:choice>
 					<xsd:attribute name="reply-channel" type="xsd:string">
 						<xsd:annotation>
 							<xsd:documentation>
-								Message Channel to which replies should be sent after being received from Cassandra cluster.
+								Message Channel to which replies should be sent after being received from Cassandra
+								cluster.
 							</xsd:documentation>
 							<xsd:appinfo>
 								<tool:annotation kind="ref">
 									<tool:expected-type
-										type="org.springframework.messaging.MessageChannel"/>
+											type="org.springframework.messaging.MessageChannel"/>
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -79,7 +82,7 @@
 					<xsd:attribute name="id" type="xsd:string">
 						<xsd:annotation>
 							<xsd:documentation>
-									Unique ID for this gateway.
+								Unique ID for this gateway.
 							</xsd:documentation>
 						</xsd:annotation>
 					</xsd:attribute>
@@ -91,7 +94,7 @@
 							<xsd:appinfo>
 								<tool:annotation kind="ref">
 									<tool:expected-type
-										type="org.springframework.messaging.MessageChannel"/>
+											type="org.springframework.messaging.MessageChannel"/>
 								</tool:annotation>
 							</xsd:appinfo>
 						</xsd:annotation>
@@ -101,7 +104,7 @@
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:complexType name="outboundType">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -109,44 +112,43 @@
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
-				<xsd:element ref="integration:poller" minOccurs="0" maxOccurs="1"/>
-				<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0" maxOccurs="1" />
+			<xsd:element ref="integration:poller" minOccurs="0"/>
+			<xsd:element name="request-handler-advice-chain" type="integration:handlerAdviceChainType" minOccurs="0"/>
 		</xsd:sequence>
 		<xsd:attribute name="cassandra-template" type="xsd:string">
 			<xsd:annotation>
-			<xsd:documentation>
-						<![CDATA[
-							Reference to an instance of
-							org.springframework.data.cassandra.core.CassandraOperations]]>
-						</xsd:documentation>
+				<xsd:documentation>
+					Reference to an instance of
+					'org.springframework.data.cassandra.core.ReactiveCassandraOperations'.
+				</xsd:documentation>
 				<xsd:appinfo>
 					<tool:annotation kind="ref">
 						<tool:expected-type
-							type="org.springframework.data.cassandra.core.CassandraOperations" />
+								type="org.springframework.data.cassandra.core.ReactiveCassandraOperations"/>
 					</tool:annotation>
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="write-options" type="xsd:string">
 			<xsd:annotation>
-			<xsd:documentation>
-						<![CDATA[
-							Reference to an instance of
-							org.springframework.cassandra.core.WriteOptions]]>
-						</xsd:documentation>
+				<xsd:documentation>
+					Reference to an instance of
+					'org.springframework.data.cassandra.core.cql.WriteOptions'
+				</xsd:documentation>
 				<xsd:appinfo>
 					<tool:annotation kind="ref">
 						<tool:expected-type
-							type="org.springframework.cassandra.core.WriteOptions" />
+								type="org.springframework.data.cassandra.core.cql.WriteOptions"/>
 					</tool:annotation>
 				</xsd:appinfo>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="mode" default="INSERT" use="optional">
+		<xsd:attribute name="mode" default="INSERT">
 			<xsd:annotation>
 				<xsd:documentation>
-				<![CDATA[
-					Indicates the `CassandraMessageHandler` behavior. Ignored in case of explicit 'query', 'ingest-query' or `statement-expression`.]]>
+					<![CDATA[
+					Indicates the `CassandraMessageHandler` behavior.
+					Ignored in case of explicit 'query', 'ingest-query' or `statement-expression`.]]>
 				</xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
@@ -174,8 +176,22 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="async">
+			<xsd:annotation>
+				<xsd:documentation>
+					<![CDATA[
+					Process returned 'Mono<WriteResult>' async, reactive manner on the downstream
+					'FluxMessageChannel' subscription or via 'Mono.subscribe()' in the handler, if one-way.
+					Otherwise the 'Mono.block()' is called immediately before returning from the handler.
+					]]>
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:union memberTypes="xsd:boolean xsd:string" />
+			</xsd:simpleType>
+		</xsd:attribute>
 	</xsd:complexType>
-	
+
 	<xsd:complexType name="queryParameterType">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -200,13 +216,13 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	
+
 	<xsd:simpleType name="cassandraHandlerType">
-	    <xsd:restriction base="xsd:token">
-	        <xsd:enumeration value="INSERT" />
-	        <xsd:enumeration value="UPDATE" />
-	        <xsd:enumeration value="DELETE" />
-	        <xsd:enumeration value="STATEMENT" />
-	    </xsd:restriction>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="INSERT"/>
+			<xsd:enumeration value="UPDATE"/>
+			<xsd:enumeration value="DELETE"/>
+			<xsd:enumeration value="STATEMENT"/>
+		</xsd:restriction>
 	</xsd:simpleType>
 </xsd:schema>

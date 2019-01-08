@@ -1,11 +1,11 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,8 @@
 
 package org.springframework.integration.cassandra.config;
 
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -25,8 +26,8 @@ import org.springframework.integration.cassandra.config.xml.CassandraParserUtils
 
 /**
  * @author Filippo Balicchia
+ * @author Artem Bilan
  */
-
 public class CassandraParserUtilsTests {
 
 	@Test
@@ -34,15 +35,16 @@ public class CassandraParserUtilsTests {
 		String query = "";
 		BeanDefinition statementExpressionDef = null;
 		String ingestQuery = "";
-		Assert.assertTrue(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isTrue();
 	}
 
 	@Test
 	public void mutuallyExclusiveCase2() {
 		String query = "";
 		BeanDefinition statementExpressionDef = null;
-		String ingestQuery = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
-		Assert.assertTrue(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		String ingestQuery =
+				"insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isTrue();
 	}
 
 	@Test
@@ -50,15 +52,16 @@ public class CassandraParserUtilsTests {
 		String query = "";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery = "";
-		Assert.assertTrue(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isTrue();
 	}
 
 	@Test
 	public void mutuallyExclusiveCase4() {
 		String query = "";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
-		String ingestQuery = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
-		Assert.assertFalse(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		String ingestQuery =
+				"insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isFalse();
 	}
 
 	@Test
@@ -66,15 +69,16 @@ public class CassandraParserUtilsTests {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery = "";
-		Assert.assertFalse(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isFalse();
 	}
 
 	@Test
 	public void mutuallyExclusiveCase6() {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
-		String ingestQuery = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
-		Assert.assertFalse(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		String ingestQuery =
+				"insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isFalse();
 	}
 
 	@Test
@@ -82,15 +86,16 @@ public class CassandraParserUtilsTests {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery = "";
-		Assert.assertFalse(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isFalse();
 	}
 
 	@Test
 	public void mutuallyExclusiveCase8() {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
-		String ingestQuery = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
-		Assert.assertFalse(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery));
+		String ingestQuery =
+				"insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
+		assertThat(CassandraParserUtils.areMutuallyExclusive(query, statementExpressionDef, ingestQuery)).isFalse();
 	}
 
 }

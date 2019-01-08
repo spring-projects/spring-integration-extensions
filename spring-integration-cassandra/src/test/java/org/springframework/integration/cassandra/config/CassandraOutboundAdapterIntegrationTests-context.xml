@@ -1,87 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:int-cassandra="http://www.springframework.org/schema/integration/cassandra"
-	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:int="http://www.springframework.org/schema/integration"
+	   xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:int-cassandra="http://www.springframework.org/schema/integration/cassandra"
+	   xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-		http://www.springframework.org/schema/integration/cassandra http://www.springframework.org/schema/integration/cassandra/spring-integration-cassandra.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+		http://www.springframework.org/schema/integration/cassandra http://www.springframework.org/schema/integration/cassandra/spring-integration-cassandra.xsd">
 
 
-	<context:property-placeholder location="classpath:cassandra.properties" />
-	
-	<int:poller default="true" fixed-delay="50" />
+	<context:property-placeholder location="classpath:cassandra.properties"/>
+
+	<int:poller default="true" fixed-delay="50"/>
 
 	<cassandra:mapping entity-base-packages="org.springframework.integration.cassandra.test.domain">
 		<cassandra:entity
-			class="org.springframework.integration.cassandra.test.domain.Book">
-			<cassandra:table name="book" />
+				class="org.springframework.integration.cassandra.test.domain.Book">
+			<cassandra:table name="book"/>
 		</cassandra:entity>
 	</cassandra:mapping>
 
 	<cassandra:cluster contact-points="${cassandra.contactpoints}" port="${cassandra.port}">
-		<cassandra:keyspace action="CREATE_DROP" name="${cassandra.keyspace}" />
+		<cassandra:keyspace action="CREATE_DROP" name="${cassandra.keyspace}"/>
 	</cassandra:cluster>
 
-	<cassandra:session keyspace-name="${cassandra.keyspace}" schema-action="RECREATE"/>
+	<cassandra:session id="cassandraSession" keyspace-name="${cassandra.keyspace}" schema-action="RECREATE"/>
 
+	<cassandra:converter id="cassandraConverter"/>
 
-	
-	<cassandra:converter />
-	<cassandra:template id="cassandraTemplate"  />
-
-	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler1" 
-							cassandra-template="cassandraTemplate" 
-							mode="INSERT"
-							auto-startup="true" />
-							
-	<bean id="writeOptions" class="org.springframework.cassandra.core.WriteOptions">
-		<property name="ttl" value="60" />
-		<property name="consistencyLevel">
-			<util:constant
-				static-field="org.springframework.cassandra.core.ConsistencyLevel.ONE" />
-		</property>
-		<property name="retryPolicy">
-			<util:constant
-				static-field="org.springframework.cassandra.core.RetryPolicy.DOWNGRADING_CONSISTENCY" />
-		</property>
+	<bean id="reactiveCassandraTemplate" class="org.springframework.data.cassandra.core.ReactiveCassandraTemplate">
+		<constructor-arg name="converter" ref="cassandraConverter"/>
+		<constructor-arg name="session">
+			<bean class="org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession">
+				<constructor-arg ref="cassandraSession"/>
+			</bean>
+		</constructor-arg>
 	</bean>
-	
-	<bean id="resultChannel" class="org.springframework.integration.channel.QueueChannel"/>
-	
-							
-     <int-cassandra:outbound-channel-adapter id="cassandraMessageHandler2" 
-							cassandra-template="cassandraTemplate" 
-							write-options="writeOptions"
-							auto-startup="true" />
 
-	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler3" 
-				  	cassandra-template="cassandraTemplate"
-					ingest-query="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
-					auto-startup="true" />
+	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler1"
+											cassandra-template="reactiveCassandraTemplate"
+											async="false"/>
 
-	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler4" 
-							cassandra-template="cassandraTemplate" 
-							statement-expression="T(QueryBuilder).truncate('book')"
-							auto-startup="true" />	
-	
-	<int:channel id="inputChannel" />
+	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler2"
+											cassandra-template="reactiveCassandraTemplate"
+											async="false"/>
+
+	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler3"
+											cassandra-template="reactiveCassandraTemplate"
+											ingest-query="insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)"
+											async="false"/>
+
+	<int-cassandra:outbound-channel-adapter id="cassandraMessageHandler4"
+											cassandra-template="reactiveCassandraTemplate"
+											statement-expression="T(QueryBuilder).truncate('book')"
+											async="false"/>
+
+	<int:channel id="inputChannel"/>
+
+	<bean id="resultChannel" class="org.springframework.integration.channel.FluxMessageChannel"/>
 
 	<int-cassandra:outbound-gateway id="cassandraMessageHandler5"
-                    request-channel="inputChannel"
-					cassandra-template="cassandraTemplate" 
-					mode="STATEMENT"
-					query="SELECT * FROM book limit :size" 
-					reply-channel="resultChannel"
-					auto-startup="true">
-		<int-cassandra:parameter-expression name="author" expression="payload" />
-		<int-cassandra:parameter-expression name="size" expression="headers.limit" />
-	</int-cassandra:outbound-gateway>		
+									request-channel="inputChannel"
+									cassandra-template="reactiveCassandraTemplate"
+									mode="STATEMENT"
+									query="SELECT * FROM book limit :size"
+									reply-channel="resultChannel">
+		<int-cassandra:parameter-expression name="author" expression="payload"/>
+		<int-cassandra:parameter-expression name="size" expression="headers.limit"/>
+	</int-cassandra:outbound-gateway>
 
-	<cassandra:repositories base-package="org.springframework.integration.cassandra.test.domain" />
 </beans>

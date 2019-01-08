@@ -1,11 +1,11 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,7 @@
 
 package org.springframework.integration.cassandra.config;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,27 +32,27 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.WriteResult;
 import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.cassandra.test.domain.BookSampler;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.FluxMessageChannel;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 /**
  * @author Filippo Balicchia
+ * @author Artem Bilan
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@RunWith(SpringRunner.class)
 @DirtiesContext
 public class CassandraOutboundAdapterIntegrationTests {
 
@@ -80,18 +77,12 @@ public class CassandraOutboundAdapterIntegrationTests {
 	private DirectChannel inputChannel;
 
 	@Autowired
-	private PollableChannel resultChannel;
+	private FluxMessageChannel resultChannel;
 
 	@BeforeClass
-	public static void init() throws TTransportException, IOException, InterruptedException, ConfigurationException {
-		startCassandra();
-
-	}
-
-	private static void startCassandra()
-			throws TTransportException, IOException, InterruptedException, ConfigurationException {
-
+	public static void init() throws TTransportException, IOException, ConfigurationException {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
+		EmbeddedCassandraServerHelper.getSession();
 	}
 
 	@AfterClass
@@ -100,35 +91,40 @@ public class CassandraOutboundAdapterIntegrationTests {
 	}
 
 	@Test
-	public void testBasicCassandraInsert() throws Exception {
+	public void testBasicCassandraInsert() {
 		Book b1 = BookSampler.getBook();
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
-		cassandraMessageHandler1.send(message);
+		this.cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = cassandraTemplate.select(select, Book.class);
-		assertEquals(1, books.size());
-		cassandraTemplate.delete(b1);
+		List<Book> books = this.cassandraTemplate.select(select, Book.class);
+		assertThat(books).hasSize(1);
+		this.cassandraTemplate.delete(b1);
 	}
 
 	@Test
-	public void testCassandraBatchInsertAndSelectStatement() throws Exception {
+	public void testCassandraBatchInsertAndSelectStatement() {
 		List<Book> books = BookSampler.getBookList(5);
-		cassandraMessageHandler2.send(new GenericMessage<>(books));
+		this.cassandraMessageHandler2.send(new GenericMessage<>(books));
 		Message<?> message = MessageBuilder.withPayload("Cassandra Puppy Guru").setHeader("limit", 2).build();
-		inputChannel.send(message);
-		Message<?> receive = resultChannel.receive(10000);
-		assertNotNull(receive);
-		assertThat(receive.getPayload(), instanceOf(ResultSet.class));
-		ResultSet resultSet = (ResultSet) receive.getPayload();
-		assertNotNull(resultSet);
-		List<Row> rows = resultSet.all();
-		assertEquals(2, rows.size());
-		cassandraMessageHandler1.send(new GenericMessage<>(QueryBuilder.truncate("book")));
+		this.inputChannel.send(message);
+
+		Mono<Integer> testMono =
+				Mono.from(this.resultChannel)
+						.map(Message::getPayload)
+						.cast(WriteResult.class)
+						.map(r -> r.getRows().size());
+
+		StepVerifier.create(testMono)
+				.expectNext(2)
+				.expectComplete()
+				.verify();
+
+		this.cassandraMessageHandler1.send(new GenericMessage<>(QueryBuilder.truncate("book")));
 
 	}
 
 	@Test
-	public void testCassandraBatchIngest() throws Exception {
+	public void testCassandraBatchIngest() {
 		List<Book> books = BookSampler.getBookList(5);
 		List<List<?>> ingestBooks = new ArrayList<>();
 		for (Book b : books) {
@@ -144,23 +140,23 @@ public class CassandraOutboundAdapterIntegrationTests {
 		}
 
 		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
-		cassandraMessageHandler3.send(message);
+		this.cassandraMessageHandler3.send(message);
 		Select select = QueryBuilder.select().all().from("book");
-		books = cassandraTemplate.select(select, Book.class);
-		assertEquals(5, books.size());
-		cassandraTemplate.delete(books);
+		books = this.cassandraTemplate.select(select, Book.class);
+		assertThat(books).hasSize(5);
+		this.cassandraTemplate.batchOps().delete(books);
 	}
 
 	@Test
-	public void testExpressionTrucante() throws Exception {
+	public void testExpressionTruncate() {
 		Message<Book> message = MessageBuilder.withPayload(BookSampler.getBook()).build();
-		cassandraMessageHandler1.send(message);
+		this.cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = cassandraTemplate.select(select, Book.class);
-		assertEquals(1, books.size());
-		cassandraMessageHandler4.send(MessageBuilder.withPayload("Empty").build());
-		books = cassandraTemplate.select(select, Book.class);
-		assertEquals(0, books.size());
+		List<Book> books = this.cassandraTemplate.select(select, Book.class);
+		assertThat(books).hasSize(1);
+		this.cassandraMessageHandler4.send(MessageBuilder.withPayload("Empty").build());
+		books = this.cassandraTemplate.select(select, Book.class);
+		assertThat(books).hasSize(0);
 	}
 
 }

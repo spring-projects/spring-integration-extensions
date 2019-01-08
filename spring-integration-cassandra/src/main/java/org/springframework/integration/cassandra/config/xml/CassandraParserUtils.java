@@ -1,11 +1,11 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,12 +31,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 
 /**
+ * The {@code int-cassandra} namespace XML parser helper.
+ *
  * @author Filippo Balicchia
+ * @author Artem Bilan
  */
-public class CassandraParserUtils {
+public final class CassandraParserUtils {
 
 	public static void processOutboundTypeAttributes(Element element, ParserContext parserContext,
-													 BeanDefinitionBuilder builder) {
+			BeanDefinitionBuilder builder) {
 
 		String cassandraTemplate = element.getAttribute("cassandra-template");
 		String mode = element.getAttribute("mode");
@@ -67,18 +70,19 @@ public class CassandraParserUtils {
 		IntegrationNamespaceUtils.setReferenceIfAttributeDefined(builder, element, "write-options");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "ingest-query");
 		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "query");
+		IntegrationNamespaceUtils.setValueIfAttributeDefined(builder, element, "async");
 
 		List<Element> parameterExpressions = DomUtils.getChildElementsByTagName(element, "parameter-expression");
 		if (!CollectionUtils.isEmpty(parameterExpressions)) {
-			ManagedMap<String, Object> parameterExpressionsMap = new ManagedMap<String, Object>();
+			ManagedMap<String, Object> parameterExpressionsMap = new ManagedMap<>();
 			for (Element parameterExpressionElement : parameterExpressions) {
 				String name = parameterExpressionElement.getAttribute(AbstractBeanDefinitionParser.NAME_ATTRIBUTE);
-				BeanDefinition expression = IntegrationNamespaceUtils.createExpressionDefIfAttributeDefined(
-						IntegrationNamespaceUtils.EXPRESSION_ATTRIBUTE, parameterExpressionElement);
+				BeanDefinition expression =
+						IntegrationNamespaceUtils.createExpressionDefIfAttributeDefined(
+								IntegrationNamespaceUtils.EXPRESSION_ATTRIBUTE, parameterExpressionElement);
 				if (expression != null) {
 					parameterExpressionsMap.put(name, expression);
 				}
-
 			}
 			builder.addPropertyValue("parameterExpressions", parameterExpressionsMap);
 		}
@@ -86,10 +90,14 @@ public class CassandraParserUtils {
 	}
 
 	public static boolean areMutuallyExclusive(String query, BeanDefinition statementExpressionDef,
-											   String ingestQuery) {
+			String ingestQuery) {
+
 		return StringUtils.isEmpty(query) && statementExpressionDef == null && StringUtils.isEmpty(ingestQuery)
 				|| !(StringUtils.hasText(query) && statementExpressionDef != null && StringUtils.hasText(ingestQuery))
 				&& (StringUtils.hasText(query) ^ statementExpressionDef != null) ^ StringUtils.hasText(ingestQuery);
+	}
+
+	private CassandraParserUtils() {
 	}
 
 }

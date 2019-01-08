@@ -1,11 +1,11 @@
 /*
- * Copyright 2015 the original author or authors
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,14 +17,18 @@
 package org.springframework.integration.cassandra.test.domain;
 
 import java.util.Date;
+import java.util.Objects;
 
-import org.springframework.data.cassandra.mapping.Indexed;
-import org.springframework.data.cassandra.mapping.PrimaryKey;
-import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
+
 
 /**
  * Test POJO
+ *
  * @author David Webb
+ * @author Artem Bilan
  */
 @Table("book")
 public class Book {
@@ -47,14 +51,14 @@ public class Book {
 	 * @return Returns the isbn.
 	 */
 	public String getIsbn() {
-		return isbn;
+		return this.isbn;
 	}
 
 	/**
 	 * @return Returns the saleDate.
 	 */
 	public Date getSaleDate() {
-		return saleDate;
+		return this.saleDate;
 	}
 
 	/**
@@ -68,7 +72,7 @@ public class Book {
 	 * @return Returns the isInStock.
 	 */
 	public boolean isInStock() {
-		return isInStock;
+		return this.isInStock;
 	}
 
 	/**
@@ -89,7 +93,7 @@ public class Book {
 	 * @return Returns the title.
 	 */
 	public String getTitle() {
-		return title;
+		return this.title;
 	}
 
 	/**
@@ -103,7 +107,7 @@ public class Book {
 	 * @return Returns the author.
 	 */
 	public String getAuthor() {
-		return author;
+		return this.author;
 	}
 
 	/**
@@ -117,7 +121,7 @@ public class Book {
 	 * @return Returns the pages.
 	 */
 	public int getPages() {
-		return pages;
+		return this.pages;
 	}
 
 	/**
@@ -132,8 +136,30 @@ public class Book {
 	 */
 	@Override
 	public String toString() {
-		return ("isbn -> " + isbn) + "\n" + "tile -> " + title + "\n" + "author -> " + author
-				+ "\n" + "pages -> " + pages + "\n";
+		return ("isbn -> " + this.isbn) + "\n" + "tile -> " + this.title + "\n" + "author -> " + this.author
+				+ "\n" + "pages -> " + this.pages + "\n";
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Book book = (Book) o;
+		return this.pages == book.pages &&
+				this.isInStock == book.isInStock &&
+				Objects.equals(this.isbn, book.isbn) &&
+				Objects.equals(this.title, book.title) &&
+				Objects.equals(this.author, book.author) &&
+				Objects.equals(this.saleDate, book.saleDate);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.isbn, this.title, this.author, this.pages, this.saleDate, this.isInStock);
 	}
 
 }

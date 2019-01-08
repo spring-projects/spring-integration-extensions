@@ -1,11 +1,11 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,39 +16,35 @@
 
 package org.springframework.integration.cassandra.outbound;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.core.ConsistencyLevel;
-import org.springframework.cassandra.core.RetryPolicy;
-import org.springframework.cassandra.core.WriteOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.InsertOptions;
+import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.core.WriteResult;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.cassandra.config.IntegrationTestConfig;
 import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.cassandra.test.domain.BookSampler;
+import org.springframework.integration.channel.FluxMessageChannel;
 import org.springframework.integration.channel.NullChannel;
-import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
@@ -56,100 +52,25 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 /**
  * @author Soby Chacko
  * @author Artem Bilan
  */
-@ContextConfiguration
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @DirtiesContext
 public class CassandraMessageHandlerTests {
 
 	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	@Configuration
-	@EnableIntegration
-	public static class Config extends IntegrationTestConfig {
-
-		@Autowired
-		public CassandraOperations template;
-
-		@Override
-		public String[] getEntityBasePackages() {
-			return new String[] { Book.class.getPackage().getName() };
-		}
-
-		@Bean
-		public MessageHandler cassandraMessageHandler1() {
-			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<>(this.template);
-			cassandraMessageHandler.setProducesReply(false);
-			return cassandraMessageHandler;
-		}
-
-		@Bean
-		public PollableChannel messageChannel() {
-			return new NullChannel();
-		}
-
-		@Bean
-		public MessageHandler cassandraMessageHandler2() {
-			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<>(this.template);
-
-			WriteOptions options = new WriteOptions();
-			options.setTtl(60);
-			options.setConsistencyLevel(ConsistencyLevel.ONE);
-			options.setRetryPolicy(RetryPolicy.DOWNGRADING_CONSISTENCY);
-
-			cassandraMessageHandler.setWriteOptions(options);
-
-			cassandraMessageHandler.setOutputChannel(messageChannel());
-
-			return cassandraMessageHandler;
-		}
-
-		@Bean
-		public MessageHandler cassandraMessageHandler3() {
-			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<>(this.template);
-			String cqlIngest = "insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
-			cassandraMessageHandler.setIngestQuery(cqlIngest);
-			return cassandraMessageHandler;
-		}
-
-		@Bean
-		public PollableChannel resultChannel() {
-			return new QueueChannel();
-		}
-
-		@Bean
-		public MessageHandler cassandraMessageHandler4() {
-			CassandraMessageHandler<Book> cassandraMessageHandler = new CassandraMessageHandler<>(this.template);
-			// TODO https://jira.spring.io/browse/DATACASS-213
-			// cassandraMessageHandler.setQuery("SELECT * FROM book WHERE author
-			// = :author limit :size");
-			cassandraMessageHandler.setQuery("SELECT * FROM book limit :size");
-
-			Map<String, Expression> params = new HashMap<>();
-			params.put("author", PARSER.parseExpression("payload"));
-			params.put("size", PARSER.parseExpression("headers.limit"));
-
-			cassandraMessageHandler.setParameterExpressions(params);
-
-			cassandraMessageHandler.setOutputChannel(resultChannel());
-			cassandraMessageHandler.setProducesReply(true);
-			return cassandraMessageHandler;
-		}
-
-	}
+	private static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 
 	@Autowired
 	public MessageHandler cassandraMessageHandler1;
@@ -167,37 +88,21 @@ public class CassandraMessageHandlerTests {
 	public CassandraOperations template;
 
 	@Autowired
-	public PollableChannel resultChannel;
-
-	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
-
-	/**
-	 * The {@link Cluster} that's connected to Cassandra.
-	 */
-	protected static Cluster cluster;
-
-	/**
-	 * The session connected to the system keyspace.
-	 */
-	protected static Session system;
+	public FluxMessageChannel resultChannel;
 
 	@BeforeClass
-	public static void startCassandra()
-			throws TTransportException, IOException, InterruptedException, ConfigurationException {
+	public static void startCassandra() throws Exception {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
-		cluster = Cluster.builder().addContactPoint(IntegrationTestConfig.HOST).withPort(IntegrationTestConfig.PORT)
-				.build();
-		system = cluster.connect();
+		EmbeddedCassandraServerHelper.getSession();
 	}
 
 	@AfterClass
 	public static void cleanup() {
-		cluster.close();
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 
 	@Test
-	public void testBasicCassandraInsert() throws Exception {
+	public void testBasicCassandraInsert() {
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 		b1.setTitle("Spring Integration Cassandra");
@@ -211,13 +116,13 @@ public class CassandraMessageHandlerTests {
 
 		Select select = QueryBuilder.select().all().from("book");
 		List<Book> books = this.template.select(select, Book.class);
-		assertEquals(1, books.size());
+		assertThat(books).hasSize(1);
 
 		this.template.delete(b1);
 	}
 
 	@Test
-	public void testCassandraBatchInsertAndSelectStatement() throws Exception {
+	public void testCassandraBatchInsertAndSelectStatement() {
 		List<Book> books = BookSampler.getBookList(5);
 
 		this.cassandraMessageHandler2.handleMessage(new GenericMessage<>(books));
@@ -225,23 +130,25 @@ public class CassandraMessageHandlerTests {
 		Message<?> message = MessageBuilder.withPayload("Cassandra Guru").setHeader("limit", 2).build();
 		this.cassandraMessageHandler4.handleMessage(message);
 
-		Message<?> receive = this.resultChannel.receive(10000);
-		assertNotNull(receive);
-		assertThat(receive.getPayload(), instanceOf(ResultSet.class));
-		ResultSet resultSet = (ResultSet) receive.getPayload();
-		assertNotNull(resultSet);
-		List<Row> rows = resultSet.all();
-		assertEquals(2, rows.size());
+		Mono<Integer> testMono =
+				Mono.from(this.resultChannel)
+						.map(Message::getPayload)
+						.cast(WriteResult.class)
+						.map(r -> r.getRows().size());
+
+		StepVerifier.create(testMono)
+				.expectNext(1)
+				.expectComplete()
+				.verify();
 
 		this.cassandraMessageHandler1.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book")));
 	}
 
 	@Test
-	public void testCassandraBatchIngest() throws Exception {
+	public void testCassandraBatchIngest() {
 		List<Book> books = BookSampler.getBookList(5);
 		List<List<?>> ingestBooks = new ArrayList<>();
 		for (Book b : books) {
-
 			List<Object> l = new ArrayList<>();
 			l.add(b.getIsbn());
 			l.add(b.getTitle());
@@ -257,8 +164,82 @@ public class CassandraMessageHandlerTests {
 
 		Select select = QueryBuilder.select().all().from("book");
 		books = this.template.select(select, Book.class);
-		assertEquals(5, books.size());
+		assertThat(books).hasSize(5);
 
-		this.template.delete(books);
+		this.template.batchOps().delete(books);
 	}
+
+	@Configuration
+	@EnableIntegration
+	public static class Config extends IntegrationTestConfig {
+
+		@Autowired
+		public ReactiveCassandraOperations template;
+
+		@Override
+		public String[] getEntityBasePackages() {
+			return new String[] { Book.class.getPackage().getName() };
+		}
+
+		@Bean
+		public MessageHandler cassandraMessageHandler1() {
+			CassandraMessageHandler cassandraMessageHandler = new CassandraMessageHandler(this.template);
+			cassandraMessageHandler.setAsync(false);
+			return cassandraMessageHandler;
+		}
+
+		@Bean
+		public PollableChannel messageChannel() {
+			return new NullChannel();
+		}
+
+		@Bean
+		public MessageHandler cassandraMessageHandler2() {
+			CassandraMessageHandler cassandraMessageHandler = new CassandraMessageHandler(this.template);
+
+			WriteOptions options =
+					InsertOptions.builder()
+							.ttl(60)
+							.consistencyLevel(ConsistencyLevel.ONE)
+							.build();
+
+			cassandraMessageHandler.setWriteOptions(options);
+			cassandraMessageHandler.setOutputChannel(messageChannel());
+			cassandraMessageHandler.setAsync(false);
+			return cassandraMessageHandler;
+		}
+
+		@Bean
+		public MessageHandler cassandraMessageHandler3() {
+			CassandraMessageHandler cassandraMessageHandler = new CassandraMessageHandler(this.template);
+			String cqlIngest =
+					"insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, ?)";
+			cassandraMessageHandler.setIngestQuery(cqlIngest);
+			cassandraMessageHandler.setAsync(false);
+			return cassandraMessageHandler;
+		}
+
+		@Bean
+		public FluxMessageChannel resultChannel() {
+			return new FluxMessageChannel();
+		}
+
+		@Bean
+		public MessageHandler cassandraMessageHandler4() {
+			CassandraMessageHandler cassandraMessageHandler = new CassandraMessageHandler(this.template);
+			cassandraMessageHandler.setQuery("SELECT * FROM book WHERE author = :author limit :size");
+
+			Map<String, Expression> params = new HashMap<>();
+			params.put("author", PARSER.parseExpression("payload"));
+			params.put("size", PARSER.parseExpression("headers.limit"));
+
+			cassandraMessageHandler.setParameterExpressions(params);
+
+			cassandraMessageHandler.setOutputChannel(resultChannel());
+			cassandraMessageHandler.setProducesReply(true);
+			return cassandraMessageHandler;
+		}
+
+	}
+
 }

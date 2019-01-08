@@ -1,261 +1,257 @@
-description = 'Spring Integration Cassandra Support'
-
-apply plugin: 'java'
-apply from: "${rootProject.projectDir}/publish-maven.gradle"
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-
 buildscript {
-	repositories {
-		maven { url 'http://repo.spring.io/plugins-release' }
-	}
-	dependencies {
-		classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.RELEASE'
-	}
+    repositories {
+        maven { url 'https://repo.spring.io/plugins-release' }
+    }
 }
+
+
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'jacoco'
+    id 'org.sonarqube' version '2.6.2'
+    id 'checkstyle'
+}
+
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
+
+description = 'Spring Integration Cassandra Support'
 
 group = 'org.springframework.integration'
 
 repositories {
-	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
-		maven { url 'http://repo.spring.io/libs-snapshot' }
-	}
-	maven { url 'http://repo.spring.io/libs-milestone' }
+    if (version.endsWith('BUILD-SNAPSHOT')) {
+        maven { url 'http://repo.spring.io/libs-snapshot' }
+    }
+    maven { url 'http://repo.spring.io/libs-milestone' }
 //	maven { url 'http://repo.spring.io/libs-staging-local' }
 }
 
-if (project.hasProperty('platformVersion')) {
-	apply plugin: 'spring-io'
+ext {
+    assertjVersion = '3.11.1'
+    cassandraUnitVersion = '3.5.0.1'
+    slf4jVersion = '1.7.25'
+    reactorVersion = '3.2.4.RELEASE'
+    springDataCassandraVersion = '2.1.3.RELEASE'
+    springIntegrationVersion = '5.1.1.RELEASE'
 
-	dependencies {
-		springIoVersions "io.spring.platform:platform-bom:${platformVersion}@properties"
-	}
+    idPrefix = 'cassandra'
+
+    linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+    linkCi = 'https://build.spring.io/browse/INTEXT'
+    linkIssue = 'https://jira.spring.io/browse/INTEXT'
+    linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
+    linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
+    linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
+
 }
 
-sourceCompatibility = targetCompatibility = 1.7
-
-ext {
-	cassandraVersion = '2.1.5'
-	cassandraUnitVersion = '2.1.3.1'
-	jacocoVersion = '0.7.2.201409121644'
-	slf4jVersion = '1.7.12'
-	springDataCassandraVersion = '1.3.0.RELEASE'
-	springIntegrationVersion = '4.2.4.RELEASE'
-
-	idPrefix = 'cassandra'
-
-	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
-	linkCi = 'https://build.spring.io/browse/INTEXT'
-	linkIssue = 'https://jira.spring.io/browse/INTEXT'
-	linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
-	linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
-	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
-
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 }
 
 eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
 
 sourceSets {
-	test {
-		resources {
-			srcDirs = ['src/test/resources', 'src/test/java']
-		}
-	}
+    test {
+        resources {
+            srcDirs = ['src/test/resources', 'src/test/java']
+        }
+    }
 }
 
-// See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
-// and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
-configurations {
-	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
+jacoco {
+    toolVersion = "0.8.2"
 }
+
+checkstyle {
+    configFile = file("${rootDir}/src/checkstyle/checkstyle.xml")
+    toolVersion = "8.16"
+}
+
 
 dependencies {
-	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
-    compile ("org.springframework.data:spring-data-cassandra:$springDataCassandraVersion") {
-		exclude group: 'org.liquibase', module: 'liquibase-core'
-	}
+    compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
+    compile "org.springframework.data:spring-data-cassandra:$springDataCassandraVersion"
 
-	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
+    testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 
-    testCompile("org.cassandraunit:cassandra-unit-spring:$cassandraUnitVersion") {
-        exclude group: 'org.apache.cassandra', module: 'cassandra-all'
-        exclude group: 'com.datastax.cassandra', module: 'cassandra-driver-core'
-	    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-    }
-    testCompile ("org.apache.cassandra:cassandra-all:$cassandraVersion") {
-	    exclude group: 'ch.qos.logback', module: 'logback-classic'
-	    exclude group: 'ch.qos.logback', module: 'logback-core'
-    }
+    testCompile "org.assertj:assertj-core:$assertjVersion"
+    testCompile "org.cassandraunit:cassandra-unit-spring:$cassandraUnitVersion"
+    testCompile "io.projectreactor:reactor-test:$reactorVersion"
 
-	testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
-
-	jacoco "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+    testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 }
 
 // enable all compiler warnings; individual projects may customize further
 [compileJava, compileTestJava]*.options*.compilerArgs = ['-Xlint:all,-options']
 
 test {
-	// suppress all console output during testing unless running `gradle -i`
-	logging.captureStandardOutput(LogLevel.INFO)
-	jvmArgs "-javaagent:${configurations.jacoco.asPath}=destfile=${buildDir}/jacoco.exec,includes=*"
+    // suppress all console output during testing unless running `gradle -i`
+    logging.captureStandardOutput(LogLevel.INFO)
+    jacoco {
+        append = false
+        destinationFile = file("$buildDir/jacoco.exec")
+    }
 }
 
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/reports/jacoco/html")
+    }
+}
+
+check.dependsOn javadoc
+build.dependsOn jacocoTestReport
+
+
 task sourcesJar(type: Jar) {
-	classifier = 'sources'
-	from sourceSets.main.allJava
+    classifier = 'sources'
+    from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar) {
-	classifier = 'javadoc'
-	from javadoc
+    classifier = 'javadoc'
+    from javadoc
 }
 
-artifacts {
-	archives sourcesJar
-	archives javadocJar
-}
-
-apply plugin: 'sonar-runner'
-
-sonarRunner {
-	sonarProperties {
-		property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
-		property "sonar.links.homepage", linkHomepage
-		property "sonar.links.ci", linkCi
-		property "sonar.links.issue", linkIssue
-		property "sonar.links.scm", linkScmUrl
-		property "sonar.links.scm_dev", linkScmDevConnection
-		property "sonar.java.coveragePlugin", "jacoco"
-	}
+sonarqube {
+    properties {
+        property "sonar.jacoco.reportPath", "${buildDir.name}/jacoco.exec"
+        property "sonar.links.homepage", linkHomepage
+        property "sonar.links.ci", linkCi
+        property "sonar.links.issue", linkIssue
+        property "sonar.links.scm", linkScmUrl
+        property "sonar.links.scm_dev", linkScmDevConnection
+        property "sonar.java.coveragePlugin", "jacoco"
+    }
 }
 
 task api(type: Javadoc) {
-	group = 'Documentation'
-	description = 'Generates the Javadoc API documentation.'
-	title = "${rootProject.description} ${version} API"
-	options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
-	options.author = true
-	options.header = rootProject.description
-	options.overview = 'src/api/overview.html'
+    group = 'Documentation'
+    description = 'Generates the Javadoc API documentation.'
+    title = "${rootProject.description} ${version} API"
+    options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+    options.author = true
+    options.header = rootProject.description
+    options.overview = 'src/api/overview.html'
 
-	source = sourceSets.main.allJava
-	classpath = project.sourceSets.main.compileClasspath
-	destinationDir = new File(buildDir, "api")
+    source = sourceSets.main.allJava
+    classpath = project.sourceSets.main.compileClasspath
+    destinationDir = new File(buildDir, "api")
 }
 
 task schemaZip(type: Zip) {
-	group = 'Distribution'
-	classifier = 'schema'
-	description = "Builds -${classifier} archive containing all " +
-			"XSDs for deployment at static.springframework.org/schema."
+    group = 'Distribution'
+    classifier = 'schema'
+    description = "Builds -${classifier} archive containing all " +
+            "XSDs for deployment at static.springframework.org/schema."
 
-	def Properties schemas = new Properties();
-	def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
+    def Properties schemas = new Properties();
+    def shortName = idPrefix.replaceFirst("${idPrefix}-", '')
 
-	project.sourceSets.main.resources.find {
-		it.path.endsWith("META-INF${File.separator}spring.schemas")
-	}?.withInputStream { schemas.load(it) }
+    project.sourceSets.main.resources.find {
+        it.path.endsWith("META-INF${File.separator}spring.schemas")
+    }?.withInputStream { schemas.load(it) }
 
-	for (def key : schemas.keySet()) {
-		File xsdFile = project.sourceSets.main.resources.find {
-			it.path.replaceAll('\\\\', '/').endsWith(schemas.get(key))
-		}
-		assert xsdFile != null
-		into("integration/${shortName}") {
-			from xsdFile.path
-		}
-	}
+    for (def key : schemas.keySet()) {
+        File xsdFile = project.sourceSets.main.resources.find {
+            it.path.replaceAll('\\\\', '/').endsWith(schemas.get(key))
+        }
+        assert xsdFile != null
+        into("integration/${shortName}") {
+            from xsdFile.path
+        }
+    }
 
 }
 
 task docsZip(type: Zip) {
-	group = 'Distribution'
-	classifier = 'docs'
-	description = "Builds -${classifier} archive containing api " +
-			"for deployment at static.spring.io/spring-integration/docs."
+    group = 'Distribution'
+    classifier = 'docs'
+    description = "Builds -${classifier} archive containing api " +
+            "for deployment at static.spring.io/spring-integration/docs."
 
-	from('src/dist') {
-		include 'changelog.txt'
-	}
+    from('src/dist') {
+        include 'changelog.txt'
+    }
 
-	from(api) {
-		into 'api'
-	}
+    from(api) {
+        into 'api'
+    }
 }
 
 task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
-	group = 'Distribution'
-	classifier = 'dist'
-	description = "Builds -${classifier} archive, containing all jars and docs, " +
-			"suitable for community download page."
+    group = 'Distribution'
+    classifier = 'dist'
+    description = "Builds -${classifier} archive, containing all jars and docs, " +
+            "suitable for community download page."
 
-	ext.baseDir = "${project.name}-${project.version}";
+    ext.baseDir = "${project.name}-${project.version}";
 
-	from('src/dist') {
-		include 'readme.txt'
-		include 'license.txt'
-		include 'notice.txt'
-		into "${baseDir}"
-	}
+    from('src/dist') {
+        include 'readme.txt'
+        include 'license.txt'
+        into "${baseDir}"
+    }
 
-	from(zipTree(docsZip.archivePath)) {
-		into "${baseDir}/docs"
-	}
+    from(zipTree(docsZip.archivePath)) {
+        into "${baseDir}/docs"
+    }
 
-	from(zipTree(schemaZip.archivePath)) {
-		into "${baseDir}/schema"
-	}
+    from(zipTree(schemaZip.archivePath)) {
+        into "${baseDir}/schema"
+    }
 
-	into("${baseDir}/libs") {
-		from project.jar
-		from project.sourcesJar
-		from project.javadocJar
-	}
+    into("${baseDir}/libs") {
+        from project.jar
+        from project.sourcesJar
+        from project.javadocJar
+    }
 }
 
 // Create an optional "with dependencies" distribution.
 // Not published by default; only for use when building from source.
 task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
-	group = 'Distribution'
-	classifier = 'dist-with-deps'
-	description = "Builds -${classifier} archive, containing everything " +
-			"in the -${distZip.classifier} archive plus all dependencies."
+    group = 'Distribution'
+    classifier = 'dist-with-deps'
+    description = "Builds -${classifier} archive, containing everything " +
+            "in the -${distZip.classifier} archive plus all dependencies."
 
-	from zipTree(distZip.archivePath)
+    from zipTree(distZip.archivePath)
 
-	gradle.taskGraph.whenReady { taskGraph ->
-		if (taskGraph.hasTask(":${zipTask.name}")) {
-			def projectName = rootProject.name
-			def artifacts = new HashSet()
+    gradle.taskGraph.whenReady { taskGraph ->
+        if (taskGraph.hasTask(":${zipTask.name}")) {
+            def projectName = rootProject.name
+            def artifacts = new HashSet()
 
-			rootProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-				def dependency = artifact.moduleVersion.id
-				if (!projectName.equals(dependency.name)) {
-					artifacts << artifact.file
-				}
-			}
+            rootProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                def dependency = artifact.moduleVersion.id
+                if (!projectName.equals(dependency.name)) {
+                    artifacts << artifact.file
+                }
+            }
 
-			zipTask.from(artifacts) {
-				into "${distZip.baseDir}/deps"
-			}
-		}
-	}
+            zipTask.from(artifacts) {
+                into "${distZip.baseDir}/deps"
+            }
+        }
+    }
 }
 
 artifacts {
-	archives distZip
-	archives docsZip
-	archives schemaZip
+    archives sourcesJar
+    archives javadocJar
+    archives distZip
+    archives docsZip
+    archives schemaZip
 }
 
 task dist(dependsOn: assemble) {
-	group = 'Distribution'
-	description = 'Builds -dist, -docs and -schema distribution archives.'
-}
-
-task wrapper(type: Wrapper) {
-	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '2.3'
-	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+    group = 'Distribution'
+    description = 'Builds -dist, -docs and -schema distribution archives.'
 }
