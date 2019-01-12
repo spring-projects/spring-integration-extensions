@@ -41,7 +41,7 @@ Report issues via the [Spring Integration Extensions JIRA][].
 
 ## Building from source
 
-Each module of the *Spring Integration Extensions* project is hosted as independent project with its own release cycle. For the build process of individual modules we recomend using a [Gradle][]-based build system modelled after the [Spring Integration][] project. Also, the *Spring Integration Adapter Template* for [SpringSource Tool Suite][] (STS) provides a [Gradle][]-based build system. For more information, please see [How to Create New Components][].
+Each module of the *Spring Integration Extensions* project is hosted as independent project with its own release cycle. For the build process of individual modules we recommend using a [Gradle][]-based build system modelled after the [Spring Integration][] project. Also, the *Spring Integration Adapter Template* for [SpringSource Tool Suite][] (STS) provides a [Gradle][]-based build system. For more information, please see [How to Create New Components][].
 
 Therefore, the following build instructions should generally apply for most, if not all, *Spring Integration Extensions*. In the instructions below, [`./gradlew`][] is invoked from the root of the source tree and serves as a cross-platform, self-contained bootstrap mechanism for the build. The only prerequisites are [Git][] and JDK 1.6+.
 
