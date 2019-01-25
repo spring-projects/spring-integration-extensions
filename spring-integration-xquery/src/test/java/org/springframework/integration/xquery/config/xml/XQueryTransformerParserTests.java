@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import java.util.Map;
 import javax.xml.xquery.XQDataSource;
 import javax.xml.xquery.XQResultSequence;
 
-import junit.framework.Assert;
-import net.sf.saxon.xqj.SaxonXQDataSource;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -40,10 +39,13 @@ import org.springframework.integration.xquery.transformer.XQueryTransformer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import net.sf.saxon.xqj.SaxonXQDataSource;
+
 /**
  * The test class for XQuery Transformer parser
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *
@@ -137,6 +139,7 @@ public class XQueryTransformerParserTests {
 
 	public static class DummyXQueryResultMapper implements XQueryResultMapper<String> {
 
+		@Override
 		public List<String> mapResults(XQResultSequence result) {
 			return null;
 		}

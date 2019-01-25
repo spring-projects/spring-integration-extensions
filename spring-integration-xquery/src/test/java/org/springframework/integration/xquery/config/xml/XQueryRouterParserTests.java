@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ import java.util.Map;
 
 import javax.xml.xquery.XQDataSource;
 
-import junit.framework.Assert;
-import net.sf.saxon.xqj.SaxonXQDataSource;
-
+import org.junit.Assert;
 import org.junit.Test;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -32,11 +31,14 @@ import org.springframework.integration.xquery.DummyXmlPayloadConverter;
 import org.springframework.integration.xquery.router.XQueryRouter;
 import org.springframework.integration.xquery.support.XQueryParameter;
 
+import net.sf.saxon.xqj.SaxonXQDataSource;
+
 
 /**
  * The test case for the XQuery router parser
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *

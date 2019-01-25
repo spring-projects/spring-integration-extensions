@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,22 @@ import java.util.List;
 import javax.xml.xquery.XQItemType;
 import javax.xml.xquery.XQResultSequence;
 
-import org.springframework.integration.MessagingException;
 import org.w3c.dom.Node;
+
+import org.springframework.messaging.MessagingException;
 
 /**
  * The Result mapper implementation that maps the {@link XQResultSequence} to {@link String}
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *
  */
 public class StringResultMapper extends AbstractXQueryResultMapper<String> {
 
+	@Override
 	public List<String> mapResults(XQResultSequence result) {
 		List<String> results = new ArrayList<String>();
 		try {

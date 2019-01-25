@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package org.springframework.integration.xquery.transformer;
 
 import java.util.List;
 
-import org.springframework.integration.Message;
+import org.w3c.dom.Node;
+
 import org.springframework.integration.transformer.AbstractTransformer;
 import org.springframework.integration.xquery.core.XQueryExecutor;
 import org.springframework.integration.xquery.support.XQueryResultMapper;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
-import org.w3c.dom.Node;
 
 
 /**
@@ -40,6 +41,7 @@ import org.w3c.dom.Node;
  * provided then the value of the {@link #resultType} defaults to {@link String}.
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *

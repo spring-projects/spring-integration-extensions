@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.springframework.integration.xquery.support;
 
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.integration.Message;
 import org.springframework.integration.handler.ExpressionEvaluatingMessageProcessor;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
  * instance
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *

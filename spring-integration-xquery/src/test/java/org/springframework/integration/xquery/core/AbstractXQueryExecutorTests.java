@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import javax.xml.xquery.XQResultSequence;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.w3c.dom.Node;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.integration.Message;
-import org.springframework.integration.MessagingException;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.test.util.TestUtils;
 import org.springframework.integration.xquery.support.AbstractXQueryResultMapper;
@@ -40,12 +40,14 @@ import org.springframework.integration.xquery.support.NumberResultMapper;
 import org.springframework.integration.xquery.support.StringResultMapper;
 import org.springframework.integration.xquery.support.XQueryParameter;
 import org.springframework.integration.xquery.support.XQueryResultMapper;
-import org.w3c.dom.Node;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
 
 /**
  * The base test class for the XQueryExecutor tests
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *
@@ -97,6 +99,7 @@ public abstract class AbstractXQueryExecutorTests {
 		executor.setXQuery("'Hello'");
 		Map map = new HashMap();
 		map.put(MyCustomClass.class, new XQueryResultMapper<MyCustomClass>() {
+			@Override
 			public List<MyCustomClass> mapResults(XQResultSequence result) {
 				// TODO Auto-generated method stub
 				return null;
@@ -647,6 +650,7 @@ public abstract class AbstractXQueryExecutorTests {
 
 	private class MyCustomClass {}
 	private class CustomNodeMapper implements XQueryResultMapper<Node> {
+		@Override
 		public List<Node> mapResults(XQResultSequence result) {
 			return null;
 		}

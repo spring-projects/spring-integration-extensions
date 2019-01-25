@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,23 @@ import java.util.List;
 import javax.xml.xquery.XQItemType;
 import javax.xml.xquery.XQResultSequence;
 
-import org.springframework.integration.MessagingException;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Node;
+
+import org.springframework.messaging.MessagingException;
+import org.springframework.util.StringUtils;
 
 /**
  * The Result mapper implementation that maps the {@link XQResultSequence} to {@link Number}
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *
  */
 public class NumberResultMapper extends AbstractXQueryResultMapper<Number> {
 
+	@Override
 	public List<Number> mapResults(XQResultSequence result) {
 		List<Number> results = new ArrayList<Number>();
 		try {

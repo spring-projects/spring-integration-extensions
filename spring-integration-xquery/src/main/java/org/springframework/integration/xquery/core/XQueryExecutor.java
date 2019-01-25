@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ import javax.xml.xquery.XQResultSequence;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Node;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
-import org.springframework.integration.Message;
-import org.springframework.integration.MessagingException;
 import org.springframework.integration.xml.DefaultXmlPayloadConverter;
 import org.springframework.integration.xml.XmlPayloadConverter;
 import org.springframework.integration.xquery.support.AbstractXQueryResultMapper;
@@ -45,10 +45,11 @@ import org.springframework.integration.xquery.support.StringResultMapper;
 import org.springframework.integration.xquery.support.XQueryParameter;
 import org.springframework.integration.xquery.support.XQueryResultMapper;
 import org.springframework.integration.xquery.support.XQueryUtils;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Node;
 
 /**
  * The common logic for performing the common xquery operations would reside in this
@@ -60,6 +61,7 @@ import org.w3c.dom.Node;
  * to a custom object type
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *
@@ -170,6 +172,7 @@ public class XQueryExecutor implements InitializingBean,BeanClassLoaderAware {
 
 
 
+	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		Assert.notNull(classLoader, "Non null class loader instance expected");
 		this.classLoader = classLoader;
@@ -364,7 +367,7 @@ public class XQueryExecutor implements InitializingBean,BeanClassLoaderAware {
 	 */
 	@SuppressWarnings("rawtypes")
 	public <T> void setResultMappers(Map<Class<T>, XQueryResultMapper<T>> mappers) {
-		Assert.notNull(mappers);
+		Assert.notNull(mappers, "mappers cannot be null");
 		this.resultMappers = new HashMap<Class<T>, XQueryResultMapper<T>>(mappers);
 		//not iterate through them and set the format
 		for(Object mapper:resultMappers.values()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,21 @@ import java.util.List;
 
 import javax.xml.xquery.XQResultSequence;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
+import org.w3c.dom.Node;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.test.util.TestUtils;
 import org.springframework.integration.xquery.core.XQueryExecutor;
 import org.springframework.integration.xquery.support.XQueryResultMapper;
-import org.w3c.dom.Node;
 
 /**
  * The Test class for the {@link XQueryTransformer} class
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *
@@ -220,6 +221,7 @@ public class XQueryTransformerTests {
 
 	private class DummyXQueryResultMapper implements XQueryResultMapper<Integer> {
 
+		@Override
 		public List<Integer> mapResults(XQResultSequence result) {
 			// TODO Auto-generated method stub
 			return null;

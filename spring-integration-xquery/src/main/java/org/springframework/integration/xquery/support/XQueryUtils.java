@@ -23,8 +23,9 @@ import java.net.URL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.core.io.Resource;
-import org.springframework.integration.MessagingException;
+import org.springframework.messaging.MessagingException;
 import org.springframework.util.Assert;
 
 /**
@@ -33,6 +34,7 @@ import org.springframework.util.Assert;
  * by the router, transformer etc along with all the parsers for these components
  *
  * @author Amol Nayak
+ * @author Gary Russell
  *
  * @since 1.0
  *
