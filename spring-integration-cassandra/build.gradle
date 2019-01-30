@@ -32,9 +32,9 @@ ext {
     assertjVersion = '3.11.1'
     cassandraUnitVersion = '3.5.0.1'
     slf4jVersion = '1.7.25'
-    reactorVersion = '3.2.4.RELEASE'
-    springDataCassandraVersion = '2.1.3.RELEASE'
-    springIntegrationVersion = '5.1.1.RELEASE'
+    reactorVersion = '3.2.5.RELEASE'
+    springDataCassandraVersion = '2.1.4.RELEASE'
+    springIntegrationVersion = '5.1.2.RELEASE'
 
     idPrefix = 'cassandra'
 
