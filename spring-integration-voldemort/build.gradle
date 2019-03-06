@@ -17,8 +17,8 @@ apply plugin: 'idea'
 group = 'org.springframework.integration'
 
 repositories {
-	maven { url 'http://repo.springsource.org/libs-milestone' }
-	maven { url 'http://repo.springsource.org/plugins-release' }
+	maven { url 'https://repo.springsource.org/libs-milestone' }
+	maven { url 'https://repo.springsource.org/plugins-release' }
 }
 
 sourceCompatibility=1.6
@@ -57,8 +57,8 @@ sourceSets {
 	}
 }
 
-// See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
-// and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
+// See https://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
+// and https://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
 configurations {
 	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
 }
@@ -82,7 +82,7 @@ ext.xLintArg = '-Xlint:all'
 test {
 	// suppress all console output during testing unless running `gradle -i`
 	logging.captureStandardOutput(LogLevel.INFO)
-	// JVM settings from http://www.project-voldemort.com/voldemort/configuration.html
+	// JVM settings from https://www.project-voldemort.com/voldemort/configuration.html
 	jvmArgs "-XX:+UseConcMarkSweepGC", "-XX:+UseParNewGC", "-javaagent:${configurations.jacoco.asPath}=destfile=${buildDir}/jacoco.exec,includes=*"
 }
 
