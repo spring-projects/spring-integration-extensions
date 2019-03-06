@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 
 	<name>smb</name>
-	<url>http://www.springsource.org/spring-integration</url>
+	<url>https://www.springsource.org/spring-integration</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

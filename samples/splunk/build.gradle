@@ -6,7 +6,7 @@ apply plugin: 'application'
 
 repositories {
 	mavenLocal()
-	maven { url "http://repo.springsource.org/libs-snapshot" }
+	maven { url "https://repo.springsource.org/libs-snapshot" }
 }
 
 dependencies {

@@ -8,7 +8,7 @@ apply plugin: 'jacoco'
 
 buildscript {
 	repositories {
-		maven { url 'http://repo.spring.io/plugins-release' }
+		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 	dependencies {
 		classpath 'io.spring.gradle:spring-io-plugin:0.0.4.RELEASE'
@@ -19,10 +19,10 @@ group = 'org.springframework.integration'
 
 repositories {
 	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
-		maven { url 'http://repo.spring.io/libs-snapshot' }
+		maven { url 'https://repo.spring.io/libs-snapshot' }
 	}
-	maven { url 'http://repo.spring.io/libs-milestone' }
-//	maven { url 'http://repo.spring.io/libs-staging-local' }
+	maven { url 'https://repo.spring.io/libs-milestone' }
+//	maven { url 'https://repo.spring.io/libs-staging-local' }
 }
 
 if (project.hasProperty('platformVersion')) {
@@ -262,5 +262,5 @@ task dist(dependsOn: assemble) {
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
 	gradleVersion = '2.5'
-	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+	distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }

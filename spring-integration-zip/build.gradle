@@ -25,7 +25,7 @@ group = 'org.springframework.integration'
 
 repositories {
 	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
-		maven { url 'http://repo.spring.io/libs-snapshot' }
+		maven { url 'https://repo.spring.io/libs-snapshot' }
 	}
 	maven { url 'https://repo.spring.io/libs-milestone' }
 }

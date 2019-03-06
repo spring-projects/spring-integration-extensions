@@ -17,7 +17,7 @@ apply plugin: 'idea'
 group = 'org.springframework.integration'
 
 repositories {
-	maven { url 'http://repo.spring.io/libs-milestone' }
+	maven { url 'https://repo.spring.io/libs-milestone' }
 }
 
 sourceCompatibility = 1.6
@@ -45,8 +45,8 @@ eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
 
 sourceSets.test.resources.srcDirs = ['src/test/resources', 'src/test/java']
 
-// See http://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
-// and http://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
+// See https://www.gradle.org/docs/current/userguide/dependency_management.html#sub:configurations
+// and https://www.gradle.org/docs/current/dsl/org.gradle.api.artifacts.ConfigurationContainer.html
 configurations {
 	jacoco //Configuration Group used by Sonar to provide Code Coverage using JaCoCo
 	all*.exclude group: 'commons-logging', module: 'commons-logging'
@@ -237,5 +237,5 @@ task dist(dependsOn: assemble) {
 task wrapper(type: Wrapper) {
 	description = 'Generates gradlew[.bat] scripts'
 	gradleVersion = '1.12'
-	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+	distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }

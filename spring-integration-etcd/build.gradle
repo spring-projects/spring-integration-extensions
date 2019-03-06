@@ -13,9 +13,9 @@ group = 'org.springframework.integration'
 
 repositories {
 	if (version.endsWith('BUILD-SNAPSHOT')) {
-		maven { url 'http://repo.spring.io/libs-snapshot' }
+		maven { url 'https://repo.spring.io/libs-snapshot' }
 	}
-	maven { url 'http://repo.spring.io/libs-milestone' }
+	maven { url 'https://repo.spring.io/libs-milestone' }
 }
 
 sourceCompatibility = targetCompatibility = 1.8
