@@ -3,15 +3,15 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:int="http://www.springframework.org/schema/integration"
 	xmlns:int-voldemort="http://www.springframework.org/schema/integration/voldemort"
-	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/integration/voldemort http://www.springframework.org/schema/integration/voldemort/spring-integration-voldemort.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration/voldemort https://www.springframework.org/schema/integration/voldemort/spring-integration-voldemort.xsd">
 
 	<int:channel id="requestChannel"/>
 
 	<!-- See also:
-		http://static.springsource.org/spring-integration/reference/htmlsingle/#gateway-proxy
-		http://www.eaipatterns.com/MessagingGateway.html -->
+		https://docs.spring.io/spring-integration/reference/htmlsingle/#gateway-proxy
+		https://www.enterpriseintegrationpatterns.com/MessagingGateway.html -->
 	<int:gateway id="gateway"
 		default-request-timeout="5000"
 		default-reply-timeout="5000"

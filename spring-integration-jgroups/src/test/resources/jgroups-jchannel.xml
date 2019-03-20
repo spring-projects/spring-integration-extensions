@@ -19,8 +19,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:jgroups="http://www.springframework.org/schema/integration/jgroups"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups http://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups https://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
+	http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<jgroups:cluster name="cluster">
 		<jgroups:xml-configurator resource="classpath:udp.xml" />

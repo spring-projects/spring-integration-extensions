@@ -31,11 +31,11 @@
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:int-smpp="http://www.springframework.org/schema/integration/smpp"
        xsi:schemaLocation="http://www.springframework.org/schema/integration
-        http://www.springframework.org/schema/integration/spring-integration.xsd
+        https://www.springframework.org/schema/integration/spring-integration.xsd
 		http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans.xsd
+		https://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/integration/smpp
-		http://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd
+		https://www.springframework.org/schema/integration/smpp/spring-integration-smpp.xsd
 		">
 </beans>
         ]]>

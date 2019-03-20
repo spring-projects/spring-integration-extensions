@@ -3,9 +3,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:int="http://www.springframework.org/schema/integration"
 	xmlns:int-xquery="http://www.springframework.org/schema/integration/xquery"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
-		http://www.springframework.org/schema/integration/xquery http://www.springframework.org/schema/integration/xquery/spring-integration-xquery.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/xquery https://www.springframework.org/schema/integration/xquery/spring-integration-xquery.xsd">
 
 	<int-xquery:xquery-router id="xqueryRouterOne" input-channel="xpathRouterOne">
 		<int-xquery:xquery>
