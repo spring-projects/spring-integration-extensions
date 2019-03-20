@@ -4,7 +4,7 @@ plugins {
 	id 'idea'
 	id 'jacoco'
 	id 'checkstyle'
-	id 'org.sonarqube' version '2.6.2'
+	id 'org.sonarqube' version '2.7'
 }
 
 description = 'Spring Integration Social Twitter Support'
@@ -28,9 +28,9 @@ compileJava {
 
 ext {
 	jackson2Version = '2.9.6'
-	springIntegrationVersion = '5.1.0.RELEASE'
+	springIntegrationVersion = '5.1.4.BUILD-SNAPSHOT'
 	springSocialTwitterVersion = '1.1.2.RELEASE'
-	springVersion = '5.1.2.RELEASE'
+	springVersion = '5.1.6.BUILD-SNAPSHOT'
 
 	idPrefix = 'twitter'
 
@@ -53,12 +53,12 @@ sourceSets {
 }
 
 jacoco {
-	toolVersion = "0.7.9"
+	toolVersion = "0.8.2"
 }
 
 checkstyle {
 	configFile = file("$rootDir/src/checkstyle/checkstyle.xml")
-	toolVersion = "8.11"
+	toolVersion = "8.18"
 }
 
 // enable all compiler warnings; individual projects may customize further

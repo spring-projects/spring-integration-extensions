@@ -34,7 +34,7 @@ ext {
     slf4jVersion = '1.7.25'
     reactorVersion = '3.2.5.RELEASE'
     springDataCassandraVersion = '2.1.4.RELEASE'
-    springIntegrationVersion = '5.1.2.RELEASE'
+    springIntegrationVersion = '5.1.4.BUILD-SNAPSHOT'
 
     idPrefix = 'cassandra'
 
