@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2018-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ abstract class AbstractTwitterMessageSource<T> extends IntegrationObjectSupport 
 
 	private final String metadataKey;
 
-	private final Queue<T> tweets = new LinkedBlockingQueue<T>();
+	private final Queue<T> tweets = new LinkedBlockingQueue<>();
 
 	private volatile MetadataStore metadataStore;
 
@@ -120,7 +120,7 @@ abstract class AbstractTwitterMessageSource<T> extends IntegrationObjectSupport 
 	}
 
 	@Override
-	protected void onInit() throws Exception {
+	protected void onInit() {
 		super.onInit();
 		if (this.metadataStore == null) {
 			// first try to look for a 'metadataStore' in the context

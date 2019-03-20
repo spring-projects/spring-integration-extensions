@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2018-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.springframework.util.Assert;
  * expression evaluation.
  *
  * @author Gary Russell
+ * @author Artem Bilan
  */
 public class TwitterSearchOutboundGateway extends AbstractReplyProducingMessageHandler {
 
@@ -147,8 +148,9 @@ public class TwitterSearchOutboundGateway extends AbstractReplyProducingMessageH
 		}
 		SearchResults results = this.getTwitter().searchOperations().search(searchParameters);
 		if (results != null) {
-			List<Tweet> tweets = (results.getTweets() != null ? results.getTweets() : Collections.<Tweet>emptyList());
-			return this.getMessageBuilderFactory().withPayload(tweets)
+			List<Tweet> tweets = results.getTweets() != null ? results.getTweets() : Collections.emptyList();
+			return getMessageBuilderFactory()
+					.withPayload(tweets)
 					.setHeader(TwitterHeaders.SEARCH_METADATA, results.getSearchMetadata());
 		}
 		else {

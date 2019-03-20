@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2018-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
  * @author Josh Long
  * @author Oleg Zhurakousky
  * @author Mark Fisher
+ * @author Artem Bilan
  */
 public class DirectMessageSendingMessageHandler extends AbstractMessageHandler {
 
@@ -45,7 +46,7 @@ public class DirectMessageSendingMessageHandler extends AbstractMessageHandler {
 	}
 
 	@Override
-	protected void handleMessageInternal(Message<?> message) throws Exception {
+	protected void handleMessageInternal(Message<?> message) {
 		Assert.isTrue(message.getPayload() instanceof String, "Only payload of type String is supported. " +
 				"Consider adding a transformer to the message flow in front of this adapter.");
 		Object toUser = message.getHeaders().get(TwitterHeaders.DM_TARGET_USER_ID);
@@ -56,7 +57,7 @@ public class DirectMessageSendingMessageHandler extends AbstractMessageHandler {
 		if (toUser instanceof Number) {
 			this.twitter.directMessageOperations().sendDirectMessage(((Number) toUser).longValue(), payload);
 		}
-		else if (toUser instanceof String) {
+		else {
 			this.twitter.directMessageOperations().sendDirectMessage((String) toUser, payload);
 		}
 	}
