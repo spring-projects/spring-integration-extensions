@@ -7,8 +7,8 @@
         <title>Spring Integration Home</title>
         <para>
             The definitive source of information about Spring Integration is the
-            <ulink url="http://www.springsource.org/spring-integration">Spring Integration Home</ulink>
-            at <ulink url="http://www.springsource.org">http://www.springsource.org</ulink>. That site serves as a hub
+            <ulink url="https://www.springsource.org/spring-integration">Spring Integration Home</ulink>
+            at <ulink url="https://www.springsource.org">https://www.springsource.org</ulink>. That site serves as a hub
             of information and is the best place to find up-to-date announcements about the project as well as links to
             articles, blogs, and new sample applications.
         </para>
@@ -18,7 +18,7 @@
         <title>Project Voldemort Home</title>
         <para>
             If you are not familiar with Voldemort distributed key-value store, please visit
-            <ulink url="http://www.project-voldemort.com">Project Voldemort</ulink> homepage. Hereby site contains
+            <ulink url="https://www.project-voldemort.com">Project Voldemort</ulink> homepage. Hereby site contains
             complete design overview, list of available configuration options and documentation of client API. Links
             to source code, bug tracker and wiki can be found as well.
         </para>

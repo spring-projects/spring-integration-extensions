@@ -4,11 +4,11 @@
 	   xmlns:int="http://www.springframework.org/schema/integration"
 	   xmlns:int-hazelcast="http://www.springframework.org/schema/integration/hazelcast"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd
+    https://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/integration
-    http://www.springframework.org/schema/integration/spring-integration.xsd
+    https://www.springframework.org/schema/integration/spring-integration.xsd
     http://www.springframework.org/schema/integration/hazelcast
-	http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
+	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
 	<int:channel id="cqMapChannel1">
 		<int:queue/>
