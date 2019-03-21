@@ -130,7 +130,7 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [Spring Integration Pattern Catalog]: https://github.com/SpringSource/spring-integration-pattern-catalog
 [SpringSource Tool Suite]: http://www.springsource.org/sts
 [How to Create New Components]: https://github.com/SpringSource/spring-integration-extensions/wiki/How-to-Create-New-Components
-[Apache License]: http://www.apache.org/licenses/LICENSE-2.0
+[Apache License]: https://www.apache.org/licenses/LICENSE-2.0
 
 [SMB]: http://en.wikipedia.org/wiki/Server_Message_Block
 [SMPP]: http://en.wikipedia.org/wiki/Short_Message_Peer-to-Peer
