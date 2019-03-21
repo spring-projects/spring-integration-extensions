@@ -644,7 +644,7 @@ public class SmesMessageSpecification {
 	 * so it needs to be tested with a particular operator first to determine if
 	 * it can be used reliably.
 	 * <p/>
-	 * That information came from <a href="http://www.nowsms.com/smpp-information">the NowSMS website.</a>.
+	 * That information came from <a href="https://www.nowsms.com/smpp-information">the NowSMS website.</a>.
 	 * @param v the period of validity. There are specific formats for this,
 	 * however this method provides no validation.
 	 *          <p/>
@@ -750,7 +750,7 @@ public class SmesMessageSpecification {
 	 * this is a good value, but not strictly speaking universal.
 	 * This is intended only for exceptional configuration cases
 	 * <p/>
-	 * See: http://www.nowsms.com/long-sms-text-messages-and-the-160-character-limit
+	 * See: https://www.nowsms.com/long-sms-text-messages-and-the-160-character-limit
 	 *
 	 * @param maxLengthSmsMessages the length of sms messages
 	 * @see #setShortTextMessage(String)

@@ -49,5 +49,5 @@ To generate IDEA metadata (.iml and .ipr files), do the following:
     ./gradlew idea
 
 For more information, please visit the Spring Integration website at:
-[http://www.springsource.org/spring-integration](http://www.springsource.org/spring-integration)
+[https://www.springsource.org/spring-integration](https://www.springsource.org/spring-integration)
 

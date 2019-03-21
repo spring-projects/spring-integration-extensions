@@ -84,7 +84,7 @@ public class ZipTransformerTests {
 		Assert.assertTrue(unzippedEntry.exists());
 		Assert.assertTrue(unzippedEntry.isFile());
 
-		//See http://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
+		//See https://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
 		Assert.assertTrue((fileDate.getTime() - 3000) < unzippedEntry.lastModified());
 		Assert.assertTrue((fileDate.getTime() + 3000) > unzippedEntry.lastModified());
 	}
@@ -140,7 +140,7 @@ public class ZipTransformerTests {
 				Assert.assertTrue(file.exists());
 				Assert.assertTrue(file.isFile());
 
-				//See http://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
+				//See https://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
 				Assert.assertTrue(String.format("%s : %s", fileDate.getTime() - 4000, file.lastModified()),
 						(fileDate.getTime() - 4000) < file.lastModified());
 				Assert.assertTrue((fileDate.getTime() + 4000) > file.lastModified());

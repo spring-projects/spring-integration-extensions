@@ -110,17 +110,17 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 
 [Spring Integration]: https://github.com/SpringSource/spring-integration
 [SpringSource organization]: https://github.com/SpringSource
-[Spring Integration forums]: http://forum.springsource.org/forumdisplay.php?42-Integration
-[spring-integration tag]: http://stackoverflow.com/questions/tagged/spring-integration
-[Stack Overflow]: http://stackoverflow.com/faq
-[Commercial support]: http://springsource.com/support/springsupport
-[Spring Integration Extensions JIRA]: http://jira.springsource.org/browse/INTEXT
+[Spring Integration forums]: https://forum.spring.io/forumdisplay.php?42-Integration
+[spring-integration tag]: https://stackoverflow.com/questions/tagged/spring-integration
+[Stack Overflow]: https://stackoverflow.com/faq
+[Commercial support]: https://springsource.com/support/springsupport
+[Spring Integration Extensions JIRA]: https://jira.springsource.org/browse/INTEXT
 [the lifecycle of an issue]: https://github.com/cbeams/spring-framework/wiki/The-Lifecycle-of-an-Issue
-[Gradle]: http://gradle.org
-[`./gradlew`]: http://vimeo.com/34436402
-[Git]: http://help.github.com/set-up-git-redirect
+[Gradle]: https://gradle.org
+[`./gradlew`]: https://vimeo.com/34436402
+[Git]: https://help.github.com/set-up-git-redirect
 [Gradle build and release FAQ]: https://github.com/SpringSource/spring-framework/wiki/Gradle-build-and-release-FAQ
-[Pull requests]: http://help.github.com/send-pull-requests
+[Pull requests]: https://help.github.com/send-pull-requests
 [contributor guidelines]: https://github.com/spring-projects/spring-integration/blob/master/CONTRIBUTING.adoc
 [administrator guidelines]: https://github.com/SpringSource/spring-integration/wiki/Administrator-Guidelines
 [Spring Integration Samples]: https://github.com/SpringSource/spring-integration-samples
@@ -128,19 +128,19 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [Spring Integration Dsl Groovy]: https://github.com/SpringSource/spring-integration-dsl-groovy
 [Spring Integration Dsl Scala]: https://github.com/SpringSource/spring-integration-dsl-scala
 [Spring Integration Pattern Catalog]: https://github.com/SpringSource/spring-integration-pattern-catalog
-[SpringSource Tool Suite]: http://www.springsource.org/sts
+[SpringSource Tool Suite]: https://www.springsource.org/sts
 [How to Create New Components]: https://github.com/SpringSource/spring-integration-extensions/wiki/How-to-Create-New-Components
 [Apache License]: http://www.apache.org/licenses/LICENSE-2.0
 
-[SMB]: http://en.wikipedia.org/wiki/Server_Message_Block
-[SMPP]: http://en.wikipedia.org/wiki/Short_Message_Peer-to-Peer
-[Print]: http://docs.oracle.com/javase/6/docs/technotes/guides/jps/index.html
-[Kafka]: http://kafka.apache.org/
-[Voldemort]: http://www.project-voldemort.com/voldemort/
-[MQ Telemetry Transport]: http://mqtt.org/
-[Websockets]: http://www.html5rocks.com/en/tutorials/websockets/basics/
-[XQuery]: http://en.wikipedia.org/wiki/XQuery
-[Splunk]: http://www.splunk.com/
-[Amazon Web Services (AWS)]: http://aws.amazon.com/
-[MQ Telemetry Transport (MQTT)]: http://mqtt.org/
-[Hazelcast]: http://hazelcast.org/
+[SMB]: https://en.wikipedia.org/wiki/Server_Message_Block
+[SMPP]: https://en.wikipedia.org/wiki/Short_Message_Peer-to-Peer
+[Print]: https://docs.oracle.com/javase/6/docs/technotes/guides/jps/index.html
+[Kafka]: https://kafka.apache.org/
+[Voldemort]: https://www.project-voldemort.com/voldemort/
+[MQ Telemetry Transport]: https://mqtt.org/
+[Websockets]: https://www.html5rocks.com/en/tutorials/websockets/basics/
+[XQuery]: https://en.wikipedia.org/wiki/XQuery
+[Splunk]: https://www.splunk.com/
+[Amazon Web Services (AWS)]: https://aws.amazon.com/
+[MQ Telemetry Transport (MQTT)]: https://mqtt.org/
+[Hazelcast]: https://hazelcast.org/

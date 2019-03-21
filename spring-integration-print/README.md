@@ -9,7 +9,7 @@ The *Spring Integration Print* allows you to print payloads using the [Java Prin
 
 This module depends by default on Spring Integration 2.2. When using this module, please be aware that printing using [Java Print Service] can be unpredictable depending on the uses platform and the used printer. For some more details, please see:
 
-* http://hillert.blogspot.com/2011/12/java-print-service-frustrations.html
+* https://hillert.blogspot.com/2011/12/java-print-service-frustrations.html
 
 Currently the Print Support has been tested using a *Brother HL-4070CDW* which exhibits several issues such as the inability to execute a print job that prints more than one copy for each page. If you use the Print Module, please report back any compatibility issues with your used printers. 
 
@@ -94,9 +94,9 @@ In order to get some indication what capabilities are supported by your printer,
 		xmlns:int="http://www.springframework.org/schema/integration"
 		xmlns:int-print="http://www.springframework.org/schema/integration/print"
 		xsi:schemaLocation="
-			http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
-			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-			http://www.springframework.org/schema/integration/print http://www.springframework.org/schema/integration/print/spring-integration-print.xsd">
+			http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration.xsd
+			http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/integration/print https://www.springframework.org/schema/integration/print/spring-integration-print.xsd">
 			…
 	</beans>
 
@@ -110,12 +110,12 @@ An example of declaring a *Print Outbound Channel Adapter* is shown below:
 		sides="DUPLEX"/>
 
 
-[Java Print Service]: http://docs.oracle.com/javase/6/docs/technotes/guides/jps/index.html
-[PrintService]: http://docs.oracle.com/javase/6/docs/api/javax/print/PrintService.html
-[Chromaticity]: http://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/Chromaticity.html
-[Copies]: http://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/Copies.html
-[DocFlavor]: http://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
-[MediaTray]: http://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/MediaTray.html
-[Print Attribute]: http://docs.oracle.com/javase/6/docs/api/javax/print/attribute/Attribute.html
-[MediaSizeName]: http://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/MediaSizeName.html
-[Sides]: http://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/Sides.html
+[Java Print Service]: https://docs.oracle.com/javase/6/docs/technotes/guides/jps/index.html
+[PrintService]: https://docs.oracle.com/javase/6/docs/api/javax/print/PrintService.html
+[Chromaticity]: https://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/Chromaticity.html
+[Copies]: https://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/Copies.html
+[DocFlavor]: https://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
+[MediaTray]: https://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/MediaTray.html
+[Print Attribute]: https://docs.oracle.com/javase/6/docs/api/javax/print/attribute/Attribute.html
+[MediaSizeName]: https://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/MediaSizeName.html
+[Sides]: https://docs.oracle.com/javase/6/docs/api/javax/print/attribute/standard/Sides.html

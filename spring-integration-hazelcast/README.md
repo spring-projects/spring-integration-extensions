@@ -46,7 +46,7 @@ Sample namespace and schemaLocation definitions are as follows :
 xmlns:int-hazelcast= “http://www.springframework.org/schema/integration/hazelcast”
 
 xsi:schemaLocation="http://www.springframework.org/schema/integration/hazelcast
-		  http://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd”
+		  https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd”
 ```
 Sample definitions are as follows :
 
@@ -184,7 +184,7 @@ public HazelcastEventDrivenMessageProducer hazelcastEventDrivenMessageProducer()
 
 ```
 
-**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributed-data-structures.html
+**Reference :** https://docs.hazelcast.org/docs/latest/manual/html/distributed-data-structures.html
 
 
 ## HAZELCAST CONTINUOUS QUERY INBOUND CHANNEL ADAPTER
@@ -263,7 +263,7 @@ public HazelcastContinuousQueryMessageProducer hazelcastContinuousQueryMessagePr
 }
 
 ```
-**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/continuousquery.html
+**Reference :** https://docs.hazelcast.org/docs/latest/manual/html/continuousquery.html
 
 ## HAZELCAST CLUSTER MONITOR INBOUND CHANNEL ADAPTER
 
@@ -320,7 +320,7 @@ public HazelcastClusterMonitorMessageProducer hazelcastClusterMonitorMessageProd
 	return producer;
 }
 ```
-**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedevents.html
+**Reference :** https://docs.hazelcast.org/docs/latest/manual/html/distributedevents.html
 
 
 ## HAZELCAST DISTRIBUTED-SQL INBOUND CHANNEL ADAPTER
@@ -396,7 +396,7 @@ public HazelcastDistributedSQLMessageSource hazelcastDistributedSQLMessageSource
 	return messageSource;
 }
 ```
-**Reference :** http://docs.hazelcast.org/docs/latest/manual/html/distributedquery.html
+**Reference :** https://docs.hazelcast.org/docs/latest/manual/html/distributedquery.html
 
 
 ## HAZELCAST OUTBOUND CHANNEL ADAPTER
@@ -477,7 +477,7 @@ public LeaderInitiator initiator() {
 ```
 
 Then when a node is elected leader it will send `OnGrantedEvent` to all application listeners. See
-the [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/#endpoint-roles)
+the [Spring Integration User Guide](https://docs.spring.io/spring-integration/reference/html/#endpoint-roles)
 for more information on how to use those events to control messaging endpoints.
 
 ## HAZELCAST MESSAGE STORE
@@ -497,10 +497,10 @@ public MessageGroupStore messageStore() {
 
 By default the `SPRING_INTEGRATION_MESSAGE_STORE` `IMap` is used to store messages and groups key/value manner.
 Any custom `IMap` can be provided to the `HazelcastMessageStore`.
-See [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#message-store) for more information about `MessageStore`.
+See [Spring Integration User Guide](https://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#message-store) for more information about `MessageStore`.
 
 ## HAZELCAST METADATA STORE
-An implementation of a [MetadataStore](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#metadata-store) is available using a backing Hazelcast `IMap`
+An implementation of a [MetadataStore](https://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#metadata-store) is available using a backing Hazelcast `IMap`
 
 You can provide your own implementation of an `IMap` or rely on the default map created with name `SPRING_INTEGRATION_METADATA_STORE`.
 
@@ -518,7 +518,7 @@ public MetadataStore metadataStore() {
 
 The `HazelcastMetadataStore` implements `ListenableMetadataStore` which allows you to register your own listeners of type `MetadataStoreListener` to listen for events via `addListener(MetadataStoreListener callback)`
 
-See [Spring Integration User Guide](http://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#metadatastore-listener) for more information about the `MetadataStoreListener` interface. 
+See [Spring Integration User Guide](https://docs.spring.io/spring-integration/reference/html/system-management-chapter.html#metadatastore-listener) for more information about the `MetadataStoreListener` interface. 
 
 ## HAZELCAST LOCK REGISTRY
 An implementation of a `LockRegistry` is available using a backing Hazelcast distributed `ILock` support: 

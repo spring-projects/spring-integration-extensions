@@ -57,6 +57,6 @@ The polled files will be stored under `s3-local-storage`.
 
 For help please take a look at the [Spring Integration documentation][]
 
-[Amazon Simple Storage Service]: http://aws.amazon.com/s3/
-[Maven]: http://maven.apache.org/
-[Spring Integration documentation]: http://www.springsource.org/spring-integration
+[Amazon Simple Storage Service]: https://aws.amazon.com/s3/
+[Maven]: https://maven.apache.org/
+[Spring Integration documentation]: https://www.springsource.org/spring-integration

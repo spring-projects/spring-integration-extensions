@@ -1,7 +1,7 @@
 Spring Integration Zip Support
 ==============================
 
-Build Status : [![Build Status](http://build.spring.io/plugins/servlet/buildStatusImage/INTEXT-ZIP)](https://build.spring.io/browse/INTEXT-ZIP)
+Build Status : [![Build Status](https://build.spring.io/plugins/servlet/buildStatusImage/INTEXT-ZIP)](https://build.spring.io/browse/INTEXT-ZIP)
 
 ## Introduction
 
@@ -159,12 +159,12 @@ Check out the [spring-integration][spring-integration tag] tag on [Stack Overflo
 For more information, please also don't forget to visit the [Spring Integration][] website.
 
 [Spring Integration]: https://github.com/spring-projects/spring-integration
-[spring-integration tag]: http://stackoverflow.com/questions/tagged/spring-integration
+[spring-integration tag]: https://stackoverflow.com/questions/tagged/spring-integration
 [Spring Integration Samples]: https://github.com/spring-projects/spring-integration-samples
 [Spring Integration Templates]: https://github.com/spring-projects/spring-integration-templates/tree/master/si-sts-templates
 [Spring Integration Java DSL]: https://github.com/spring-projects/spring-integration-java-dsl
 [Spring Integration Dsl Groovy]: https://github.com/spring-projects/spring-integration-dsl-groovy
 [Spring Integration Dsl Scala]: https://github.com/spring-projects/spring-integration-dsl-scala
-[Stack Overflow]: http://stackoverflow.com/faq
+[Stack Overflow]: https://stackoverflow.com/faq
 
-[Zip]: http://en.wikipedia.org/wiki/Zip_%28file_format%29
+[Zip]: https://en.wikipedia.org/wiki/Zip_%2528file_format%2529
