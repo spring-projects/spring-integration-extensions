@@ -16,9 +16,9 @@ cluster/group name and JGroups configuration.
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:jgroups="http://www.springframework.org/schema/integration/jgroups"
     xmlns:int="http://www.springframework.org/schema/integration"
-    xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups http://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
-        http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups https://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
+        http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <jgroups:cluster name="mygroup">
         <jgroups:xml-configurator resource="classpath:udp.xml" />
@@ -43,9 +43,9 @@ optional reference to custom JGroups header mapper.
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:jgroups="http://www.springframework.org/schema/integration/jgroups"
     xmlns:int="http://www.springframework.org/schema/integration"
-    xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups http://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
-        http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups https://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
+        http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
     <jgroups:cluster name="mygroup">
@@ -73,9 +73,9 @@ optional reference to custom JGroups header mapper.
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:jgroups="http://www.springframework.org/schema/integration/jgroups"
     xmlns:int="http://www.springframework.org/schema/integration"
-    xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups http://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
-        http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    xsi:schemaLocation="http://www.springframework.org/schema/integration/jgroups https://www.springframework.org/schema/integration/jgroups/spring-intergration-jgroups.xsd
+        http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <jgroups:cluster name="mygroup">
         <jgroups:xml-configurator resource="classpath:udp.xml" />

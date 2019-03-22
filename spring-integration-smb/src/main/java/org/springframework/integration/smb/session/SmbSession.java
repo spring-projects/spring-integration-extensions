@@ -45,7 +45,7 @@ import jcifs.smb.SmbFileOutputStream;
  * SMB is an application-layer network protocol that manages shared access to files, printers
  * and other networked resources.
  *
- * See <a href="http://en.wikipedia.org/wiki/Server_Message_Block">Server Message Block</a>
+ * See <a href="https://en.wikipedia.org/wiki/Server_Message_Block">Server Message Block</a>
  * for more details.
  *
  * @author Markus Spann

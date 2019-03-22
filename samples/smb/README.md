@@ -53,6 +53,6 @@ The polled files will be stored under `target/smb-out`.
 
 For help please take a look at the [Spring Integration documentation][]
 
-[Server Message Block]: http://en.wikipedia.org/wiki/Server_Message_Block
-[Maven]: http://maven.apache.org/
-[Spring Integration documentation]: http://www.springsource.org/spring-integration
+[Server Message Block]: https://en.wikipedia.org/wiki/Server_Message_Block
+[Maven]: https://maven.apache.org/
+[Spring Integration documentation]: https://www.springsource.org/spring-integration

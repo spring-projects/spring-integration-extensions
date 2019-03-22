@@ -21,7 +21,7 @@ You should see a screen as the following:
     Welcome to the Spring Integration Zip Sample
 
     For more information please visit:
-    http://www.springsource.org/spring-integration
+    https://www.springsource.org/spring-integration
 
 =========================================================
 17:08:41.883 INFO  [org.springframework.integration.samples.zip.Main.main()][org.springframework.integration.samples.zip.SpringIntegrationUtils]
@@ -52,5 +52,5 @@ Drop a compressed file into the **input-zip** directory. The file will be decomp
 
 For help please take a look at the Spring Integration documentation:
 
-http://www.springsource.org/spring-integration
+https://www.springsource.org/spring-integration
 

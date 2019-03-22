@@ -9,7 +9,7 @@ This sample demonstrates the usage of the *[Spring Integration Splunk][]* adapte
 
 You need to install or have access to a [Splunk][] Server. You can download [Splunk][] from:
 
-* http://www.splunk.com/download
+* https://www.splunk.com/download
 
 #### Data Inputs
 
@@ -17,7 +17,7 @@ Depending on your Splunk Server installation, you may have to open up a TCP by a
 
 For instructions please see:
 
-* http://docs.splunk.com/Documentation/Splunk/latest/Data/Monitornetworkports
+* https://docs.splunk.com/Documentation/Splunk/latest/Data/Monitornetworkports
 
 ### Spring Integration Splunk dependencies
 
@@ -60,6 +60,6 @@ You may want to run the *Outbound Channel Adapter* application first in order to
 * **Export search**: SplunkInboundChannelAdapterExportSample
 * **Saved search**: SplunkInboundChannelAdapterSavedSample
 
-[Splunk]: http://www.splunk.com/
+[Splunk]: https://www.splunk.com/
 [Spring Integration Splunk]: https://github.com/SpringSource/spring-integration-extensions/tree/master/spring-integration-splunk
 [SpringSource Maven Repository]: https://repo.springsource.org/

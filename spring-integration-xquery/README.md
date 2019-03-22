@@ -5,27 +5,25 @@ Spring Integration XQuery Support
 
 **XQuery** is a query and functional programming language that is used to query over a collection of XML data. XQuery is a super-set of **XPath 2.0**. Therefore, if you are looking for *XPath 2.0* functionality, you may consider using the provided components as well. For more information on *XQuery*, please see:
 
-* http://en.wikipedia.org/wiki/XQuery
-* http://en.wikipedia.org/wiki/XPath_2.0
+* https://en.wikipedia.org/wiki/XQuery
+* https://en.wikipedia.org/wiki/XPath_2.0
 
 The **XQuery API for Java** ([JSR225][]) is a specification for providing a common *XQuery API* to the Java programming language. The API can be used for *XML databases* as well as pure *XQuery processors*. For more information, please see:
 
-* http://en.wikipedia.org/wiki/XQuery_API_for_Java
-* http://xqj.net/
-* http://xqj.net/javadoc/
+* https://en.wikipedia.org/wiki/XQuery_API_for_Java
 
 Various products and libraries provide *XQuery* support. Below is a selection of available choices:
 
 ## XML Databases
 
 * **BaseX** (BSD License) - http://basex.org/
-* **eXist** (GNU LGPL) - http://www.exist-db.org/
-* **MarkLogic** (Commercial License, Free Option) - http://developer.marklogic.com/express
-* **Sedna** (Apache License, Version 2.0) - http://www.sedna.org/
+* **eXist** (GNU LGPL) - https://www.exist-db.org/
+* **MarkLogic** (Commercial License, Free Option) - /free-developer
+* **Sedna** (Apache License, Version 2.0) - https://www.sedna.org/
 
 ## XQuery Processors
 
-* **Zorba** (Apache License, Version 2.0) - http://www.zorba-xquery.com/
+* **Zorba** (Apache License, Version 2.0) - http://www.zorba.io/
 * **SAXON** (Mozilla Public License) - http://saxon.sourceforge.net/
 
 *Zorba* is written in C++ but provides a Java API ([JSR225][]). *SAXON*, being a pure Java implementation, can be used as a normal Java library. Of all the available XQuery supporting options, *SAXON* is probably the the most widely used choice for Java developers.
@@ -44,7 +42,7 @@ The class *o.s.i.xquery.core.XQueryExecutor* is the backbone for all *XQuery* re
 * *o.s.i.xquery.core.SaxonXQueryExecutorTests*
 * *o.s.i.xquery.core.SednaXQueryExecutorTests*
 
-Each of these sub-classes instantiates the *XQueryExecutor* with the corresponding implementations of the *javax.xml.xquery.[XQDataSource][]* interface. The *XQueryExecutor* provides a setter for specifying the [XQDataSource][] to use. If not explicitly specified, it will default to use *Saxon*, if available on the classpath.
+Each of these sub-classes instantiates the *XQueryExecutor* with the corresponding implementations of the *javax.xml.xquery.XQDataSource* interface. The *XQueryExecutor* provides a setter for specifying the [XQDataSource][] to use. If not explicitly specified, it will default to use *Saxon*, if available on the classpath.
 
 The XQuery Executor is tested using Saxon and Sedna. Furthermore, we provide the [Spring Integration XQuery Samples][] that additionally also cover *BaseX*. *BaseX* is not included in the actual Spring Integration module, as it conflicts with the *Saxon* jars. Both, the *Sedna* and the *BaseX* XML database need to be started and the datasource needs to connect to them. This is even true, if the XML being queried is not present in the database (as we typically provide it with the payload of the Spring Integration *Message*).
 
@@ -164,7 +162,6 @@ An additional attibute *format-output* is mentioned, the value could be *true* o
 ###Credits
 We would like to thank **Ganesh Shetty** for his suggestion of inclusion of *XQuery* support in *Spring Integration*, giving the initial requirements and use cases for this module. We look forward for more support from the community for evaluating the libraries and provide their feedback.
 
-[JSR225]: http://jcp.org/aboutJava/communityprocess/final/jsr225/index.html
-[xqj.net]: http://xqj.net/
-[XQDataSource]: http://xqj.net/javadoc/javax/xml/xquery/XQDataSource.html
+[JSR225]: https://jcp.org/aboutJava/communityprocess/final/jsr225/index.html
+[xqj.net]: https://en.wikipedia.org/wiki/XQuery_API_for_Java
 [Spring Integration XQuery Samples]: https://github.com/SpringSource/spring-integration-samples/tree/master/basic/xquery

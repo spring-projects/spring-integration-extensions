@@ -31,7 +31,7 @@ The application should start up and you will see the following screen on which y
 	    Welcome to the Spring Integration XQuery Sample!
 
 	    For more information please visit:
-	    http://www.springintegration.org/
+	    https://www.springsource.org/spring-integration/
 
 	=========================================================
 	Which XQuery Processor would you like to use? <enter>:
@@ -94,10 +94,10 @@ The resulting XML document should look like:
 	   <name>Hello World Services</name>
 	</customers>
 
-[Saxon]: http://saxon.sourceforge.net/
-[Sedna]: http://www.sedna.org/
-[BaseX]: http://basex.org/
+[Saxon]: https://sourceforge.net/projects/saxon/
+[Sedna]: https://www.sedna.org/
+[BaseX]: https://basex.org/
 [Spring Integration XQuery]: https://github.com/SpringSource/spring-integration-extensions/tree/master/spring-integration-xquery
 [Spring Integration Extensions]: https://github.com/SpringSource/spring-integration-extensions
-[XML Databases]: http://en.wikipedia.org/wiki/XML_database
-[XQuery]: http://en.wikipedia.org/wiki/XQuery
+[XML Databases]: https://en.wikipedia.org/wiki/XML_database
+[XQuery]: https://en.wikipedia.org/wiki/XQuery

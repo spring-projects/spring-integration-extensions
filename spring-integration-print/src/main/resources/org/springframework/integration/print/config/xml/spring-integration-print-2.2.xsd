@@ -9,7 +9,7 @@
 	<xsd:import namespace="http://www.springframework.org/schema/beans" />
 	<xsd:import namespace="http://www.springframework.org/schema/tool" />
 	<xsd:import namespace="http://www.springframework.org/schema/integration"
-		schemaLocation="http://www.springframework.org/schema/integration/spring-integration-2.2.xsd" />
+		schemaLocation="https://www.springframework.org/schema/integration/spring-integration.xsd" />
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -129,7 +129,7 @@
 		<xsd:attribute name="doc-flavor" use="optional">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[
-					See: http://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
+					See: https://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
 				]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
@@ -139,7 +139,7 @@
 		<xsd:attribute name="mime-type" use="optional" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					See: http://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
+					See: https://docs.oracle.com/javase/6/docs/api/javax/print/DocFlavor.html
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>

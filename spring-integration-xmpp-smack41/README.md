@@ -9,5 +9,5 @@ this version will be merged back to the main project.
 So, if you intend to use Smack 4.1 with existing Spring Integration 4.2, this extension is for you.
 
 The functionally of this project is fully equivalent to the Spring Integration XMPP module, so you can rely on the
-[Spring Integration Reference Manual](http://docs.spring.io/spring-integration/reference/html/xmpp.html)
+[Spring Integration Reference Manual](https://docs.spring.io/spring-integration/reference/html/#xmpp)
 for more information.

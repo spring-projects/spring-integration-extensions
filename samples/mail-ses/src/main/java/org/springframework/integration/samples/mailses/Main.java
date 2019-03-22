@@ -61,7 +61,7 @@ public final class Main {
 				+ "\n          Welcome to Spring Integration!                 "
 				+ "\n"
 				+ "\n    For more information please visit:                   "
-				+ "\n    http://www.springsource.org/spring-integration       "
+				+ "\n    https://www.springsource.org/spring-integration       "
 				+ "\n" + HORIZONTAL_LINE);
 
 		System.out.println("Please enter a choice and press <enter>: ");

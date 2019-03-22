@@ -5,4 +5,4 @@ services:
     ports:
       - "2379:2379"
       - "2380:2380"
-    command: /usr/local/bin/etcd --name spring-integration-etcd-test --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379 --debug
+    command: /usr/local/bin/etcd --name spring-integration-etcd-test --advertise-client-urls https://0.0.0.0:2379 --listen-client-urls https://0.0.0.0:2379 --debug

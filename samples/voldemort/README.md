@@ -35,7 +35,7 @@ Once the application is started, you will be asked to entered a String:
       Welcome to the Spring Integration Voldemort Sample!
                                                          
 	    For more information please visit:               
-	    http://www.springsource.org/spring-integration   
+	    https://www.springsource.org/spring-integration   
                                                          
 	=========================================================
 	13:24:55.460 INFO  [org.springframework.integration.samples.voldemort.Main.main()][org.springframework.integration.samples.voldemort.Main]
@@ -56,8 +56,8 @@ Every time the Voldemort database is polled, you will the following output:
 
 For help please take a look at the Spring Integration documentation:
 
-http://www.springsource.org/spring-integration
+https://www.springsource.org/spring-integration
 
 [Spring Integration Extensions]: https://github.com/SpringSource/spring-integration-extensions
-[Voldemort]: http://www.project-voldemort.com/
+[Voldemort]: https://www.project-voldemort.com/
 
