@@ -23,7 +23,11 @@ Under the `samples` directory, you will find samples for the various modules. Pl
 
 ## Getting support
 
-Check out the [spring-integration][spring-integration tag] tag on [Stack Overflow][]. [Commercial support][] is available too.
+Check out the [spring-integration][spring-integration tag] tag on [Stack Overflow][].
+
+These extensions are community-supported projects and, unlike Spring Integation itself, they are not released on a regular schedule.
+If you have specific requests about an extension, open a GitHub issue for consideration.
+Contributions are always welcome.
 
 ## Related GitHub projects
 
@@ -46,7 +50,7 @@ Therefore, the following build instructions should generally apply for most, if 
 
 ### Check out the sources
 
-`git clone git://github.com/SpringSource/spring-integration-extensions.git`
+`git clone git://github.com/spring-projects/spring-integration-extensions.git`
 
 ### Go into the directory of a specific module
 
@@ -107,27 +111,24 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 
 **We look forward to your contributions!!**
 
-[Spring Integration]: https://github.com/SpringSource/spring-integration
-[SpringSource organization]: https://github.com/SpringSource
+[Spring Integration]: https://github.com/spring-projects/spring-integration
+[SpringSource organization]: https://github.com/spring-projects
 [spring-integration tag]: https://stackoverflow.com/questions/tagged/spring-integration
 [Stack Overflow]: https://stackoverflow.com/faq
-[Commercial support]: https://springsource.com/support/springsupport
 [Spring Integration Extensions JIRA]: https://jira.springsource.org/browse/INTEXT
 [the lifecycle of an issue]: https://github.com/cbeams/spring-framework/wiki/The-Lifecycle-of-an-Issue
 [Gradle]: https://gradle.org
 [`./gradlew`]: https://vimeo.com/34436402
 [Git]: https://help.github.com/set-up-git-redirect
-[Gradle build and release FAQ]: https://github.com/SpringSource/spring-framework/wiki/Gradle-build-and-release-FAQ
+[Gradle build and release FAQ]: https://github.com/spring-projects/spring-framework/wiki/Gradle-build-and-release-FAQ
 [Pull requests]:https://help.github.com/en/articles/creating-a-pull-request
 [contributor guidelines]: https://github.com/spring-projects/spring-integration/blob/master/CONTRIBUTING.adoc
-[administrator guidelines]: https://github.com/SpringSource/spring-integration/wiki/Administrator-Guidelines
-[Spring Integration Samples]: https://github.com/SpringSource/spring-integration-samples
-[Spring Integration Templates]: https://github.com/SpringSource/spring-integration-templates/tree/master/si-sts-templates
-[Spring Integration Dsl Groovy]: https://github.com/SpringSource/spring-integration-dsl-groovy
-[Spring Integration Dsl Scala]: https://github.com/SpringSource/spring-integration-dsl-scala
-[Spring Integration Pattern Catalog]: https://github.com/SpringSource/spring-integration-pattern-catalog
+[administrator guidelines]: https://github.com/spring-projects/spring-integration/wiki/Administrator-Guidelines
+[Spring Integration Samples]: https://github.com/spring-projects/spring-integration-samples
+[Spring Integration Templates]: https://github.com/spring-projects/spring-integration-templates/tree/master/si-sts-templates
+[Spring Integration Pattern Catalog]: https://github.com/spring-projects/spring-integration-pattern-catalog
 [SpringSource Tool Suite]: https://www.springsource.org/sts
-[How to Create New Components]: https://github.com/SpringSource/spring-integration-extensions/wiki/How-to-Create-New-Components
+[How to Create New Components]: https://github.com/spring-projects/spring-integration-extensions/wiki/How-to-Create-New-Components
 [Apache License]: https://www.apache.org/licenses/LICENSE-2.0
 
 [SMB]: https://en.wikipedia.org/wiki/Server_Message_Block
