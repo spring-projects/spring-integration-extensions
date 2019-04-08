@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,14 @@ import org.springframework.core.NestedIOException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import jcifs.context.SingletonContext;
+import jcifs.smb.NtlmPasswordAuthenticator;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
 /**
  * @author Markus Spann
- * @since 1.0
+ * @author Gregory Bragg
  */
 public class SmbShare extends SmbFile {
 
@@ -43,12 +45,20 @@ public class SmbShare extends SmbFile {
 
 	private final AtomicBoolean useTempFile = new AtomicBoolean(false);
 
+	/**
+	 * @deprecated as of release 1.1.0, use {@link #SmbShare(SmbConfig)} instead.
+	 * @param url do not use
+	 * @throws IOException do not use
+	 */
+	@Deprecated
 	public SmbShare(String url) throws IOException {
 		super(StringUtils.cleanPath(url));
 	}
 
 	public SmbShare(SmbConfig _smbConfig) throws IOException {
-		this(_smbConfig.validate().getUrl());
+		super(StringUtils.cleanPath(_smbConfig.validate().getUrl()),
+				SingletonContext.getInstance().withCredentials(new NtlmPasswordAuthenticator(
+						_smbConfig.getDomain(), _smbConfig.getUsername(), _smbConfig.getPassword())));
 	}
 
 	public void init() throws NestedIOException {

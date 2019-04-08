@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,81 +27,111 @@ import jcifs.smb.SmbFile;
 /**
  *
  * @author Gunnar Hillert
+ * @author Gregory Bragg
  *
  */
 public class SmbSessionTests {
 
 	@Test
 	public void testCreateSmbFileObjectWithBackSlash1() throws IOException {
-
 		System.setProperty("file.separator", "\\");
-		SmbShare smbShare = new SmbShare("smb://myshare/shared/");
+		SmbConfig config = new SmbConfig();
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared/");
+		SmbShare smbShare = new SmbShare(config);
 		SmbSession smbSession = new SmbSession(smbShare);
+
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba\\");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/blubba/", smbFile.getPath());
+		smbSession.close();
 	}
 
 	@Test
 	public void testCreateSmbFileObjectWithBackSlash2() throws IOException {
-
 		System.setProperty("file.separator", "\\");
-		SmbShare smbShare = new SmbShare("smb://myshare\\shared\\");
+		SmbConfig config = new SmbConfig();
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared\\");
+		SmbShare smbShare = new SmbShare(config);
 		SmbSession smbSession = new SmbSession(smbShare);
+
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba\\");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/blubba/", smbFile.getPath());
+		smbSession.close();
 	}
 
 	@Test
 	public void testCreateSmbFileObjectWithBackSlash3() throws IOException {
-
 		System.setProperty("file.separator", "\\");
-		SmbShare smbShare = new SmbShare("smb://myshare\\shared\\");
+		SmbConfig config = new SmbConfig();
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared\\");
+		SmbShare smbShare = new SmbShare(config);
 		SmbSession smbSession = new SmbSession(smbShare);
+
 		SmbFile smbFile = smbSession.createSmbFileObject("..\\another");
-		assertEquals("smb://myshare/another/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare:445/another", smbFile.getPath());
+		smbSession.close();
 	}
 
 	@Test
 	public void testCreateSmbFileObjectWithBackSlash4() throws IOException {
-
 		System.setProperty("file.separator", "/");
-		SmbShare smbShare = new SmbShare("smb://myshare/shared/");
+		SmbConfig config = new SmbConfig();
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared/");
+		SmbShare smbShare = new SmbShare(config);
 		SmbSession smbSession = new SmbSession(smbShare);
+
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba\\");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/blubba/", smbFile.getPath());
+		smbSession.close();
 	}
 
-
 	@Test
-	public void testCreateSmbFileObjectwithMissingTrailingSlash1() throws IOException {
-
-		SmbShare smbShare = new SmbShare("smb://myshare/shared");
+	public void testCreateSmbFileObjectWithMissingTrailingSlash1() throws IOException {
+		SmbConfig config = new SmbConfig();
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared");
+		SmbShare smbShare = new SmbShare(config);
 		SmbSession smbSession = new SmbSession(smbShare);
 
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
-
+		assertEquals("smb://myshare/blubba", smbFile.getPath());
+		smbSession.close();
 	}
 
 	@Test
-	public void testCreateSmbFileObjectwithMissingTrailingSlash2() throws IOException {
-
-		SmbShare smbShare = new SmbShare("smb://myshare/shared/");
+	public void testCreateSmbFileObjectWithMissingTrailingSlash2() throws IOException {
+		SmbConfig config = new SmbConfig();
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared/");
+		SmbShare smbShare = new SmbShare(config);
 		SmbSession smbSession = new SmbSession(smbShare);
 
 		SmbFile smbFile = smbSession.createSmbFileObject(".");
-		assertEquals("smb://myshare/shared/", smbFile.getCanonicalPath());
-
+		assertEquals("smb://myshare:445/shared/", smbFile.getPath());
+		smbSession.close();
 	}
 
 	@Test
-	public void testCreateSmbFileObjectwithMissingTrailingSlash3() throws IOException {
-
-		SmbShare smbShare = new SmbShare("smb://myshare/shared/");
+	public void testCreateSmbFileObjectWithMissingTrailingSlash3() throws IOException {
+		SmbConfig config = new SmbConfig();
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared/");
+		SmbShare smbShare = new SmbShare(config);
 		SmbSession smbSession = new SmbSession(smbShare);
 
 		SmbFile smbFile = smbSession.createSmbFileObject("../anotherShare");
-		assertEquals("smb://myshare/anotherShare/", smbFile.getCanonicalPath());
-
+		assertEquals("smb://myshare:445/anotherShare", smbFile.getPath());
+		smbSession.close();
 	}
+
 }
