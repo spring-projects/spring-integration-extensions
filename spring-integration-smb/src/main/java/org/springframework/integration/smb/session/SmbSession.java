@@ -63,10 +63,6 @@ public class SmbSession implements Session<SmbFile> {
 
 	private static final String SMB_FILE_SEPARATOR = "/";
 
-	static {
-		configureJcifs();
-	}
-
 	private final SmbShare smbShare;
 
 	/**
@@ -458,7 +454,7 @@ public class SmbSession implements Session<SmbFile> {
 			return this.smbShare;
 		}
 
-		SmbFile smbFile = new SmbFile(this.smbShare, cleanedPath, SmbFile.FILE_SHARE_READ);
+		SmbFile smbFile = new SmbFile(this.smbShare, cleanedPath);
 
 		boolean appendFileSeparator = !cleanedPath.endsWith(SMB_FILE_SEPARATOR);
 		if (appendFileSeparator) {
@@ -496,32 +492,6 @@ public class SmbSession implements Session<SmbFile> {
 	 */
 	public SmbFile createSmbDirectoryObject(String _path) throws IOException {
 		return createSmbFileObject(_path, true);
-	}
-
-	/**
-	 * Static configuration of the JCIFS library.
-	 * The log level of this class is mapped to a suitable <code>jcifs.util.loglevel</code>
-	 */
-	static void configureJcifs() {
-		// TODO jcifs.Config.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
-		// TODO jcifs.Config.setProperty("jcifs.smb.client.disablePlainTextPasswords", "false");
-
-		// set JCIFS SMB client library' log level unless already configured by system property
-		final String sysPropLogLevel = "jcifs.util.loglevel";
-
-		if (jcifs.Config.getProperty(sysPropLogLevel) == null) {
-			// set log level according to this class' logger's log level.
-			Log log = LogFactory.getLog(SmbSession.class);
-			if (log.isTraceEnabled()) {
-				jcifs.Config.setProperty(sysPropLogLevel, "N");
-			}
-			else if (log.isDebugEnabled()) {
-				jcifs.Config.setProperty(sysPropLogLevel, "3");
-			}
-			else {
-				jcifs.Config.setProperty(sysPropLogLevel, "1");
-			}
-		}
 	}
 
 	@Override

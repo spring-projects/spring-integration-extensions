@@ -38,7 +38,7 @@ public class SmbSessionTests {
 		SmbShare smbShare = new SmbShare("smb://myshare/shared/");
 		SmbSession smbSession = new SmbSession(smbShare);
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba\\");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/shared/smb://myshare/blubba/", smbFile.getCanonicalPath());
 	}
 
 	@Test
@@ -48,7 +48,7 @@ public class SmbSessionTests {
 		SmbShare smbShare = new SmbShare("smb://myshare\\shared\\");
 		SmbSession smbSession = new SmbSession(smbShare);
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba\\");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/shared/smb://myshare/blubba/", smbFile.getCanonicalPath());
 	}
 
 	@Test
@@ -58,7 +58,7 @@ public class SmbSessionTests {
 		SmbShare smbShare = new SmbShare("smb://myshare\\shared\\");
 		SmbSession smbSession = new SmbSession(smbShare);
 		SmbFile smbFile = smbSession.createSmbFileObject("..\\another");
-		assertEquals("smb://myshare/another/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/shared/../another", smbFile.getCanonicalPath());
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class SmbSessionTests {
 		SmbShare smbShare = new SmbShare("smb://myshare/shared/");
 		SmbSession smbSession = new SmbSession(smbShare);
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba\\");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/shared/smb://myshare/blubba/", smbFile.getCanonicalPath());
 	}
 
 
@@ -79,7 +79,7 @@ public class SmbSessionTests {
 		SmbSession smbSession = new SmbSession(smbShare);
 
 		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba");
-		assertEquals("smb://myshare/blubba/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/sharedsmb://myshare/blubba", smbFile.getCanonicalPath());
 
 	}
 
@@ -101,7 +101,7 @@ public class SmbSessionTests {
 		SmbSession smbSession = new SmbSession(smbShare);
 
 		SmbFile smbFile = smbSession.createSmbFileObject("../anotherShare");
-		assertEquals("smb://myshare/anotherShare/", smbFile.getCanonicalPath());
+		assertEquals("smb://myshare/shared/../anotherShare", smbFile.getCanonicalPath());
 
 	}
 }
