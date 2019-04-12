@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import jcifs.DialectVersion;
+
 /**
  * Data holder class for a SMB share configuration.
  *
@@ -31,8 +33,7 @@ import org.springframework.util.StringUtils;
  * @author Markus Spann
  * @author Prafull Kumar Soni
  * @author Artem Bilan
- *
- * @since 1.0
+ * @author Gregory Bragg
  */
 public class SmbConfig {
 
@@ -51,6 +52,12 @@ public class SmbConfig {
 	private boolean replaceFile = false;
 
 	private boolean useTempFile = false;
+
+	/** follows jCIFS library defaults */
+	private DialectVersion smbMinVer = DialectVersion.SMB1;
+
+	/** follows jCIFS library defaults */
+	private DialectVersion smbMaxVer = DialectVersion.SMB210;
 
 	public SmbConfig() {
 	}
@@ -132,6 +139,22 @@ public class SmbConfig {
 
 	public boolean isUseTempFile() {
 		return this.useTempFile;
+	}
+
+	public DialectVersion getSmbMinVer() {
+		return this.smbMinVer;
+	}
+
+	public void setSmbMinVer(DialectVersion smbMinVer) {
+		this.smbMinVer = smbMinVer;
+	}
+
+	public DialectVersion getSmbMaxVer() {
+		return this.smbMaxVer;
+	}
+
+	public void setSmbMaxVer(DialectVersion smbMaxVer) {
+		this.smbMaxVer = smbMaxVer;
 	}
 
 	String getDomainUserPass(boolean _includePassword) {

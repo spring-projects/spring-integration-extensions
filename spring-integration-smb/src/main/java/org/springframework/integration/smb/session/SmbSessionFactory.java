@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.integration.smb.session;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,7 +30,7 @@ import jcifs.smb.SmbFile;
  * The SMB session factory.
  *
  * @author Markus Spann
- * @since 1.0
+ * @author Gregory Bragg
  */
 public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFile> {
 
@@ -39,6 +40,7 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 		logger.debug("New " + getClass().getName() + " created.");
 	}
 
+	@Override
 	public final SmbSession getSession() {
 		try {
 			return createSession();
@@ -49,7 +51,11 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 	}
 
 	protected SmbSession createSession() throws IOException {
-		SmbShare smbShare = new SmbShare(this);
+		Properties props = new Properties();
+		props.setProperty("jcifs.smb.client.minVersion", this.getSmbMinVer().name());
+		props.setProperty("jcifs.smb.client.maxVersion", this.getSmbMaxVer().name());
+
+		SmbShare smbShare = new SmbShare(this, props);
 		smbShare.setReplaceFile(isReplaceFile());
 		smbShare.setUseTempFile(isUseTempFile());
 
