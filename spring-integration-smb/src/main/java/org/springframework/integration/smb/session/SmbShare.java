@@ -80,9 +80,9 @@ public class SmbShare extends SmbFile {
 	public SmbShare(SmbConfig _smbConfig, Properties _props) throws IOException {
 		super(StringUtils.cleanPath(_smbConfig.validate().getUrl()),
 				new BaseContext(
-						new PropertyConfiguration(_props)).withCredentials(
-								new NtlmPasswordAuthenticator(
-										_smbConfig.getDomain(), _smbConfig.getUsername(), _smbConfig.getPassword())));
+					new PropertyConfiguration(_props)).withCredentials(
+						new NtlmPasswordAuthenticator(
+							_smbConfig.getDomain(), _smbConfig.getUsername(), _smbConfig.getPassword())));
 	}
 
 	public void init() throws NestedIOException {
