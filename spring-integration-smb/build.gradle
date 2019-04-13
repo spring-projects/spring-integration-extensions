@@ -3,8 +3,6 @@ buildscript {
 		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 	dependencies {
-		classpath 'io.spring.gradle:dependency-management-plugin:1.0.5.RELEASE'
-		classpath 'io.spring.gradle:spring-io-plugin:0.0.8.RELEASE'
 		classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
 	}
 }
@@ -25,22 +23,10 @@ apply from:   "${rootProject.projectDir}/publish-maven.gradle"
 group = 'org.springframework.integration'
 
 repositories {
-	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+	if (version.endsWith('BUILD-SNAPSHOT')) {
 		maven { url 'https://repo.spring.io/libs-snapshot' }
 	}
 	maven { url 'https://repo.spring.io/libs-milestone' }
-}
-
-if (project.hasProperty('platformVersion')) {
-	apply plugin: 'spring-io'
-
-	dependencyManagement {
-		springIoTestRuntime {
-			imports {
-				mavenBom "io.spring.platform:platform-bom:${platformVersion}"
-			}
-		}
-	}
 }
 
 compileJava {
@@ -58,7 +44,7 @@ ext {
 
 	jcifsVersion = '2.1.7'
 	log4jVersion = '2.11.2'
-	springIntegrationVersion = '5.0.13.RELEASE'
+	springIntegrationVersion = '5.2.0.BUILD-SNAPSHOT'
 
 
 	linkHomepage = 'https://github.com/SpringSource/spring-integration-extensions'
@@ -92,7 +78,6 @@ checkstyle {
 dependencies {
 	compile "org.codelibs:jcifs:$jcifsVersion"
 	compile "org.springframework.integration:spring-integration-file:$springIntegrationVersion"
-	compile "org.springframework.integration:spring-integration-stream:$springIntegrationVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 
