@@ -3,7 +3,7 @@ Spring Integration SMB Support
 
 ## Introduction
 
-This module add Spring Integration support for [Server Message Block][] (SMB).
+This module adds Spring Integration support for [Server Message Block][] (SMB).
 
 [Server Message Block]: https://en.wikipedia.org/wiki/Server_Message_Block
 
@@ -23,8 +23,12 @@ Put the following block into pom.xml if using Maven:
 
 ## Changes
 
+##### Version 1.1
  * Updated to use the latest version of the [JCIFS](https://github.com/codelibs/jcifs) library
  * SMB2 (2.02 protocol level) support, some SMB3 support
+
+##### Version 1.2
+ * Ability to set the SMB min/max versions in the `SmbSessionFactory` via configuration in the JCIFS library
 
 ## Overview
 

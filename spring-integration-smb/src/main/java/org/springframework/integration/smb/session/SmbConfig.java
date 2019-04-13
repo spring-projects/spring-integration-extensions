@@ -53,10 +53,16 @@ public class SmbConfig {
 
 	private boolean useTempFile = false;
 
-	/** follows jCIFS library defaults */
+	/**
+	 * Defaults to and follows the jCIFS library default of 'SMB1'
+	 * @since 1.2
+	 */
 	private DialectVersion smbMinVer = DialectVersion.SMB1;
 
-	/** follows jCIFS library defaults */
+	/**
+	 * Defaults to and follows the jCIFS library default of 'SMB210'
+	 * @since 1.2
+	 */
 	private DialectVersion smbMaxVer = DialectVersion.SMB210;
 
 	public SmbConfig() {
@@ -141,18 +147,46 @@ public class SmbConfig {
 		return this.useTempFile;
 	}
 
+	/**
+	 * Gets the desired minimum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 *
+	 * @return one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
 	public DialectVersion getSmbMinVer() {
 		return this.smbMinVer;
 	}
 
+	/**
+	 * Sets the desired minimum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 *
+	 * @param smbMinVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
 	public void setSmbMinVer(DialectVersion smbMinVer) {
 		this.smbMinVer = smbMinVer;
 	}
 
+	/**
+	 * Gets the desired maximum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 *
+	 * @return one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
 	public DialectVersion getSmbMaxVer() {
 		return this.smbMaxVer;
 	}
 
+	/**
+	 * Sets the desired maximum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 *
+	 * @param smbMaxVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
 	public void setSmbMaxVer(DialectVersion smbMaxVer) {
 		this.smbMaxVer = smbMaxVer;
 	}
