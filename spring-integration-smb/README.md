@@ -62,3 +62,21 @@ In case of Java configuration that `FileTransferringMessageHandler` should be su
         handler.setAutoCreateDirectory(true);
         return handler;
     }
+
+### Setting SMB Protocol Min/Max Versions
+
+Example: To set a minimum version of SMB 2.1 and a maximum version of SMB 3.1.1
+
+    @Bean
+    public SmbSessionFactory smbSessionFactory() {
+        SmbSessionFactory smbSession = new SmbSessionFactory();
+        smbSession.setHost(myHost);
+        smbSession.setPort(myPort);
+        smbSession.setDomain(myDomain);
+        smbSession.setUsername(myUser);
+        smbSession.setPassword(myPassword);
+        smbSession.setShareAndDir(myShareAndDir);
+        smbSession.setSmbMinVer(DialectVersion.SMB210);
+        smbSession.setSmbMaxVer(DialectVersion.SMB311);
+        return smbSession;
+    }
