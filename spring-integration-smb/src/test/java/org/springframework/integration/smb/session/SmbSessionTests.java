@@ -144,11 +144,11 @@ public class SmbSessionTests {
 		config.setHost("myshare");
 		config.setPort(445);
 		config.setShareAndDir("shared/");
-		config.setSmbMinVer(DialectVersion.SMB300);
-		config.setSmbMaxVer(DialectVersion.SMB311);
+		config.setSmbMinVersion(DialectVersion.SMB300);
+		config.setSmbMaxVersion(DialectVersion.SMB311);
 
-		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVer().name());
-		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVer().name());
+		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVersion().name());
+		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVersion().name());
 
 		SmbShare smbShare = new SmbShare(config, props);
 		SmbSession smbSession = new SmbSession(smbShare);
@@ -166,11 +166,11 @@ public class SmbSessionTests {
 		config.setHost("myshare");
 		config.setPort(445);
 		config.setShareAndDir("shared/");
-		config.setSmbMinVer(DialectVersion.SMB302);
-		config.setSmbMaxVer(DialectVersion.SMB311);
+		config.setSmbMinVersion(DialectVersion.SMB302);
+		config.setSmbMaxVersion(DialectVersion.SMB311);
 
-		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVer().name());
-		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVer().name());
+		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVersion().name());
+		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVersion().name());
 
 		SmbShare smbShare = new SmbShare(config, props);
 		SmbSession smbSession = new SmbSession(smbShare);
@@ -188,11 +188,11 @@ public class SmbSessionTests {
 		config.setHost("myshare");
 		config.setPort(445);
 		config.setShareAndDir("shared/");
-		config.setSmbMinVer(DialectVersion.SMB311);
-		config.setSmbMaxVer(DialectVersion.SMB311);
+		config.setSmbMinVersion(DialectVersion.SMB311);
+		config.setSmbMaxVersion(DialectVersion.SMB311);
 
-		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVer().name());
-		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVer().name());
+		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVersion().name());
+		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVersion().name());
 
 		SmbShare smbShare = new SmbShare(config, props);
 		SmbSession smbSession = new SmbSession(smbShare);

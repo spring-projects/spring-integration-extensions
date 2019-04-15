@@ -52,8 +52,8 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 
 	protected SmbSession createSession() throws IOException {
 		Properties props = new Properties();
-		props.setProperty("jcifs.smb.client.minVersion", this.getSmbMinVer().name());
-		props.setProperty("jcifs.smb.client.maxVersion", this.getSmbMaxVer().name());
+		props.setProperty("jcifs.smb.client.minVersion", this.getSmbMinVersion().name());
+		props.setProperty("jcifs.smb.client.maxVersion", this.getSmbMaxVersion().name());
 
 		SmbShare smbShare = new SmbShare(this, props);
 		smbShare.setReplaceFile(isReplaceFile());

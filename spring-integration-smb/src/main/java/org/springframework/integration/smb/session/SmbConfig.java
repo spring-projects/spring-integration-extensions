@@ -57,13 +57,13 @@ public class SmbConfig {
 	 * Defaults to and follows the jCIFS library default of 'SMB1'
 	 * @since 1.2
 	 */
-	private DialectVersion smbMinVer = DialectVersion.SMB1;
+	private DialectVersion smbMinVersion = DialectVersion.SMB1;
 
 	/**
 	 * Defaults to and follows the jCIFS library default of 'SMB210'
 	 * @since 1.2
 	 */
-	private DialectVersion smbMaxVer = DialectVersion.SMB210;
+	private DialectVersion smbMaxVersion = DialectVersion.SMB210;
 
 	public SmbConfig() {
 	}
@@ -150,45 +150,41 @@ public class SmbConfig {
 	/**
 	 * Gets the desired minimum SMB version value for what the Windows server will allow
 	 * during protocol transport negotiation.
-	 *
 	 * @return one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
-	public DialectVersion getSmbMinVer() {
-		return this.smbMinVer;
+	public DialectVersion getSmbMinVersion() {
+		return this.smbMinVersion;
 	}
 
 	/**
 	 * Sets the desired minimum SMB version value for what the Windows server will allow
 	 * during protocol transport negotiation.
-	 *
-	 * @param _smbMinVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @param _smbMinVersion one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
-	public void setSmbMinVer(DialectVersion _smbMinVer) {
-		this.smbMinVer = _smbMinVer;
+	public void setSmbMinVersion(DialectVersion _smbMinVersion) {
+		this.smbMinVersion = _smbMinVersion;
 	}
 
 	/**
 	 * Gets the desired maximum SMB version value for what the Windows server will allow
 	 * during protocol transport negotiation.
-	 *
 	 * @return one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
-	public DialectVersion getSmbMaxVer() {
-		return this.smbMaxVer;
+	public DialectVersion getSmbMaxVersion() {
+		return this.smbMaxVersion;
 	}
 
 	/**
 	 * Sets the desired maximum SMB version value for what the Windows server will allow
 	 * during protocol transport negotiation.
-	 *
-	 * @param _smbMaxVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @param _smbMaxVersion one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
-	public void setSmbMaxVer(DialectVersion _smbMaxVer) {
-		this.smbMaxVer = _smbMaxVer;
+	public void setSmbMaxVersion(DialectVersion _smbMaxVersion) {
+		this.smbMaxVersion = _smbMaxVersion;
 	}
 
 	String getDomainUserPass(boolean _includePassword) {

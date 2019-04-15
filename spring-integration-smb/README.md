@@ -79,8 +79,8 @@ public SmbSessionFactory smbSessionFactory() {
     smbSession.setUsername("myUser");
     smbSession.setPassword("myPassword");
     smbSession.setShareAndDir("myShareAndDir");
-    smbSession.setSmbMinVer(DialectVersion.SMB210);
-    smbSession.setSmbMaxVer(DialectVersion.SMB311);
+    smbSession.setSmbMinVersion(DialectVersion.SMB210);
+    smbSession.setSmbMaxVersion(DialectVersion.SMB311);
     return smbSession;
 }
 ````

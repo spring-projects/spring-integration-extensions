@@ -60,7 +60,6 @@ public class SmbShare extends SmbFile {
 
 	/**
 	 * Initializes the jCIFS library with default properties.
-	 *
 	 * @param _smbConfig the SMB share configuration
 	 * @throws IOException if an invalid SMB URL was constructed by jCIFS
 	 * @since 1.1
@@ -76,7 +75,6 @@ public class SmbShare extends SmbFile {
 	 * Initializes the jCIFS library with custom properties such as
 	 * 'jcifs.smb.client.minVersion' and 'jcifs.smb.client.maxVersion'
 	 * for setting the minimum/maximum SMB supported versions.
-	 *
 	 * @param _smbConfig the SMB share configuration
 	 * @param _props the custom property set for jCIFS to initialize
 	 * @throws IOException if an invalid property was set or an invalid SMB URL was constructed by jCIFS
