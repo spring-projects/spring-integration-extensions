@@ -162,7 +162,7 @@ public class SmbConfig {
 	 * Sets the desired minimum SMB version value for what the Windows server will allow
 	 * during protocol transport negotiation.
 	 *
-	 * @param smbMinVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @param _smbMinVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
 	public void setSmbMinVer(DialectVersion _smbMinVer) {
@@ -184,7 +184,7 @@ public class SmbConfig {
 	 * Sets the desired maximum SMB version value for what the Windows server will allow
 	 * during protocol transport negotiation.
 	 *
-	 * @param smbMaxVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @param _smbMaxVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
 	public void setSmbMaxVer(DialectVersion _smbMaxVer) {
