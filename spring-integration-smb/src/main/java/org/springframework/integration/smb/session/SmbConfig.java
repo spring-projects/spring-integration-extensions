@@ -165,8 +165,8 @@ public class SmbConfig {
 	 * @param smbMinVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
-	public void setSmbMinVer(DialectVersion smbMinVer) {
-		this.smbMinVer = smbMinVer;
+	public void setSmbMinVer(DialectVersion _smbMinVer) {
+		this.smbMinVer = _smbMinVer;
 	}
 
 	/**
@@ -187,8 +187,8 @@ public class SmbConfig {
 	 * @param smbMaxVer one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
 	 * @since 1.2
 	 */
-	public void setSmbMaxVer(DialectVersion smbMaxVer) {
-		this.smbMaxVer = smbMaxVer;
+	public void setSmbMaxVer(DialectVersion _smbMaxVer) {
+		this.smbMaxVer = _smbMaxVer;
 	}
 
 	String getDomainUserPass(boolean _includePassword) {

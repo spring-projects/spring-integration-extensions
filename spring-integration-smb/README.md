@@ -50,33 +50,37 @@ For XML configuration the `<int-smb:inbound-channel-adapter>` component is provi
 There is no (yet) some SMB specific requirements for files transferring to SMB, so for XML `<int-smb:outbound-channel-adapter>` component we simply reuse an existing `FileTransferringMessageHandler`.
 In case of Java configuration that `FileTransferringMessageHandler` should be supplied with the `SmbSessionFactory` (or `SmbRemoteFileTemplate`).
 
-    @ServiceActivator(inputChannel = "storeToSmb")
-    @Bean
-    public MessageHandler smbMessageHandler(SmbSessionFactory smbSessionFactory) {
-        FileTransferringMessageHandler<SmbFile> handler =
-                    new FileTransferringMessageHandler<>(smbSessionFactory);
-        handler.setRemoteDirectoryExpression(
-                    new LiteralExpression("remote-target-dir"));
-        handler.setFileNameGenerator(m ->
-                    m.getHeaders().get(FileHeaders.FILENAME, String.class) + ".test");
-        handler.setAutoCreateDirectory(true);
-        return handler;
-    }
+````java
+@ServiceActivator(inputChannel = "storeToSmb")
+@Bean
+public MessageHandler smbMessageHandler(SmbSessionFactory smbSessionFactory) {
+    FileTransferringMessageHandler<SmbFile> handler =
+                new FileTransferringMessageHandler<>(smbSessionFactory);
+    handler.setRemoteDirectoryExpression(
+                new LiteralExpression("remote-target-dir"));
+    handler.setFileNameGenerator(m ->
+                m.getHeaders().get(FileHeaders.FILENAME, String.class) + ".test");
+    handler.setAutoCreateDirectory(true);
+    return handler;
+}
+````
 
 ### Setting SMB Protocol Min/Max Versions
 
 Example: To set a minimum version of SMB 2.1 and a maximum version of SMB 3.1.1
 
-    @Bean
-    public SmbSessionFactory smbSessionFactory() {
-        SmbSessionFactory smbSession = new SmbSessionFactory();
-        smbSession.setHost(myHost);
-        smbSession.setPort(myPort);
-        smbSession.setDomain(myDomain);
-        smbSession.setUsername(myUser);
-        smbSession.setPassword(myPassword);
-        smbSession.setShareAndDir(myShareAndDir);
-        smbSession.setSmbMinVer(DialectVersion.SMB210);
-        smbSession.setSmbMaxVer(DialectVersion.SMB311);
-        return smbSession;
-    }
+````java
+@Bean
+public SmbSessionFactory smbSessionFactory() {
+    SmbSessionFactory smbSession = new SmbSessionFactory();
+    smbSession.setHost("myHost");
+    smbSession.setPort(445);
+    smbSession.setDomain("myDomain");
+    smbSession.setUsername("myUser");
+    smbSession.setPassword("myPassword");
+    smbSession.setShareAndDir("myShareAndDir");
+    smbSession.setSmbMinVer(DialectVersion.SMB210);
+    smbSession.setSmbMaxVer(DialectVersion.SMB311);
+    return smbSession;
+}
+````
