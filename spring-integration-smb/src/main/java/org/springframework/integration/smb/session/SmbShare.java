@@ -17,6 +17,7 @@
 package org.springframework.integration.smb.session;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
@@ -26,6 +27,8 @@ import org.springframework.core.NestedIOException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import jcifs.config.PropertyConfiguration;
+import jcifs.context.BaseContext;
 import jcifs.context.SingletonContext;
 import jcifs.smb.NtlmPasswordAuthenticator;
 import jcifs.smb.SmbException;
@@ -55,10 +58,34 @@ public class SmbShare extends SmbFile {
 		super(StringUtils.cleanPath(url));
 	}
 
+	/**
+	 * Initializes the jCIFS library with default properties.
+	 * @param _smbConfig the SMB share configuration
+	 * @throws IOException if an invalid SMB URL was constructed by jCIFS
+	 * @since 1.1
+	 */
 	public SmbShare(SmbConfig _smbConfig) throws IOException {
 		super(StringUtils.cleanPath(_smbConfig.validate().getUrl()),
-				SingletonContext.getInstance().withCredentials(new NtlmPasswordAuthenticator(
+				SingletonContext.getInstance().withCredentials(
+					new NtlmPasswordAuthenticator(
 						_smbConfig.getDomain(), _smbConfig.getUsername(), _smbConfig.getPassword())));
+	}
+
+	/**
+	 * Initializes the jCIFS library with custom properties such as
+	 * 'jcifs.smb.client.minVersion' and 'jcifs.smb.client.maxVersion'
+	 * for setting the minimum/maximum SMB supported versions.
+	 * @param _smbConfig the SMB share configuration
+	 * @param _props the custom property set for jCIFS to initialize
+	 * @throws IOException if an invalid property was set or an invalid SMB URL was constructed by jCIFS
+	 * @since 1.2
+	 */
+	public SmbShare(SmbConfig _smbConfig, Properties _props) throws IOException {
+		super(StringUtils.cleanPath(_smbConfig.validate().getUrl()),
+				new BaseContext(
+					new PropertyConfiguration(_props)).withCredentials(
+						new NtlmPasswordAuthenticator(
+							_smbConfig.getDomain(), _smbConfig.getUsername(), _smbConfig.getPassword())));
 	}
 
 	public void init() throws NestedIOException {

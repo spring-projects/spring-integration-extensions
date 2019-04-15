@@ -3,7 +3,7 @@ Spring Integration SMB Support
 
 ## Introduction
 
-This module add Spring Integration support for [Server Message Block][] (SMB).
+This module adds Spring Integration support for [Server Message Block][] (SMB).
 
 [Server Message Block]: https://en.wikipedia.org/wiki/Server_Message_Block
 
@@ -23,8 +23,12 @@ Put the following block into pom.xml if using Maven:
 
 ## Changes
 
+##### Version 1.1
  * Updated to use the latest version of the [JCIFS](https://github.com/codelibs/jcifs) library
  * SMB2 (2.02 protocol level) support, some SMB3 support
+
+##### Version 1.2
+ * Ability to set the SMB min/max versions in the `SmbSessionFactory` via configuration in the JCIFS library
 
 ## Overview
 
@@ -46,15 +50,37 @@ For XML configuration the `<int-smb:inbound-channel-adapter>` component is provi
 There is no (yet) some SMB specific requirements for files transferring to SMB, so for XML `<int-smb:outbound-channel-adapter>` component we simply reuse an existing `FileTransferringMessageHandler`.
 In case of Java configuration that `FileTransferringMessageHandler` should be supplied with the `SmbSessionFactory` (or `SmbRemoteFileTemplate`).
 
-    @ServiceActivator(inputChannel = "storeToSmb")
-    @Bean
-    public MessageHandler smbMessageHandler(SmbSessionFactory smbSessionFactory) {
-        FileTransferringMessageHandler<SmbFile> handler =
-                    new FileTransferringMessageHandler<>(smbSessionFactory);
-        handler.setRemoteDirectoryExpression(
-                    new LiteralExpression("remote-target-dir"));
-        handler.setFileNameGenerator(m ->
-                    m.getHeaders().get(FileHeaders.FILENAME, String.class) + ".test");
-        handler.setAutoCreateDirectory(true);
-        return handler;
-    }
+````java
+@ServiceActivator(inputChannel = "storeToSmb")
+@Bean
+public MessageHandler smbMessageHandler(SmbSessionFactory smbSessionFactory) {
+    FileTransferringMessageHandler<SmbFile> handler =
+                new FileTransferringMessageHandler<>(smbSessionFactory);
+    handler.setRemoteDirectoryExpression(
+                new LiteralExpression("remote-target-dir"));
+    handler.setFileNameGenerator(m ->
+                m.getHeaders().get(FileHeaders.FILENAME, String.class) + ".test");
+    handler.setAutoCreateDirectory(true);
+    return handler;
+}
+````
+
+### Setting SMB Protocol Min/Max Versions
+
+Example: To set a minimum version of SMB 2.1 and a maximum version of SMB 3.1.1
+
+````java
+@Bean
+public SmbSessionFactory smbSessionFactory() {
+    SmbSessionFactory smbSession = new SmbSessionFactory();
+    smbSession.setHost("myHost");
+    smbSession.setPort(445);
+    smbSession.setDomain("myDomain");
+    smbSession.setUsername("myUser");
+    smbSession.setPassword("myPassword");
+    smbSession.setShareAndDir("myShareAndDir");
+    smbSession.setSmbMinVersion(DialectVersion.SMB210);
+    smbSession.setSmbMaxVersion(DialectVersion.SMB311);
+    return smbSession;
+}
+````

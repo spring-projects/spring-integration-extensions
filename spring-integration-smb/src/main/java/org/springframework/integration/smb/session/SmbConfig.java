@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import jcifs.DialectVersion;
+
 /**
  * Data holder class for a SMB share configuration.
  *
@@ -31,8 +33,7 @@ import org.springframework.util.StringUtils;
  * @author Markus Spann
  * @author Prafull Kumar Soni
  * @author Artem Bilan
- *
- * @since 1.0
+ * @author Gregory Bragg
  */
 public class SmbConfig {
 
@@ -51,6 +52,18 @@ public class SmbConfig {
 	private boolean replaceFile = false;
 
 	private boolean useTempFile = false;
+
+	/**
+	 * Defaults to and follows the jCIFS library default of 'SMB1'
+	 * @since 1.2
+	 */
+	private DialectVersion smbMinVersion = DialectVersion.SMB1;
+
+	/**
+	 * Defaults to and follows the jCIFS library default of 'SMB210'
+	 * @since 1.2
+	 */
+	private DialectVersion smbMaxVersion = DialectVersion.SMB210;
 
 	public SmbConfig() {
 	}
@@ -132,6 +145,46 @@ public class SmbConfig {
 
 	public boolean isUseTempFile() {
 		return this.useTempFile;
+	}
+
+	/**
+	 * Gets the desired minimum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 * @return one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
+	public DialectVersion getSmbMinVersion() {
+		return this.smbMinVersion;
+	}
+
+	/**
+	 * Sets the desired minimum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 * @param _smbMinVersion one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
+	public void setSmbMinVersion(DialectVersion _smbMinVersion) {
+		this.smbMinVersion = _smbMinVersion;
+	}
+
+	/**
+	 * Gets the desired maximum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 * @return one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
+	public DialectVersion getSmbMaxVersion() {
+		return this.smbMaxVersion;
+	}
+
+	/**
+	 * Sets the desired maximum SMB version value for what the Windows server will allow
+	 * during protocol transport negotiation.
+	 * @param _smbMaxVersion one of SMB1, SMB202, SMB210, SMB300, SMB302 or SMB311
+	 * @since 1.2
+	 */
+	public void setSmbMaxVersion(DialectVersion _smbMaxVersion) {
+		this.smbMaxVersion = _smbMaxVersion;
 	}
 
 	String getDomainUserPass(boolean _includePassword) {

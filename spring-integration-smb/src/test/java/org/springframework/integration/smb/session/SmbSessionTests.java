@@ -19,9 +19,11 @@ package org.springframework.integration.smb.session;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.junit.Test;
 
+import jcifs.DialectVersion;
 import jcifs.smb.SmbFile;
 
 /**
@@ -134,4 +136,69 @@ public class SmbSessionTests {
 		smbSession.close();
 	}
 
+	@Test
+	public void testCreateSmbFileObjectWithSmb3Versions1() throws IOException {
+		Properties props = new Properties();
+		SmbConfig config = new SmbConfig();
+
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared/");
+		config.setSmbMinVersion(DialectVersion.SMB300);
+		config.setSmbMaxVersion(DialectVersion.SMB311);
+
+		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVersion().name());
+		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVersion().name());
+
+		SmbShare smbShare = new SmbShare(config, props);
+		SmbSession smbSession = new SmbSession(smbShare);
+
+		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba");
+		assertEquals("smb://myshare/blubba", smbFile.getPath());
+		smbSession.close();
+	}
+
+	@Test
+	public void testCreateSmbFileObjectWithSmb3Versions2() throws IOException {
+		Properties props = new Properties();
+		SmbConfig config = new SmbConfig();
+
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared/");
+		config.setSmbMinVersion(DialectVersion.SMB302);
+		config.setSmbMaxVersion(DialectVersion.SMB311);
+
+		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVersion().name());
+		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVersion().name());
+
+		SmbShare smbShare = new SmbShare(config, props);
+		SmbSession smbSession = new SmbSession(smbShare);
+
+		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba");
+		assertEquals("smb://myshare/blubba", smbFile.getPath());
+		smbSession.close();
+	}
+
+	@Test
+	public void testCreateSmbFileObjectWithSmb3Versions3() throws IOException {
+		Properties props = new Properties();
+		SmbConfig config = new SmbConfig();
+
+		config.setHost("myshare");
+		config.setPort(445);
+		config.setShareAndDir("shared/");
+		config.setSmbMinVersion(DialectVersion.SMB311);
+		config.setSmbMaxVersion(DialectVersion.SMB311);
+
+		props.setProperty("jcifs.smb.client.minVersion", config.getSmbMinVersion().name());
+		props.setProperty("jcifs.smb.client.maxVersion", config.getSmbMaxVersion().name());
+
+		SmbShare smbShare = new SmbShare(config, props);
+		SmbSession smbSession = new SmbSession(smbShare);
+
+		SmbFile smbFile = smbSession.createSmbFileObject("smb://myshare\\blubba");
+		assertEquals("smb://myshare/blubba", smbFile.getPath());
+		smbSession.close();
+	}
 }
