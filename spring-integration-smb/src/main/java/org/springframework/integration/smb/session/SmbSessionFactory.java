@@ -69,7 +69,8 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 		SmbShare smbShare;
 		if (this.context != null) {
 			smbShare = new SmbShare(this, this.context);
-		} else {
+		}
+		else {
 			Properties props = new Properties();
 			props.setProperty("jcifs.smb.client.minVersion", this.getSmbMinVersion().name());
 			props.setProperty("jcifs.smb.client.maxVersion", this.getSmbMaxVersion().name());

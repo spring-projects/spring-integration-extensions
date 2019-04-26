@@ -74,7 +74,7 @@ public class SmbShare extends SmbFile {
 
 	/**
 	 * Initializes the jCIFS library with a custom client context configuration.
-	 * @param _smbConfig the SMB share configuration 
+	 * @param _smbConfig the SMB share configuration
 	 * @param _context that holds the client configuration, shared services as well as the active credentials
 	 * @throws IOException if an invalid SMB URL was constructed by jCIFS
 	 * @since 1.2
