@@ -23,7 +23,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.integration.file.remote.session.SessionFactory;
+import org.springframework.util.Assert;
 
+import jcifs.CIFSContext;
 import jcifs.smb.SmbFile;
 
 /**
@@ -36,8 +38,21 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 
 	private static Log logger = LogFactory.getLog(SmbSessionFactory.class);
 
+	private CIFSContext context = null;
+
 	public SmbSessionFactory() {
 		logger.debug("New " + getClass().getName() + " created.");
+	}
+
+	/**
+	 * Initializes the SMB session factory with a custom client context configuration.
+	 * @param _context that holds the client configuration, shared services as well as the active credentials
+	 * @since 1.2
+	 */
+	public SmbSessionFactory(CIFSContext _context) {
+		Assert.notNull(_context, "_context can't be null");
+		this.context = _context;
+		logger.debug("New " + getClass().getName() + " created with context " + _context.toString());
 	}
 
 	@Override
@@ -51,13 +66,19 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 	}
 
 	protected SmbSession createSession() throws IOException {
-		Properties props = new Properties();
-		props.setProperty("jcifs.smb.client.minVersion", this.getSmbMinVersion().name());
-		props.setProperty("jcifs.smb.client.maxVersion", this.getSmbMaxVersion().name());
+		SmbShare smbShare;
+		if (this.context != null) {
+			smbShare = new SmbShare(this, this.context);
+		} else {
+			Properties props = new Properties();
+			props.setProperty("jcifs.smb.client.minVersion", this.getSmbMinVersion().name());
+			props.setProperty("jcifs.smb.client.maxVersion", this.getSmbMaxVersion().name());
 
-		SmbShare smbShare = new SmbShare(this, props);
-		smbShare.setReplaceFile(isReplaceFile());
-		smbShare.setUseTempFile(isUseTempFile());
+			smbShare = new SmbShare(this, props);
+		}
+
+		smbShare.setReplaceFile(this.isReplaceFile());
+		smbShare.setUseTempFile(this.isUseTempFile());
 
 		if (logger.isInfoEnabled()) {
 			logger.info(String.format("SMB share init: %s/%s", getHostPort(), getShareAndDir()));
