@@ -29,6 +29,7 @@ Put the following block into pom.xml if using Maven:
 
 ##### Version 1.2
  * Ability to set the SMB min/max versions in the `SmbSessionFactory` via configuration in the JCIFS library
+ * Ability to use a custom implementation of the `jcifs.CIFSContext` interface in the `SmbSessionFactory`
 
 ## Overview
 
@@ -81,6 +82,24 @@ public SmbSessionFactory smbSessionFactory() {
     smbSession.setShareAndDir("myShareAndDir");
     smbSession.setSmbMinVersion(DialectVersion.SMB210);
     smbSession.setSmbMaxVersion(DialectVersion.SMB311);
+    return smbSession;
+}
+````
+
+### Intializing SmbSessionFactory with a custom implementation of the jcifs.CIFSContext interface
+
+NOTE: Setting of the SMB protocol min/max versions must be done in your implementation of jcifs.CIFSContext
+
+````java
+@Bean
+public SmbSessionFactory smbSessionFactory(new myCIFSContext()) {
+    SmbSessionFactory smbSession = new SmbSessionFactory();
+    smbSession.setHost("myHost");
+    smbSession.setPort(445);
+    smbSession.setDomain("myDomain");
+    smbSession.setUsername("myUser");
+    smbSession.setPassword("myPassword");
+    smbSession.setShareAndDir("myShareAndDir");
     return smbSession;
 }
 ````

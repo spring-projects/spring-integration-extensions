@@ -27,6 +27,7 @@ import org.springframework.core.NestedIOException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import jcifs.CIFSContext;
 import jcifs.config.PropertyConfiguration;
 import jcifs.context.BaseContext;
 import jcifs.context.SingletonContext;
@@ -69,6 +70,17 @@ public class SmbShare extends SmbFile {
 				SingletonContext.getInstance().withCredentials(
 					new NtlmPasswordAuthenticator(
 						_smbConfig.getDomain(), _smbConfig.getUsername(), _smbConfig.getPassword())));
+	}
+
+	/**
+	 * Initializes the jCIFS library with a custom client context configuration.
+	 * @param _smbConfig the SMB share configuration
+	 * @param _context that holds the client configuration, shared services as well as the active credentials
+	 * @throws IOException if an invalid SMB URL was constructed by jCIFS
+	 * @since 1.2
+	 */
+	public SmbShare(SmbConfig _smbConfig, CIFSContext _context) throws IOException {
+		super(StringUtils.cleanPath(_smbConfig.validate().getUrl()), _context);
 	}
 
 	/**
