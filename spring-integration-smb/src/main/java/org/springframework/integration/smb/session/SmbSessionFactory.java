@@ -52,7 +52,7 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 	public SmbSessionFactory(CIFSContext _context) {
 		Assert.notNull(_context, "_context can't be null");
 		this.context = _context;
-		logger.debug("New " + getClass().getName() + " created with context " + _context.toString());
+		logger.debug("New " + getClass().getName() + " created with CIFSContext.");
 	}
 
 	@Override
