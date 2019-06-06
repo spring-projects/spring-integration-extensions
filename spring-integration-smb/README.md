@@ -18,7 +18,7 @@ Put the following block into pom.xml if using Maven:
     <dependency>
         <groupId>org.springframework.integration</groupId>
         <artifactId>spring-integration-smb</artifactId>
-        <version>1.0.0.RELEASE</version>
+        <version>1.2.0.RELEASE</version>
     </dependency>
 
 ## Changes
