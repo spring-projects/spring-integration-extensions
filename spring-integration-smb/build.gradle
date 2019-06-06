@@ -42,7 +42,7 @@ compileTestJava {
 ext {
 	idPrefix = 'smb'
 
-	jcifsVersion = '2.1.7'
+	jcifsVersion = '2.1.8'
 	log4jVersion = '2.11.2'
 	springIntegrationVersion = '5.2.0.BUILD-SNAPSHOT'
 
