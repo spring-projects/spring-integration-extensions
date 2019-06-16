@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.springframework.messaging.MessagingException;
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
+ * @author Ingo Dueppe
  *
  * @since 1.0
  *
@@ -58,24 +59,19 @@ public class UnZipTransformer extends AbstractZipTransformer {
 	 * a result from the executed Unzip operation. If set to <code>true</code> and
 	 * more than 1 element is returned, then that
 	 * 1 element is extracted and returned as payload.
-	 *
 	 * If the result map contains more than 1 element and
 	 * {@link #expectSingleResult} is <code>true</code>, then a
 	 * {@link MessagingException} is thrown.
-	 *
 	 * If set to <code>false</code>, the complete result list is returned as the
 	 * payload. This is the {@code default}.
-	 *
 	 * @param expectSingleResult If not set explicitly, will default to false
-	 *
 	 */
 	public void setExpectSingleResult(boolean expectSingleResult) {
 		this.expectSingleResult = expectSingleResult;
 	}
 
 	@Override
-	protected Object doZipTransform(final Message<?> message) throws Exception {
-
+	protected Object doZipTransform(final Message<?> message) {
 		try {
 			final Object payload = message.getPayload();
 			final Object unzippedData;
@@ -135,6 +131,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 								destinationFile.mkdirs(); //NOSONAR false positive
 							}
 							else {
+								mkDirOfAncestorDirectories(destinationFile);
 								SpringZipUtils.copy(zipEntryInputStream, destinationFile);
 								uncompressedData.put(zipEntryName, destinationFile);
 							}
@@ -182,7 +179,8 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						else {
 							throw new MessagingException(message,
 									String.format("The UnZip operation extracted %s "
-											+ "result objects but expectSingleResult was 'true'.", uncompressedData.size()));
+											+ "result objects but expectSingleResult was 'true'.", uncompressedData
+											.size()));
 						}
 					}
 					else {
@@ -206,6 +204,13 @@ public class UnZipTransformer extends AbstractZipTransformer {
 		}
 		catch (Exception e) {
 			throw new MessageHandlingException(message, "Failed to apply Zip transformation.", e);
+		}
+	}
+
+	private static void mkDirOfAncestorDirectories(File destinationFile) {
+		File parentDirectory = destinationFile.getParentFile();
+		if (parentDirectory != null) {
+			parentDirectory.mkdirs();
 		}
 	}
 
