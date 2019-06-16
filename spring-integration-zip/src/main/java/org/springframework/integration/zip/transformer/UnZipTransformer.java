@@ -135,6 +135,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 								destinationFile.mkdirs(); //NOSONAR false positive
 							}
 							else {
+								mkDirOfAncestorDirectories(destinationFile);
 								SpringZipUtils.copy(zipEntryInputStream, destinationFile);
 								uncompressedData.put(zipEntryName, destinationFile);
 							}
@@ -148,6 +149,13 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						}
 						else {
 							throw new IllegalStateException("Unsupported zipResultType " + zipResultType);
+						}
+					}
+
+					private void mkDirOfAncestorDirectories(File destinationFile) {
+						File parentDirectory = destinationFile.getParentFile();
+						if (parentDirectory != null) {
+							parentDirectory.mkdirs();
 						}
 					}
 
