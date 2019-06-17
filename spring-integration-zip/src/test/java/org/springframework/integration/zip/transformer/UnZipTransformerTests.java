@@ -103,198 +103,198 @@ public class UnZipTransformerTests {
     @Test
     public void unzipSingleFileAsInputStreamToByteArray() throws IOException {
 
-        final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
-        final InputStream is = resource.getInputStream();
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
+		final InputStream is = resource.getInputStream();
 
-        final Message<InputStream> message = MessageBuilder.withPayload(is).build();
+		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
 
-        final UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
-        unZipTransformer.afterPropertiesSet();
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
+		unZipTransformer.afterPropertiesSet();
 
-        final Message<?> resultMessage = unZipTransformer.transform(message);
+		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-        Assert.assertNotNull(resultMessage);
+		Assert.assertNotNull(resultMessage);
 
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
+		@SuppressWarnings("unchecked")
+		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-        Assert.assertNotNull(unzippedData);
-        Assert.assertTrue(unzippedData.size() == 1);
-        Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
+		Assert.assertNotNull(unzippedData);
+		Assert.assertTrue(unzippedData.size() == 1);
+		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
 
-    }
+	}
 
-    /**
-     * @throws IOException
-     */
-    @Test
-    public void unzipSingleFileToByteArray() throws IOException {
+	/**
+	 * @throws IOException
+	 */
+	@Test
+	public void unzipSingleFileToByteArray() throws IOException {
 
-        final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
-        final InputStream is = resource.getInputStream();
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
+		final InputStream is = resource.getInputStream();
 
-        final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
+		final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
 
-        IOUtils.copy(is, new FileOutputStream(inputFile));
+		IOUtils.copy(is, new FileOutputStream(inputFile));
 
-        final Message<File> message = MessageBuilder.withPayload(inputFile).build();
+		final Message<File> message = MessageBuilder.withPayload(inputFile).build();
 
-        final UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
-        unZipTransformer.afterPropertiesSet();
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
+		unZipTransformer.afterPropertiesSet();
 
-        final Message<?> resultMessage = unZipTransformer.transform(message);
+		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-        Assert.assertNotNull(resultMessage);
+		Assert.assertNotNull(resultMessage);
 
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
+		@SuppressWarnings("unchecked")
+		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-        Assert.assertNotNull(unzippedData);
-        Assert.assertTrue(unzippedData.size() == 1);
-        Assert.assertTrue(inputFile.exists());
-        Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
+		Assert.assertNotNull(unzippedData);
+		Assert.assertTrue(unzippedData.size() == 1);
+		Assert.assertTrue(inputFile.exists());
+		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
 
-    }
+	}
 
-    /**
-     * @throws IOException
-     */
-    @Test
-    public void unzipSingleFileToByteArrayWithDeleteFilesTrue() throws IOException {
+	/**
+	 * @throws IOException
+	 */
+	@Test
+	public void unzipSingleFileToByteArrayWithDeleteFilesTrue() throws IOException {
 
-        final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
-        final InputStream is = resource.getInputStream();
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
+		final InputStream is = resource.getInputStream();
 
-        final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
+		final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
 
-        FileOutputStream output = new FileOutputStream(inputFile);
-        IOUtils.copy(is, output);
-        output.close();
+		FileOutputStream output = new FileOutputStream(inputFile);
+		IOUtils.copy(is, output);
+		output.close();
 
-        final Message<File> message = MessageBuilder.withPayload(inputFile).build();
+		final Message<File> message = MessageBuilder.withPayload(inputFile).build();
 
-        final UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
-        unZipTransformer.setDeleteFiles(true);
-        unZipTransformer.afterPropertiesSet();
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
+		unZipTransformer.setDeleteFiles(true);
+		unZipTransformer.afterPropertiesSet();
 
-        final Message<?> resultMessage = unZipTransformer.transform(message);
+		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-        Assert.assertNotNull(resultMessage);
+		Assert.assertNotNull(resultMessage);
 
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
+		@SuppressWarnings("unchecked")
+		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-        Assert.assertNotNull(unzippedData);
-        Assert.assertTrue(unzippedData.size() == 1);
-        Assert.assertFalse(inputFile.exists());
-        Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
+		Assert.assertNotNull(unzippedData);
+		Assert.assertTrue(unzippedData.size() == 1);
+		Assert.assertFalse(inputFile.exists());
+		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
 
-    }
+	}
 
-    /**
-     * UnCompress a ZIP archive containing multiple files. The result will be
-     * a collection of files.
-     *
-     * @throws IOException
-     */
-    @Test
-    public void unzipMultipleFilesAsInputStreamToByteArray() throws IOException {
+	/**
+	 * UnCompress a ZIP archive containing multiple files. The result will be
+	 * a collection of files.
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void unzipMultipleFilesAsInputStreamToByteArray() throws IOException {
 
-        final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
-        final InputStream is = resource.getInputStream();
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
+		final InputStream is = resource.getInputStream();
 
-        final Message<InputStream> message = MessageBuilder.withPayload(is).build();
+		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
 
-        final UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
-        unZipTransformer.afterPropertiesSet();
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
+		unZipTransformer.afterPropertiesSet();
 
-        final Message<?> resultMessage = unZipTransformer.transform(message);
+		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-        Assert.assertNotNull(resultMessage);
+		Assert.assertNotNull(resultMessage);
 
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
+		@SuppressWarnings("unchecked")
+		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-        Assert.assertNotNull(unzippedData);
-        Assert.assertTrue(unzippedData.size() == 5);
+		Assert.assertNotNull(unzippedData);
+		Assert.assertTrue(unzippedData.size() == 5);
 
-    }
+	}
 
-    /**
-     * UnCompress a ZIP archive containing multiple files. The result will be
-     * a collection of files.
-     *
-     * @throws IOException
-     */
-    @Test
-    public void unzipMultipleFilesAsInputStreamWithExpectSingleResultTrue() throws IOException {
+	/**
+	 * UnCompress a ZIP archive containing multiple files. The result will be
+	 * a collection of files.
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void unzipMultipleFilesAsInputStreamWithExpectSingleResultTrue() throws IOException {
 
-        final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
-        final InputStream is = resource.getInputStream();
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
+		final InputStream is = resource.getInputStream();
 
-        final Message<InputStream> message = MessageBuilder.withPayload(is).build();
+		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
 
-        final UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
-        unZipTransformer.setExpectSingleResult(true);
-        unZipTransformer.afterPropertiesSet();
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
+		unZipTransformer.setExpectSingleResult(true);
+		unZipTransformer.afterPropertiesSet();
 
-        try {
-            unZipTransformer.transform(message);
-        } catch (MessagingException e) {
-            Assert.assertTrue(e.getMessage().contains("The UnZip operation extracted "
-                    + "5 result objects but expectSingleResult was 'true'."));
-            return;
-        }
+		try {
+			unZipTransformer.transform(message);
+		} catch (MessagingException e) {
+			Assert.assertTrue(e.getMessage().contains("The UnZip operation extracted "
+					+ "5 result objects but expectSingleResult was 'true'."));
+			return;
+		}
 
-        Assert.fail("Expected a MessagingException to be thrown.");
+		Assert.fail("Expected a MessagingException to be thrown.");
 
-    }
+	}
 
-    @Test
-    public void unzipInvalidZipFile() throws IOException, InterruptedException {
+	@Test
+	public void unzipInvalidZipFile() throws IOException, InterruptedException {
 
-        File fileToUnzip = this.testFolder.newFile();
-        FileUtils.writeStringToFile(fileToUnzip, "hello world");
+		File fileToUnzip = this.testFolder.newFile();
+		FileUtils.writeStringToFile(fileToUnzip, "hello world");
 
-        UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
-        unZipTransformer.setExpectSingleResult(true);
-        unZipTransformer.afterPropertiesSet();
+		UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
+		unZipTransformer.setExpectSingleResult(true);
+		unZipTransformer.afterPropertiesSet();
 
-        Message<File> message = MessageBuilder.withPayload(fileToUnzip).build();
+		Message<File> message = MessageBuilder.withPayload(fileToUnzip).build();
 
-        try {
-            unZipTransformer.transform(message);
-            Assert.fail("Expected a MessagingException to be thrown.");
-        } catch (MessagingException e) {
-            Assert.assertTrue(e.getMessage().contains(String.format("Not a zip file: '%s'.",
-                    fileToUnzip.getAbsolutePath())));
-        }
-    }
+		try {
+			unZipTransformer.transform(message);
+			Assert.fail("Expected a MessagingException to be thrown.");
+		} catch (MessagingException e) {
+			Assert.assertTrue(e.getMessage().contains(String.format("Not a zip file: '%s'.",
+					fileToUnzip.getAbsolutePath())));
+		}
+	}
 
-    @Test
-    public void testUnzipMaliciousTraversalZipFile() throws IOException {
-        final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/zip-malicious-traversal.zip");
-        final InputStream is = resource.getInputStream();
+	@Test
+	public void testUnzipMaliciousTraversalZipFile() throws IOException {
+		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/zip-malicious-traversal.zip");
+		final InputStream is = resource.getInputStream();
 
-        final Message<InputStream> message = MessageBuilder.withPayload(is).build();
+		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
 
-        final UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.afterPropertiesSet();
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.afterPropertiesSet();
 
-        try {
-            unZipTransformer.transform(message);
-        } catch (Exception e) {
-            Assert.assertThat(e, instanceOf(MessageTransformationException.class));
-            Assert.assertThat(e.getCause(), instanceOf(MessageHandlingException.class));
-            Assert.assertThat(e.getCause().getCause(), instanceOf(ZipException.class));
-            Assert.assertThat(e.getCause().getCause().getMessage(),
-                    containsString("is trying to leave the target output directory"));
-        }
-    }
+		try {
+			unZipTransformer.transform(message);
+		} catch (Exception e) {
+			Assert.assertThat(e, instanceOf(MessageTransformationException.class));
+			Assert.assertThat(e.getCause(), instanceOf(MessageHandlingException.class));
+			Assert.assertThat(e.getCause().getCause(), instanceOf(ZipException.class));
+			Assert.assertThat(e.getCause().getCause().getMessage(),
+					containsString("is trying to leave the target output directory"));
+		}
+	}
 }
