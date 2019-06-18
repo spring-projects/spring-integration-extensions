@@ -81,16 +81,13 @@ public class UnZipTransformerTests {
 	 */
 	@Test
 	public void unzipFlatFileEntryZip() throws IOException {
-		File singleFile = this.resourceLoader.getResource("classpath:testzipdata/single.txt").getFile();
-		File zip = new File(singleFile.getParentFile(), "flatfileentry.zip");
-		ZipUtil.packEntry(singleFile, zip, "subfolder/single.txt");
-
 		final Resource zipResource = this.resourceLoader.getResource("classpath:testzipdata/flatfileentry.zip");
 		final InputStream is = zipResource.getInputStream();
 
 		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
 
 		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.FILE);
 		unZipTransformer.afterPropertiesSet();
 
 		final Message<?> resultMessage = unZipTransformer.transform(message);
