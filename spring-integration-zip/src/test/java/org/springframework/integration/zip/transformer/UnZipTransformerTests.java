@@ -51,6 +51,7 @@ import org.zeroturnaround.zip.ZipUtil;
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
+ * @author Ingo Dueppe
  *
  * @since 1.0
  *
