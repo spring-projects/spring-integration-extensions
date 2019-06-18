@@ -16,6 +16,15 @@
 
 package org.springframework.integration.zip.transformer;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -24,6 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.zeroturnaround.zip.ZipException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -34,74 +45,72 @@ import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessagingException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.zeroturnaround.zip.ZipException;
 import org.zeroturnaround.zip.ZipUtil;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.instanceOf;
-
 /**
+ *
  * @author Gunnar Hillert
  * @author Artem Bilan
+ *
  * @since 1.0
+ *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class UnZipTransformerTests {
 
-    @Rule
-    public TemporaryFolder testFolder = new TemporaryFolder();
+	@Rule
+	public TemporaryFolder testFolder = new TemporaryFolder();
 
-    @Autowired
-    private ResourceLoader resourceLoader;
+	@Autowired
+	private ResourceLoader resourceLoader;
 
-    private File workDir;
+	private File workDir;
 
-    @Before
-    public void setup() throws IOException {
-        this.workDir = testFolder.newFolder();
-    }
+	@Before
+	public void setup() throws IOException {
+		this.workDir = testFolder.newFolder();
+	}
 
 
-    @Test
-    public void unzipFlatFileEntryZip() throws IOException {
-        File singleFile = this.resourceLoader.getResource("classpath:testzipdata/single.txt").getFile();
-        File zip = new File(singleFile.getParentFile(), "flatfileentry.zip");
-        ZipUtil.packEntry(singleFile, zip, "subfolder/single.txt");
+	/**
+	 * test flat file entry structure without additional dictory entries
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void unzipFlatFileEntryZip() throws IOException {
+		File singleFile = this.resourceLoader.getResource("classpath:testzipdata/single.txt").getFile();
+		File zip = new File(singleFile.getParentFile(), "flatfileentry.zip");
+		ZipUtil.packEntry(singleFile, zip, "subfolder/single.txt");
 
-        final Resource zipResource = this.resourceLoader.getResource("classpath:testzipdata/flatfileentry.zip");
-        final InputStream is = zipResource.getInputStream();
+		final Resource zipResource = this.resourceLoader.getResource("classpath:testzipdata/flatfileentry.zip");
+		final InputStream is = zipResource.getInputStream();
 
-        final Message<InputStream> message = MessageBuilder.withPayload(is).build();
+		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
 
-        final UnZipTransformer unZipTransformer = new UnZipTransformer();
-        unZipTransformer.afterPropertiesSet();
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.afterPropertiesSet();
 
-        final Message<?> resultMessage = unZipTransformer.transform(message);
+		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-        Assert.assertNotNull(resultMessage);
+		Assert.assertNotNull(resultMessage);
 
-        @SuppressWarnings("unchecked")
-        Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
+		@SuppressWarnings("unchecked")
+		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-        Assert.assertNotNull(unzippedData);
-        Assert.assertTrue(unzippedData.size() == 1);
-    }
+		Assert.assertNotNull(unzippedData);
+		Assert.assertTrue(unzippedData.size() == 1);
+	}
 
-    /**
-     * UnCompress a ZIP archive containing a single file only. The result will be
-     * a byte array.
-     *
-     * @throws IOException
-     */
-    @Test
-    public void unzipSingleFileAsInputStreamToByteArray() throws IOException {
+	/**
+	 * UnCompress a ZIP archive containing a single file only. The result will be
+	 * a byte array.
+	 *
+	 * @throws IOException
+	 */
+	@Test
+	public void unzipSingleFileAsInputStreamToByteArray() throws IOException {
 
 		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
@@ -126,6 +135,8 @@ public class UnZipTransformerTests {
 	}
 
 	/**
+	 *
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -159,6 +170,8 @@ public class UnZipTransformerTests {
 	}
 
 	/**
+	 *
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -245,7 +258,8 @@ public class UnZipTransformerTests {
 
 		try {
 			unZipTransformer.transform(message);
-		} catch (MessagingException e) {
+		}
+		catch (MessagingException e) {
 			Assert.assertTrue(e.getMessage().contains("The UnZip operation extracted "
 					+ "5 result objects but expectSingleResult was 'true'."));
 			return;
@@ -271,7 +285,8 @@ public class UnZipTransformerTests {
 		try {
 			unZipTransformer.transform(message);
 			Assert.fail("Expected a MessagingException to be thrown.");
-		} catch (MessagingException e) {
+		}
+		catch (MessagingException e) {
 			Assert.assertTrue(e.getMessage().contains(String.format("Not a zip file: '%s'.",
 					fileToUnzip.getAbsolutePath())));
 		}
@@ -289,7 +304,8 @@ public class UnZipTransformerTests {
 
 		try {
 			unZipTransformer.transform(message);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			Assert.assertThat(e, instanceOf(MessageTransformationException.class));
 			Assert.assertThat(e.getCause(), instanceOf(MessageHandlingException.class));
 			Assert.assertThat(e.getCause().getCause(), instanceOf(ZipException.class));
