@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
+ * @author Ingo Dueppe
  *
  * @since 1.0
  *
@@ -71,15 +72,30 @@ public class UnZipTransformerTests {
 		this.workDir = testFolder.newFolder();
 	}
 
-	/**
-	 * UnCompress a ZIP archive containing a single file only. The result will be
-	 * a byte array.
-	 *
-	 * @throws IOException
-	 */
+	@Test
+	public void unzipFlatFileEntryZip() throws IOException {
+		final Resource zipResource = this.resourceLoader.getResource("classpath:testzipdata/flatfileentry.zip");
+		final InputStream is = zipResource.getInputStream();
+
+		final Message<InputStream> message = MessageBuilder.withPayload(is).build();
+
+		final UnZipTransformer unZipTransformer = new UnZipTransformer();
+		unZipTransformer.setZipResultType(ZipResultType.FILE);
+		unZipTransformer.afterPropertiesSet();
+
+		final Message<?> resultMessage = unZipTransformer.transform(message);
+
+		Assert.assertNotNull(resultMessage);
+
+		@SuppressWarnings("unchecked")
+		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
+
+		Assert.assertNotNull(unzippedData);
+		Assert.assertEquals(1, unzippedData.size());
+	}
+
 	@Test
 	public void unzipSingleFileAsInputStreamToByteArray() throws IOException {
-
 		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
 
@@ -97,16 +113,11 @@ public class UnZipTransformerTests {
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
 		Assert.assertNotNull(unzippedData);
-		Assert.assertTrue(unzippedData.size() == 1);
+		Assert.assertEquals(1, unzippedData.size());
 		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
 
 	}
 
-	/**
-	 *
-	 *
-	 * @throws IOException
-	 */
 	@Test
 	public void unzipSingleFileToByteArray() throws IOException {
 
@@ -131,20 +142,14 @@ public class UnZipTransformerTests {
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
 		Assert.assertNotNull(unzippedData);
-		Assert.assertTrue(unzippedData.size() == 1);
+		Assert.assertEquals(1, unzippedData.size());
 		Assert.assertTrue(inputFile.exists());
 		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
 
 	}
 
-	/**
-	 *
-	 *
-	 * @throws IOException
-	 */
 	@Test
 	public void unzipSingleFileToByteArrayWithDeleteFilesTrue() throws IOException {
-
 		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
 
@@ -169,21 +174,14 @@ public class UnZipTransformerTests {
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
 		Assert.assertNotNull(unzippedData);
-		Assert.assertTrue(unzippedData.size() == 1);
+		Assert.assertEquals(1, unzippedData.size());
 		Assert.assertFalse(inputFile.exists());
 		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
 
 	}
 
-	/**
-	 * UnCompress a ZIP archive containing multiple files. The result will be
-	 * a collection of files.
-	 *
-	 * @throws IOException
-	 */
 	@Test
 	public void unzipMultipleFilesAsInputStreamToByteArray() throws IOException {
-
 		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
 		final InputStream is = resource.getInputStream();
 
@@ -201,19 +199,11 @@ public class UnZipTransformerTests {
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
 		Assert.assertNotNull(unzippedData);
-		Assert.assertTrue(unzippedData.size() == 5);
-
+		Assert.assertEquals(5, unzippedData.size());
 	}
 
-	/**
-	 * UnCompress a ZIP archive containing multiple files. The result will be
-	 * a collection of files.
-	 *
-	 * @throws IOException
-	 */
 	@Test
 	public void unzipMultipleFilesAsInputStreamWithExpectSingleResultTrue() throws IOException {
-
 		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/countries.zip");
 		final InputStream is = resource.getInputStream();
 
@@ -238,8 +228,7 @@ public class UnZipTransformerTests {
 	}
 
 	@Test
-	public void unzipInvalidZipFile() throws IOException, InterruptedException {
-
+	public void unzipInvalidZipFile() throws IOException {
 		File fileToUnzip = this.testFolder.newFile();
 		FileUtils.writeStringToFile(fileToUnzip, "hello world");
 
@@ -281,4 +270,5 @@ public class UnZipTransformerTests {
 					containsString("is trying to leave the target output directory"));
 		}
 	}
+
 }
