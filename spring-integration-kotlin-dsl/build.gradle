@@ -1,0 +1,188 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'jacoco'
+    id 'org.sonarqube' version '2.7.1'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
+    id "org.jetbrains.kotlin.plugin.spring" version "$kotlinVersion"
+}
+
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
+
+description = 'Spring Integration Kotlin DSL'
+
+group = 'org.springframework.integration'
+
+repositories {
+    if (version.endsWith('BUILD-SNAPSHOT')) {
+        maven { url 'https://repo.spring.io/libs-snapshot' }
+    }
+    maven { url 'https://repo.spring.io/libs-milestone' }
+//	maven { url 'https://repo.spring.io/libs-staging-local' }
+}
+
+ext {
+    assertkVersion = '0.20'
+    jacksonVersion = '2.10.0.pr3'
+    junitVersion = '5.5.2'
+    log4jVersion = '2.12.1'
+    springIntegrationVersion = '5.2.0.BUILD-SNAPSHOT'
+
+    idPrefix = 'kotlin-dsl'
+
+    linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+    linkCi = 'https://build.spring.io/browse/INTEXT'
+    linkIssue = 'https://github.com/spring-projects/spring-integration-extensions/issues'
+    linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
+    linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
+    linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
+
+}
+
+dependencyManagement {
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
+    applyMavenExclusions = false
+    generatedPomCustomization {
+        enabled = false
+    }
+
+    imports {
+        mavenBom "com.fasterxml.jackson:jackson-bom:$jacksonVersion"
+        mavenBom "org.junit:junit-bom:$junitVersion"
+        mavenBom "org.springframework.integration:spring-integration-bom:$springIntegrationVersion"
+        mavenBom "org.apache.logging.log4j:log4j-bom:$log4jVersion"
+    }
+
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs = ["-Xjsr305=strict"]
+        allWarningsAsErrors = true
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ['-Xjsr305=strict']
+        jvmTarget = '1.8'
+    }
+}
+
+
+eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
+
+
+jacoco {
+    toolVersion = '0.8.4'
+}
+
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation 'org.springframework.integration:spring-integration-core'
+
+    testImplementation 'org.springframework.integration:spring-integration-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation "com.willowtreeapps.assertk:assertk-jvm:$assertkVersion"
+
+    testRuntime 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntime 'org.junit.platform:junit-platform-launcher'
+    testRuntime 'org.apache.logging.log4j:log4j-jcl'
+    testRuntime 'org.apache.logging.log4j:log4j-core'
+}
+
+test {
+    // suppress all console output during testing unless running `gradle -i`
+    logging.captureStandardOutput(LogLevel.INFO)
+    jacoco {
+        append = false
+        destinationFile = file("$buildDir/jacoco.exec")
+    }
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/reports/jacoco/html")
+    }
+}
+
+check.dependsOn javadoc
+build.dependsOn jacocoTestReport
+
+
+task sourcesJar(type: Jar) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.kotlin
+}
+
+task javadocJar(type: Jar) {
+    archiveClassifier = 'javadoc'
+    from javadoc
+}
+
+sonarqube {
+    properties {
+        property 'sonar.jacoco.reportPath', "${buildDir.name}/jacoco.exec"
+        property 'sonar.links.homepage', linkHomepage
+        property 'sonar.links.ci', linkCi
+        property 'sonar.links.issue', linkIssue
+        property 'sonar.links.scm', linkScmUrl
+        property 'sonar.links.scm_dev', linkScmDevConnection
+        property 'sonar.java.coveragePlugin', 'jacoco'
+    }
+}
+
+task api(type: Javadoc) {
+    group = 'Documentation'
+    description = 'Generates the Javadoc API documentation.'
+    title = "${rootProject.description} ${version} API"
+    options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+    options.author = true
+    options.header = rootProject.description
+    options.overview = 'src/api/overview.html'
+
+    source = sourceSets.main.kotlin
+    classpath = project.sourceSets.main.compileClasspath
+    destinationDir = new File(buildDir, 'api')
+}
+
+task distZip(type: Zip) {
+    group = 'Distribution'
+    archiveClassifier = 'dist'
+    description = "Builds -${archiveClassifier} archive, containing all jars and docs, " +
+            "suitable for community download page."
+
+    ext.baseDir = "${project.name}-${project.version}";
+
+    from('src/dist') {
+        include 'readme.txt'
+        include 'license.txt'
+        into "${baseDir}"
+    }
+
+    into("${baseDir}/libs") {
+        from project.jar
+        from project.sourcesJar
+        from project.javadocJar
+    }
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    archives distZip
+}
+
+task dist(dependsOn: assemble) {
+    group = 'Distribution'
+    description = 'Builds -dist, -docs and -schema distribution archives.'
+}
