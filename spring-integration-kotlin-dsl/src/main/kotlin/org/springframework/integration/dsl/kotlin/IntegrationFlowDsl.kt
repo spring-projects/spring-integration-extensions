@@ -19,13 +19,15 @@ package org.springframework.integration.dsl.kotlin
 import org.springframework.integration.core.MessageSource
 import org.springframework.integration.dsl.GatewayProxySpec
 import org.springframework.integration.dsl.IntegrationFlow
+import org.springframework.integration.dsl.IntegrationFlowBuilder
 import org.springframework.integration.dsl.IntegrationFlowDefinition
 import org.springframework.integration.dsl.IntegrationFlows
 import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec
 import java.util.function.Consumer
 
 /**
- * Functional [IntegrationFlow] definition in Kotlin DSL for [IntegrationFlows.from(Class)]
+ * Functional [IntegrationFlow] definition in Kotlin DSL for
+ * [IntegrationFlows.from(Class<*>, Consumer<GatewayProxySpec>)]
  *
  * @author Artem Bilan
  */
@@ -38,7 +40,8 @@ inline fun <reified T> integrationFlow(crossinline gateway: (GatewayProxySpec) -
 }
 
 /**
- * Functional [IntegrationFlow] definition in Kotlin DSL for [IntegrationFlows.from(String,Boolean)]
+ * Functional [IntegrationFlow] definition in Kotlin DSL for
+ * [IntegrationFlows.from(String, Boolean)]
  *
  * @author Artem Bilan
  */
@@ -46,22 +49,40 @@ fun integrationFlow(channelName: String, fixedSubscriber: Boolean = false,
 					flow: (IntegrationFlowDefinition<*>) -> Unit): IntegrationFlow {
 
 	val flowBuilder = IntegrationFlows.from(channelName, fixedSubscriber)
-	flow.invoke(flowBuilder)
-	return flowBuilder.get()
+	return buildIntegrationFlow(flowBuilder, flow)
 }
 
 /**
  * Functional [IntegrationFlow] definition in Kotlin DSL for
- * [IntegrationFlows.from(MessageSource<*>,Consumer<SourcePollingChannelAdapterSpec>)]
+ * [IntegrationFlows.from(MessageSource<*>, Consumer<SourcePollingChannelAdapterSpec>)]
  *
  * @author Artem Bilan
  */
 fun integrationFlow(messageSource: MessageSource<*>,
-						   options: (SourcePollingChannelAdapterSpec) -> Unit = {},
+					options: (SourcePollingChannelAdapterSpec) -> Unit = {},
 					flow: (IntegrationFlowDefinition<*>) -> Unit): IntegrationFlow {
 
-	val flowBuilder = IntegrationFlows.from(messageSource, Consumer {options(it)})
+	val flowBuilder = IntegrationFlows.from(messageSource, Consumer { options(it) })
+	return buildIntegrationFlow(flowBuilder, flow)
+}
+
+/**
+ * Functional [IntegrationFlow] definition in Kotlin DSL for
+ * [IntegrationFlows.from(Supplier<*>, Consumer<SourcePollingChannelAdapterSpec>)]
+ *
+ * @author Artem Bilan
+ */
+fun integrationFlow(source: () -> Any,
+						options: (SourcePollingChannelAdapterSpec) -> Unit = {},
+						flow: (IntegrationFlowDefinition<*>) -> Unit): IntegrationFlow {
+
+	val flowBuilder = IntegrationFlows.from(source, options)
+	return buildIntegrationFlow(flowBuilder, flow)
+}
+
+private fun buildIntegrationFlow(flowBuilder: IntegrationFlowBuilder,
+								 flow: (IntegrationFlowDefinition<*>) -> Unit): IntegrationFlow {
+
 	flow.invoke(flowBuilder)
 	return flowBuilder.get()
 }
-
