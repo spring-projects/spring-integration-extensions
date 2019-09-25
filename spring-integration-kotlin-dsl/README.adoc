@@ -1,0 +1,77 @@
+= Spring Integration Kotlin DSL
+
+This project is a Kotlin extension for https://docs.spring.io/spring-integration/docs/current/reference/html/#java-dsl[Spring Integration Java DSL].
+
+NOTE: The project should be treated as experimental and API is a subject to changes.
+
+The main goal we pursue here is to make Spring Integration development on Kotlin as smooth and straightforward as is it possible with interoperability with existing Java DSL and some Kotlin extensions or language-specific structures.
+
+To use classes and functions from this project, you need to add `import org.springframework.integration.dsl.kotlin.*` into your code.
+
+For `IntegrationFlow` definitions as lambdas we typically don't need anything else from Kotlin and just declare a bean like this:
+
+====
+[source, kotlin]
+----
+@Bean
+fun oddFlow() =
+IntegrationFlow { flow ->
+    flow.handle<Any> { _, _ -> "odd" }
+}
+----
+====
+
+In this case Kotlin understands that the lambda should be translated into `IntegrationFlow` anonymous instance and target Java DSL processor parses this construction properly into Java objects.
+
+Many other scenarios require an `IntegrationFlow` to be started from source of data (e.g. `JdbcPollingChannelAdapter`, `JmsInboundGateway` or just an existing `MessageChannel`).
+For this purpose Spring Integration Java DSL provides an `IntegrationFlows` factory with its bunch of overloaded `from()` methods.
+This factory can be used in Kotlin as well:
+
+====
+[source, kotlin]
+----
+@Bean
+fun flowFromSupplier() =
+         IntegrationFlows.from<String>({ "bar" }) { e -> e.poller { p -> p.fixedDelay(10).maxMessagesPerPoll(1) } }
+                 .channel { c -> c.queue("fromSupplierQueue") }
+                 .get()
+----
+====
+
+But unfortunately not all `from()` methods are compatible with Kotlin structures.
+To fix a gap, this project provides a Kotlin DSL around an `IntegrationFlows` factory.
+It is done as a set of overloaded `integrationFlow()` functions.
+With the consumer for an `IntegrationFlowDefinition<*>` to declare the rest of the flow as an `IntegrationFlow` lambda to reuse the mentioned above experience and also avoid `get()` call in the end.
+For example:
+
+====
+[source, kotlin]
+----
+@Bean
+fun functionFlow() =
+        integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
+            it.transform<String, String> { it.toUpperCase() }
+        }
+
+@Bean
+fun messageSourceFlow() =
+        integrationFlow(MessageProcessorMessageSource { "testSource" },
+                { it.poller { it.fixedDelay(10).maxMessagesPerPoll(1) } }) {
+            it.channel { c -> c.queue("fromSupplierQueue") }
+        }
+----
+====
+
+In addition this project provides Kotlin extensions for Java DSL API which needs some refinement for Kotlin structures.
+For example `IntegrationFlowDefinition<*>` requires a reifying for many methods with `Class<P>` argument:
+
+====
+[source, kotlin]
+----
+@Bean
+fun convertFlow() =
+    integrationFlow("convertFlowInput") {
+        it.convert<TestPojo>()
+    }
+----
+====
