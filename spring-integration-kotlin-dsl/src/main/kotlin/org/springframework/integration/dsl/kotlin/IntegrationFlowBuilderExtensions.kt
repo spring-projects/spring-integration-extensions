@@ -21,10 +21,22 @@ import org.springframework.integration.dsl.IntegrationFlowDefinition
 import org.springframework.integration.transformer.MessageTransformingHandler
 
 /**
- * Extension for [IntegrationFlowDefinition.convert()] providing a `convert<Foo>()` variant.
+ * Extension for [IntegrationFlowDefinition.convert] providing a `convert<MyType>()` variant.
  *
  * @author Artem Bilan
  */
 inline fun <reified T> IntegrationFlowDefinition<*>.convert(
-		crossinline consumer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit = {}): IntegrationFlowDefinition<*> =
-		convert(T::class.java) { consumer(it) }
+		crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit = {}):
+		IntegrationFlowDefinition<*> =
+		convert(T::class.java) { configurer(it) }
+
+/**
+ * Extension for [IntegrationFlowDefinition.transform] providing a `transform<MyTypeIn, MyTypeOut>()` variant.
+ *
+ * @author Artem Bilan
+ */
+inline fun <reified P, T> IntegrationFlowDefinition<*>.reifiedTransform(
+		crossinline function: (P) -> T,
+		crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit = {}):
+		IntegrationFlowDefinition<*> =
+		transform(P::class.java, { function(it) }) { configurer(it) }

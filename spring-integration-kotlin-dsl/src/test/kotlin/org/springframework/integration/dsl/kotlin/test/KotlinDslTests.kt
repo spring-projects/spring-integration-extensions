@@ -26,22 +26,29 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.integration.channel.FluxMessageChannel
 import org.springframework.integration.channel.QueueChannel
 import org.springframework.integration.config.EnableIntegration
 import org.springframework.integration.core.MessagingTemplate
 import org.springframework.integration.dsl.Pollers
+import org.springframework.integration.dsl.context.IntegrationFlowContext
 import org.springframework.integration.dsl.kotlin.convert
+import org.springframework.integration.dsl.kotlin.reifiedTransform
 import org.springframework.integration.dsl.kotlin.integrationFlow
 import org.springframework.integration.endpoint.MessageProcessorMessageSource
 import org.springframework.integration.handler.LoggingHandler
 import org.springframework.integration.scheduling.PollerMetadata
 import org.springframework.integration.support.MessageBuilder
 import org.springframework.integration.test.util.OnlyOnceTrigger
+import org.springframework.messaging.Message
 import org.springframework.messaging.MessageChannel
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.PollableChannel
+import org.springframework.messaging.support.GenericMessage
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
+import reactor.core.publisher.Flux
+import reactor.test.StepVerifier
 import java.util.*
 import java.util.function.Function
 
@@ -54,6 +61,9 @@ class KotlinDslTests {
 
 	@Autowired
 	private lateinit var beanFactory: BeanFactory
+
+	@Autowired
+	private lateinit var integrationFlowContext: IntegrationFlowContext
 
 	@Autowired
 	private lateinit var convertFlowInput: MessageChannel
@@ -134,6 +144,32 @@ class KotlinDslTests {
 	@Test
 	fun `supplier flow2`() {
 		assertThat(this.testSupplierResult2.receive(10_000)?.payload).isNotNull().isEqualTo("testSupplier2")
+	}
+
+	@Test
+	fun `reactive publisher flow`() {
+		val fluxChannel = FluxMessageChannel()
+
+		val verifyLater =
+				StepVerifier
+						.create(Flux.from(fluxChannel).map { it.payload }.cast(Integer::class.java))
+						.expectNext(Integer(4), Integer(6))
+						.thenCancel()
+						.verifyLater()
+
+		val publisher = Flux.just(2, 3).map { GenericMessage(it) }
+
+		val integrationFlow =
+				integrationFlow(publisher) {
+					it.reifiedTransform<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
+							.channel(fluxChannel)
+				}
+
+		val registration = this.integrationFlowContext.registration(integrationFlow).register()
+
+		verifyLater.verify()
+
+		registration.destroy()
 	}
 
 	@Configuration
