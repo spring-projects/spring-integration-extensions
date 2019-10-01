@@ -31,7 +31,7 @@ ext {
     junitVersion = '5.5.2'
     log4jVersion = '2.12.1'
     reactorVersion = 'Dysprosium-RELEASE'
-    springIntegrationVersion = '5.2.0.BUILD-SNAPSHOT'
+    springIntegrationVersion = '5.2.0.RELEASE'
 
     idPrefix = 'kotlin-dsl'
 

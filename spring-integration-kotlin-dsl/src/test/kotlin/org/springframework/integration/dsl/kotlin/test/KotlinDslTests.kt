@@ -33,8 +33,11 @@ import org.springframework.integration.core.MessagingTemplate
 import org.springframework.integration.dsl.Pollers
 import org.springframework.integration.dsl.context.IntegrationFlowContext
 import org.springframework.integration.dsl.kotlin.convert
-import org.springframework.integration.dsl.kotlin.reifiedTransform
+import org.springframework.integration.dsl.kotlin.filterReified
 import org.springframework.integration.dsl.kotlin.integrationFlow
+import org.springframework.integration.dsl.kotlin.routeReified
+import org.springframework.integration.dsl.kotlin.split
+import org.springframework.integration.dsl.kotlin.transformReified
 import org.springframework.integration.endpoint.MessageProcessorMessageSource
 import org.springframework.integration.handler.LoggingHandler
 import org.springframework.integration.scheduling.PollerMetadata
@@ -161,7 +164,7 @@ class KotlinDslTests {
 
 		val integrationFlow =
 				integrationFlow(publisher) {
-					it.reifiedTransform<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
+					it.transformReified<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
 							.channel(fluxChannel)
 				}
 
@@ -191,12 +194,14 @@ class KotlinDslTests {
 		fun functionFlow() =
 				integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
 					it.transform<String, String> { it.toUpperCase() }
+							.split<String>({ p -> p })
 				}
 
 		@Bean
 		fun functionFlow2() =
 				integrationFlow<Function<*, *>> {
 					it.transform<String, String> { it.toLowerCase() }
+							.routeReified<Message<*>, Any?> ({ m -> m.headers.replyChannel }) { it.id("router") }
 				}
 
 		@Bean
@@ -228,7 +233,9 @@ class KotlinDslTests {
 		fun flowFromSupplier2() =
 				integrationFlow({ "testSupplier2" },
 						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					it.channel { c -> c.queue("testSupplierResult2") }
+					it
+							.filterReified<Message<Any>>({ m -> m.payload is String })
+							.channel { c -> c.queue("testSupplierResult2") }
 				}
 
 	}

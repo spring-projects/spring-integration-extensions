@@ -16,9 +16,16 @@
 
 package org.springframework.integration.dsl.kotlin
 
+import org.springframework.integration.dsl.FilterEndpointSpec
 import org.springframework.integration.dsl.GenericEndpointSpec
 import org.springframework.integration.dsl.IntegrationFlowDefinition
+import org.springframework.integration.dsl.RouterSpec
+import org.springframework.integration.dsl.SplitterEndpointSpec
+import org.springframework.integration.handler.ServiceActivatingHandler
+import org.springframework.integration.router.MethodInvokingRouter
+import org.springframework.integration.splitter.MethodInvokingSplitter
 import org.springframework.integration.transformer.MessageTransformingHandler
+import org.springframework.messaging.MessageHeaders
 
 /**
  * Extension for [IntegrationFlowDefinition.convert] providing a `convert<MyType>()` variant.
@@ -35,8 +42,41 @@ inline fun <reified T> IntegrationFlowDefinition<*>.convert(
  *
  * @author Artem Bilan
  */
-inline fun <reified P, T> IntegrationFlowDefinition<*>.reifiedTransform(
+inline fun <reified P, T> IntegrationFlowDefinition<*>.transformReified(
 		crossinline function: (P) -> T,
 		crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit = {}):
 		IntegrationFlowDefinition<*> =
 		transform(P::class.java, { function(it) }) { configurer(it) }
+
+/**
+ * Extension for [IntegrationFlowDefinition.split] providing a `split<MyTypeIn>()` variant.
+ *
+ * @author Artem Bilan
+ */
+inline fun <reified P> IntegrationFlowDefinition<*>.split(
+		crossinline function: (P) -> Any,
+		crossinline configurer: (SplitterEndpointSpec<MethodInvokingSplitter>) -> Unit = {}):
+		IntegrationFlowDefinition<*> =
+		split(P::class.java, { function(it) }) { configurer(it) }
+
+/**
+ * Extension for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant.
+ *
+ * @author Artem Bilan
+ */
+inline fun <reified P> IntegrationFlowDefinition<*>.filterReified(
+		crossinline function: (P) -> Boolean,
+		crossinline configurer: (FilterEndpointSpec) -> Unit = {}):
+		IntegrationFlowDefinition<*> =
+		filter(P::class.java, { function(it) }) { configurer(it) }
+
+/**
+ * Extension for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant.
+ *
+ * @author Artem Bilan
+ */
+inline fun <reified P, T> IntegrationFlowDefinition<*>.routeReified(
+		crossinline function: (P) -> T,
+		crossinline configurer: (RouterSpec<T, MethodInvokingRouter>) -> Unit = {}):
+		IntegrationFlowDefinition<*> =
+		route(P::class.java, { function(it) }) { configurer(it) }
