@@ -164,8 +164,8 @@ class KotlinDslTests {
 
 		val integrationFlow =
 				integrationFlow(publisher) {
-					it.transformReified<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
-							.channel(fluxChannel)
+					transformReified<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
+					channel(fluxChannel)
 				}
 
 		val registration = this.integrationFlowContext.registration(integrationFlow).register()
@@ -173,6 +173,24 @@ class KotlinDslTests {
 		verifyLater.verify()
 
 		registration.destroy()
+	}
+
+	@Autowired
+	@Qualifier("flowLambda.input")
+	private lateinit var flowLambdaInput: MessageChannel
+
+	@Autowired
+	private lateinit var wireTapChannel: PollableChannel
+
+	@Test
+	fun `flow from lambda`() {
+		val replyChannel = QueueChannel()
+		val message = MessageBuilder.withPayload("test").setReplyChannel(replyChannel).build()
+
+		this.flowLambdaInput.send(message)
+
+		assertThat(replyChannel.receive(10_000)?.payload).isNotNull().isEqualTo("TEST")
+		assertThat(this.wireTapChannel.receive(10_000)?.payload).isNotNull().isEqualTo("test")
 	}
 
 	@Configuration
@@ -186,56 +204,66 @@ class KotlinDslTests {
 		@Bean
 		fun convertFlow() =
 				integrationFlow("convertFlowInput") {
-					it.convert<TestPojo>()
-							.convert<TestPojo> { it.id("kotlinConverter") }
+					convert<TestPojo>()
+					convert<TestPojo> { it.id("kotlinConverter") }
 				}
 
 		@Bean
 		fun functionFlow() =
 				integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
-					it.transform<String, String> { it.toUpperCase() }
-							.split<String>({ p -> p })
+					transform<String, String> { it.toUpperCase() }
+					split<String>({ p -> p })
 				}
 
 		@Bean
 		fun functionFlow2() =
 				integrationFlow<Function<*, *>> {
-					it.transform<String, String> { it.toLowerCase() }
-							.routeReified<Message<*>, Any?> ({ m -> m.headers.replyChannel }) { it.id("router") }
+					transform<String, String> { it.toLowerCase() }
+					routeReified<Message<*>, Any?>({ m -> m.headers.replyChannel }) { it.id("router") }
 				}
 
 		@Bean
 		fun messageSourceFlow() =
 				integrationFlow(MessageProcessorMessageSource { "testSource" },
 						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					it.channel { c -> c.queue("fromSupplierQueue") }
+					channel { c -> c.queue("fromSupplierQueue") }
 				}
 
 		@Bean
 		fun messageSourceFlow2() =
 				integrationFlow(MessageProcessorMessageSource { "testSource2" }) {
-					it.channel { c -> c.queue("fromSupplierQueue2") }
+					channel { c -> c.queue("fromSupplierQueue2") }
 				}
 
 		@Bean
 		fun fixedSubscriberFlow() =
 				integrationFlow("fixedSubscriberInput", true) {
-					it.logAndReply(LoggingHandler.Level.WARN)
+					logAndReply(LoggingHandler.Level.WARN)
 				}
 
 		@Bean
 		fun flowFromSupplier() =
 				integrationFlow({ "testSupplier" }) {
-					it.channel { c -> c.queue("testSupplierResult") }
+					channel { c -> c.queue("testSupplierResult") }
 				}
 
 		@Bean
 		fun flowFromSupplier2() =
 				integrationFlow({ "testSupplier2" },
 						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					it
-							.filterReified<Message<Any>>({ m -> m.payload is String })
-							.channel { c -> c.queue("testSupplierResult2") }
+					filterReified<Message<Any>>({ m -> m.payload is String })
+					channel { c -> c.queue("testSupplierResult2") }
+				}
+
+		@Bean
+		fun flowLambda() =
+				integrationFlow {
+					filter<String> { it === "test" }
+					wireTap(
+							integrationFlow {
+								channel { c -> c.queue("wireTapChannel") }
+							})
+					transform<String, String> { it.toUpperCase() }
 				}
 
 	}

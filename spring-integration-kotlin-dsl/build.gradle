@@ -66,7 +66,7 @@ dependencyManagement {
 compileKotlin {
     kotlinOptions {
         jvmTarget = '1.8'
-        freeCompilerArgs = ["-Xjsr305=strict"]
+        freeCompilerArgs = ['-Xjsr305=strict', '-Xuse-experimental=kotlin.Experimental']
         allWarningsAsErrors = true
     }
 }
@@ -188,7 +188,7 @@ task distZip(type: Zip, dependsOn: docsZip) {
         from project.javadocJar
     }
 
-    from(zipTree(docsZip.archivePath)) {
+    from(zipTree(docsZip.archiveFile)) {
         into "${baseDir}/docs"
     }
 }

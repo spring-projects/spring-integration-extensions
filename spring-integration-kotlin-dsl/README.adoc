@@ -23,6 +23,27 @@ IntegrationFlow { flow ->
 
 In this case Kotlin understands that the lambda should be translated into `IntegrationFlow` anonymous instance and target Java DSL processor parses this construction properly into Java objects.
 
+As an alternative to the construction above and for consistency with use-cases explained below, this project suggest a Kotlin-specif DSL for declaring integration flows in the *builder* pattern style:
+
+====
+[source, kotlin]
+----
+@Bean
+fun flowLambda() =
+    integrationFlow {
+        filter<String> { it === "test" }
+        wireTap(
+                integrationFlow {
+                    handle { m -> println(m.payload) }
+                })
+        transform<String, String> { it.toUpperCase() }
+    }
+----
+====
+
+Such a global `integrationFlow()` function expects a `@BuilderInference` for an `IntegrationFlowDefinition<*>` and produces a regular `IntegrationFlow` lambda implementation.
+See more overloaded `integrationFlow()` variants below.
+
 Many other scenarios require an `IntegrationFlow` to be started from source of data (e.g. `JdbcPollingChannelAdapter`, `JmsInboundGateway` or just an existing `MessageChannel`).
 For this purpose Spring Integration Java DSL provides an `IntegrationFlows` factory with its bunch of overloaded `from()` methods.
 This factory can be used in Kotlin as well:
@@ -50,14 +71,14 @@ For example:
 @Bean
 fun functionFlow() =
         integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
-            it.transform<String, String> { it.toUpperCase() }
+            transform<String, String> { it.toUpperCase() }
         }
 
 @Bean
 fun messageSourceFlow() =
         integrationFlow(MessageProcessorMessageSource { "testSource" },
                 { it.poller { it.fixedDelay(10).maxMessagesPerPoll(1) } }) {
-            it.channel { c -> c.queue("fromSupplierQueue") }
+            channel { c -> c.queue("fromSupplierQueue") }
         }
 ----
 ====
@@ -71,7 +92,7 @@ For example `IntegrationFlowDefinition<*>` requires a reifying for many methods 
 @Bean
 fun convertFlow() =
     integrationFlow("convertFlowInput") {
-        it.convert<TestPojo>()
+        convert<TestPojo>()
     }
 ----
 ====
