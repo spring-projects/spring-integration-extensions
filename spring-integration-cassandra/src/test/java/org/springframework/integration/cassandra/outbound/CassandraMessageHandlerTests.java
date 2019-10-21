@@ -25,10 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -52,7 +51,7 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -64,7 +63,7 @@ import reactor.test.StepVerifier;
  * @author Soby Chacko
  * @author Artem Bilan
  */
-@RunWith(SpringRunner.class)
+@SpringJUnitConfig
 @DirtiesContext
 public class CassandraMessageHandlerTests {
 
@@ -90,19 +89,19 @@ public class CassandraMessageHandlerTests {
 	@Autowired
 	public FluxMessageChannel resultChannel;
 
-	@BeforeClass
-	public static void startCassandra() throws Exception {
+	@BeforeAll
+	static void startCassandra() throws Exception {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
 		EmbeddedCassandraServerHelper.getSession();
 	}
 
-	@AfterClass
-	public static void cleanup() {
+	@AfterAll
+	static void cleanup() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 
 	@Test
-	public void testBasicCassandraInsert() {
+	void testBasicCassandraInsert() {
 		Book b1 = new Book();
 		b1.setIsbn("123456-1");
 		b1.setTitle("Spring Integration Cassandra");
@@ -122,7 +121,7 @@ public class CassandraMessageHandlerTests {
 	}
 
 	@Test
-	public void testCassandraBatchInsertAndSelectStatement() {
+	void testCassandraBatchInsertAndSelectStatement() {
 		List<Book> books = BookSampler.getBookList(5);
 
 		this.cassandraMessageHandler2.handleMessage(new GenericMessage<>(books));
@@ -145,7 +144,7 @@ public class CassandraMessageHandlerTests {
 	}
 
 	@Test
-	public void testCassandraBatchIngest() {
+	void testCassandraBatchIngest() {
 		List<Book> books = BookSampler.getBookList(5);
 		List<List<?>> ingestBooks = new ArrayList<>();
 		for (Book b : books) {

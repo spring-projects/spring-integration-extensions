@@ -25,10 +25,9 @@ import java.util.List;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -41,7 +40,7 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -52,11 +51,11 @@ import reactor.test.StepVerifier;
  * @author Filippo Balicchia
  * @author Artem Bilan
  */
-@RunWith(SpringRunner.class)
+@SpringJUnitConfig
 @DirtiesContext
-public class CassandraOutboundAdapterIntegrationTests {
+class CassandraOutboundAdapterIntegrationTests {
 
-	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
+	private static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 
 	@Autowired
 	private CassandraTemplate cassandraTemplate;
@@ -79,19 +78,19 @@ public class CassandraOutboundAdapterIntegrationTests {
 	@Autowired
 	private FluxMessageChannel resultChannel;
 
-	@BeforeClass
-	public static void init() throws TTransportException, IOException, ConfigurationException {
+	@BeforeAll
+	static void init() throws TTransportException, IOException, ConfigurationException {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
 		EmbeddedCassandraServerHelper.getSession();
 	}
 
-	@AfterClass
-	public static void cleanup() {
+	@AfterAll
+	static void cleanup() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 
 	@Test
-	public void testBasicCassandraInsert() {
+	void testBasicCassandraInsert() {
 		Book b1 = BookSampler.getBook();
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
 		this.cassandraMessageHandler1.send(message);
@@ -102,7 +101,7 @@ public class CassandraOutboundAdapterIntegrationTests {
 	}
 
 	@Test
-	public void testCassandraBatchInsertAndSelectStatement() {
+	void testCassandraBatchInsertAndSelectStatement() {
 		List<Book> books = BookSampler.getBookList(5);
 		this.cassandraMessageHandler2.send(new GenericMessage<>(books));
 		Message<?> message = MessageBuilder.withPayload("Cassandra Puppy Guru").setHeader("limit", 2).build();
@@ -124,7 +123,7 @@ public class CassandraOutboundAdapterIntegrationTests {
 	}
 
 	@Test
-	public void testCassandraBatchIngest() {
+	void testCassandraBatchIngest() {
 		List<Book> books = BookSampler.getBookList(5);
 		List<List<?>> ingestBooks = new ArrayList<>();
 		for (Book b : books) {
@@ -148,7 +147,7 @@ public class CassandraOutboundAdapterIntegrationTests {
 	}
 
 	@Test
-	public void testExpressionTruncate() {
+	void testExpressionTruncate() {
 		Message<Book> message = MessageBuilder.withPayload(BookSampler.getBook()).build();
 		this.cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.select().all().from("book");

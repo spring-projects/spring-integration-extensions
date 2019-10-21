@@ -1,10 +1,3 @@
-buildscript {
-    repositories {
-        maven { url 'https://repo.spring.io/plugins-release' }
-    }
-}
-
-
 plugins {
     id 'java'
     id 'eclipse'
@@ -32,10 +25,11 @@ repositories {
 ext {
     assertjVersion = '3.13.2'
     cassandraUnitVersion = '3.11.2.0'
-    slf4jVersion = '1.7.28'
+    junitVersion = '5.5.2'
     reactorVersion = 'Dysprosium-RELEASE'
+    slf4jVersion = '1.7.28'
     springDataVersion = 'Moore-RELEASE'
-    springIntegrationVersion = '5.2.0.RELEASE'
+    springIntegrationVersion = '5.2.1.BUILD-SNAPSHOT'
 
     idPrefix = 'cassandra'
 
@@ -61,6 +55,7 @@ dependencyManagement {
         mavenBom "org.springframework.integration:spring-integration-bom:$springIntegrationVersion"
         mavenBom "org.springframework.data:spring-data-releasetrain:$springDataVersion"
         mavenBom "io.projectreactor:reactor-bom:$reactorVersion"
+        mavenBom "org.junit:junit-bom:$junitVersion"
     }
 
 }
@@ -94,13 +89,20 @@ dependencies {
     compile 'org.springframework.integration:spring-integration-core'
     compile 'org.springframework.data:spring-data-cassandra'
 
-    testCompile 'org.springframework.integration:spring-integration-test'
+    testCompile ('org.springframework.integration:spring-integration-test') {
+        exclude group: 'junit'
+    }
 
     testCompile "org.assertj:assertj-core:$assertjVersion"
-    testCompile "org.cassandraunit:cassandra-unit-spring:$cassandraUnitVersion"
+    testCompile ("org.cassandraunit:cassandra-unit-spring:$cassandraUnitVersion") {
+        exclude group: 'junit'
+    }
     testCompile 'io.projectreactor:reactor-test'
+    testCompile 'org.junit.jupiter:junit-jupiter-api'
 
     testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntime 'org.junit.platform:junit-platform-launcher'
 }
 
 // enable all compiler warnings; individual projects may customize further
@@ -113,6 +115,7 @@ test {
         append = false
         destinationFile = file("$buildDir/jacoco.exec")
     }
+    useJUnitPlatform()
 }
 
 jacocoTestReport {
@@ -128,12 +131,12 @@ build.dependsOn jacocoTestReport
 
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc
 }
 
@@ -165,8 +168,8 @@ task api(type: Javadoc) {
 
 task schemaZip(type: Zip) {
     group = 'Distribution'
-    classifier = 'schema'
-    description = "Builds -${classifier} archive containing all " +
+    archiveClassifier = 'schema'
+    description = "Builds -${archiveClassifier} archive containing all " +
             "XSDs for deployment at static.springframework.org/schema."
 
     def Properties schemas = new Properties();
@@ -190,8 +193,8 @@ task schemaZip(type: Zip) {
 
 task docsZip(type: Zip) {
     group = 'Distribution'
-    classifier = 'docs'
-    description = "Builds -${classifier} archive containing api " +
+    archiveClassifier = 'docs'
+    description = "Builds -${archiveClassifier} archive containing api " +
             "for deployment at static.spring.io/spring-integration/docs."
 
     from('src/dist') {
@@ -205,8 +208,8 @@ task docsZip(type: Zip) {
 
 task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
     group = 'Distribution'
-    classifier = 'dist'
-    description = "Builds -${classifier} archive, containing all jars and docs, " +
+    archiveClassifier = 'dist'
+    description = "Builds -${archiveClassifier} archive, containing all jars and docs, " +
             "suitable for community download page."
 
     ext.baseDir = "${project.name}-${project.version}";
@@ -217,11 +220,11 @@ task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
         into "${baseDir}"
     }
 
-    from(zipTree(docsZip.archivePath)) {
+    from(zipTree(docsZip.archiveFile)) {
         into "${baseDir}/docs"
     }
 
-    from(zipTree(schemaZip.archivePath)) {
+    from(zipTree(schemaZip.archiveFile)) {
         into "${baseDir}/schema"
     }
 
@@ -236,11 +239,11 @@ task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
 // Not published by default; only for use when building from source.
 task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
     group = 'Distribution'
-    classifier = 'dist-with-deps'
-    description = "Builds -${classifier} archive, containing everything " +
-            "in the -${distZip.classifier} archive plus all dependencies."
+    archiveClassifier = 'dist-with-deps'
+    description = "Builds -${archiveClassifier} archive, containing everything " +
+            "in the -${distZip.archiveClassifier} archive plus all dependencies."
 
-    from zipTree(distZip.archivePath)
+    from zipTree(distZip.archiveFile)
 
     gradle.taskGraph.whenReady { taskGraph ->
         if (taskGraph.hasTask(":${zipTask.name}")) {
