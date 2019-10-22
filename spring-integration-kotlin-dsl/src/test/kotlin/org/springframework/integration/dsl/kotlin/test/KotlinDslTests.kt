@@ -33,11 +33,11 @@ import org.springframework.integration.core.MessagingTemplate
 import org.springframework.integration.dsl.Pollers
 import org.springframework.integration.dsl.context.IntegrationFlowContext
 import org.springframework.integration.dsl.kotlin.convert
-import org.springframework.integration.dsl.kotlin.filterReified
+import org.springframework.integration.dsl.kotlin.filter
 import org.springframework.integration.dsl.kotlin.integrationFlow
-import org.springframework.integration.dsl.kotlin.routeReified
+import org.springframework.integration.dsl.kotlin.route
 import org.springframework.integration.dsl.kotlin.split
-import org.springframework.integration.dsl.kotlin.transformReified
+import org.springframework.integration.dsl.kotlin.transform
 import org.springframework.integration.endpoint.MessageProcessorMessageSource
 import org.springframework.integration.handler.LoggingHandler
 import org.springframework.integration.scheduling.PollerMetadata
@@ -164,7 +164,7 @@ class KotlinDslTests {
 
 		val integrationFlow =
 				integrationFlow(publisher) {
-					transformReified<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
+					transform<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
 					channel(fluxChannel)
 				}
 
@@ -211,15 +211,15 @@ class KotlinDslTests {
 		@Bean
 		fun functionFlow() =
 				integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
-					transform<String, String> { it.toUpperCase() }
+					transform<String, String>({ it.toUpperCase() })
 					split<String>({ p -> p })
 				}
 
 		@Bean
 		fun functionFlow2() =
 				integrationFlow<Function<*, *>> {
-					transform<String, String> { it.toLowerCase() }
-					routeReified<Message<*>, Any?>({ m -> m.headers.replyChannel }) { it.id("router") }
+					transform<String, String>({ it.toLowerCase() })
+					route<Message<*>, Any?>({ m -> m.headers.replyChannel }) { it.id("router") }
 				}
 
 		@Bean
@@ -251,19 +251,19 @@ class KotlinDslTests {
 		fun flowFromSupplier2() =
 				integrationFlow({ "testSupplier2" },
 						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					filterReified<Message<Any>>({ m -> m.payload is String })
+					filter<Message<Any>>({ m -> m.payload is String })
 					channel { c -> c.queue("testSupplierResult2") }
 				}
 
 		@Bean
 		fun flowLambda() =
 				integrationFlow {
-					filter<String> { it === "test" }
+					filter<String>({ it === "test" })
 					wireTap(
 							integrationFlow {
 								channel { c -> c.queue("wireTapChannel") }
 							})
-					transform<String, String> { it.toUpperCase() }
+					transform<String, String>({ it.toUpperCase() })
 				}
 
 	}

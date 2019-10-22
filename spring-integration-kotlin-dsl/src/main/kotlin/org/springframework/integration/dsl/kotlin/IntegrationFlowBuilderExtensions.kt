@@ -16,67 +16,65 @@
 
 package org.springframework.integration.dsl.kotlin
 
+import org.springframework.integration.dsl.BaseIntegrationFlowDefinition
 import org.springframework.integration.dsl.FilterEndpointSpec
 import org.springframework.integration.dsl.GenericEndpointSpec
-import org.springframework.integration.dsl.IntegrationFlowDefinition
 import org.springframework.integration.dsl.RouterSpec
 import org.springframework.integration.dsl.SplitterEndpointSpec
-import org.springframework.integration.handler.ServiceActivatingHandler
 import org.springframework.integration.router.MethodInvokingRouter
 import org.springframework.integration.splitter.MethodInvokingSplitter
 import org.springframework.integration.transformer.MessageTransformingHandler
-import org.springframework.messaging.MessageHeaders
 
 /**
- * Extension for [IntegrationFlowDefinition.convert] providing a `convert<MyType>()` variant.
+ * Extension for [BaseIntegrationFlowDefinition.convert] providing a `convert<MyType>()` variant.
  *
  * @author Artem Bilan
  */
-inline fun <reified T> IntegrationFlowDefinition<*>.convert(
+inline fun <reified T> BaseIntegrationFlowDefinition<*>.convert(
 		crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit = {}):
-		IntegrationFlowDefinition<*> =
+		BaseIntegrationFlowDefinition<*> =
 		convert(T::class.java) { configurer(it) }
 
 /**
- * Extension for [IntegrationFlowDefinition.transform] providing a `transform<MyTypeIn, MyTypeOut>()` variant.
+ * Extension for [BaseIntegrationFlowDefinition.transform] providing a `transform<MyTypeIn, MyTypeOut>()` variant.
  *
  * @author Artem Bilan
  */
-inline fun <reified P, T> IntegrationFlowDefinition<*>.transformReified(
+inline fun <reified P, T> BaseIntegrationFlowDefinition<*>.transform(
 		crossinline function: (P) -> T,
 		crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit = {}):
-		IntegrationFlowDefinition<*> =
+		BaseIntegrationFlowDefinition<*> =
 		transform(P::class.java, { function(it) }) { configurer(it) }
 
 /**
- * Extension for [IntegrationFlowDefinition.split] providing a `split<MyTypeIn>()` variant.
+ * Extension for [BaseIntegrationFlowDefinition.split] providing a `split<MyTypeIn>()` variant.
  *
  * @author Artem Bilan
  */
-inline fun <reified P> IntegrationFlowDefinition<*>.split(
+inline fun <reified P> BaseIntegrationFlowDefinition<*>.split(
 		crossinline function: (P) -> Any,
 		crossinline configurer: (SplitterEndpointSpec<MethodInvokingSplitter>) -> Unit = {}):
-		IntegrationFlowDefinition<*> =
+		BaseIntegrationFlowDefinition<*> =
 		split(P::class.java, { function(it) }) { configurer(it) }
 
 /**
- * Extension for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant.
+ * Extension for [BaseIntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant.
  *
  * @author Artem Bilan
  */
-inline fun <reified P> IntegrationFlowDefinition<*>.filterReified(
+inline fun <reified P> BaseIntegrationFlowDefinition<*>.filter(
 		crossinline function: (P) -> Boolean,
 		crossinline configurer: (FilterEndpointSpec) -> Unit = {}):
-		IntegrationFlowDefinition<*> =
+		BaseIntegrationFlowDefinition<*> =
 		filter(P::class.java, { function(it) }) { configurer(it) }
 
 /**
- * Extension for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant.
+ * Extension for [BaseIntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant.
  *
  * @author Artem Bilan
  */
-inline fun <reified P, T> IntegrationFlowDefinition<*>.routeReified(
+inline fun <reified P, T> BaseIntegrationFlowDefinition<*>.route(
 		crossinline function: (P) -> T,
 		crossinline configurer: (RouterSpec<T, MethodInvokingRouter>) -> Unit = {}):
-		IntegrationFlowDefinition<*> =
+		BaseIntegrationFlowDefinition<*> =
 		route(P::class.java, { function(it) }) { configurer(it) }
