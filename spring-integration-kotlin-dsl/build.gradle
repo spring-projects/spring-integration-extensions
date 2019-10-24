@@ -127,6 +127,9 @@ task api(type: org.jetbrains.dokka.gradle.DokkaTask) {
         url = new URL("https://docs.spring.io/spring-integration/docs/$springIntegrationVersion/api/")
     }
     externalDocumentationLink {
+        url = new URL("https://docs.spring.io/spring-framework/docs/current/javadoc-api/")
+    }
+    externalDocumentationLink {
         url = new URL('https://projectreactor.io/docs/core/release/api/')
     }
     externalDocumentationLink {

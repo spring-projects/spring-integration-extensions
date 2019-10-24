@@ -16,20 +16,10 @@
 
 @file:UseExperimental(kotlin.experimental.ExperimentalTypeInference::class)
 
-package org.springframework.integration.dsl.kotlin
+package org.springframework.integration.dsl
 
 import org.reactivestreams.Publisher
 import org.springframework.integration.core.MessageSource
-import org.springframework.integration.dsl.BaseIntegrationFlowDefinition
-import org.springframework.integration.dsl.GatewayProxySpec
-import org.springframework.integration.dsl.IntegrationFlow
-import org.springframework.integration.dsl.IntegrationFlowBuilder
-import org.springframework.integration.dsl.IntegrationFlowDefinition
-import org.springframework.integration.dsl.IntegrationFlows
-import org.springframework.integration.dsl.MessageProducerSpec
-import org.springframework.integration.dsl.MessageSourceSpec
-import org.springframework.integration.dsl.MessagingGatewaySpec
-import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec
 import org.springframework.integration.endpoint.MessageProducerSupport
 import org.springframework.integration.gateway.MessagingGatewaySupport
 import org.springframework.messaging.Message
@@ -37,9 +27,9 @@ import org.springframework.messaging.MessageChannel
 import java.util.function.Consumer
 
 private fun buildIntegrationFlow(flowBuilder: IntegrationFlowBuilder,
-								 flow: (BaseIntegrationFlowDefinition<*>) -> Unit): IntegrationFlow {
+								 flow: (KotlinIntegrationFlowDefinition) -> Unit): IntegrationFlow {
 
-	flow.invoke(flowBuilder)
+	flow(KotlinIntegrationFlowDefinition(flowBuilder))
 	return flowBuilder.get()
 }
 
@@ -48,9 +38,9 @@ private fun buildIntegrationFlow(flowBuilder: IntegrationFlowBuilder,
  *
  * @author Artem Bilan
  */
-fun integrationFlow(@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+fun integrationFlow(@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		IntegrationFlow {
-			flow(it)
+			flow(KotlinIntegrationFlowDefinition(it))
 		}
 
 /**
@@ -60,10 +50,11 @@ fun integrationFlow(@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() 
  * @author Artem Bilan
  */
 inline fun <reified T> integrationFlow(crossinline gateway: (GatewayProxySpec) -> Unit = {},
-									   @BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit): IntegrationFlow {
+									   @BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit):
+		IntegrationFlow {
 
 	val flowBuilder = IntegrationFlows.from(T::class.java) { gateway(it) }
-	flow.invoke(flowBuilder)
+	flow(KotlinIntegrationFlowDefinition(flowBuilder))
 	return flowBuilder.get()
 }
 
@@ -74,7 +65,7 @@ inline fun <reified T> integrationFlow(crossinline gateway: (GatewayProxySpec) -
  * @author Artem Bilan
  */
 fun integrationFlow(channelName: String, fixedSubscriber: Boolean = false,
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(channelName, fixedSubscriber), flow)
 
 /**
@@ -83,7 +74,7 @@ fun integrationFlow(channelName: String, fixedSubscriber: Boolean = false,
  *
  * @author Artem Bilan
  */
-fun integrationFlow(channel: MessageChannel, @BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+fun integrationFlow(channel: MessageChannel, @BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(channel), flow)
 
 /**
@@ -94,7 +85,7 @@ fun integrationFlow(channel: MessageChannel, @BuilderInference flow: BaseIntegra
  */
 fun integrationFlow(messageSource: MessageSource<*>,
 					options: (SourcePollingChannelAdapterSpec) -> Unit = {},
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(messageSource, Consumer { options(it) }), flow)
 
 /**
@@ -105,7 +96,7 @@ fun integrationFlow(messageSource: MessageSource<*>,
  */
 fun integrationFlow(messageSource: MessageSourceSpec<*, out MessageSource<*>>,
 					options: (SourcePollingChannelAdapterSpec) -> Unit = {},
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(messageSource, options), flow)
 
 /**
@@ -116,7 +107,7 @@ fun integrationFlow(messageSource: MessageSourceSpec<*, out MessageSource<*>>,
  */
 fun integrationFlow(source: () -> Any,
 					options: (SourcePollingChannelAdapterSpec) -> Unit = {},
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(source, options), flow)
 
 /**
@@ -126,7 +117,7 @@ fun integrationFlow(source: () -> Any,
  * @author Artem Bilan
  */
 fun integrationFlow(publisher: Publisher<out Message<*>>,
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(publisher), flow)
 
 /**
@@ -136,7 +127,7 @@ fun integrationFlow(publisher: Publisher<out Message<*>>,
  * @author Artem Bilan
  */
 fun integrationFlow(gateway: MessagingGatewaySupport,
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(gateway), flow)
 
 /**
@@ -146,7 +137,7 @@ fun integrationFlow(gateway: MessagingGatewaySupport,
  * @author Artem Bilan
  */
 fun integrationFlow(gatewaySpec: MessagingGatewaySpec<*, *>,
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(gatewaySpec), flow)
 
 /**
@@ -156,7 +147,7 @@ fun integrationFlow(gatewaySpec: MessagingGatewaySpec<*, *>,
  * @author Artem Bilan
  */
 fun integrationFlow(producer: MessageProducerSupport,
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(producer), flow)
 
 /**
@@ -166,5 +157,5 @@ fun integrationFlow(producer: MessageProducerSupport,
  * @author Artem Bilan
  */
 fun integrationFlow(producerSpec: MessageProducerSpec<*, *>,
-					@BuilderInference flow: BaseIntegrationFlowDefinition<*>.() -> Unit) =
+					@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(producerSpec), flow)

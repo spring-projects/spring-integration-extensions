@@ -32,12 +32,7 @@ import org.springframework.integration.config.EnableIntegration
 import org.springframework.integration.core.MessagingTemplate
 import org.springframework.integration.dsl.Pollers
 import org.springframework.integration.dsl.context.IntegrationFlowContext
-import org.springframework.integration.dsl.kotlin.convert
-import org.springframework.integration.dsl.kotlin.filter
-import org.springframework.integration.dsl.kotlin.integrationFlow
-import org.springframework.integration.dsl.kotlin.route
-import org.springframework.integration.dsl.kotlin.split
-import org.springframework.integration.dsl.kotlin.transform
+import org.springframework.integration.dsl.integrationFlow
 import org.springframework.integration.endpoint.MessageProcessorMessageSource
 import org.springframework.integration.handler.LoggingHandler
 import org.springframework.integration.scheduling.PollerMetadata
