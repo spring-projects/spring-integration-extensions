@@ -6,7 +6,7 @@ NOTE: The project should be treated as experimental and API is a subject to chan
 
 The main goal we pursue here is to make Spring Integration development on Kotlin as smooth and straightforward as is it possible with interoperability with existing Java DSL and some Kotlin extensions or language-specific structures.
 
-To use classes and functions from this project, you need to add `import org.springframework.integration.dsl.kotlin.*` into your code.
+All you need to get started is just an import for `org.springframework.integration.dsl.integrationFlow` - an overloaded global function for Kotlin DSL.
 
 For `IntegrationFlow` definitions as lambdas we typically don't need anything else from Kotlin and just declare a bean like this:
 
@@ -31,17 +31,17 @@ As an alternative to the construction above and for consistency with use-cases e
 @Bean
 fun flowLambda() =
     integrationFlow {
-        filter<String> { it === "test" }
+        filter<String>({ it === "test" })
         wireTap(
                 integrationFlow {
                     handle { m -> println(m.payload) }
                 })
-        transform<String, String> { it.toUpperCase() }
+        transform<String, String>({ it.toUpperCase() })
     }
 ----
 ====
 
-Such a global `integrationFlow()` function expects a `@BuilderInference` for an `IntegrationFlowDefinition<*>` and produces a regular `IntegrationFlow` lambda implementation.
+Such a global `integrationFlow()` function expects a `@BuilderInference` for a `KotlinIntegrationFlowDefinition` (a Kotlin extension for the `BaseIntegrationFlowDefinition` with some inline function for reified generic types) and produces a regular `IntegrationFlow` lambda implementation.
 See more overloaded `integrationFlow()` variants below.
 
 Many other scenarios require an `IntegrationFlow` to be started from source of data (e.g. `JdbcPollingChannelAdapter`, `JmsInboundGateway` or just an existing `MessageChannel`).
@@ -62,7 +62,7 @@ fun flowFromSupplier() =
 But unfortunately not all `from()` methods are compatible with Kotlin structures.
 To fix a gap, this project provides a Kotlin DSL around an `IntegrationFlows` factory.
 It is done as a set of overloaded `integrationFlow()` functions.
-With the consumer for an `IntegrationFlowDefinition<*>` to declare the rest of the flow as an `IntegrationFlow` lambda to reuse the mentioned above experience and also avoid `get()` call in the end.
+With a consumer for a `KotlinIntegrationFlowDefinition` to declare the rest of the flow as an `IntegrationFlow` lambda to reuse the mentioned above experience and also avoid `get()` call in the end.
 For example:
 
 ====
