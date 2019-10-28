@@ -31,7 +31,7 @@ ext {
     junitVersion = '5.5.2'
     log4jVersion = '2.12.1'
     reactorVersion = 'Dysprosium-RELEASE'
-    springIntegrationVersion = '5.2.0.RELEASE'
+    springIntegrationVersion = '5.2.1.BUILD-SNAPSHOT'
 
     idPrefix = 'kotlin-dsl'
 
@@ -125,6 +125,9 @@ task api(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputDirectory = "$buildDir/api"
     externalDocumentationLink {
         url = new URL("https://docs.spring.io/spring-integration/docs/$springIntegrationVersion/api/")
+    }
+    externalDocumentationLink {
+        url = new URL("https://docs.spring.io/spring-framework/docs/current/javadoc-api/")
     }
     externalDocumentationLink {
         url = new URL('https://projectreactor.io/docs/core/release/api/')
