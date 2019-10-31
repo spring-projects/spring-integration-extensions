@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
@@ -273,7 +274,8 @@ public class SmbSession implements Session<SmbFile> {
 			if (!dir.exists()) {
 				dir.mkdirs();
 				if (logger.isInfoEnabled()) {
-					logger.info("Successfully created remote directory [" + _path + "] in share [" + this.smbShare + "].");
+					logger.info("Successfully created remote directory [" + _path + "] in share [" + this.smbShare + "]" +
+							".");
 				}
 			}
 			else {
@@ -493,6 +495,12 @@ public class SmbSession implements Session<SmbFile> {
 	 */
 	public SmbFile createSmbDirectoryObject(String _path) throws IOException {
 		return createSmbFileObject(_path, true);
+	}
+
+	@Override
+	public String getHostPort() {
+		URL url = this.smbShare.getURL();
+		return url.getHost() + ":" + url.getPort();
 	}
 
 	@Override

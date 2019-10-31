@@ -59,4 +59,9 @@ public class SmbInboundFileSynchronizer extends AbstractInboundFileSynchronizer<
 		return file.getLastModified();
 	}
 
+	@Override
+	protected String protocol() {
+		return "smb";
+	}
+
 }
