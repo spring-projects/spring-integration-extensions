@@ -18,6 +18,7 @@ package org.springframework.integration.hazelcast.inbound;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,6 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.IMap;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Distributed SQL Inbound Channel Adapter Test
@@ -65,6 +67,11 @@ public class HazelcastDistributedSQLInboundChannelAdapterTests {
 
 	@Resource
 	private IMap<Integer, HazelcastIntegrationTestUser> dsDistributedMap4;
+
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Test
 	public void testDistributedSQLForOnlyENTRYIterationType() {

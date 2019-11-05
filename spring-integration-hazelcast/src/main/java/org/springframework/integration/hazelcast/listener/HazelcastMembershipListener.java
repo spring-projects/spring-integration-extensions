@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,23 +27,28 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MembershipAdapter;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MultiMap;
+import com.hazelcast.instance.EndpointQualifier;
 
 /**
  * Hazelcast {@link MembershipAdapter} in order to listen for membership updates in the cluster.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class HazelcastMembershipListener extends MembershipAdapter {
 
 	@Override
 	public void memberRemoved(MembershipEvent membershipEvent) {
-		SocketAddress removedMemberSocketAddress = membershipEvent.getMember().getSocketAddress();
+		SocketAddress removedMemberSocketAddress =
+				membershipEvent.getMember().getSocketAddress(EndpointQualifier.MEMBER);
 		Set<HazelcastInstance> hazelcastLocalInstanceSet = Hazelcast.getAllHazelcastInstances();
 		if (!hazelcastLocalInstanceSet.isEmpty()) {
 			HazelcastInstance hazelcastInstance = hazelcastLocalInstanceSet.iterator().next();
-			Lock lock = hazelcastInstance
-					.getLock(HazelcastLocalInstanceRegistrar.SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK);
+			Lock lock =
+					hazelcastInstance.getCPSubsystem()
+							.getLock(HazelcastLocalInstanceRegistrar.SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK);
 			lock.lock();
 			try {
 				MultiMap<SocketAddress, SocketAddress> configMultiMap = hazelcastInstance

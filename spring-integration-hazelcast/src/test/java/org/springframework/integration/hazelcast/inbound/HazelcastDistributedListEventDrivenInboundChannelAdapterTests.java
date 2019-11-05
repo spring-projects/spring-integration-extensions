@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,6 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.EntryEventType;
 import com.hazelcast.core.IList;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Distributed List Event Driven Inbound Channel Adapter Test Class
@@ -65,6 +67,11 @@ public class HazelcastDistributedListEventDrivenInboundChannelAdapterTests {
 
 	@Resource
 	private IList<HazelcastIntegrationTestUser> edDistributedList3;
+
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {

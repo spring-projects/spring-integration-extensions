@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
 import com.hazelcast.core.MultiMap;
+import com.hazelcast.instance.EndpointQualifier;
 
 /**
  * Hazelcast Base Event-Driven Message Producer.
@@ -118,10 +119,9 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 			final Set<HazelcastInstance> hazelcastInstanceSet = Hazelcast.getAllHazelcastInstances();
 			final Set<SocketAddress> localSocketAddressesSet = getLocalSocketAddresses(hazelcastInstanceSet);
 			return localSocketAddressesSet.isEmpty() ||
-					(!localSocketAddressesSet.isEmpty()
-							&& (localSocketAddressesSet.contains(socketAddress) ||
-							isEventComingFromNonRegisteredHazelcastInstance(hazelcastInstanceSet.iterator().next(),
-									localSocketAddressesSet, socketAddress)));
+					localSocketAddressesSet.contains(socketAddress)
+					|| isEventComingFromNonRegisteredHazelcastInstance(hazelcastInstanceSet.iterator().next(),
+					localSocketAddressesSet, socketAddress);
 
 		}
 
@@ -193,19 +193,20 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 				if (AbstractHazelcastMessageProducer.this.logger.isDebugEnabled()) {
 					AbstractHazelcastMessageProducer.this.logger.debug("Received Event : " + event);
 				}
-				sendMessage(event, event.getMember().getSocketAddress(), getCacheListeningPolicy());
+				sendMessage(event,
+						event.getMember().getSocketAddress(EndpointQualifier.MEMBER), getCacheListeningPolicy());
 			}
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
 		protected Message<?> toMessage(AbstractIMapEvent event) {
-			final Map<String, Object> headers = new HashMap<String, Object>();
+			final Map<String, Object> headers = new HashMap<>();
 			headers.put(HazelcastHeaders.EVENT_TYPE, event.getEventType().name());
-			headers.put(HazelcastHeaders.MEMBER, event.getMember().getSocketAddress());
+			headers.put(HazelcastHeaders.MEMBER, event.getMember().getSocketAddress(EndpointQualifier.MEMBER));
 			headers.put(HazelcastHeaders.CACHE_NAME, event.getName());
 
 			if (event instanceof EntryEvent) {
+				@SuppressWarnings("unchecked")
 				EntryEvent<K, V> entryEvent = (EntryEvent<K, V>) event;
 				EntryEventMessagePayload<K, V> messagePayload = new EntryEventMessagePayload<>(entryEvent.getKey(),
 						entryEvent.getValue(), entryEvent.getOldValue());

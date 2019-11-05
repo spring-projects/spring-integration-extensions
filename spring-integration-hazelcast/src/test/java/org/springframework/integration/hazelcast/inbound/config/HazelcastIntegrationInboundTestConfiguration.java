@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.integration.hazelcast.inbound.config;
 
+import javax.annotation.PreDestroy;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.InboundChannelAdapter;
@@ -31,6 +33,7 @@ import org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQL
 import org.springframework.integration.hazelcast.inbound.HazelcastEventDrivenMessageProducer;
 import org.springframework.messaging.PollableChannel;
 
+import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
@@ -40,16 +43,22 @@ import com.hazelcast.core.ISet;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Configuration Class for Hazelcast Integration Inbound Test
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @author Artem Bilan
  */
 @Configuration
 @EnableIntegration
 public class HazelcastIntegrationInboundTestConfiguration {
+
+	@PreDestroy
+	public void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Bean
 	public PollableChannel distributedMapChannel() {
@@ -212,8 +221,26 @@ public class HazelcastIntegrationInboundTestConfiguration {
 	}
 
 	@Bean
+	public Config hazelcastConfig() {
+		Config config = new Config();
+		config.getCPSubsystemConfig().setCPMemberCount(3)
+				.setSessionHeartbeatIntervalSeconds(1);
+		return config;
+	}
+
+	@Bean(destroyMethod = "")
 	public HazelcastInstance testHazelcastInstance() {
-		return Hazelcast.newHazelcastInstance();
+		return Hazelcast.newHazelcastInstance(hazelcastConfig());
+	}
+
+	@Bean(destroyMethod = "")
+	public HazelcastInstance testHazelcastInstance2() {
+		return Hazelcast.newHazelcastInstance(hazelcastConfig());
+	}
+
+	@Bean(destroyMethod = "")
+	public HazelcastInstance testHazelcastInstance3() {
+		return Hazelcast.newHazelcastInstance(hazelcastConfig());
 	}
 
 	@Bean(HazelcastLocalInstanceRegistrar.BEAN_NAME)
@@ -367,7 +394,7 @@ public class HazelcastIntegrationInboundTestConfiguration {
 		final HazelcastDistributedSQLMessageSource messageSource =
 				new HazelcastDistributedSQLMessageSource(testDSDistributedMap3(),
 						"age > 5");
-		messageSource.setIterationType(DistributedSQLIterationType.LOCAL_KEY);
+		messageSource.setIterationType(DistributedSQLIterationType.KEY);
 		return messageSource;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,24 +55,24 @@ public class HazelcastMessageStoreTests {
 	private static IMap<Object, Object> map;
 
 	@BeforeClass
-	public static void init() throws Exception {
+	public static void init() {
 		instance = Hazelcast.newHazelcastInstance();
 		map = instance.getMap("customTestsMessageStore");
 		store = new HazelcastMessageStore(map);
 	}
 
 	@AfterClass
-	public static void destroy() throws Exception {
-		instance.shutdown();
+	public static void destroy() {
+		instance.getLifecycleService().terminate();
 	}
 
 	@Before
-	public void clean() throws Exception {
+	public void clean() {
 		map.clear();
 	}
 
 	@Test
-	public void testWithMessageHistory() throws Exception {
+	public void testWithMessageHistory() {
 
 		Message<?> message = new GenericMessage<>("Hello");
 		DirectChannel fooChannel = new DirectChannel();
@@ -94,7 +94,7 @@ public class HazelcastMessageStoreTests {
 	}
 
 	@Test
-	public void testAddAndRemoveMessagesFromMessageGroup() throws Exception {
+	public void testAddAndRemoveMessagesFromMessageGroup() {
 		String groupId = "X";
 		List<Message<?>> messages = new ArrayList<>();
 		for (int i = 0; i < 25; i++) {
@@ -110,7 +110,7 @@ public class HazelcastMessageStoreTests {
 	}
 
 	@Test
-	public void addAndGetMessage() throws Exception {
+	public void addAndGetMessage() {
 
 		Message<?> message = MessageBuilder.withPayload("test").build();
 		store.addMessage(message);
@@ -119,14 +119,14 @@ public class HazelcastMessageStoreTests {
 	}
 
 	@Test
-	public void customMap() throws Exception {
+	public void customMap() {
 		assertSame(map, TestUtils.getPropertyValue(store, "map"));
 		HazelcastMessageStore store2 = new HazelcastMessageStore(instance);
 		assertNotSame(map, TestUtils.getPropertyValue(store2, "map"));
 	}
 
 	@Test
-	public void messageStoreSize() throws Exception {
+	public void messageStoreSize() {
 		Message<?> message1 = MessageBuilder.withPayload("test").build();
 		Message<?> message2 = MessageBuilder.withPayload("test").build();
 		store.addMessage(message1);

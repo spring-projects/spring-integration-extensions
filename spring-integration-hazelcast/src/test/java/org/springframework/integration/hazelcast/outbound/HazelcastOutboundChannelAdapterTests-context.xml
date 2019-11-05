@@ -10,6 +10,8 @@
     http://www.springframework.org/schema/integration/hazelcast
 	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
+	<import resource="classpath:org/springframework/integration/hazelcast/common-config.xml"/>
+
 	<int:channel id="firstMapChannel"/>
 
 	<int:channel id="secondMapChannel"/>
@@ -225,7 +227,7 @@
 		<constructor-arg value="distributedMap"/>
 	</bean>
 
-	<bean id="distributedBulkMap" factory-bean="instance" factory-method="getMap">
+	<bean id="distributedBulkMap" factory-bean="instance2" factory-method="getMap">
 		<constructor-arg value="distributedBulkMap"/>
 	</bean>
 
@@ -265,19 +267,14 @@
 		<constructor-arg value="bulkReplicatedMap"/>
 	</bean>
 
-	<bean id="topic" factory-bean="instance" factory-method="getTopic">
+	<bean id="topic" factory-bean="instance3" factory-method="getTopic">
 		<constructor-arg value="topic"/>
 	</bean>
 
-	<bean id="myLock" factory-bean="instance" factory-method="getLock">
-		<constructor-arg value="myLock"/>
-	</bean>
+	<bean id="cpSubsystem" factory-bean="instance" factory-method="getCPSubsystem"/>
 
-	<bean id="instance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-			<bean class="com.hazelcast.config.Config"/>
-		</constructor-arg>
+	<bean id="myLock" factory-bean="cpSubsystem" factory-method="getLock">
+		<constructor-arg value="myLock"/>
 	</bean>
 
 </beans>

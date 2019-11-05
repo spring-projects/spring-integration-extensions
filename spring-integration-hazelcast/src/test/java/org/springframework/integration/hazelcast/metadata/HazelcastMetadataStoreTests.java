@@ -52,8 +52,8 @@ public class HazelcastMetadataStoreTests {
 	}
 
 	@AfterClass
-	public static void destroy() throws Exception {
-		instance.shutdown();
+	public static void destroy() {
+		instance.getLifecycleService().terminate();
 	}
 
 	@Before

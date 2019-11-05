@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.springframework.integration.hazelcast.outbound.config;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+
+import javax.annotation.PreDestroy;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -41,11 +43,14 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Configuration Class for Hazelcast Integration Outbound Test
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 @Configuration
@@ -53,6 +58,11 @@ import com.hazelcast.core.ReplicatedMap;
 @EnableIntegration
 @IntegrationComponentScan("org.springframework.integration.hazelcast.outbound")
 public class HazelcastIntegrationOutboundTestConfiguration {
+
+	@PreDestroy
+	public void terminate() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Bean
 	public MessageChannel distMapChannel() {
@@ -134,7 +144,7 @@ public class HazelcastIntegrationOutboundTestConfiguration {
 		return testHzInstance().getReplicatedMap("Replicated_Map1");
 	}
 
-	@Bean
+	@Bean(destroyMethod = "")
 	public HazelcastInstance testHzInstance() {
 		return Hazelcast.newHazelcastInstance();
 	}

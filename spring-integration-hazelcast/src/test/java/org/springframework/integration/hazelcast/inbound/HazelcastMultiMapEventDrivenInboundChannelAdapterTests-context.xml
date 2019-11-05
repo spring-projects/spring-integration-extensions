@@ -10,6 +10,8 @@
     http://www.springframework.org/schema/integration/hazelcast
 	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
+	<import resource="classpath:org/springframework/integration/hazelcast/common-config.xml"/>
+
 	<int:channel id="edMultiMapChannel1">
 		<int:queue/>
 	</int:channel>
@@ -23,28 +25,20 @@
 	</int:channel>
 
 	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel1" cache="edMultiMap1"/>
-	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel2" cache="edMultiMap2" cache-events="REMOVED"
-										   cache-listening-policy="SINGLE"/>
+	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel2" cache="edMultiMap2" cache-events="REMOVED"/>
 	<int-hazelcast:inbound-channel-adapter channel="edMultiMapChannel3" cache="edMultiMap3"
 										   cache-events="ADDED,REMOVED,CLEAR_ALL"/>
 
-	<bean id="edMultiMap1" factory-bean="edMultiMapInstance" factory-method="getMultiMap">
+	<bean id="edMultiMap1" factory-bean="instance" factory-method="getMultiMap">
 		<constructor-arg value="edMultiMap1"/>
 	</bean>
 
-	<bean id="edMultiMap2" factory-bean="edMultiMapInstance" factory-method="getMultiMap">
+	<bean id="edMultiMap2" factory-bean="instance" factory-method="getMultiMap">
 		<constructor-arg value="edMultiMap2"/>
 	</bean>
 
-	<bean id="edMultiMap3" factory-bean="edMultiMapInstance" factory-method="getMultiMap">
+	<bean id="edMultiMap3" factory-bean="instance" factory-method="getMultiMap">
 		<constructor-arg value="edMultiMap3"/>
-	</bean>
-
-	<bean id="edMultiMapInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-			<bean class="com.hazelcast.config.Config"/>
-		</constructor-arg>
 	</bean>
 
 </beans>

@@ -56,7 +56,7 @@ import com.hazelcast.spi.exception.DistributedObjectDestroyedException;
 @SuppressWarnings("unchecked")
 public final class HazelcastInboundChannelAdapterTestUtils {
 
-	public static final int TIMEOUT = 20_000;
+	public static final int TIMEOUT = 30_000;
 
 	public static void verifyEntryEvent(Message<?> msg, String cacheName,
 			EntryEventType event) {
@@ -350,7 +350,7 @@ public final class HazelcastInboundChannelAdapterTestUtils {
 
 	public static void testMembershipEvent(final HazelcastInstance instance,
 			final PollableChannel channel, final String key, final String value) {
-		Member member = instance.getCluster().getMembers().iterator().next();
+		Member member = instance.getCluster().getLocalMember();
 		member.setStringAttribute(key, value);
 
 		Message<?> msg = channel.receive(TIMEOUT);

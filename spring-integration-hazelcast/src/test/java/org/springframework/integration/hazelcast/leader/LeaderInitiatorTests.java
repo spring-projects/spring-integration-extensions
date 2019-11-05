@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-
 package org.springframework.integration.hazelcast.leader;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willAnswer;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.spy;
 
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,8 +45,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Tests for hazelcast leader election.
@@ -72,6 +74,11 @@ public class LeaderInitiatorTests {
 
 	@Autowired
 	private LeaderInitiator initiator;
+
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Test
 	public void testLeaderElections() throws Exception {
@@ -174,7 +181,6 @@ public class LeaderInitiatorTests {
 		initiator1.destroy();
 
 
-
 		CountDownLatch onGranted = new CountDownLatch(1);
 
 		DefaultCandidate candidate = spy(new DefaultCandidate());
@@ -218,8 +224,26 @@ public class LeaderInitiatorTests {
 		}
 
 		@Bean
+		public Config hazelcastConfig() {
+			Config config = new Config();
+			config.getCPSubsystemConfig().setCPMemberCount(3)
+					.setSessionHeartbeatIntervalSeconds(1);
+			return config;
+		}
+
+		@Bean(destroyMethod = "")
 		public HazelcastInstance hazelcastInstance() {
-			return Hazelcast.newHazelcastInstance();
+			return Hazelcast.newHazelcastInstance(hazelcastConfig());
+		}
+
+		@Bean(destroyMethod = "")
+		public HazelcastInstance hazelcastInstance2() {
+			return Hazelcast.newHazelcastInstance(hazelcastConfig());
+		}
+
+		@Bean(destroyMethod = "")
+		public HazelcastInstance hazelcastInstance3() {
+			return Hazelcast.newHazelcastInstance(hazelcastConfig());
 		}
 
 		@Bean
@@ -250,7 +274,7 @@ public class LeaderInitiatorTests {
 
 		CountDownLatch onEventLatch = new CountDownLatch(1);
 
-		ArrayList<AbstractLeaderEvent> events = new ArrayList<AbstractLeaderEvent>();
+		ArrayList<AbstractLeaderEvent> events = new ArrayList<>();
 
 		@Override
 		public void onApplicationEvent(AbstractLeaderEvent event) {
@@ -280,6 +304,11 @@ public class LeaderInitiatorTests {
 		@Override
 		public void publishOnRevoked(Object source, Context context, String role) {
 			this.revoked.countDown();
+		}
+
+		@Override
+		public void publishOnFailedToAcquire(Object source, Context context, String role) {
+
 		}
 
 		@Override

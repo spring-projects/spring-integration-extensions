@@ -18,6 +18,7 @@ package org.springframework.integration.hazelcast.inbound;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +36,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.EntryEventType;
 import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Replicated Map Event Driven Inbound Channel Adapter Test
@@ -71,6 +73,11 @@ public class HazelcastReplicatedMapEventDrivenInboundChannelAdapterTests {
 
 	@Resource
 	private ReplicatedMap<Integer, HazelcastIntegrationTestUser> edReplicatedMap4;
+
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {

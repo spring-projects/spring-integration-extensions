@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,16 @@ public class HazelcastMessageStore extends AbstractKeyValueMessageStore {
 	@Override
 	protected void doStore(Object id, Object objectToStore) {
 		this.map.put(id, objectToStore);
+	}
+
+	@Override
+	protected void doStoreIfAbsent(Object id, Object objectToStore) {
+		this.map.putIfAbsent(id, objectToStore);
+	}
+
+	@Override
+	protected void doRemoveAll(Collection<Object> ids) {
+		this.map.removeAll((mapEntry) -> ids.contains(mapEntry.getKey()));
 	}
 
 	@Override

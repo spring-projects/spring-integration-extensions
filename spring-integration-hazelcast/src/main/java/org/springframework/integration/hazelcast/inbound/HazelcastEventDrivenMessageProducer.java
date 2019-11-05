@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.instance.EndpointQualifier;
 import com.hazelcast.map.listener.MapListener;
 
 /**
@@ -140,7 +141,8 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		@Override
 		protected void processEvent(ItemEvent<E> event) {
 			if (getCacheEvents().contains(event.getEventType().toString())) {
-				sendMessage(event, event.getMember().getSocketAddress(), getCacheListeningPolicy());
+				sendMessage(event,
+						event.getMember().getSocketAddress(EndpointQualifier.MEMBER), getCacheListeningPolicy());
 			}
 
 			if (logger.isDebugEnabled()) {
@@ -152,7 +154,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		protected org.springframework.messaging.Message<?> toMessage(ItemEvent<E> event) {
 			final Map<String, Object> headers = new HashMap<>();
 			headers.put(HazelcastHeaders.EVENT_TYPE, event.getEventType().name());
-			headers.put(HazelcastHeaders.MEMBER, event.getMember().getSocketAddress());
+			headers.put(HazelcastHeaders.MEMBER, event.getMember().getSocketAddress(EndpointQualifier.MEMBER));
 
 			return getMessageBuilderFactory().withPayload(event.getItem()).copyHeaders(headers).build();
 		}
@@ -169,7 +171,8 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 
 		@Override
 		protected void processEvent(Message<E> event) {
-			sendMessage(event, event.getPublishingMember().getSocketAddress(), getCacheListeningPolicy());
+			sendMessage(event,
+					event.getPublishingMember().getSocketAddress(EndpointQualifier.MEMBER), getCacheListeningPolicy());
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Received Message : " + event);
@@ -181,7 +184,8 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 			Assert.notNull(event.getMessageObject(), "message must not be null");
 
 			final Map<String, Object> headers = new HashMap<>();
-			headers.put(HazelcastHeaders.MEMBER, event.getPublishingMember().getSocketAddress());
+			headers.put(HazelcastHeaders.MEMBER,
+					event.getPublishingMember().getSocketAddress(EndpointQualifier.MEMBER));
 			headers.put(HazelcastHeaders.CACHE_NAME, event.getSource());
 			headers.put(HazelcastHeaders.PUBLISHING_TIME, event.getPublishTime());
 

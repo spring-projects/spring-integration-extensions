@@ -10,21 +10,16 @@
     http://www.springframework.org/schema/integration/hazelcast
 	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
+	<import resource="classpath:org/springframework/integration/hazelcast/common-config.xml"/>
+
 	<int:channel id="edTopicChannel1">
 		<int:queue/>
 	</int:channel>
 
 	<int-hazelcast:inbound-channel-adapter channel="edTopicChannel1" cache="edDistributedTopic1"/>
 
-	<bean id="edDistributedTopic1" factory-bean="edTopicInstance" factory-method="getTopic">
+	<bean id="edDistributedTopic1" factory-bean="instance" factory-method="getTopic">
 		<constructor-arg value="edDistributedTopic1"/>
-	</bean>
-
-	<bean id="edTopicInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-			<bean class="com.hazelcast.config.Config"/>
-		</constructor-arg>
 	</bean>
 
 </beans>
