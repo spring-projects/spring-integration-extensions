@@ -44,7 +44,7 @@ ext {
 
 	jcifsVersion = '2.1.11'
 	log4jVersion = '2.12.1'
-	springIntegrationVersion = '5.2.1.BUILD-SNAPSHOT'
+	springIntegrationVersion = '5.2.1.RELEASE'
 
 
 	linkHomepage = 'https://github.com/SpringSource/spring-integration-extensions'
