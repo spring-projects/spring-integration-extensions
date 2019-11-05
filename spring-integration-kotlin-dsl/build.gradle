@@ -197,6 +197,8 @@ task distZip(type: Zip, dependsOn: docsZip) {
 }
 
 artifacts {
+    archives sourcesJar
+    archives javadocJar
     archives distZip
     archives docsZip
 }
