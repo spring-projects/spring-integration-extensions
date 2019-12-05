@@ -206,15 +206,17 @@ class KotlinDslTests {
 		@Bean
 		fun functionFlow() =
 				integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
-					transform<String, String>({ it.toUpperCase() })
-					split<String>({ p -> p })
+					transform<String, String> { it.toUpperCase() }
+					split<String> { p -> p }
+					split<String>({ p -> p }) { it.id("splitterEndpoint") }
 				}
 
 		@Bean
 		fun functionFlow2() =
 				integrationFlow<Function<*, *>> {
-					transform<String, String>({ it.toLowerCase() })
-					route<Message<*>, Any?>({ m -> m.headers.replyChannel }) { it.id("router") }
+					transform<String, String> { it.toLowerCase() }
+					route<Message<*>, Any?>({ null }) { it.defaultOutputToParentFlow() }
+					route<Message<*>, Any?> { m -> m.headers.replyChannel }
 				}
 
 		@Bean
@@ -246,19 +248,19 @@ class KotlinDslTests {
 		fun flowFromSupplier2() =
 				integrationFlow({ "testSupplier2" },
 						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					filter<Message<Any>>({ m -> m.payload is String })
+					filter<Message<Any>> { m -> m.payload is String }
 					channel { c -> c.queue("testSupplierResult2") }
 				}
 
 		@Bean
 		fun flowLambda() =
 				integrationFlow {
-					filter<String>({ it === "test" })
+					filter<String>({ it === "test" }) { it.id("filterEndpoint") }
 					wireTap(
 							integrationFlow {
 								channel { c -> c.queue("wireTapChannel") }
 							})
-					transform<String, String>({ it.toUpperCase() })
+					transform<String, String> { it.toUpperCase() }
 				}
 
 	}

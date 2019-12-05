@@ -27,11 +27,11 @@ repositories {
 
 ext {
     assertkVersion = '0.20'
-    jacksonVersion = '2.10.0'
+    jacksonVersion = '2.10.1'
     junitVersion = '5.5.2'
     log4jVersion = '2.12.1'
-    reactorVersion = 'Dysprosium-RC1'
-    springIntegrationVersion = '5.2.1.RELEASE'
+    reactorVersion = 'Dysprosium-SR1'
+    springIntegrationVersion = '5.2.2.RELEASE'
 
     idPrefix = 'kotlin-dsl'
 
@@ -106,7 +106,6 @@ test {
     // suppress all console output during testing unless running `gradle -i`
     logging.captureStandardOutput(LogLevel.INFO)
     jacoco {
-        append = false
         destinationFile = file("$buildDir/jacoco.exec")
     }
     useJUnitPlatform()

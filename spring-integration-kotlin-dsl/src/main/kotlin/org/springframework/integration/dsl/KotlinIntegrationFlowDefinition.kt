@@ -119,9 +119,16 @@ class KotlinIntegrationFlowDefinition(private val adaptee: IntegrationFlowDefini
 	 * Inline function for [IntegrationFlowDefinition.transform] providing a `transform<MyTypeIn, MyTypeOut>()` variant
 	 * with reified generic type.
 	 */
+	inline fun <reified P, T> transform(crossinline function: (P) -> T): KotlinIntegrationFlowDefinition =
+			transform(P::class.java) { function(it) }
+
+	/**
+	 * Inline function for [IntegrationFlowDefinition.transform] providing a `transform<MyTypeIn, MyTypeOut>()` variant
+	 * with reified generic type.
+	 */
 	inline fun <reified P, T> transform(
 			crossinline function: (P) -> T,
-			crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit = {}):
+			crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit):
 			KotlinIntegrationFlowDefinition =
 			transform(P::class.java, { function(it) }) { configurer(it) }
 
@@ -129,9 +136,16 @@ class KotlinIntegrationFlowDefinition(private val adaptee: IntegrationFlowDefini
 	 * Inline function for [IntegrationFlowDefinition.split] providing a `split<MyTypeIn>()` variant
 	 * with reified generic type.
 	 */
+	inline fun <reified P> split(crossinline function: (P) -> Any): KotlinIntegrationFlowDefinition =
+			split(P::class.java) { function(it) }
+
+	/**
+	 * Inline function for [IntegrationFlowDefinition.split] providing a `split<MyTypeIn>()` variant
+	 * with reified generic type.
+	 */
 	inline fun <reified P> split(
 			crossinline function: (P) -> Any,
-			crossinline configurer: (SplitterEndpointSpec<MethodInvokingSplitter>) -> Unit = {}):
+			crossinline configurer: (SplitterEndpointSpec<MethodInvokingSplitter>) -> Unit):
 			KotlinIntegrationFlowDefinition =
 			split(P::class.java, { function(it) }) { configurer(it) }
 
@@ -139,10 +153,25 @@ class KotlinIntegrationFlowDefinition(private val adaptee: IntegrationFlowDefini
 	 * Inline function for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant
 	 * with reified generic type.
 	 */
+	inline fun <reified P> filter(crossinline function: (P) -> Boolean): KotlinIntegrationFlowDefinition =
+			filter(P::class.java) { function(it) }
+
+
+	/**
+	 * Inline function for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant
+	 * with reified generic type.
+	 */
 	inline fun <reified P> filter(
 			crossinline function: (P) -> Boolean,
-			crossinline configurer: (FilterEndpointSpec) -> Unit = {}): KotlinIntegrationFlowDefinition =
+			crossinline configurer: (FilterEndpointSpec) -> Unit): KotlinIntegrationFlowDefinition =
 			filter(P::class.java, { function(it) }) { configurer(it) }
+
+	/**
+	 * Inline function for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant
+	 * with reified generic type.
+	 */
+	inline fun <reified P, T> route(crossinline function: (P) -> T): KotlinIntegrationFlowDefinition =
+			route(P::class.java) { function(it) }
 
 	/**
 	 * Inline function for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant
@@ -150,7 +179,7 @@ class KotlinIntegrationFlowDefinition(private val adaptee: IntegrationFlowDefini
 	 */
 	inline fun <reified P, T> route(
 			crossinline function: (P) -> T,
-			crossinline configurer: (RouterSpec<T, MethodInvokingRouter>) -> Unit = {}):
+			crossinline configurer: (RouterSpec<T, MethodInvokingRouter>) -> Unit):
 			KotlinIntegrationFlowDefinition =
 			route(P::class.java, { function(it) }) { configurer(it) }
 

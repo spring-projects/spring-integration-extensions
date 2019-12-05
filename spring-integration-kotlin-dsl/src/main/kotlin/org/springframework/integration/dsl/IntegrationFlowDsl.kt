@@ -49,9 +49,9 @@ fun integrationFlow(@BuilderInference flow: KotlinIntegrationFlowDefinition.() -
  *
  * @author Artem Bilan
  */
-inline fun <reified T> integrationFlow(crossinline gateway: (GatewayProxySpec) -> Unit = {},
-									   @BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit):
-		IntegrationFlow {
+inline fun <reified T> integrationFlow(
+		crossinline gateway: (GatewayProxySpec) -> Unit = {},
+		@BuilderInference flow: KotlinIntegrationFlowDefinition.() -> Unit): IntegrationFlow {
 
 	val flowBuilder = IntegrationFlows.from(T::class.java) { gateway(it) }
 	flow(KotlinIntegrationFlowDefinition(flowBuilder))
