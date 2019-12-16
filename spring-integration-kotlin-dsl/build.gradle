@@ -66,7 +66,7 @@ dependencyManagement {
 compileKotlin {
     kotlinOptions {
         jvmTarget = '1.8'
-        freeCompilerArgs = ['-Xjsr305=strict', '-Xuse-experimental=kotlin.Experimental']
+        freeCompilerArgs = ['-Xjsr305=strict']
         allWarningsAsErrors = true
     }
 }

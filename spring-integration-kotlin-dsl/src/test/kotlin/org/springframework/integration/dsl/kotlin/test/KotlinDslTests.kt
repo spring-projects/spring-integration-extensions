@@ -207,8 +207,10 @@ class KotlinDslTests {
 		fun functionFlow() =
 				integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
 					transform<String, String> { it.toUpperCase() }
-					split<String> { p -> p }
-					split<String>({ p -> p }) { it.id("splitterEndpoint") }
+					split<Message<*>> { it.payload }
+					split<String>({ it }) { it.id("splitterEndpoint") }
+					resequence()
+					aggregate { it.id("aggregator").outputProcessor { it.one } }
 				}
 
 		@Bean
@@ -223,43 +225,44 @@ class KotlinDslTests {
 		fun messageSourceFlow() =
 				integrationFlow(MessageProcessorMessageSource { "testSource" },
 						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					channel { c -> c.queue("fromSupplierQueue") }
+					channel { it.queue("fromSupplierQueue") }
 				}
 
 		@Bean
 		fun messageSourceFlow2() =
 				integrationFlow(MessageProcessorMessageSource { "testSource2" }) {
-					channel { c -> c.queue("fromSupplierQueue2") }
+					channel { it.queue("fromSupplierQueue2") }
 				}
 
 		@Bean
 		fun fixedSubscriberFlow() =
 				integrationFlow("fixedSubscriberInput", true) {
-					logAndReply(LoggingHandler.Level.WARN)
+					log<Any>(LoggingHandler.Level.WARN) { it.payload }
+					transform("payload") { it.id("spelTransformer") }
 				}
 
 		@Bean
 		fun flowFromSupplier() =
 				integrationFlow({ "testSupplier" }) {
-					channel { c -> c.queue("testSupplierResult") }
+					channel { it.queue("testSupplierResult") }
 				}
 
 		@Bean
 		fun flowFromSupplier2() =
 				integrationFlow({ "testSupplier2" },
 						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					filter<Message<Any>> { m -> m.payload is String }
-					channel { c -> c.queue("testSupplierResult2") }
+					filter<Message<*>> { m -> m.payload is String }
+					channel { it.queue("testSupplierResult2") }
 				}
 
 		@Bean
 		fun flowLambda() =
 				integrationFlow {
 					filter<String>({ it === "test" }) { it.id("filterEndpoint") }
-					wireTap(
-							integrationFlow {
-								channel { c -> c.queue("wireTapChannel") }
-							})
+					wireTap {
+						channel { it.queue("wireTapChannel") }
+					}
+					delay("delayGroup") { it.defaultDelay(100) }
 					transform<String, String> { it.toUpperCase() }
 				}
 
