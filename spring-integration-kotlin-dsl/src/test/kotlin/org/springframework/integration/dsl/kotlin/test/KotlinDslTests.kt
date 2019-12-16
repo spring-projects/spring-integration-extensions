@@ -159,7 +159,7 @@ class KotlinDslTests {
 
 		val integrationFlow =
 				integrationFlow(publisher) {
-					transform<Message<Int>, Int>({ it.payload * 2 }) { it.id("foo") }
+					transform<Message<Int>>({ it.payload * 2 }) { it.id("foo") }
 					channel(fluxChannel)
 				}
 
@@ -206,7 +206,7 @@ class KotlinDslTests {
 		@Bean
 		fun functionFlow() =
 				integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
-					transform<String, String> { it.toUpperCase() }
+					transform<String> { it.toUpperCase() }
 					split<Message<*>> { it.payload }
 					split<String>({ it }) { it.id("splitterEndpoint") }
 					resequence()
@@ -216,9 +216,9 @@ class KotlinDslTests {
 		@Bean
 		fun functionFlow2() =
 				integrationFlow<Function<*, *>> {
-					transform<String, String> { it.toLowerCase() }
+					transform<String> { it.toLowerCase() }
 					route<Message<*>, Any?>({ null }) { it.defaultOutputToParentFlow() }
-					route<Message<*>, Any?> { m -> m.headers.replyChannel }
+					route<Message<*>> { m -> m.headers.replyChannel }
 				}
 
 		@Bean
@@ -263,7 +263,7 @@ class KotlinDslTests {
 						channel { it.queue("wireTapChannel") }
 					}
 					delay("delayGroup") { it.defaultDelay(100) }
-					transform<String, String> { it.toUpperCase() }
+					transform<String> { it.toUpperCase() }
 				}
 
 	}

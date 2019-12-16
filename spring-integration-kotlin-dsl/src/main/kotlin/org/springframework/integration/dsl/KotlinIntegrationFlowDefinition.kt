@@ -81,7 +81,7 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	 * Inline function for [IntegrationFlowDefinition.transform] providing a `transform<MyTypeIn, MyTypeOut>()` variant
 	 * with reified generic type.
 	 */
-	inline fun <reified P, T> transform(crossinline function: (P) -> T) {
+	inline fun <reified P> transform(crossinline function: (P) -> Any) {
 		this.delegate.transform(P::class.java) { function(it) }
 	}
 
@@ -89,8 +89,8 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	 * Inline function for [IntegrationFlowDefinition.transform] providing a `transform<MyTypeIn, MyTypeOut>()` variant
 	 * with reified generic type.
 	 */
-	inline fun <reified P, T> transform(
-			crossinline function: (P) -> T,
+	inline fun <reified P> transform(
+			crossinline function: (P) -> Any,
 			crossinline configurer: (GenericEndpointSpec<MessageTransformingHandler>) -> Unit) {
 
 		this.delegate.transform(P::class.java, { function(it) }) { configurer(it) }
@@ -140,8 +140,8 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	 * Inline function for [IntegrationFlowDefinition.filter] providing a `filter<MyTypeIn>()` variant
 	 * with reified generic type.
 	 */
-	inline fun <reified P, T> route(crossinline function: (P) -> T) {
-		this.delegate.route(P::class.java, Function<P, T> { function(it) })
+	inline fun <reified P> route(crossinline function: (P) -> Any?) {
+		this.delegate.route(P::class.java, Function<P, Any?> { function(it) })
 	}
 
 	/**
@@ -458,7 +458,7 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	 * [MessageHandler] implementation from `Namespace Factory`:
 	 * In addition accept options for the integration endpoint using [GenericEndpointSpec].
 	 */
-	fun <H : MessageHandler?> handle(messageHandlerSpec: MessageHandlerSpec<*, H>,
+	fun <H : MessageHandler> handle(messageHandlerSpec: MessageHandlerSpec<*, H>,
 									 endpointConfigurer: (GenericEndpointSpec<H>) -> Unit = {}) {
 
 		this.delegate.handle(messageHandlerSpec, endpointConfigurer)
@@ -469,7 +469,7 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	 * [MessageHandler] implementation.
 	 * In addition accept options for the integration endpoint using [GenericEndpointSpec].
 	 */
-	fun <H : MessageHandler?> handle(messageHandler: H, endpointConfigurer: (GenericEndpointSpec<H>) -> Unit = {}) {
+	fun <H : MessageHandler> handle(messageHandler: H, endpointConfigurer: (GenericEndpointSpec<H>) -> Unit = {}) {
 		this.delegate.handle(messageHandler, endpointConfigurer)
 	}
 
@@ -598,8 +598,7 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	}
 
 	/**
-	 * Populate the provided [AbstractMessageSplitter] to the current integration
-	 * flow position.
+	 * Populate the provided [AbstractMessageSplitter] to the current integration flow position.
 	 */
 	fun <S : AbstractMessageSplitter?> split(splitterMessageHandlerSpec: MessageHandlerSpec<*, S>,
 											 endpointConfigurer: (SplitterEndpointSpec<S>) -> Unit = {}) {
@@ -788,7 +787,6 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	 * provided `subflow` with options from [GatewayEndpointSpec].
 	 */
 	fun gateway(flow: KotlinIntegrationFlowDefinition.() -> Unit) {
-
 		this.delegate.gateway(IntegrationFlow { flow(KotlinIntegrationFlowDefinition(it)) })
 	}
 
@@ -922,7 +920,7 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 	}
 
 	/**
-	 * Populate a [WireTap] for thecurrent channel
+	 * Populate a [WireTap] for the current channel
 	 * with the [LoggingHandler] subscriber for the provided
 	 * [LoggingHandler.Level] logging level, logging category
 	 * and SpEL expression for the log message.
