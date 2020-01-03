@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-package org.springframework.integration.dsl
+package org.springframework.integration.dsl.kotlin
 
 import org.reactivestreams.Publisher
 import org.springframework.integration.core.MessageSource
+import org.springframework.integration.dsl.GatewayProxySpec
+import org.springframework.integration.dsl.IntegrationFlow
+import org.springframework.integration.dsl.IntegrationFlowBuilder
+import org.springframework.integration.dsl.IntegrationFlows
+import org.springframework.integration.dsl.MessageProducerSpec
+import org.springframework.integration.dsl.MessageSourceSpec
+import org.springframework.integration.dsl.MessagingGatewaySpec
+import org.springframework.integration.dsl.SourcePollingChannelAdapterSpec
 import org.springframework.integration.endpoint.MessageProducerSupport
 import org.springframework.integration.gateway.MessagingGatewaySupport
 import org.springframework.messaging.Message
@@ -48,7 +56,7 @@ fun integrationFlow(flow: KotlinIntegrationFlowDefinition.() -> Unit) =
  * @author Artem Bilan
  */
 inline fun <reified T> integrationFlow(
-		crossinline gateway: (GatewayProxySpec) -> Unit = {},
+		crossinline gateway: GatewayProxySpec.() -> Unit = {},
 		flow: KotlinIntegrationFlowDefinition.() -> Unit): IntegrationFlow {
 
 	val flowBuilder = IntegrationFlows.from(T::class.java) { gateway(it) }
@@ -82,7 +90,7 @@ fun integrationFlow(channel: MessageChannel, flow: KotlinIntegrationFlowDefiniti
  * @author Artem Bilan
  */
 fun integrationFlow(messageSource: MessageSource<*>,
-					options: (SourcePollingChannelAdapterSpec) -> Unit = {},
+					options: SourcePollingChannelAdapterSpec.() -> Unit = {},
 					flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(messageSource, Consumer { options(it) }), flow)
 
@@ -93,7 +101,7 @@ fun integrationFlow(messageSource: MessageSource<*>,
  * @author Artem Bilan
  */
 fun integrationFlow(messageSource: MessageSourceSpec<*, out MessageSource<*>>,
-					options: (SourcePollingChannelAdapterSpec) -> Unit = {},
+					options: SourcePollingChannelAdapterSpec.() -> Unit = {},
 					flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(messageSource, options), flow)
 
@@ -104,7 +112,7 @@ fun integrationFlow(messageSource: MessageSourceSpec<*, out MessageSource<*>>,
  * @author Artem Bilan
  */
 fun integrationFlow(source: () -> Any,
-					options: (SourcePollingChannelAdapterSpec) -> Unit = {},
+					options: SourcePollingChannelAdapterSpec.() -> Unit = {},
 					flow: KotlinIntegrationFlowDefinition.() -> Unit) =
 		buildIntegrationFlow(IntegrationFlows.from(source, options), flow)
 

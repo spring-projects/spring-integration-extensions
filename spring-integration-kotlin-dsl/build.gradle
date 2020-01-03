@@ -29,7 +29,7 @@ ext {
     assertkVersion = '0.20'
     jacksonVersion = '2.10.1'
     junitVersion = '5.5.2'
-    log4jVersion = '2.12.1'
+    log4jVersion = '2.13.0'
     reactorVersion = 'Dysprosium-SR1'
     springIntegrationVersion = '5.2.2.RELEASE'
 

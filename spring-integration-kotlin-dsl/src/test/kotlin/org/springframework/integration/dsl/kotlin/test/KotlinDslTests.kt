@@ -18,8 +18,10 @@ package org.springframework.integration.dsl.kotlin.test
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isGreaterThanOrEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
+import assertk.assertions.size
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,10 +31,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.integration.channel.FluxMessageChannel
 import org.springframework.integration.channel.QueueChannel
 import org.springframework.integration.config.EnableIntegration
+import org.springframework.integration.core.GenericSelector
 import org.springframework.integration.core.MessagingTemplate
 import org.springframework.integration.dsl.Pollers
 import org.springframework.integration.dsl.context.IntegrationFlowContext
-import org.springframework.integration.dsl.integrationFlow
+import org.springframework.integration.dsl.kotlin.integrationFlow
 import org.springframework.integration.endpoint.MessageProcessorMessageSource
 import org.springframework.integration.handler.LoggingHandler
 import org.springframework.integration.scheduling.PollerMetadata
@@ -159,7 +162,7 @@ class KotlinDslTests {
 
 		val integrationFlow =
 				integrationFlow(publisher) {
-					transform<Message<Int>>({ it.payload * 2 }) { it.id("foo") }
+					transform<Message<Int>>({ it.payload * 2 }) { id("foo") }
 					channel(fluxChannel)
 				}
 
@@ -188,6 +191,24 @@ class KotlinDslTests {
 		assertThat(this.wireTapChannel.receive(10_000)?.payload).isNotNull().isEqualTo("test")
 	}
 
+	@Autowired
+	@Qualifier("scatterGatherFlow.input")
+	private lateinit var scatterGatherFlowInput: MessageChannel
+
+	@Test
+	fun `Scatter-Gather`() {
+		val replyChannel = QueueChannel()
+		val request =
+				MessageBuilder.withPayload("foo")
+						.setReplyChannel(replyChannel)
+						.build()
+		this.scatterGatherFlowInput.send(request)
+		val bestQuoteMessage = replyChannel.receive(10000)
+		assertThat(bestQuoteMessage).isNotNull()
+		val payload = bestQuoteMessage!!.payload
+		assertThat(payload).isInstanceOf(List::class.java).size().isGreaterThanOrEqualTo(1)
+	}
+
 	@Configuration
 	@EnableIntegration
 	class Config {
@@ -200,72 +221,111 @@ class KotlinDslTests {
 		fun convertFlow() =
 				integrationFlow("convertFlowInput") {
 					convert<TestPojo>()
-					convert<TestPojo> { it.id("kotlinConverter") }
+					convert<TestPojo> { id("kotlinConverter") }
 				}
 
 		@Bean
 		fun functionFlow() =
-				integrationFlow<Function<String, String>>({ it.beanName("functionGateway") }) {
+				integrationFlow<Function<String, String>>({ beanName("functionGateway") }) {
 					transform<String> { it.toUpperCase() }
 					split<Message<*>> { it.payload }
-					split<String>({ it }) { it.id("splitterEndpoint") }
+					split<String>({ it }) { id("splitterEndpoint") }
 					resequence()
-					aggregate { it.id("aggregator").outputProcessor { it.one } }
+					aggregate { id("aggregator").outputProcessor { it.one } }
 				}
 
 		@Bean
 		fun functionFlow2() =
 				integrationFlow<Function<*, *>> {
 					transform<String> { it.toLowerCase() }
-					route<Message<*>, Any?>({ null }) { it.defaultOutputToParentFlow() }
+					route<Message<*>, Any?>({ null }) { defaultOutputToParentFlow() }
 					route<Message<*>> { m -> m.headers.replyChannel }
 				}
 
 		@Bean
 		fun messageSourceFlow() =
 				integrationFlow(MessageProcessorMessageSource { "testSource" },
-						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
-					channel { it.queue("fromSupplierQueue") }
+						{ poller { it.trigger(OnlyOnceTrigger()) } }) {
+					channel { queue("fromSupplierQueue") }
 				}
 
 		@Bean
 		fun messageSourceFlow2() =
 				integrationFlow(MessageProcessorMessageSource { "testSource2" }) {
-					channel { it.queue("fromSupplierQueue2") }
+					channel { queue("fromSupplierQueue2") }
 				}
 
 		@Bean
 		fun fixedSubscriberFlow() =
 				integrationFlow("fixedSubscriberInput", true) {
 					log<Any>(LoggingHandler.Level.WARN) { it.payload }
-					transform("payload") { it.id("spelTransformer") }
+					transform("payload") { id("spelTransformer") }
 				}
 
 		@Bean
 		fun flowFromSupplier() =
 				integrationFlow({ "testSupplier" }) {
-					channel { it.queue("testSupplierResult") }
+					channel { queue("testSupplierResult") }
 				}
 
 		@Bean
 		fun flowFromSupplier2() =
 				integrationFlow({ "testSupplier2" },
-						{ it.poller { it.trigger(OnlyOnceTrigger()) } }) {
+						{ poller { it.trigger(OnlyOnceTrigger()) } }) {
 					filter<Message<*>> { m -> m.payload is String }
-					channel { it.queue("testSupplierResult2") }
+					channel { queue("testSupplierResult2") }
 				}
 
 		@Bean
 		fun flowLambda() =
 				integrationFlow {
-					filter<String>({ it === "test" }) { it.id("filterEndpoint") }
+					filter<String>({ it === "test" }) { id("filterEndpoint") }
 					wireTap {
-						channel { it.queue("wireTapChannel") }
+						channel { queue("wireTapChannel") }
 					}
-					delay("delayGroup") { it.defaultDelay(100) }
+					delay("delayGroup") { defaultDelay(100) }
 					transform<String> { it.toUpperCase() }
 				}
 
+
+		/*
+		A Java variant for the flow below
+		@Bean
+		public IntegrationFlow scatterGatherFlow() {
+			return f -> f
+				.scatterGather(scatterer -> scatterer
+								.applySequence(true)
+								.recipientFlow(m -> true, sf -> sf.handle((p, h) -> Math.random() * 10))
+								.recipientFlow(m -> true, sf -> sf.handle((p, h) -> Math.random() * 10))
+								.recipientFlow(m -> true, sf -> sf.handle((p, h) -> Math.random() * 10)),
+							gatherer -> gatherer
+								.releaseStrategy(group ->
+											group.size() == 3 ||
+													group.getMessages()
+														.stream()
+														.anyMatch(m -> (Double) m.getPayload() > 5)),
+							scatterGather -> scatterGather
+								.gatherTimeout(10_000));
+		}*/
+		@Bean
+		fun scatterGatherFlow() =
+				integrationFlow {
+					scatterGather(
+							{
+								applySequence(true)
+								recipientFlow(GenericSelector<Any> { true }, integrationFlow { handle<Any> { _, _ -> Math.random() * 10 } })
+								recipientFlow(GenericSelector<Any> { true }, integrationFlow { handle<Any> { _, _ -> Math.random() * 10 } })
+								recipientFlow(GenericSelector<Any> { true }, integrationFlow { handle<Any> { _, _ -> Math.random() * 10 } })
+							},
+							{
+								releaseStrategy {
+									it.size() == 3 || it.messages.stream().anyMatch { it.payload as Double > 5 }
+								}
+							})
+					{
+						gatherTimeout(10_000)
+					}
+				}
 	}
 
 	data class TestPojo(val name: String?, val date: Date?)
