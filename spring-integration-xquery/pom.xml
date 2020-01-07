@@ -17,7 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.integration.version>4.3.21.RELEASE</spring.integration.version>
+		<spring.integration.version>5.2.2.RELEASE</spring.integration.version>
 		<junit.version>4.12</junit.version>
 	</properties>
 
