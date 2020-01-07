@@ -15,14 +15,10 @@
 		</license>
 	</licenses>
 
-	<prerequisites>
-		<maven>2.2.1</maven>
-	</prerequisites>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.integration.version>4.3.19.RELEASE</spring.integration.version>
-		<junit.version>4.10</junit.version>
+		<spring.integration.version>4.3.21.RELEASE</spring.integration.version>
+		<junit.version>4.12</junit.version>
 	</properties>
 
 	<build>
