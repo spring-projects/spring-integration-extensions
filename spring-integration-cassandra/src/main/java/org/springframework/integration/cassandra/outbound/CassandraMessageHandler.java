@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,14 @@ import org.springframework.integration.handler.MessageProcessor;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.internal.core.cql.SinglePageResultSet;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -124,8 +128,9 @@ public class CassandraMessageHandler extends AbstractReplyProducingMessageHandle
 		setStatementExpression(EXPRESSION_PARSER.parseExpression(statementExpression));
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setStatementExpression(Expression statementExpression) {
-		setStatementProcessor(
+		ExpressionEvaluatingMessageProcessor<?> expressionEvaluatingMessageProcessor =
 				new ExpressionEvaluatingMessageProcessor<Statement>(statementExpression, Statement.class) {
 
 					@Override
@@ -133,7 +138,8 @@ public class CassandraMessageHandler extends AbstractReplyProducingMessageHandle
 						return (StandardEvaluationContext) CassandraMessageHandler.this.evaluationContext;
 					}
 
-				});
+				};
+		setStatementProcessor((ExpressionEvaluatingMessageProcessor<Statement<?>>) expressionEvaluatingMessageProcessor);
 	}
 
 	public void setQuery(String query) {
@@ -154,7 +160,7 @@ public class CassandraMessageHandler extends AbstractReplyProducingMessageHandle
 		this.parameterExpressions.putAll(parameterExpressions);
 	}
 
-	public void setStatementProcessor(MessageProcessor<Statement> statementProcessor) {
+	public void setStatementProcessor(MessageProcessor<Statement<?>> statementProcessor) {
 		Assert.notNull(statementProcessor, "'statementProcessor' must not be null.");
 		this.sessionMessageCallback =
 				(session, requestMessage) ->
@@ -179,7 +185,7 @@ public class CassandraMessageHandler extends AbstractReplyProducingMessageHandle
 			/*
 			 * Register the Cassandra Query DSL package so they don't need a FQCN for QueryBuilder, for example.
 			 */
-			((StandardTypeLocator) typeLocator).registerImport("com.datastax.driver.core.querybuilder");
+			((StandardTypeLocator) typeLocator).registerImport(QueryBuilder.class.getPackage().getName());
 		}
 	}
 
@@ -237,12 +243,15 @@ public class CassandraMessageHandler extends AbstractReplyProducingMessageHandle
 			List<List<?>> rows = (List<List<?>>) payload;
 			return this.cassandraOperations.getReactiveCqlOperations()
 					.execute((ReactiveSessionCallback<WriteResult>) session ->
-							session.prepare(this.ingestQuery)
-									.map(s -> QueryOptionsUtil.addPreparedStatementOptions(s, this.writeOptions))
+							session.prepare(
+									QueryOptionsUtil.addQueryOptions(SimpleStatement.newInstance(this.ingestQuery),
+											this.writeOptions))
 									.flatMapMany(s ->
 											Flux.fromIterable(rows)
 													.map(row -> s.bind(row.toArray())))
-									.collect(BatchStatement::new, BatchStatement::add)
+									.collect(() -> new BatchStatementBuilder(BatchType.UNLOGGED),
+											BatchStatementBuilder::addStatement)
+									.map(BatchStatementBuilder::build)
 									.flatMap(session::execute)
 									.transform(this::transformToWriteResult))
 					.next();
@@ -285,7 +294,8 @@ public class CassandraMessageHandler extends AbstractReplyProducingMessageHandle
 		Object payload = requestMessage.getPayload();
 		Mono<ReactiveResultSet> resultSetMono;
 		if (payload instanceof Statement) {
-			resultSetMono = this.cassandraOperations.getReactiveCqlOperations().queryForResultSet((Statement) payload);
+			resultSetMono = this.cassandraOperations.getReactiveCqlOperations()
+					.queryForResultSet((Statement<?>) payload);
 		}
 		else {
 			resultSetMono = this.cassandraOperations.getReactiveCqlOperations()
@@ -301,7 +311,8 @@ public class CassandraMessageHandler extends AbstractReplyProducingMessageHandle
 		return resultSetMono
 				.map(DirectFieldAccessor::new)
 				.map(accessor -> accessor.getPropertyValue("resultSet"))
-				.cast(ResultSet.class)
+				.cast(AsyncResultSet.class)
+				.map(SinglePageResultSet::new)
 				.map(WriteResult::of);
 	}
 

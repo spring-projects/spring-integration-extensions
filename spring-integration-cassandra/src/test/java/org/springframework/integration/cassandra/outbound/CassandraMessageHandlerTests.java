@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,9 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -113,8 +113,8 @@ public class CassandraMessageHandlerTests {
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
 		this.cassandraMessageHandler1.handleMessage(message);
 
-		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = this.template.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		List<Book> books = this.template.select(select.build(), Book.class);
 		assertThat(books).hasSize(1);
 
 		this.template.delete(b1);
@@ -140,7 +140,7 @@ public class CassandraMessageHandlerTests {
 				.expectComplete()
 				.verify();
 
-		this.cassandraMessageHandler1.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book")));
+		this.cassandraMessageHandler1.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book").build()));
 	}
 
 	@Test
@@ -161,8 +161,8 @@ public class CassandraMessageHandlerTests {
 		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
 		this.cassandraMessageHandler3.handleMessage(message);
 
-		Select select = QueryBuilder.select().all().from("book");
-		books = this.template.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		books = this.template.select(select.build(), Book.class);
 		assertThat(books).hasSize(5);
 
 		this.template.batchOps().delete(books);
