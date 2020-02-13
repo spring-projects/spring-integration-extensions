@@ -18,6 +18,7 @@ package org.springframework.integration.cassandra.outbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -107,7 +108,7 @@ public class CassandraMessageHandlerTests {
 		b1.setTitle("Spring Integration Cassandra");
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
-		b1.setSaleDate(new Date());
+		b1.setSaleDate(LocalDate.now());
 		b1.setInStock(true);
 
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
