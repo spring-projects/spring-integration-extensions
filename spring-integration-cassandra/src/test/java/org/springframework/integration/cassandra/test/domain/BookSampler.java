@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package org.springframework.integration.cassandra.test.domain;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +36,7 @@ public final class BookSampler {
 			b.setAuthor("Cassandra Guru puppy");
 			b.setPages(i * 10 + 5);
 			b.setInStock(true);
-			b.setSaleDate(new Date());
+			b.setSaleDate(LocalDate.now());
 			books.add(b);
 		}
 		books.add(getBook());
@@ -49,7 +49,7 @@ public final class BookSampler {
 		b1.setTitle("Spring Integration Cassandra");
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
-		b1.setSaleDate(new Date());
+		b1.setSaleDate(LocalDate.now());
 		b1.setInStock(true);
 		return b1;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.springframework.integration.cassandra.outbound;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +28,8 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -53,9 +55,9 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -63,6 +65,7 @@ import reactor.test.StepVerifier;
  * @author Soby Chacko
  * @author Artem Bilan
  */
+@DisabledOnOs(OS.WINDOWS)
 @SpringJUnitConfig
 @DirtiesContext
 public class CassandraMessageHandlerTests {
@@ -107,14 +110,14 @@ public class CassandraMessageHandlerTests {
 		b1.setTitle("Spring Integration Cassandra");
 		b1.setAuthor("Cassandra Guru");
 		b1.setPages(521);
-		b1.setSaleDate(new Date());
+		b1.setSaleDate(LocalDate.now());
 		b1.setInStock(true);
 
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
 		this.cassandraMessageHandler1.handleMessage(message);
 
-		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = this.template.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		List<Book> books = this.template.select(select.build(), Book.class);
 		assertThat(books).hasSize(1);
 
 		this.template.delete(b1);
@@ -140,7 +143,7 @@ public class CassandraMessageHandlerTests {
 				.expectComplete()
 				.verify();
 
-		this.cassandraMessageHandler1.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book")));
+		this.cassandraMessageHandler1.handleMessage(new GenericMessage<>(QueryBuilder.truncate("book").build()));
 	}
 
 	@Test
@@ -161,8 +164,8 @@ public class CassandraMessageHandlerTests {
 		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
 		this.cassandraMessageHandler3.handleMessage(message);
 
-		Select select = QueryBuilder.select().all().from("book");
-		books = this.template.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		books = this.template.select(select.build(), Book.class);
 		assertThat(books).hasSize(5);
 
 		this.template.batchOps().delete(books);

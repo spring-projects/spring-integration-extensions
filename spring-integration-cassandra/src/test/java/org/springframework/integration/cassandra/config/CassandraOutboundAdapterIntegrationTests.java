@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -42,8 +43,8 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -51,6 +52,7 @@ import reactor.test.StepVerifier;
  * @author Filippo Balicchia
  * @author Artem Bilan
  */
+@DisabledOnOs(OS.WINDOWS)
 @SpringJUnitConfig
 @DirtiesContext
 class CassandraOutboundAdapterIntegrationTests {
@@ -79,7 +81,7 @@ class CassandraOutboundAdapterIntegrationTests {
 	private FluxMessageChannel resultChannel;
 
 	@BeforeAll
-	static void init() throws TTransportException, IOException, ConfigurationException {
+	static void init() throws IOException, ConfigurationException {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
 		EmbeddedCassandraServerHelper.getSession();
 	}
@@ -94,8 +96,8 @@ class CassandraOutboundAdapterIntegrationTests {
 		Book b1 = BookSampler.getBook();
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
 		this.cassandraMessageHandler1.send(message);
-		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = this.cassandraTemplate.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class);
 		assertThat(books).hasSize(1);
 		this.cassandraTemplate.delete(b1);
 	}
@@ -118,7 +120,7 @@ class CassandraOutboundAdapterIntegrationTests {
 				.expectComplete()
 				.verify();
 
-		this.cassandraMessageHandler1.send(new GenericMessage<>(QueryBuilder.truncate("book")));
+		this.cassandraMessageHandler1.send(new GenericMessage<>(QueryBuilder.truncate("book").build()));
 
 	}
 
@@ -140,8 +142,8 @@ class CassandraOutboundAdapterIntegrationTests {
 
 		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
 		this.cassandraMessageHandler3.send(message);
-		Select select = QueryBuilder.select().all().from("book");
-		books = this.cassandraTemplate.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		books = this.cassandraTemplate.select(select.build(), Book.class);
 		assertThat(books).hasSize(5);
 		this.cassandraTemplate.batchOps().delete(books);
 	}
@@ -150,11 +152,11 @@ class CassandraOutboundAdapterIntegrationTests {
 	void testExpressionTruncate() {
 		Message<Book> message = MessageBuilder.withPayload(BookSampler.getBook()).build();
 		this.cassandraMessageHandler1.send(message);
-		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = this.cassandraTemplate.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class);
 		assertThat(books).hasSize(1);
 		this.cassandraMessageHandler4.send(MessageBuilder.withPayload("Empty").build());
-		books = this.cassandraTemplate.select(select, Book.class);
+		books = this.cassandraTemplate.select(select.build(), Book.class);
 		assertThat(books).hasSize(0);
 	}
 

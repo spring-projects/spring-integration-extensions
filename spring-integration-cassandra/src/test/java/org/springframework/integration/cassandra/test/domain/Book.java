@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package org.springframework.integration.cassandra.test.domain;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Objects;
 
 import org.springframework.data.cassandra.core.mapping.Indexed;
@@ -43,7 +43,7 @@ public class Book {
 
 	private int pages;
 
-	private Date saleDate;
+	private LocalDate saleDate;
 
 	private boolean isInStock;
 
@@ -57,14 +57,14 @@ public class Book {
 	/**
 	 * @return Returns the saleDate.
 	 */
-	public Date getSaleDate() {
+	public LocalDate getSaleDate() {
 		return this.saleDate;
 	}
 
 	/**
 	 * @param saleDate The saleDate to set.
 	 */
-	public void setSaleDate(Date saleDate) {
+	public void setSaleDate(LocalDate saleDate) {
 		this.saleDate = saleDate;
 	}
 
