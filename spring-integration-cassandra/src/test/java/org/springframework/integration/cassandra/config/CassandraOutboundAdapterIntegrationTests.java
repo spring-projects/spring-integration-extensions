@@ -27,6 +27,8 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -50,6 +52,7 @@ import reactor.test.StepVerifier;
  * @author Filippo Balicchia
  * @author Artem Bilan
  */
+@DisabledOnOs(OS.WINDOWS)
 @SpringJUnitConfig
 @DirtiesContext
 class CassandraOutboundAdapterIntegrationTests {
