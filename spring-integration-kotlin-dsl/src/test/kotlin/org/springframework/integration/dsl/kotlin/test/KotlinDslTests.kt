@@ -222,6 +222,7 @@ class KotlinDslTests {
 				integrationFlow("convertFlowInput") {
 					convert<TestPojo>()
 					convert<TestPojo> { id("kotlinConverter") }
+					handle { m -> (m.headers[MessageHeaders.REPLY_CHANNEL] as MessageChannel).send(m) }
 				}
 
 		@Bean
@@ -231,7 +232,10 @@ class KotlinDslTests {
 					split<Message<*>> { it.payload }
 					split<String>({ it }) { id("splitterEndpoint") }
 					resequence()
-					aggregate { id("aggregator").outputProcessor { it.one } }
+					aggregate {
+						id("aggregator")
+						outputProcessor { it.one }
+					}
 				}
 
 		@Bean

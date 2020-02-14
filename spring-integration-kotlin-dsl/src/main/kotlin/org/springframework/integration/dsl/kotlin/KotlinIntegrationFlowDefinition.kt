@@ -487,6 +487,25 @@ class KotlinIntegrationFlowDefinition(@PublishedApi internal val delegate: Integ
 
 	/**
 	 * Populate a [ServiceActivatingHandler] for the provided
+	 * [MessageHandler] lambda.
+	 */
+	fun handle(messageHandler: (Message<*>) -> Unit) {
+		this.delegate.handle(MessageHandler { messageHandler(it) })
+	}
+
+	/**
+	 * Populate a [ServiceActivatingHandler] for the provided
+	 * [MessageHandler] lambda.
+	 * In addition accept options for the integration endpoint using [GenericEndpointSpec].
+	 */
+	fun handle(messageHandler: (Message<*>) -> Unit,
+			   endpointConfigurer: GenericEndpointSpec<MessageHandler>.() -> Unit) {
+
+		this.delegate.handle(MessageHandler { messageHandler(it) }, endpointConfigurer)
+	}
+
+	/**
+	 * Populate a [ServiceActivatingHandler] for the provided
 	 * [MessageHandler] implementation.
 	 * In addition accept options for the integration endpoint using [GenericEndpointSpec].
 	 */
