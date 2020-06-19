@@ -1,14 +1,13 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'eclipse'
     id 'idea'
     id 'jacoco'
     id 'org.sonarqube' version '2.8'
     id 'checkstyle'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'com.jfrog.artifactory' version '4.15.2'
 }
-
-apply from: "${rootProject.projectDir}/publish-maven.gradle"
 
 description = 'Spring Integration Cassandra Support'
 
@@ -23,13 +22,13 @@ repositories {
 }
 
 ext {
-    assertjVersion = '3.15.0'
+    assertjVersion = '3.16.1'
     cassandraUnitVersion = '4.3.1.0'
-    junitVersion = '5.6.0'
-    reactorVersion = 'Dysprosium-SR4'
+    junitVersion = '5.6.2'
+    reactorVersion = 'Dysprosium-SR7'
     slf4jVersion = '1.7.30'
-    springDataVersion = 'Neumann-BUILD-SNAPSHOT'
-    springIntegrationVersion = '5.3.0.BUILD-SNAPSHOT'
+    springDataVersion = 'Neumann-SR1'
+    springIntegrationVersion = '5.3.1.RELEASE'
 
     idPrefix = 'cassandra'
 
@@ -67,6 +66,11 @@ compileJava {
 
 eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 sourceSets {
     test {
         resources {
@@ -80,29 +84,31 @@ jacoco {
 }
 
 checkstyle {
-    configFile = file("${rootDir}/src/checkstyle/checkstyle.xml")
-    toolVersion = '8.29'
+    configDirectory.set(rootProject.file("src/checkstyle"))
+    toolVersion = '8.32'
 }
 
 
 dependencies {
-    compile 'org.springframework.integration:spring-integration-core'
-    compile 'org.springframework.data:spring-data-cassandra'
+    api 'org.springframework.integration:spring-integration-core'
+    api ('org.springframework.data:spring-data-cassandra') {
+        exclude group: 'org.codehaus.groovy'
+    }
 
-    testCompile ('org.springframework.integration:spring-integration-test') {
+    testImplementation ('org.springframework.integration:spring-integration-test') {
         exclude group: 'junit'
     }
 
-    testCompile "org.assertj:assertj-core:$assertjVersion"
-    testCompile ("org.cassandraunit:cassandra-unit-spring:$cassandraUnitVersion") {
+    testImplementation "org.assertj:assertj-core:$assertjVersion"
+    testImplementation ("org.cassandraunit:cassandra-unit-spring:$cassandraUnitVersion") {
         exclude group: 'junit'
     }
-    testCompile 'io.projectreactor:reactor-test'
-    testCompile 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
 
-    testRuntime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine'
-    testRuntime 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 // enable all compiler warnings; individual projects may customize further
@@ -121,23 +127,12 @@ jacocoTestReport {
     reports {
         xml.enabled false
         csv.enabled false
-        html.destination file("${buildDir}/reports/jacoco/html")
+        html.destination file("$buildDir/reports/jacoco/html")
     }
 }
 
 check.dependsOn javadoc
 build.dependsOn jacocoTestReport
-
-
-task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allJava
-}
-
-task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc
-}
 
 sonarqube {
     properties {
@@ -200,7 +195,7 @@ task docsZip(type: Zip) {
         include 'changelog.txt'
     }
 
-    from(api) {
+    from(javadoc) {
         into 'api'
     }
 }
@@ -263,15 +258,9 @@ task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
     }
 }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-    archives distZip
-    archives docsZip
-    archives schemaZip
-}
-
 task dist(dependsOn: assemble) {
     group = 'Distribution'
     description = 'Builds -dist, -docs and -schema distribution archives.'
 }
+
+apply from: "${rootProject.projectDir}/publish-maven.gradle"
