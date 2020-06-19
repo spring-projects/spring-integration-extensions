@@ -31,7 +31,7 @@ import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.core.WriteResult;
 import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.cassandra.test.domain.BookSampler;
@@ -60,7 +60,7 @@ class CassandraOutboundAdapterIntegrationTests {
 	private static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 
 	@Autowired
-	private CassandraTemplate cassandraTemplate;
+	private ReactiveCassandraTemplate cassandraTemplate;
 
 	@Autowired
 	private DirectChannel cassandraMessageHandler1;
@@ -97,7 +97,7 @@ class CassandraOutboundAdapterIntegrationTests {
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
 		this.cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.selectFrom("book").all();
-		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class);
+		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(1);
 		this.cassandraTemplate.delete(b1);
 	}
@@ -143,7 +143,7 @@ class CassandraOutboundAdapterIntegrationTests {
 		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
 		this.cassandraMessageHandler3.send(message);
 		Select select = QueryBuilder.selectFrom("book").all();
-		books = this.cassandraTemplate.select(select.build(), Book.class);
+		books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(5);
 		this.cassandraTemplate.batchOps().delete(books);
 	}
@@ -153,10 +153,10 @@ class CassandraOutboundAdapterIntegrationTests {
 		Message<Book> message = MessageBuilder.withPayload(BookSampler.getBook()).build();
 		this.cassandraMessageHandler1.send(message);
 		Select select = QueryBuilder.selectFrom("book").all();
-		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class);
+		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(1);
 		this.cassandraMessageHandler4.send(MessageBuilder.withPayload("Empty").build());
-		books = this.cassandraTemplate.select(select.build(), Book.class);
+		books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(0);
 	}
 
