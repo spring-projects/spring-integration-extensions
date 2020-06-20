@@ -143,11 +143,10 @@ public class SmbShare extends SmbFile {
 
 	/**
 	 * @deprecated use {@link #close()} instead.
-	 * Does not properly close open resources leading to possible memory leak
 	 */
 	@Deprecated
 	void doClose() {
-		this.open.set(false);
+		close();
 	}
 
 	@Override
