@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import jcifs.CIFSContext;
+import jcifs.CIFSException;
 import jcifs.config.PropertyConfiguration;
 import jcifs.context.BaseContext;
 import jcifs.context.SingletonContext;
@@ -48,6 +49,8 @@ public class SmbShare extends SmbFile {
 	private final AtomicBoolean replaceFile = new AtomicBoolean(false);
 
 	private final AtomicBoolean useTempFile = new AtomicBoolean(false);
+
+	private final AtomicBoolean closeContext = new AtomicBoolean(false);
 
 	/**
 	 * @deprecated as of release 1.1.0, use {@link #SmbShare(SmbConfig)} instead.
@@ -98,6 +101,8 @@ public class SmbShare extends SmbFile {
 					new PropertyConfiguration(_props)).withCredentials(
 						new NtlmPasswordAuthenticator(
 							_smbConfig.getDomain(), _smbConfig.getUsername(), _smbConfig.getPassword())));
+
+		this.closeContext.set(true);
 	}
 
 	public void init() throws NestedIOException {
@@ -142,11 +147,25 @@ public class SmbShare extends SmbFile {
 	}
 
 	/**
-	 * Set the open state to closed.
-	 * Note: jcifs.smb.SmbFile defines a package-protected method close().
+	 * @deprecated use {@link #close()} instead.
 	 */
+	@Deprecated
 	void doClose() {
+		close();
+	}
+
+	@Override
+	public synchronized void close() {
 		this.open.set(false);
+		if (this.closeContext.get()) {
+			try {
+				getContext().close();
+			}
+			catch (CIFSException e) {
+				logger.error("Unable to close share: " + this);
+			}
+		}
+		super.close();
 	}
 
 	public String newTempFileSuffix() {
