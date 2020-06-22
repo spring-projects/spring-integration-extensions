@@ -406,7 +406,7 @@ public class SmbSession implements Session<SmbFile> {
 
 	@Override
 	public void close() {
-		this.smbShare.close();
+		this.smbShare.doClose();
 	}
 
 	/**

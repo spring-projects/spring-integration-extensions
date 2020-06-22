@@ -142,17 +142,11 @@ public class SmbShare extends SmbFile {
 	}
 
 	/**
-	 * @deprecated use {@link #close()} instead.
+	 * Set the open state to closed.
+	 * Note: jcifs.smb.SmbFile defines a package-protected method close().
 	 */
-	@Deprecated
 	void doClose() {
-		close();
-	}
-
-	@Override
-	public void close() {
 		this.open.set(false);
-		super.close();
 	}
 
 	public String newTempFileSuffix() {
