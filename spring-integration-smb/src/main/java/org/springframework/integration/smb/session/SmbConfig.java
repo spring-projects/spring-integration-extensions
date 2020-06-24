@@ -54,13 +54,13 @@ public class SmbConfig {
 	private boolean useTempFile = false;
 
 	/**
-	 * Defaults to and follows the jCIFS library default of 'SMB1'
+	 * Defaults to and follows the jCIFS library default of 'SMB1'.
 	 * @since 1.2
 	 */
 	private DialectVersion smbMinVersion = DialectVersion.SMB1;
 
 	/**
-	 * Defaults to and follows the jCIFS library default of 'SMB210'
+	 * Defaults to and follows the jCIFS library default of 'SMB210'.
 	 * @since 1.2
 	 */
 	private DialectVersion smbMaxVersion = DialectVersion.SMB210;

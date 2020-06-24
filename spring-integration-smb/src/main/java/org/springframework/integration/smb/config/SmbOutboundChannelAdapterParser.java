@@ -21,6 +21,8 @@ import org.springframework.integration.file.remote.RemoteFileOperations;
 import org.springframework.integration.smb.session.SmbRemoteFileTemplate;
 
 /**
+ * The parser for {@code <Int-smb:outbound-channel-adapter>}.
+ *
  * @author Artem Bilan
  */
 public class SmbOutboundChannelAdapterParser extends RemoteFileOutboundChannelAdapterParser {
