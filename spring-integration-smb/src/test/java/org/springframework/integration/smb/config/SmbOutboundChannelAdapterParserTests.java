@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -60,7 +61,7 @@ public class SmbOutboundChannelAdapterParserTests extends AbstractBaseTests {
 		assertEquals(".working.tmp", TestUtils.getPropertyValue(messageHandler, "remoteFileTemplate.temporaryFileSuffix", String.class));
 		assertEquals(".", remoteFileSeparator);
 		assertEquals(ac.getBean("fileNameGenerator"), TestUtils.getPropertyValue(messageHandler, "remoteFileTemplate.fileNameGenerator"));
-		assertEquals("UTF-8", TestUtils.getPropertyValue(messageHandler, "remoteFileTemplate.charset"));
+		assertEquals("UTF-8", TestUtils.getPropertyValue(messageHandler, "remoteFileTemplate.charset", Charset.class).name());
 
 		Object sessionFactoryProp = TestUtils.getPropertyValue(messageHandler, "remoteFileTemplate.sessionFactory");
 		assertEquals(SmbSessionFactory.class, sessionFactoryProp.getClass());

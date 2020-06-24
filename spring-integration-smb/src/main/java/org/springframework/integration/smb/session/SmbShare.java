@@ -37,8 +37,11 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
 /**
+ * The {@link SmbFile} extension to  represent an SMB share directory.
+ *
  * @author Markus Spann
  * @author Gregory Bragg
+ * @author Adam Jones
  */
 public class SmbShare extends SmbFile {
 
@@ -51,16 +54,6 @@ public class SmbShare extends SmbFile {
 	private final AtomicBoolean useTempFile = new AtomicBoolean(false);
 
 	private final AtomicBoolean closeContext = new AtomicBoolean(false);
-
-	/**
-	 * @deprecated as of release 1.1.0, use {@link #SmbShare(SmbConfig)} instead.
-	 * @param url do not use
-	 * @throws IOException do not use
-	 */
-	@Deprecated
-	public SmbShare(String url) throws IOException {
-		super(StringUtils.cleanPath(url));
-	}
 
 	/**
 	 * Initializes the jCIFS library with default properties.
@@ -115,6 +108,14 @@ public class SmbShare extends SmbFile {
 			canRead = canRead();
 		}
 		catch (SmbException _ex) {
+			if (this.closeContext.get()) {
+				try {
+					getContext().close();
+				}
+				catch (CIFSException e) {
+					logger.error("Unable to close share: " + this);
+				}
+			}
 			throw new NestedIOException("Unable to initialize share: " + this, _ex);
 		}
 		Assert.isTrue(canRead, "Share is not accessible " + this);
@@ -144,14 +145,6 @@ public class SmbShare extends SmbFile {
 	 */
 	boolean isOpened() {
 		return this.open.get();
-	}
-
-	/**
-	 * @deprecated use {@link #close()} instead.
-	 */
-	@Deprecated
-	void doClose() {
-		close();
 	}
 
 	@Override
