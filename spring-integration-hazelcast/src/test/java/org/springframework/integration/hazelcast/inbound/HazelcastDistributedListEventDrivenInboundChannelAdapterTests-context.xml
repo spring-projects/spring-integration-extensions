@@ -10,6 +10,8 @@
     http://www.springframework.org/schema/integration/hazelcast
 	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
+	<import resource="classpath:org/springframework/integration/hazelcast/common-config.xml"/>
+
 	<int:channel id="edListChannel1">
 		<int:queue/>
 	</int:channel>
@@ -23,28 +25,22 @@
 	</int:channel>
 
 	<int-hazelcast:inbound-channel-adapter channel="edListChannel1" cache="edDistributedList1"/>
-	<int-hazelcast:inbound-channel-adapter channel="edListChannel2" cache="edDistributedList2" cache-events="REMOVED"
-										   cache-listening-policy="SINGLE"/>
+
+	<int-hazelcast:inbound-channel-adapter channel="edListChannel2" cache="edDistributedList2" cache-events="REMOVED"/>
+
 	<int-hazelcast:inbound-channel-adapter channel="edListChannel3" cache="edDistributedList3"
 										   cache-events="ADDED,REMOVED"/>
 
-	<bean id="edDistributedList1" factory-bean="edListInstance" factory-method="getList">
+	<bean id="edDistributedList1" factory-bean="instance" factory-method="getList">
 		<constructor-arg value="edDistributedList1"/>
 	</bean>
 
-	<bean id="edDistributedList2" factory-bean="edListInstance" factory-method="getList">
+	<bean id="edDistributedList2" factory-bean="instance" factory-method="getList">
 		<constructor-arg value="edDistributedList2"/>
 	</bean>
 
-	<bean id="edDistributedList3" factory-bean="edListInstance" factory-method="getList">
+	<bean id="edDistributedList3" factory-bean="instance" factory-method="getList">
 		<constructor-arg value="edDistributedList3"/>
-	</bean>
-
-	<bean id="edListInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-			<bean class="com.hazelcast.config.Config"/>
-		</constructor-arg>
 	</bean>
 
 </beans>

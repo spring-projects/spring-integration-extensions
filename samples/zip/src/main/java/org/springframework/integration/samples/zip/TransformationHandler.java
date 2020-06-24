@@ -58,13 +58,11 @@ public class TransformationHandler {
 			throw new IllegalStateException(e);
 		}
 
-		final Message<String> message = MessageBuilder.withPayload(inputAsString.toUpperCase(Locale.ENGLISH))
+		return MessageBuilder.withPayload(inputAsString.toUpperCase(Locale.ENGLISH))
 					.setHeader(FileHeaders.FILENAME,      filename)
 					.setHeader(FileHeaders.ORIGINAL_FILE, inputFile)
 					.setHeader("file_size", inputFile.length())
 					.setHeader("file_extension", fileExtension)
 					.build();
-
-		return message;
 	}
 }

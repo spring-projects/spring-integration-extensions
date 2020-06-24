@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,12 +59,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Outbound Channel Adapter Test Class.
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -247,6 +250,11 @@ public class HazelcastOutboundChannelAdapterTests {
 	@Qualifier("testTopicRequestHandlerAdvice")
 	private HazelcastTestRequestHandlerAdvice testTopicRequestHandlerAdvice;
 
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
+
 	@Before
 	public void setUp() {
 		this.distributedMap.clear();
@@ -263,7 +271,7 @@ public class HazelcastOutboundChannelAdapterTests {
 	}
 
 	@Test
-	public void testWriteToDistributedMap() throws InterruptedException {
+	public void testWriteToDistributedMap() {
 		HazelcastOutboundChannelAdapterTestUtils
 				.testWriteToDistributedMap(this.firstMapChannel, this.distributedMap,
 						this.testFirstMapRequestHandlerAdvice);
@@ -459,7 +467,7 @@ public class HazelcastOutboundChannelAdapterTests {
 			final Map<Integer, Message<HazelcastIntegrationTestUser>> map) {
 		int index = 1;
 		assertNotNull(map);
-		assertEquals(true, map.size() == HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
+		assertEquals(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT, map.size());
 		for (Entry<Integer, Message<HazelcastIntegrationTestUser>> entry : map.entrySet()) {
 			assertNotNull(entry);
 			assertEquals(index, entry.getKey().intValue());

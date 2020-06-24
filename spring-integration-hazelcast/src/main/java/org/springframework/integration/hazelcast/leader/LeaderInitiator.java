@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.springframework.integration.support.leader.LockRegistryLeaderInitiato
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ILock;
+import com.hazelcast.cp.lock.FencedLock;
 
 /**
  * Bootstrap leadership {@link org.springframework.integration.leader.Candidate candidates}
@@ -106,7 +106,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	/**
 	 * Hazelcast distributed lock.
 	 */
-	private volatile ILock lock;
+	private volatile FencedLock lock;
 
 	private boolean customPublisher = false;
 
@@ -210,7 +210,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	@Override
 	public synchronized void start() {
 		if (!this.running) {
-			this.lock = this.client.getLock(this.candidate.getRole());
+			this.lock = this.client.getCPSubsystem().getLock(this.candidate.getRole());
 			this.leaderSelector = new LeaderSelector();
 			this.running = true;
 			this.future = this.executorService.submit(this.leaderSelector);

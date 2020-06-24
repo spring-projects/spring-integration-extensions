@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.thrift.transport.TTransportException;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.core.WriteResult;
 import org.springframework.integration.cassandra.test.domain.Book;
 import org.springframework.integration.cassandra.test.domain.BookSampler;
@@ -41,10 +41,10 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -52,14 +52,15 @@ import reactor.test.StepVerifier;
  * @author Filippo Balicchia
  * @author Artem Bilan
  */
-@RunWith(SpringRunner.class)
+@DisabledOnOs(OS.WINDOWS)
+@SpringJUnitConfig
 @DirtiesContext
-public class CassandraOutboundAdapterIntegrationTests {
+class CassandraOutboundAdapterIntegrationTests {
 
-	protected static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
+	private static final String CASSANDRA_CONFIG = "spring-cassandra.yaml";
 
 	@Autowired
-	private CassandraTemplate cassandraTemplate;
+	private ReactiveCassandraTemplate cassandraTemplate;
 
 	@Autowired
 	private DirectChannel cassandraMessageHandler1;
@@ -79,30 +80,30 @@ public class CassandraOutboundAdapterIntegrationTests {
 	@Autowired
 	private FluxMessageChannel resultChannel;
 
-	@BeforeClass
-	public static void init() throws TTransportException, IOException, ConfigurationException {
+	@BeforeAll
+	static void init() throws IOException, ConfigurationException {
 		EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_CONFIG, "build/embeddedCassandra");
 		EmbeddedCassandraServerHelper.getSession();
 	}
 
-	@AfterClass
-	public static void cleanup() {
+	@AfterAll
+	static void cleanup() {
 		EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
 	}
 
 	@Test
-	public void testBasicCassandraInsert() {
+	void testBasicCassandraInsert() {
 		Book b1 = BookSampler.getBook();
 		Message<Book> message = MessageBuilder.withPayload(b1).build();
 		this.cassandraMessageHandler1.send(message);
-		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = this.cassandraTemplate.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(1);
 		this.cassandraTemplate.delete(b1);
 	}
 
 	@Test
-	public void testCassandraBatchInsertAndSelectStatement() {
+	void testCassandraBatchInsertAndSelectStatement() {
 		List<Book> books = BookSampler.getBookList(5);
 		this.cassandraMessageHandler2.send(new GenericMessage<>(books));
 		Message<?> message = MessageBuilder.withPayload("Cassandra Puppy Guru").setHeader("limit", 2).build();
@@ -119,12 +120,12 @@ public class CassandraOutboundAdapterIntegrationTests {
 				.expectComplete()
 				.verify();
 
-		this.cassandraMessageHandler1.send(new GenericMessage<>(QueryBuilder.truncate("book")));
+		this.cassandraMessageHandler1.send(new GenericMessage<>(QueryBuilder.truncate("book").build()));
 
 	}
 
 	@Test
-	public void testCassandraBatchIngest() {
+	void testCassandraBatchIngest() {
 		List<Book> books = BookSampler.getBookList(5);
 		List<List<?>> ingestBooks = new ArrayList<>();
 		for (Book b : books) {
@@ -141,21 +142,21 @@ public class CassandraOutboundAdapterIntegrationTests {
 
 		Message<List<List<?>>> message = MessageBuilder.withPayload(ingestBooks).build();
 		this.cassandraMessageHandler3.send(message);
-		Select select = QueryBuilder.select().all().from("book");
-		books = this.cassandraTemplate.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(5);
 		this.cassandraTemplate.batchOps().delete(books);
 	}
 
 	@Test
-	public void testExpressionTruncate() {
+	void testExpressionTruncate() {
 		Message<Book> message = MessageBuilder.withPayload(BookSampler.getBook()).build();
 		this.cassandraMessageHandler1.send(message);
-		Select select = QueryBuilder.select().all().from("book");
-		List<Book> books = this.cassandraTemplate.select(select, Book.class);
+		Select select = QueryBuilder.selectFrom("book").all();
+		List<Book> books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(1);
 		this.cassandraMessageHandler4.send(MessageBuilder.withPayload("Empty").build());
-		books = this.cassandraTemplate.select(select, Book.class);
+		books = this.cassandraTemplate.select(select.build(), Book.class).collectList().block();
 		assertThat(books).hasSize(0);
 	}
 

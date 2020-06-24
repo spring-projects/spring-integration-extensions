@@ -18,7 +18,7 @@ package org.springframework.integration.cassandra.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -28,10 +28,10 @@ import org.springframework.integration.cassandra.config.xml.CassandraParserUtils
  * @author Filippo Balicchia
  * @author Artem Bilan
  */
-public class CassandraParserUtilsTests {
+class CassandraParserUtilsTests {
 
 	@Test
-	public void mutuallyExclusiveCase1() {
+	void mutuallyExclusiveCase1() {
 		String query = "";
 		BeanDefinition statementExpressionDef = null;
 		String ingestQuery = "";
@@ -39,7 +39,7 @@ public class CassandraParserUtilsTests {
 	}
 
 	@Test
-	public void mutuallyExclusiveCase2() {
+	void mutuallyExclusiveCase2() {
 		String query = "";
 		BeanDefinition statementExpressionDef = null;
 		String ingestQuery =
@@ -48,7 +48,7 @@ public class CassandraParserUtilsTests {
 	}
 
 	@Test
-	public void mutuallyExclusiveCase3() {
+	void mutuallyExclusiveCase3() {
 		String query = "";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery = "";
@@ -56,7 +56,7 @@ public class CassandraParserUtilsTests {
 	}
 
 	@Test
-	public void mutuallyExclusiveCase4() {
+	void mutuallyExclusiveCase4() {
 		String query = "";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery =
@@ -65,7 +65,7 @@ public class CassandraParserUtilsTests {
 	}
 
 	@Test
-	public void mutuallyExclusiveCase5() {
+	void mutuallyExclusiveCase5() {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery = "";
@@ -73,7 +73,7 @@ public class CassandraParserUtilsTests {
 	}
 
 	@Test
-	public void mutuallyExclusiveCase6() {
+	void mutuallyExclusiveCase6() {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery =
@@ -82,7 +82,7 @@ public class CassandraParserUtilsTests {
 	}
 
 	@Test
-	public void mutuallyExclusiveCase7() {
+	void mutuallyExclusiveCase7() {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery = "";
@@ -90,7 +90,7 @@ public class CassandraParserUtilsTests {
 	}
 
 	@Test
-	public void mutuallyExclusiveCase8() {
+	void mutuallyExclusiveCase8() {
 		String query = "SELECT * FROM book limit :size";
 		BeanDefinition statementExpressionDef = new RootBeanDefinition();
 		String ingestQuery =

@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.integration.samples.voldemort;
 
 import java.util.Scanner;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import org.springframework.integration.samples.voldemort.service.BusinessService;
 
 
@@ -28,14 +30,16 @@ import org.springframework.integration.samples.voldemort.service.BusinessService
  * Starts the Spring Context and will initialize the Spring Integration routes.
  *
  * @author Gunnar Hillert
+ *
  * @since 1.0
  *
  */
 public final class Main {
 
-	private static final Logger LOGGER = Logger.getLogger(Main.class);
+	private static final Log LOGGER = LogFactory.getLog(Main.class);
 
-	private Main() { }
+	private Main() {
+	}
 
 	/**
 	 * Load the Spring Integration Application Context
@@ -46,13 +50,13 @@ public final class Main {
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("\n========================================================="
-					  + "\n                                                         "
-					  + "\n          Welcome to Spring Integration!                 "
-					  + "\n                                                         "
-					  + "\n    For more information please visit:                   "
-					  + "\n    https://www.springsource.org/spring-integration       "
-					  + "\n                                                         "
-					  + "\n=========================================================" );
+					+ "\n                                                         "
+					+ "\n          Welcome to Spring Integration!                 "
+					+ "\n                                                         "
+					+ "\n    For more information please visit:                   "
+					+ "\n    https://www.springsource.org/spring-integration       "
+					+ "\n                                                         "
+					+ "\n=========================================================");
 		}
 
 		final AbstractApplicationContext context =
@@ -66,10 +70,10 @@ public final class Main {
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("\n========================================================="
-					  + "\n                                                         "
-					  + "\n    Please press 'q + Enter' to quit the application.    "
-					  + "\n                                                         "
-					  + "\n=========================================================" );
+					+ "\n                                                         "
+					+ "\n    Please press 'q + Enter' to quit the application.    "
+					+ "\n                                                         "
+					+ "\n=========================================================");
 		}
 
 		System.out.print("Please enter a string and press <enter>: ");
@@ -80,7 +84,7 @@ public final class Main {
 
 			final String data = scanner.nextLine();
 
-			if("q".equals(data.trim())) {
+			if ("q".equals(data.trim())) {
 				break;
 			}
 
@@ -89,7 +93,8 @@ public final class Main {
 				System.out.println(String.format("Persisting String: '%s' with key '%s'.", data, key));
 				service.saveData(key, data);
 
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				LOGGER.error("An exception was caught: " + e);
 			}
 
@@ -104,4 +109,5 @@ public final class Main {
 		System.exit(0);
 
 	}
+
 }

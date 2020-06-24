@@ -1,2 +1,4 @@
 http\://www.springframework.org/schema/integration/twitter/spring-integration-social-twitter-1.0.xsd=org/springframework/integration/twitter/config/spring-integration-social-twitter-1.0.xsd
 http\://www.springframework.org/schema/integration/twitter/spring-integration-social-twitter.xsd=org/springframework/integration/twitter/config/spring-integration-social-twitter-1.0.xsd
+https\://www.springframework.org/schema/integration/twitter/spring-integration-social-twitter-1.0.xsd=org/springframework/integration/twitter/config/spring-integration-social-twitter-1.0.xsd
+https\://www.springframework.org/schema/integration/twitter/spring-integration-social-twitter.xsd=org/springframework/integration/twitter/config/spring-integration-social-twitter-1.0.xsd

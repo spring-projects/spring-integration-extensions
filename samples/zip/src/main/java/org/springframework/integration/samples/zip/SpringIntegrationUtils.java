@@ -75,7 +75,7 @@ public final class SpringIntegrationUtils {
 		stringBuilder.append("\n");
 
 		for (final String inputDirectory : inputDirectories) {
-			stringBuilder.append("\n    Intput directory is: '" + inputDirectory + "'");
+			stringBuilder.append("\n    Input directory is: '" + inputDirectory + "'");
 		}
 
 		for (final String outputDirectory : outputDirectories) {

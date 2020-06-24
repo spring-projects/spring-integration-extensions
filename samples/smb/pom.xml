@@ -12,9 +12,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.integration.version>5.0.5.RELEASE</spring.integration.version>
-		<spring.integration.smb.version>1.1.0.RELEASE</spring.integration.smb.version>
-		<log4j.version>2.11.2</log4j.version>
+		<spring.integration.smb.version>1.2.0.RELEASE</spring.integration.smb.version>
+		<log4j.version>2.12.1</log4j.version>
 		<junit.version>4.12</junit.version>
 	</properties>
 
@@ -24,10 +23,10 @@
 			<name>Spring Framework Maven Milestone Repository</name>
 			<url>https://repo.springsource.org/libs-snapshot</url>
 		</repository>
-		<!--<repository>
+		<repository>
 			<id>repo.springsource.org.staging</id>
 			<url>https://repo.springsource.org/libs-staging-local</url>
-		</repository>-->
+		</repository>
 	</repositories>
 
 	<build>

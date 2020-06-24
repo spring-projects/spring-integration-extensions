@@ -10,6 +10,8 @@
     http://www.springframework.org/schema/integration/hazelcast
 	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
+	<import resource="classpath:org/springframework/integration/hazelcast/common-config.xml"/>
+
 	<int:channel id="edSetChannel1">
 		<int:queue/>
 	</int:channel>
@@ -25,25 +27,18 @@
 	<int-hazelcast:inbound-channel-adapter channel="edSetChannel1" cache="edDistributedSet1"/>
 	<int-hazelcast:inbound-channel-adapter channel="edSetChannel2" cache="edDistributedSet2" cache-events="REMOVED"/>
 	<int-hazelcast:inbound-channel-adapter channel="edSetChannel3" cache="edDistributedSet3"
-										   cache-events="ADDED,REMOVED" cache-listening-policy="SINGLE"/>
+										   cache-events="ADDED,REMOVED"/>
 
-	<bean id="edDistributedSet1" factory-bean="edSetInstance" factory-method="getSet">
+	<bean id="edDistributedSet1" factory-bean="instance" factory-method="getSet">
 		<constructor-arg value="edDistributedSet1"/>
 	</bean>
 
-	<bean id="edDistributedSet2" factory-bean="edSetInstance" factory-method="getSet">
+	<bean id="edDistributedSet2" factory-bean="instance" factory-method="getSet">
 		<constructor-arg value="edDistributedSet2"/>
 	</bean>
 
-	<bean id="edDistributedSet3" factory-bean="edSetInstance" factory-method="getSet">
+	<bean id="edDistributedSet3" factory-bean="instance" factory-method="getSet">
 		<constructor-arg value="edDistributedSet3"/>
-	</bean>
-
-	<bean id="edSetInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-			<bean class="com.hazelcast.config.Config"/>
-		</constructor-arg>
 	</bean>
 
 </beans>

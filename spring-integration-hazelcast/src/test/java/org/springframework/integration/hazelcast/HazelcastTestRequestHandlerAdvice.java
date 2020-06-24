@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.springframework.messaging.Message;
  * {@link AbstractRequestHandlerAdvice} advice class for Hazelcast Integration Unit Tests.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class HazelcastTestRequestHandlerAdvice extends AbstractRequestHandlerAdvice {
@@ -36,7 +38,7 @@ public class HazelcastTestRequestHandlerAdvice extends AbstractRequestHandlerAdv
 	}
 
 	@Override
-	protected Object doInvoke(ExecutionCallback callback, Object target, Message<?> message) throws Exception {
+	protected Object doInvoke(ExecutionCallback callback, Object target, Message<?> message) {
 		try {
 			return callback.execute();
 		}

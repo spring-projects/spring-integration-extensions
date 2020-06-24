@@ -10,6 +10,8 @@
     http://www.springframework.org/schema/integration/hazelcast
 	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
+	<import resource="classpath:org/springframework/integration/hazelcast/common-config.xml"/>
+
 	<int:channel id="cqMapChannel1">
 		<int:queue/>
 	</int:channel>
@@ -32,41 +34,38 @@
 
 	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel1" cache="cqDistributedMap1"
 											  predicate="name=TestName1"/>
+
 	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel2" cache="cqDistributedMap2" cache-events="REMOVED"
-											  predicate="name=TestName2" include-value="true"/>
+											  predicate="name=TestName2"/>
+
 	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel3" cache="cqDistributedMap3"
 											  cache-events="ADDED,REMOVED,UPDATED,CLEAR_ALL"
 											  predicate="name=TestName1 OR name=TestName2"/>
+
 	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel4" cache="cqDistributedMap4" cache-events="UPDATED"
-											  predicate="surname=TestSurname2" include-value="true"/>
+											  predicate="surname=TestSurname2"/>
+
 	<int-hazelcast:cq-inbound-channel-adapter channel="cqMapChannel5" cache="cqDistributedMap5" cache-events="UPDATED"
 											  predicate="surname=TestSurname2" include-value="false"/>
 
-	<bean id="cqDistributedMap1" factory-bean="cqInstance" factory-method="getMap">
+	<bean id="cqDistributedMap1" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="cqDistributedMap1"/>
 	</bean>
 
-	<bean id="cqDistributedMap2" factory-bean="cqInstance" factory-method="getMap">
+	<bean id="cqDistributedMap2" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="cqDistributedMap2"/>
 	</bean>
 
-	<bean id="cqDistributedMap3" factory-bean="cqInstance" factory-method="getMap">
+	<bean id="cqDistributedMap3" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="cqDistributedMap3"/>
 	</bean>
 
-	<bean id="cqDistributedMap4" factory-bean="cqInstance" factory-method="getMap">
+	<bean id="cqDistributedMap4" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="cqDistributedMap4"/>
 	</bean>
 
-	<bean id="cqDistributedMap5" factory-bean="cqInstance" factory-method="getMap">
+	<bean id="cqDistributedMap5" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="cqDistributedMap5"/>
-	</bean>
-
-	<bean id="cqInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-			<bean class="com.hazelcast.config.Config"/>
-		</constructor-arg>
 	</bean>
 
 </beans>

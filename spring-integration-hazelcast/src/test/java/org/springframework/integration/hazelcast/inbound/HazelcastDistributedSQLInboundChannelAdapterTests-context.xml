@@ -10,6 +10,8 @@
     http://www.springframework.org/schema/integration/hazelcast
 	https://www.springframework.org/schema/integration/hazelcast/spring-integration-hazelcast.xsd">
 
+	<import resource="classpath:org/springframework/integration/hazelcast/common-config.xml"/>
+
 	<int:channel id="dsMapChannel1">
 		<int:queue/>
 	</int:channel>
@@ -37,36 +39,29 @@
 	</int-hazelcast:ds-inbound-channel-adapter>
 
 	<int-hazelcast:ds-inbound-channel-adapter channel="dsMapChannel3" cache="dsDistributedMap3"
-											  iteration-type="LOCAL_KEY" distributed-sql="age > 10 AND age &lt;= 20">
+											  iteration-type="KEY" distributed-sql="age > 10 AND age &lt;= 20">
 		<int:poller fixed-delay="100"/>
 	</int-hazelcast:ds-inbound-channel-adapter>
 
-	<int-hazelcast:ds-inbound-channel-adapter channel="dsMapChannel4" cache="dsDistributedMap4" iteration-type="VALUE"
+	<int-hazelcast:ds-inbound-channel-adapter channel="dsMapChannel4" cache="dsDistributedMap4"
 											  distributed-sql="age > 20 AND age &lt;= 30">
 		<int:poller fixed-delay="100"/>
 	</int-hazelcast:ds-inbound-channel-adapter>
 
-	<bean id="dsDistributedMap1" factory-bean="dsInstance" factory-method="getMap">
+	<bean id="dsDistributedMap1" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="dsDistributedMap1"/>
 	</bean>
 
-	<bean id="dsDistributedMap2" factory-bean="dsInstance" factory-method="getMap">
+	<bean id="dsDistributedMap2" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="dsDistributedMap2"/>
 	</bean>
 
-	<bean id="dsDistributedMap3" factory-bean="dsInstance" factory-method="getMap">
+	<bean id="dsDistributedMap3" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="dsDistributedMap3"/>
 	</bean>
 
-	<bean id="dsDistributedMap4" factory-bean="dsInstance" factory-method="getMap">
+	<bean id="dsDistributedMap4" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="dsDistributedMap4"/>
-	</bean>
-
-	<bean id="dsInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance"
-		  destroy-method="shutdown">
-		<constructor-arg>
-			<bean class="com.hazelcast.config.Config"/>
-		</constructor-arg>
 	</bean>
 
 </beans>

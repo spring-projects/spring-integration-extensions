@@ -18,28 +18,27 @@ package org.springframework.integration.cassandra.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.cassandra.outbound.CassandraMessageHandler;
 import org.springframework.integration.test.util.TestUtils;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * @author Filippo Balicchia
  * @author Artem Bilan
  */
 
-@RunWith(SpringRunner.class)
-public class CassandraOutboundAdapterParserTests {
+@SpringJUnitConfig
+class CassandraOutboundAdapterParserTests {
 
 	@Autowired
 	private ApplicationContext context;
 
 	@Test
-	public void minimalConfig() {
+	void minimalConfig() {
 		CassandraMessageHandler handler =
 				TestUtils.getPropertyValue(this.context.getBean("outbound1.adapter"), "handler",
 						CassandraMessageHandler.class);
@@ -53,19 +52,20 @@ public class CassandraOutboundAdapterParserTests {
 	}
 
 	@Test
-	public void ingestConfig() {
+	void ingestConfig() {
 		CassandraMessageHandler handler =
 				TestUtils.getPropertyValue(this.context.getBean("outbound2"), "handler",
 						CassandraMessageHandler.class);
 
 		assertThat(TestUtils.getPropertyValue(handler, "ingestQuery"))
-				.isEqualTo("insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?, " +
+				.isEqualTo("insert into book (isbn, title, author, pages, saleDate, isInStock) values (?, ?, ?, ?, ?," +
+						" " +
 						"?)");
 		assertThat(TestUtils.getPropertyValue(handler, "producesReply", Boolean.class)).isFalse();
 	}
 
 	@Test
-	public void fullConfig() {
+	void fullConfig() {
 		CassandraMessageHandler handler =
 				TestUtils.getPropertyValue(this.context.getBean("outgateway"), "handler",
 						CassandraMessageHandler.class);
@@ -76,7 +76,7 @@ public class CassandraOutboundAdapterParserTests {
 	}
 
 	@Test
-	public void statementConfig() {
+	void statementConfig() {
 		CassandraMessageHandler handler =
 				TestUtils.getPropertyValue(this.context.getBean("outbound4.adapter"), "handler",
 						CassandraMessageHandler.class);

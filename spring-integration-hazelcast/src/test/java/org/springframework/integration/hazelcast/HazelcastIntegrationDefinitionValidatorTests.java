@@ -16,13 +16,14 @@
 
 package org.springframework.integration.hazelcast;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,10 +33,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.IList;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Integration Definition Validator Test Class
+ *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -46,13 +51,18 @@ public class HazelcastIntegrationDefinitionValidatorTests {
 	@Resource
 	private IList<HazelcastIntegrationTestUser> distList;
 
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
+
 	@Test
 	public void testValidateEnumType() {
 		final String cacheEventTypes =
 				" ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL, CLEAR_ALL ";
 		final Set<String> typeSet = HazelcastIntegrationDefinitionValidator
 				.validateEnumType(CacheEventType.class, cacheEventTypes);
-		assertTrue(typeSet.size() == 6);
+		assertEquals(6, typeSet.size());
 		for (String type : typeSet) {
 			Enum.valueOf(CacheEventType.class, type);
 		}

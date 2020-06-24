@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,31 +35,43 @@ import java.util.concurrent.locks.Lock;
 import org.junit.AfterClass;
 import org.junit.Test;
 
+import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ILock;
+import com.hazelcast.cp.lock.FencedLock;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * @author Artem Bilan
  */
 public class HazelcastLockRegistryTests {
 
-	private static final HazelcastInstance instance = Hazelcast.newHazelcastInstance();
+	private static Config config = new Config();
+
+	static {
+		config.getCPSubsystemConfig().setCPMemberCount(3);
+	}
+
+	private static final HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
+
+	private static final HazelcastInstance instance2 = Hazelcast.newHazelcastInstance(config);
+
+	private static final HazelcastInstance instance3 = Hazelcast.newHazelcastInstance(config);
 
 	@AfterClass
-	public static void destroy() throws Exception {
-		instance.shutdown();
+	public static void destroy() {
+		HazelcastInstanceFactory.terminateAll();
 	}
 
 	@Test
-	public void testLock() throws Exception {
+	public void testLock() {
 		HazelcastLockRegistry registry = new HazelcastLockRegistry(instance);
 		for (int i = 0; i < 10; i++) {
 			Lock lock = registry.obtain("foo");
 			lock.lock();
 			try {
-				assertTrue(((ILock) lock).isLocked());
-				assertTrue(((ILock) lock).isLockedByCurrentThread());
+				assertTrue(((FencedLock) lock).isLocked());
+				assertTrue(((FencedLock) lock).isLockedByCurrentThread());
 			}
 			finally {
 				lock.unlock();
@@ -74,8 +86,8 @@ public class HazelcastLockRegistryTests {
 			Lock lock = registry.obtain("foo");
 			lock.lockInterruptibly();
 			try {
-				assertTrue(((ILock) lock).isLocked());
-				assertTrue(((ILock) lock).isLockedByCurrentThread());
+				assertTrue(((FencedLock) lock).isLocked());
+				assertTrue(((FencedLock) lock).isLockedByCurrentThread());
 			}
 			finally {
 				lock.unlock();
@@ -84,7 +96,7 @@ public class HazelcastLockRegistryTests {
 	}
 
 	@Test
-	public void testReentrantLock() throws Exception {
+	public void testReentrantLock() {
 		HazelcastLockRegistry registry = new HazelcastLockRegistry(instance);
 		for (int i = 0; i < 10; i++) {
 			Lock lock1 = registry.obtain("foo");

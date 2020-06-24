@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.hazelcast.core.MultiMap;
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler {
@@ -71,14 +72,14 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 	}
 
 	@Override
-	protected void onInit() throws Exception {
+	protected void onInit() {
 		super.onInit();
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
 	}
 
 	@Override
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	protected void handleMessageInternal(final Message<?> message) throws Exception {
+	protected void handleMessageInternal(final Message<?> message) {
 		Object objectToStore = message;
 		if (this.extractPayload) {
 			objectToStore = message.getPayload();

@@ -18,6 +18,7 @@ package org.springframework.integration.hazelcast.inbound;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.EntryEventType;
 import com.hazelcast.core.IQueue;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Distributed Queue Event Driven Inbound Channel Adapter Test
@@ -63,6 +65,11 @@ public class HazelcastDistributedQueueEventDrivenInboundChannelAdapterTests {
 
 	@Resource
 	private IQueue<HazelcastIntegrationTestUser> edDistributedQueue3;
+
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {

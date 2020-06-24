@@ -535,4 +535,6 @@ public LockRegistry lockRegistry() {
 }
 ```
 
-When used with a shared `MessageGroupStore` (e.g. `Aggregator` store management), the `HazelcastLockRegistry` can be use to provide this functionality across multiple application instances, such that only one instance can manipulate the group at a time. 
+When used with a shared `MessageGroupStore` (e.g. `Aggregator` store management), the `HazelcastLockRegistry` can be use to provide this functionality across multiple application instances, such that only one instance can manipulate the group at a time.
+
+NOTE: For all the distributed operations the CP Subsystem must be enabled on `HazelcastInstance`.  

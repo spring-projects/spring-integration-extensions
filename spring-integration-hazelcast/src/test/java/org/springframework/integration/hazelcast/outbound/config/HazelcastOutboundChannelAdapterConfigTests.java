@@ -22,6 +22,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,6 +41,7 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Outbound Channel Adapter JavaConfig driven Unit Test Class
@@ -140,6 +142,11 @@ public class HazelcastOutboundChannelAdapterConfigTests {
 	@Autowired
 	@Qualifier("replicatedMapRequestHandlerAdvice")
 	private HazelcastTestRequestHandlerAdvice replicatedMapRequestHandlerAdvice;
+
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Test
 	public void testWriteToDistributedMap() {

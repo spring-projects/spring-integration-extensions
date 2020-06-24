@@ -18,6 +18,7 @@ package org.springframework.integration.hazelcast.inbound;
 
 import javax.annotation.Resource;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,6 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.ITopic;
+import com.hazelcast.instance.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Distributed Topic Event Driven Inbound Channel Adapter Test
@@ -47,6 +49,11 @@ public class HazelcastDistributedTopicEventDrivenInboundChannelAdapterTests {
 
 	@Resource
 	private ITopic<HazelcastIntegrationTestUser> edDistributedTopic1;
+
+	@AfterClass
+	public static void shutdown() {
+		HazelcastInstanceFactory.terminateAll();
+	}
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {

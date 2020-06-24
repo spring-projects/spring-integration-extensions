@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public class HazelcastLocalInstanceRegistrar implements SmartInitializingSinglet
 	}
 
 	private void syncConfigurationMultiMap(HazelcastInstance hazelcastInstance) {
-		Lock lock = hazelcastInstance.getLock(SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK);
+		Lock lock = hazelcastInstance.getCPSubsystem().getLock(SPRING_INTEGRATION_INTERNAL_CLUSTER_LOCK);
 		lock.lock();
 		try {
 			MultiMap<SocketAddress, SocketAddress> multiMap = hazelcastInstance
