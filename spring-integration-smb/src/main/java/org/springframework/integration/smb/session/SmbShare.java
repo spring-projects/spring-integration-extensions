@@ -115,6 +115,14 @@ public class SmbShare extends SmbFile {
 			canRead = canRead();
 		}
 		catch (SmbException _ex) {
+			if (this.closeContext.get()) {
+				try {
+					getContext().close();
+				}
+				catch (CIFSException e) {
+					logger.error("Unable to close share: " + this);
+				}
+			}
 			throw new NestedIOException("Unable to initialize share: " + this, _ex);
 		}
 		Assert.isTrue(canRead, "Share is not accessible " + this);
