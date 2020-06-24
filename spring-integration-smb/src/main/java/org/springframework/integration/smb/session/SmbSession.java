@@ -55,6 +55,7 @@ import jcifs.smb.SmbFileOutputStream;
  * @author Artem Bilan
  * @author Prafull Kumar Soni
  * @author Gregory Bragg
+ * @author Adam Jones
  *
  */
 public class SmbSession implements Session<SmbFile> {
