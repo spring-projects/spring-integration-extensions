@@ -93,7 +93,7 @@ NOTE: Setting of the SMB protocol min/max versions must be done in your implemen
 ````java
 @Bean
 public SmbSessionFactory smbSessionFactory() {
-    SmbSessionFactory smbSession = new SmbSessionFactory(new myCIFSContext());
+    SmbSessionFactory smbSession = new SmbSessionFactory(new MyCIFSContext());
     smbSession.setHost("myHost");
     smbSession.setPort(445);
     smbSession.setDomain("myDomain");
