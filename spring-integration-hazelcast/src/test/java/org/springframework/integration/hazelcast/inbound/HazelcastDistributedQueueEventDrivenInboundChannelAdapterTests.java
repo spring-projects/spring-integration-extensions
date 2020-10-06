@@ -33,9 +33,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.EntryEventType;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.instance.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Distributed Queue Event Driven Inbound Channel Adapter Test

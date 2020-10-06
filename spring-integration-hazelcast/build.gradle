@@ -5,8 +5,7 @@ plugins {
 	id 'jacoco'
 	id 'org.sonarqube' version '2.8'
 	id 'checkstyle'
-	id 'org.ajoberstar.grgit' version '3.1.1'
-	id "io.spring.dependency-management" version '1.0.8.RELEASE'
+	id "io.spring.dependency-management" version '1.0.10.RELEASE'
 }
 description = 'Spring Integration Hazelcast Support'
 
@@ -15,7 +14,7 @@ apply from: "${rootProject.projectDir}/publish-maven.gradle"
 group = 'org.springframework.integration'
 
 repositories {
-	if (version.endsWith('BUILD-SNAPSHOT') || project.hasProperty('platformVersion')) {
+	if (version.endsWith('SNAPSHOT')) {
 		maven { url 'https://repo.spring.io/libs-snapshot' }
 	}
 	maven { url 'https://repo.spring.io/libs-milestone' }
@@ -27,15 +26,15 @@ compileJava {
 }
 
 ext {
-	hazelcastVersion = '3.12.4'
-	slf4jVersion = '1.7.28'
-	springIntegrationVersion = '5.2.1.RELEASE'
+	hazelcastVersion = '4.0.3'
+	slf4jVersion = '1.7.30'
+	springIntegrationVersion = '5.4.0-SNAPSHOT'
 
 	idPrefix = 'hazelcast'
 
 	linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
 	linkCi = 'https://build.spring.io/browse/INTEXT'
-	linkIssue = 'https://jira.spring.io/browse/INTEXT'
+	linkIssue = 'https://github.com/spring-projects/spring-integration-extensions/issues'
 	linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
 	linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
 	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
@@ -52,12 +51,12 @@ sourceSets {
 }
 
 jacoco {
-	toolVersion = '0.8.4'
+	toolVersion = '0.8.6'
 }
 
 checkstyle {
-	configFile = file("$rootDir/src/checkstyle/checkstyle.xml")
-	toolVersion = '8.25'
+	configDirectory.set(rootProject.file("src/checkstyle"))
+	toolVersion = '8.36.2'
 }
 
 // enable all compiler warnings; individual projects may customize further
@@ -66,8 +65,6 @@ checkstyle {
 dependencies {
 	compile "org.springframework.integration:spring-integration-core:$springIntegrationVersion"
 	compile "com.hazelcast:hazelcast:$hazelcastVersion"
-
-	testCompile "com.hazelcast:hazelcast-client:$hazelcastVersion"
 
 	testCompile "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
 
@@ -80,19 +77,17 @@ test {
 	jvmArgs '-Dhazelcast.logging.type=slf4j'
 
 	maxHeapSize = '1024m'
-	jacoco {
-		append = false
-		destinationFile = file("$buildDir/jacoco.exec")
-	}
 }
 
 jacocoTestReport {
+	dependsOn test
 	reports {
 		xml.enabled false
 		csv.enabled false
-		html.destination file("${buildDir}/reports/jacoco/html")
+		html.destination file("$buildDir/reports/jacoco/html")
 	}
 }
+
 
 task sourcesJar(type: Jar) {
 	archiveClassifier = 'sources'

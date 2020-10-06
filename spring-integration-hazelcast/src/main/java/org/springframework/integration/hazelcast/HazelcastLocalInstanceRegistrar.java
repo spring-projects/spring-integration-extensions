@@ -25,14 +25,15 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.integration.hazelcast.listener.HazelcastMembershipListener;
 
+import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MultiMap;
+import com.hazelcast.multimap.MultiMap;
 
 /**
  * This class creates an internal configuration {@link MultiMap} to cache Hazelcast instances' socket
  * address information which used Hazelcast event-driven inbound channel adapter(s). It
- * also enables a Hazelcast {@link com.hazelcast.core.MembershipListener} to listen for
+ * also enables a Hazelcast {@link MembershipListener} to listen for
  * membership updates.
  *
  * @author Eren Avsarogullari

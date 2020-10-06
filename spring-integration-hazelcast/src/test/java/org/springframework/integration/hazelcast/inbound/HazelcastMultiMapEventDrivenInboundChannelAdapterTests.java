@@ -35,8 +35,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.core.EntryEventType;
-import com.hazelcast.core.MultiMap;
-import com.hazelcast.instance.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import com.hazelcast.multimap.MultiMap;
 
 /**
  * Hazelcast MultiMap Event Driven Inbound Channel Adapter Test

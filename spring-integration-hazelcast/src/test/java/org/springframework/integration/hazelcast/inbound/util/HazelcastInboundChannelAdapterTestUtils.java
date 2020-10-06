@@ -35,17 +35,16 @@ import org.springframework.integration.hazelcast.message.EntryEventMessagePayloa
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.collection.ICollection;
 import com.hazelcast.core.DistributedObjectEvent;
 import com.hazelcast.core.EntryEventType;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ICollection;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.Member;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MultiMap;
-import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.map.IMap;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.replicatedmap.ReplicatedMap;
 import com.hazelcast.spi.exception.DistributedObjectDestroyedException;
+import com.hazelcast.topic.ITopic;
 
 /**
  * Util Class for Hazelcast Inbound Channel Adapters Test Support.
@@ -346,15 +345,6 @@ public final class HazelcastInboundChannelAdapterTestUtils {
 		Assert.assertEquals("TestSurname3",
 				((HazelcastIntegrationTestUser) (((Collection<?>) msg.getPayload()).iterator()
 						.next())).getSurname());
-	}
-
-	public static void testMembershipEvent(final HazelcastInstance instance,
-			final PollableChannel channel, final String key, final String value) {
-		Member member = instance.getCluster().getLocalMember();
-		member.setStringAttribute(key, value);
-
-		Message<?> msg = channel.receive(TIMEOUT);
-		verifyMembershipEvent(msg, MembershipEvent.MEMBER_ATTRIBUTE_CHANGED);
 	}
 
 	public static void testDistributedObjectEventByChannelAndHazelcastInstance(

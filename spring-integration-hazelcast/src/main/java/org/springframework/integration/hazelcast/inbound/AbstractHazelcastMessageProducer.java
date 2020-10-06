@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.hazelcast.CacheEventType;
@@ -34,15 +35,15 @@ import org.springframework.integration.hazelcast.message.EntryEventMessagePayloa
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
-import com.hazelcast.core.AbstractIMapEvent;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MapEvent;
-import com.hazelcast.core.MultiMap;
 import com.hazelcast.instance.EndpointQualifier;
+import com.hazelcast.map.AbstractIMapEvent;
+import com.hazelcast.map.MapEvent;
+import com.hazelcast.multimap.MultiMap;
 
 /**
  * Hazelcast Base Event-Driven Message Producer.
@@ -58,7 +59,7 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 	private volatile CacheListeningPolicyType cacheListeningPolicy = CacheListeningPolicyType.SINGLE;
 
-	private volatile String hazelcastRegisteredEventListenerId;
+	private volatile UUID hazelcastRegisteredEventListenerId;
 
 	private Set<String> cacheEvents = Collections.singleton(CacheEventType.ADDED.name());
 
@@ -89,11 +90,11 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 		this.cacheListeningPolicy = cacheListeningPolicy;
 	}
 
-	protected String getHazelcastRegisteredEventListenerId() {
+	protected UUID getHazelcastRegisteredEventListenerId() {
 		return this.hazelcastRegisteredEventListenerId;
 	}
 
-	protected void setHazelcastRegisteredEventListenerId(String hazelcastRegisteredEventListenerId) {
+	protected void setHazelcastRegisteredEventListenerId(UUID hazelcastRegisteredEventListenerId) {
 		this.hazelcastRegisteredEventListenerId = hazelcastRegisteredEventListenerId;
 	}
 
@@ -174,6 +175,11 @@ public abstract class AbstractHazelcastMessageProducer extends MessageProducerSu
 
 		@Override
 		public void entryEvicted(EntryEvent<K, V> event) {
+			processEvent(event);
+		}
+
+		@Override
+		public void entryExpired(EntryEvent<K, V> event) {
 			processEvent(event);
 		}
 

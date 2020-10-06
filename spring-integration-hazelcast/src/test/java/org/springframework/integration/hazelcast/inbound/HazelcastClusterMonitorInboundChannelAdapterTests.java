@@ -18,7 +18,6 @@ package org.springframework.integration.hazelcast.inbound;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.AfterClass;
@@ -34,17 +33,12 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.config.GroupConfig;
-import com.hazelcast.core.Client;
-import com.hazelcast.core.ClientType;
+import com.hazelcast.client.Client;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 import com.hazelcast.core.LifecycleEvent;
 import com.hazelcast.core.LifecycleEvent.LifecycleState;
-import com.hazelcast.core.MigrationEvent;
-import com.hazelcast.instance.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import com.hazelcast.internal.nio.ConnectionType;
 
 /**
  * Hazelcast Cluster Monitor Inbound Channel Adapter Unit Test Class
@@ -93,28 +87,10 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 	}
 
 	@Test
-	public void testMembershipEvent() {
-		HazelcastInboundChannelAdapterTestUtils
-				.testMembershipEvent(hazelcastInstance, cmChannel1, "testKey1", "testValue1");
-	}
-
-	@Test
 	public void testDistributedObjectEvent() {
 		HazelcastInboundChannelAdapterTestUtils
 				.testDistributedObjectEventByChannelAndHazelcastInstance(cmChannel2,
 						hazelcastInstance, "Test_Distributed_Map4");
-	}
-
-	@Test
-	public void testMigrationEvent()  {
-		final IMap<Integer, String> distributedMap =
-				hazelcastInstance3.getMap("Test_Distributed_Map2");
-		distributedMap.put(1, "TestValue1");
-		distributedMap.put(2, "TestValue2");
-
-		hazelcastInstance3.getLifecycleService().terminate();
-		final Message<?> msg = this.cmChannel3.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
-		verifyMigrationEvent(msg);
 	}
 
 	@Test
@@ -129,55 +105,6 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		verifyLifecycleEvent(msg, LifecycleState.SHUTDOWN);
 	}
 
-	@Test
-	public void testClientEvent() {
-		testClientEventByChannelAndGroupName(cmChannel5, TEST_GROUP_NAME1);
-	}
-
-	@Test
-	public void testMultipleMonitorTypes() {
-		HazelcastInboundChannelAdapterTestUtils
-				.testDistributedObjectEventByChannelAndHazelcastInstance(cmChannel6,
-						hazelcastInstance, "Test_Distributed_Map5");
-
-		HazelcastInboundChannelAdapterTestUtils
-				.testMembershipEvent(hazelcastInstance, cmChannel6, "testKey2", "testValue2");
-	}
-
-	private void testClientEventByChannelAndGroupName(final PollableChannel channel,
-			final String groupName) {
-		final HazelcastInstance client = getHazelcastClientByGroupName(groupName);
-
-		Message<?> msg = channel.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
-		verifyClientEvent(msg);
-
-		client.getLifecycleService().terminate();
-
-		msg = channel.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
-		verifyClientEvent(msg);
-	}
-
-	private HazelcastInstance getHazelcastClientByGroupName(final String groupName) {
-		final GroupConfig groupConfig = new GroupConfig();
-		groupConfig.setName(groupName);
-		final ClientConfig cfg = new ClientConfig();
-		cfg.setGroupConfig(groupConfig);
-		cfg.getNetworkConfig().addAddress("127.0.0.1:5701");
-
-		return HazelcastClient.newHazelcastClient(cfg);
-	}
-
-	private void verifyMigrationEvent(final Message<?> msg) {
-		assertNotNull(msg);
-		assertNotNull(msg.getPayload());
-		assertTrue(msg.getPayload() instanceof MigrationEvent);
-		assertNotNull(((MigrationEvent) msg.getPayload()).getStatus());
-		assertNotNull(((MigrationEvent) msg.getPayload()).getNewOwner());
-
-		// Newer Hazelcast versions doesn't populated 'oldOwner' if we drop member on the same host
-		assertNull(((MigrationEvent) msg.getPayload()).getOldOwner());
-	}
-
 	private void verifyLifecycleEvent(final Message<?> msg,
 			final LifecycleState lifecycleState) {
 		assertNotNull(msg);
@@ -190,7 +117,7 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		assertNotNull(msg);
 		assertNotNull(msg.getPayload());
 		assertTrue(msg.getPayload() instanceof Client);
-		assertEquals(ClientType.JAVA, ((Client) msg.getPayload()).getClientType());
+		assertEquals(ConnectionType.JAVA_CLIENT, ((Client) msg.getPayload()).getClientType());
 		assertNotNull(((Client) msg.getPayload()).getSocketAddress());
 	}
 

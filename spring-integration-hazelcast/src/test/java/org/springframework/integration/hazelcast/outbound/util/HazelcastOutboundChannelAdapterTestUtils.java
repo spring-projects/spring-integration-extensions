@@ -39,10 +39,10 @@ import org.springframework.integration.hazelcast.HazelcastTestRequestHandlerAdvi
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
 
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.MessageListener;
-import com.hazelcast.core.MultiMap;
-import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.replicatedmap.ReplicatedMap;
+import com.hazelcast.topic.ITopic;
+import com.hazelcast.topic.MessageListener;
 
 /**
  * Util Class for Hazelcast Outbound Channel Adapter Test Support
@@ -169,7 +169,7 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 				private int index = 1;
 
 				@Override
-				public void onMessage(com.hazelcast.core.Message message) {
+				public void onMessage(com.hazelcast.topic.Message message) {
 					HazelcastIntegrationTestUser user =
 							(HazelcastIntegrationTestUser) message.getMessageObject();
 					verifyHazelcastIntegrationTestUser(user, index);

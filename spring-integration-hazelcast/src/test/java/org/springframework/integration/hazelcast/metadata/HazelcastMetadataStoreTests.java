@@ -32,7 +32,7 @@ import org.springframework.integration.metadata.MetadataStoreListener;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 
 /**
  * @author Vinicius Carvalho

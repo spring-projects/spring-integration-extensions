@@ -22,8 +22,9 @@ import org.springframework.integration.store.AbstractKeyValueMessageStore;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.query.SqlPredicate;
+import com.hazelcast.map.IMap;
+import com.hazelcast.query.Predicate;
+import com.hazelcast.query.impl.predicates.SqlPredicate;
 
 /**
  * The Hazelcast {@link IMap}-based {@link AbstractKeyValueMessageStore} implementation.
@@ -76,7 +77,8 @@ public class HazelcastMessageStore extends AbstractKeyValueMessageStore {
 	protected Collection<?> doListKeys(String keyPattern) {
 		Assert.hasText(keyPattern, "'keyPattern' must not be empty");
 		keyPattern = keyPattern.replaceAll("\\*", "%");
-		SqlPredicate sqlPredicate = new SqlPredicate("__key like " + keyPattern);
+		@SuppressWarnings("unchecked")
+		Predicate<Object, Object> sqlPredicate = new SqlPredicate("__key like " + keyPattern);
 		return this.map.values(sqlPredicate);
 	}
 

@@ -49,13 +49,6 @@ public class HazelcastClusterMonitorInboundChannelAdapterConfigTests {
 	private HazelcastInstance testHazelcastInstance;
 
 	@Test
-	public void testConfigDrivenMembershipEvent() {
-		HazelcastInboundChannelAdapterTestUtils
-				.testMembershipEvent(testHazelcastInstance, cmonChannel, "testKey1",
-						"testValue1");
-	}
-
-	@Test
 	public void testConfigDrivenDistributedObjectEvent() {
 		HazelcastInboundChannelAdapterTestUtils
 				.testDistributedObjectEventByChannelAndHazelcastInstance(cmonChannel2,

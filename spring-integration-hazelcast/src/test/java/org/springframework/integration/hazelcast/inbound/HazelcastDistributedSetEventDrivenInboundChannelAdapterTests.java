@@ -33,9 +33,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.hazelcast.collection.ISet;
 import com.hazelcast.core.EntryEventType;
-import com.hazelcast.core.ISet;
-import com.hazelcast.instance.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 
 /**
  * Hazelcast Distributed Set Event Driven Inbound Channel Adapter Test

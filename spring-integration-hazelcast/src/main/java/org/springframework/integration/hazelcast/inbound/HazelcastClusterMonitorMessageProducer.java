@@ -19,6 +19,7 @@ package org.springframework.integration.hazelcast.inbound;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.integration.endpoint.MessageProducerSupport;
@@ -26,18 +27,18 @@ import org.springframework.integration.hazelcast.ClusterMonitorType;
 import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
 import org.springframework.util.Assert;
 
-import com.hazelcast.core.Client;
-import com.hazelcast.core.ClientListener;
+import com.hazelcast.client.Client;
+import com.hazelcast.client.ClientListener;
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.DistributedObjectEvent;
 import com.hazelcast.core.DistributedObjectListener;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.LifecycleEvent;
 import com.hazelcast.core.LifecycleListener;
-import com.hazelcast.core.MemberAttributeEvent;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MembershipListener;
-import com.hazelcast.core.MigrationEvent;
-import com.hazelcast.core.MigrationListener;
+import com.hazelcast.partition.MigrationListener;
+import com.hazelcast.partition.MigrationState;
+import com.hazelcast.partition.ReplicaMigrationEvent;
 
 /**
  * Hazelcast Cluster Monitor Event Driven Message Producer is a message producer which
@@ -45,6 +46,8 @@ import com.hazelcast.core.MigrationListener;
  * listener in order to listen cluster related events and sends events to related channel.
  *
  * @author Eren Avsarogullari
+ * @author Artem Bilan
+ *
  * @since 1.0.0
  */
 public class HazelcastClusterMonitorMessageProducer extends MessageProducerSupport {
@@ -53,7 +56,7 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 
 	private Set<String> monitorTypes = Collections.singleton(ClusterMonitorType.MEMBERSHIP.name());
 
-	private final Map<ClusterMonitorType, String> hazelcastRegisteredListenerIdMap = new ConcurrentHashMap<>(5);
+	private final Map<ClusterMonitorType, UUID> hazelcastRegisteredListenerIdMap = new ConcurrentHashMap<>(5);
 
 	public HazelcastClusterMonitorMessageProducer(HazelcastInstance hazelcastInstance) {
 		Assert.notNull(hazelcastInstance, "'hazelcastInstance' must not be null");
@@ -72,31 +75,31 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 		final HazelcastClusterMonitorListener clusterMonitorListener = new HazelcastClusterMonitorListener();
 
 		if (this.monitorTypes.contains(ClusterMonitorType.MEMBERSHIP.name())) {
-			final String registrationId = this.hazelcastInstance.getCluster()
+			final UUID registrationId = this.hazelcastInstance.getCluster()
 					.addMembershipListener(clusterMonitorListener);
 			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.MEMBERSHIP, registrationId);
 		}
 
 		if (this.monitorTypes.contains(ClusterMonitorType.DISTRIBUTED_OBJECT.name())) {
-			final String registrationId = this.hazelcastInstance
+			final UUID registrationId = this.hazelcastInstance
 					.addDistributedObjectListener(clusterMonitorListener);
 			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.DISTRIBUTED_OBJECT, registrationId);
 		}
 
 		if (this.monitorTypes.contains(ClusterMonitorType.MIGRATION.name())) {
-			final String registrationId = this.hazelcastInstance.getPartitionService()
+			final UUID registrationId = this.hazelcastInstance.getPartitionService()
 					.addMigrationListener(clusterMonitorListener);
 			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.MIGRATION,	registrationId);
 		}
 
 		if (this.monitorTypes.contains(ClusterMonitorType.LIFECYCLE.name())) {
-			final String registrationId = this.hazelcastInstance.getLifecycleService()
+			final UUID registrationId = this.hazelcastInstance.getLifecycleService()
 					.addLifecycleListener(clusterMonitorListener);
 			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.LIFECYCLE,	registrationId);
 		}
 
 		if (this.monitorTypes.contains(ClusterMonitorType.CLIENT.name())) {
-			final String registrationId = this.hazelcastInstance.getClientService()
+			final UUID registrationId = this.hazelcastInstance.getClientService()
 					.addClientListener(clusterMonitorListener);
 			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.CLIENT, registrationId);
 		}
@@ -105,7 +108,7 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 	@Override
 	protected void doStop() {
 		if (this.hazelcastInstance.getLifecycleService().isRunning()) {
-			String id = this.hazelcastRegisteredListenerIdMap.remove(ClusterMonitorType.MEMBERSHIP);
+			UUID id = this.hazelcastRegisteredListenerIdMap.remove(ClusterMonitorType.MEMBERSHIP);
 			if (id != null) {
 				this.hazelcastInstance.getCluster().removeMembershipListener(id);
 			}
@@ -161,11 +164,6 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 		}
 
 		@Override
-		public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
-			processEvent(memberAttributeEvent);
-		}
-
-		@Override
 		public void distributedObjectCreated(DistributedObjectEvent event) {
 			processEvent(event);
 		}
@@ -176,18 +174,23 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 		}
 
 		@Override
-		public void migrationStarted(MigrationEvent migrationEvent) {
+		public void migrationStarted(MigrationState migrationEvent) {
 			processEvent(migrationEvent);
 		}
 
 		@Override
-		public void migrationCompleted(MigrationEvent migrationEvent) {
+		public void migrationFinished(MigrationState migrationEvent) {
 			processEvent(migrationEvent);
 		}
 
 		@Override
-		public void migrationFailed(MigrationEvent migrationEvent) {
-			processEvent(migrationEvent);
+		public void replicaMigrationCompleted(ReplicaMigrationEvent event) {
+			processEvent(event);
+		}
+
+		@Override
+		public void replicaMigrationFailed(ReplicaMigrationEvent event) {
+			processEvent(event);
 		}
 
 		@Override
