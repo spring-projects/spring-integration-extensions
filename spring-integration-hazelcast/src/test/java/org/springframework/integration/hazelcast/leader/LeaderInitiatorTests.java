@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ import com.hazelcast.instance.impl.HazelcastInstanceFactory;
  * @author Patrick Peralta
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Mael Le Guével
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -227,23 +228,13 @@ public class LeaderInitiatorTests {
 		@Bean
 		public Config hazelcastConfig() {
 			Config config = new Config();
-			config.getCPSubsystemConfig().setCPMemberCount(3)
+			config.getCPSubsystemConfig()
 					.setSessionHeartbeatIntervalSeconds(1);
 			return config;
 		}
 
 		@Bean(destroyMethod = "")
 		public HazelcastInstance hazelcastInstance() {
-			return Hazelcast.newHazelcastInstance(hazelcastConfig());
-		}
-
-		@Bean(destroyMethod = "")
-		public HazelcastInstance hazelcastInstance2() {
-			return Hazelcast.newHazelcastInstance(hazelcastConfig());
-		}
-
-		@Bean(destroyMethod = "")
-		public HazelcastInstance hazelcastInstance3() {
 			return Hazelcast.newHazelcastInstance(hazelcastConfig());
 		}
 
