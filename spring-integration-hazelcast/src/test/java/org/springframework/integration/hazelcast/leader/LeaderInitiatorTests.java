@@ -227,23 +227,13 @@ public class LeaderInitiatorTests {
 		@Bean
 		public Config hazelcastConfig() {
 			Config config = new Config();
-			config.getCPSubsystemConfig().setCPMemberCount(3)
+			config.getCPSubsystemConfig().setCPMemberCount(0)
 					.setSessionHeartbeatIntervalSeconds(1);
 			return config;
 		}
 
 		@Bean(destroyMethod = "")
 		public HazelcastInstance hazelcastInstance() {
-			return Hazelcast.newHazelcastInstance(hazelcastConfig());
-		}
-
-		@Bean(destroyMethod = "")
-		public HazelcastInstance hazelcastInstance2() {
-			return Hazelcast.newHazelcastInstance(hazelcastConfig());
-		}
-
-		@Bean(destroyMethod = "")
-		public HazelcastInstance hazelcastInstance3() {
 			return Hazelcast.newHazelcastInstance(hazelcastConfig());
 		}
 

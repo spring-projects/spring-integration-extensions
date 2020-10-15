@@ -272,33 +272,19 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 			try {
 				while (isRunning()) {
 					try {
-						// We always try to acquire the lock, in case it expired
-						boolean acquired =
-								LeaderInitiator.this.lock.tryLock(LeaderInitiator.this.heartBeatMillis,
-										TimeUnit.MILLISECONDS);
-						if (!this.locked) {
-							if (acquired) {
-								// Success: we are now leader
-								this.locked = true;
-								handleGranted();
-							}
-						}
-						else if (acquired) {
-							// If we were able to acquire it but we were already locked we
-							// should release it
-							LeaderInitiator.this.lock.unlock();
-							if (isRunning()) {
-								// Give it a chance to expire.
-								Thread.sleep(LeaderInitiator.this.heartBeatMillis);
-							}
-						}
-						else {
-							this.locked = false;
-							// We were not able to acquire it, therefore not leading any more
-							handleRevoked();
-							if (isRunning()) {
-								// Try again quickly in case the lock holder dropped it
-								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+						if (LeaderInitiator.this.lock.isLocked()) {
+							Thread.sleep(LeaderInitiator.this.heartBeatMillis);
+						} else {
+							// We try to acquire the lock
+							boolean acquired =
+									LeaderInitiator.this.lock.tryLock(LeaderInitiator.this.heartBeatMillis,
+											TimeUnit.MILLISECONDS);
+							if (!this.locked) {
+								if (acquired) {
+									// Success: we are now leader
+									this.locked = true;
+									handleGranted();
+								}
 							}
 						}
 					}
