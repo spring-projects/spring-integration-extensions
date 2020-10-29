@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,7 @@
 
 package org.springframework.integration.hazelcast.lock;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -46,17 +39,13 @@ import com.hazelcast.instance.impl.HazelcastInstanceFactory;
  */
 public class HazelcastLockRegistryTests {
 
-	private static Config config = new Config();
+	private static final Config CONFIG = new Config();
 
 	static {
-		config.getCPSubsystemConfig().setCPMemberCount(3);
+		CONFIG.getCPSubsystemConfig().setCPMemberCount(0);
 	}
 
-	private static final HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
-
-	private static final HazelcastInstance instance2 = Hazelcast.newHazelcastInstance(config);
-
-	private static final HazelcastInstance instance3 = Hazelcast.newHazelcastInstance(config);
+	private static final HazelcastInstance instance = Hazelcast.newHazelcastInstance(CONFIG);
 
 	@AfterClass
 	public static void destroy() {
@@ -70,8 +59,8 @@ public class HazelcastLockRegistryTests {
 			Lock lock = registry.obtain("foo");
 			lock.lock();
 			try {
-				assertTrue(((FencedLock) lock).isLocked());
-				assertTrue(((FencedLock) lock).isLockedByCurrentThread());
+				assertThat(((FencedLock) lock).isLocked()).isTrue();
+				assertThat(((FencedLock) lock).isLockedByCurrentThread()).isTrue();
 			}
 			finally {
 				lock.unlock();
@@ -86,8 +75,8 @@ public class HazelcastLockRegistryTests {
 			Lock lock = registry.obtain("foo");
 			lock.lockInterruptibly();
 			try {
-				assertTrue(((FencedLock) lock).isLocked());
-				assertTrue(((FencedLock) lock).isLockedByCurrentThread());
+				assertThat(((FencedLock) lock).isLocked()).isTrue();
+				assertThat(((FencedLock) lock).isLockedByCurrentThread()).isTrue();
 			}
 			finally {
 				lock.unlock();
@@ -103,7 +92,7 @@ public class HazelcastLockRegistryTests {
 			lock1.lock();
 			try {
 				Lock lock2 = registry.obtain("foo");
-				assertSame(lock1, lock2);
+				assertThat(lock2).isSameAs(lock1);
 				lock2.lock();
 				lock2.unlock();
 			}
@@ -121,7 +110,7 @@ public class HazelcastLockRegistryTests {
 			lock1.lockInterruptibly();
 			try {
 				Lock lock2 = registry.obtain("foo");
-				assertSame(lock1, lock2);
+				assertThat(lock2).isSameAs(lock1);
 				lock2.lockInterruptibly();
 				lock2.unlock();
 			}
@@ -139,7 +128,7 @@ public class HazelcastLockRegistryTests {
 			lock1.lockInterruptibly();
 			try {
 				Lock lock2 = registry.obtain("bar");
-				assertNotSame(lock1, lock2);
+				assertThat(lock2).isNotSameAs(lock1);
 				lock2.lockInterruptibly();
 				lock2.unlock();
 			}
@@ -168,12 +157,12 @@ public class HazelcastLockRegistryTests {
 			}
 			return null;
 		});
-		assertTrue(latch.await(10, TimeUnit.SECONDS));
-		assertFalse(locked.get());
+		assertThat(latch.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(locked.get()).isFalse();
 		lock1.unlock();
 		Object ise = result.get(10, TimeUnit.SECONDS);
-		assertThat(ise, instanceOf(IllegalMonitorStateException.class));
-		assertThat(((Exception) ise).getMessage(), containsString("Current thread is not owner of the lock!"));
+		assertThat(ise).isInstanceOf(IllegalMonitorStateException.class);
+		assertThat(((Exception) ise).getMessage()).contains("Current thread is not owner of the lock!");
 	}
 
 	@Test
@@ -201,12 +190,12 @@ public class HazelcastLockRegistryTests {
 				latch3.countDown();
 			}
 		});
-		assertTrue(latch1.await(10, TimeUnit.SECONDS));
-		assertFalse(locked.get());
+		assertThat(latch1.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(locked.get()).isFalse();
 		lock1.unlock();
 		latch2.countDown();
-		assertTrue(latch3.await(10, TimeUnit.SECONDS));
-		assertTrue(locked.get());
+		assertThat(latch3.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(locked.get()).isTrue();
 	}
 
 	@Test
@@ -235,12 +224,12 @@ public class HazelcastLockRegistryTests {
 				latch3.countDown();
 			}
 		});
-		assertTrue(latch1.await(10, TimeUnit.SECONDS));
-		assertFalse(locked.get());
+		assertThat(latch1.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(locked.get()).isFalse();
 		lock1.unlock();
 		latch2.countDown();
-		assertTrue(latch3.await(10, TimeUnit.SECONDS));
-		assertTrue(locked.get());
+		assertThat(latch3.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(locked.get()).isTrue();
 	}
 
 	@Test
@@ -260,12 +249,12 @@ public class HazelcastLockRegistryTests {
 			}
 			return null;
 		});
-		assertTrue(latch.await(10, TimeUnit.SECONDS));
-		assertFalse(locked.get());
+		assertThat(latch.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(locked.get()).isFalse();
 		lock.unlock();
 		Object imse = result.get(10, TimeUnit.SECONDS);
-		assertThat(imse, instanceOf(IllegalMonitorStateException.class));
-		assertThat(((Exception) imse).getMessage(), containsString("Current thread is not owner of the lock!"));
+		assertThat(imse).isInstanceOf(IllegalMonitorStateException.class);
+		assertThat(((Exception) imse).getMessage()).contains("Current thread is not owner of the lock!");
 	}
 
 	@Test
@@ -278,7 +267,7 @@ public class HazelcastLockRegistryTests {
 			while (!lock.tryLock() && n++ < 100) {
 				Thread.sleep(100);
 			}
-			assertThat(n, lessThan(100));
+			assertThat(n).isLessThan(100);
 
 			lock.unlock();
 		}

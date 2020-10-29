@@ -28,7 +28,7 @@ compileJava {
 ext {
 	hazelcastVersion = '4.0.3'
 	slf4jVersion = '1.7.30'
-	springIntegrationVersion = '5.4.0-SNAPSHOT'
+	springIntegrationVersion = '5.4.0'
 
 	idPrefix = 'hazelcast'
 

@@ -16,10 +16,7 @@
 
 package org.springframework.integration.hazelcast.leader;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.spy;
@@ -84,9 +81,9 @@ public class LeaderInitiatorTests {
 
 	@Test
 	public void testLeaderElections() throws Exception {
-		assertTrue(this.candidate.onGrantedLatch.await(5, TimeUnit.SECONDS));
-		assertTrue(this.listener.onEventLatch.await(5, TimeUnit.SECONDS));
-		assertEquals(1, this.listener.events.size());
+		assertThat(this.candidate.onGrantedLatch.await(5, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.listener.onEventLatch.await(5, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.listener.events.size()).isEqualTo(1);
 
 		this.initiator.destroy();
 
@@ -103,7 +100,7 @@ public class LeaderInitiatorTests {
 			initiator.start();
 		}
 
-		assertTrue(granted.await(10, TimeUnit.SECONDS));
+		assertThat(granted.await(10, TimeUnit.SECONDS)).isTrue();
 
 		LeaderInitiator initiator1 = countingPublisher.initiator;
 
@@ -116,10 +113,10 @@ public class LeaderInitiatorTests {
 			}
 		}
 
-		assertNotNull(initiator2);
+		assertThat(initiator2).isNotNull();
 
-		assertTrue(initiator1.getContext().isLeader());
-		assertFalse(initiator2.getContext().isLeader());
+		assertThat(initiator1.getContext().isLeader()).isTrue();
+		assertThat(initiator2.getContext().isLeader()).isFalse();
 
 		final CountDownLatch granted1 = new CountDownLatch(1);
 		final CountDownLatch granted2 = new CountDownLatch(1);
@@ -131,7 +128,7 @@ public class LeaderInitiatorTests {
 			public void publishOnRevoked(Object source, Context context, String role) {
 				try {
 					// It's difficult to see round-robin election, so block one initiator until the second is elected.
-					assertTrue(granted2.await(10, TimeUnit.SECONDS));
+					assertThat(granted2.await(10, TimeUnit.SECONDS)).isTrue();
 				}
 				catch (InterruptedException e) {
 					// No op
@@ -147,7 +144,7 @@ public class LeaderInitiatorTests {
 			public void publishOnRevoked(Object source, Context context, String role) {
 				try {
 					// It's difficult to see round-robin election, so block one initiator until the second is elected.
-					assertTrue(granted1.await(10, TimeUnit.SECONDS));
+					assertThat(granted1.await(10, TimeUnit.SECONDS)).isTrue();
 				}
 				catch (InterruptedException e) {
 					// No op
@@ -159,17 +156,17 @@ public class LeaderInitiatorTests {
 
 		initiator1.getContext().yield();
 
-		assertTrue(revoked1.await(10, TimeUnit.SECONDS));
+		assertThat(revoked1.await(10, TimeUnit.SECONDS)).isTrue();
 
-		assertTrue(initiator2.getContext().isLeader());
-		assertFalse(initiator1.getContext().isLeader());
+		assertThat(initiator2.getContext().isLeader()).isTrue();
+		assertThat(initiator1.getContext().isLeader()).isFalse();
 
 		initiator2.getContext().yield();
 
-		assertTrue(revoked2.await(10, TimeUnit.SECONDS));
+		assertThat(revoked2.await(10, TimeUnit.SECONDS)).isTrue();
 
-		assertTrue(initiator1.getContext().isLeader());
-		assertFalse(initiator2.getContext().isLeader());
+		assertThat(initiator1.getContext().isLeader()).isTrue();
+		assertThat(initiator2.getContext().isLeader()).isFalse();
 
 		initiator2.destroy();
 
@@ -178,7 +175,7 @@ public class LeaderInitiatorTests {
 
 		initiator1.getContext().yield();
 
-		assertTrue(revoked11.await(10, TimeUnit.SECONDS));
+		assertThat(revoked11.await(10, TimeUnit.SECONDS)).isTrue();
 
 		initiator1.destroy();
 
@@ -209,9 +206,9 @@ public class LeaderInitiatorTests {
 
 		initiator.start();
 
-		assertTrue(onGranted.await(5, TimeUnit.SECONDS));
+		assertThat(onGranted.await(5, TimeUnit.SECONDS)).isTrue();
 
-		assertTrue(initiator.getContext().isLeader());
+		assertThat(initiator.getContext().isLeader()).isTrue();
 
 		initiator.destroy();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.annotation.Resource;
 
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -77,17 +78,13 @@ public class HazelcastDistributedQueueEventDrivenInboundChannelAdapterTests {
 				.add(new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		Message<?> msg =
 				edQueueChannel1.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
-		Assert.assertNotNull(msg);
-		Assert.assertNotNull(msg.getPayload());
-		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.ADDED.toString(),
-				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
-		Assert
-				.assertEquals(1, (((HazelcastIntegrationTestUser) msg.getPayload()).getId()));
-		Assert.assertEquals("TestName1",
-				(((HazelcastIntegrationTestUser) msg.getPayload()).getName()));
-		Assert.assertEquals("TestSurname1",
-				(((HazelcastIntegrationTestUser) msg.getPayload()).getSurname()));
+		assertThat(msg).isNotNull();
+		assertThat(msg.getPayload()).isNotNull();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.MEMBER)).isNotNull();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString()).isEqualTo(EntryEventType.ADDED.toString());
+		assertThat((((HazelcastIntegrationTestUser) msg.getPayload()).getId())).isEqualTo(1);
+		assertThat((((HazelcastIntegrationTestUser) msg.getPayload()).getName())).isEqualTo("TestName1");
+		assertThat((((HazelcastIntegrationTestUser) msg.getPayload()).getSurname())).isEqualTo("TestSurname1");
 	}
 
 	@Test
@@ -98,17 +95,13 @@ public class HazelcastDistributedQueueEventDrivenInboundChannelAdapterTests {
 		edDistributedQueue2.remove(user);
 		Message<?> msg =
 				edQueueChannel2.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
-		Assert.assertNotNull(msg);
-		Assert.assertNotNull(msg.getPayload());
-		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.REMOVED.toString(),
-				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString());
-		Assert
-				.assertEquals(2, (((HazelcastIntegrationTestUser) msg.getPayload()).getId()));
-		Assert.assertEquals("TestName2",
-				(((HazelcastIntegrationTestUser) msg.getPayload()).getName()));
-		Assert.assertEquals("TestSurname2",
-				(((HazelcastIntegrationTestUser) msg.getPayload()).getSurname()));
+		assertThat(msg).isNotNull();
+		assertThat(msg.getPayload()).isNotNull();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.MEMBER)).isNotNull();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE).toString()).isEqualTo(EntryEventType.REMOVED.toString());
+		assertThat((((HazelcastIntegrationTestUser) msg.getPayload()).getId())).isEqualTo(2);
+		assertThat((((HazelcastIntegrationTestUser) msg.getPayload()).getName())).isEqualTo("TestName2");
+		assertThat((((HazelcastIntegrationTestUser) msg.getPayload()).getSurname())).isEqualTo("TestSurname2");
 	}
 
 	@Test

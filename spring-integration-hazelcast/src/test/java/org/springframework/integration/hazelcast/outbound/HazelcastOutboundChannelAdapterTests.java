@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package org.springframework.integration.hazelcast.outbound;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -289,8 +287,8 @@ public class HazelcastOutboundChannelAdapterTests {
 			throws InterruptedException {
 		sendMessageWithCacheHeaderToChannel(this.secondMapChannel, CACHE_HEADER,
 				DISTRIBUTED_MAP);
-		assertTrue(this.testSecondMapRequestHandlerAdvice.executeLatch
-				.await(10, TimeUnit.SECONDS));
+		assertThat(this.testSecondMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS)).isTrue();
 		HazelcastOutboundChannelAdapterTestUtils
 				.verifyMapForPayload(new TreeMap(this.distributedMap));
 	}
@@ -300,8 +298,8 @@ public class HazelcastOutboundChannelAdapterTests {
 			throws InterruptedException {
 		sendMessageWithCacheHeaderToChannel(this.thirdMapChannel,
 				HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP);
-		assertTrue(this.testThirdMapRequestHandlerAdvice.executeLatch
-				.await(10, TimeUnit.SECONDS));
+		assertThat(this.testThirdMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS)).isTrue();
 		HazelcastOutboundChannelAdapterTestUtils
 				.verifyMapForPayload(new TreeMap(this.distributedMap));
 	}
@@ -311,8 +309,8 @@ public class HazelcastOutboundChannelAdapterTests {
 			throws InterruptedException {
 		sendMessageWithCacheHeaderToChannel(this.fourthMapChannel,
 				HazelcastHeaders.CACHE_NAME, DISTRIBUTED_MAP);
-		assertTrue(this.testFourthMapRequestHandlerAdvice.executeLatch
-				.await(10, TimeUnit.SECONDS));
+		assertThat(this.testFourthMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS)).isTrue();
 		verifyMapForMessage(new TreeMap(this.distributedMap));
 	}
 
@@ -342,8 +340,8 @@ public class HazelcastOutboundChannelAdapterTests {
 
 		this.bulkReplicatedMapChannel.send(new GenericMessage<>(userMap));
 
-		assertTrue(this.testBulkReplicatedMapRequestHandlerAdvice.executeLatch
-				.await(10, TimeUnit.SECONDS));
+		assertThat(this.testBulkReplicatedMapRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS)).isTrue();
 		HazelcastOutboundChannelAdapterTestUtils
 				.verifyMapForPayload(new TreeMap(this.bulkReplicatedMap));
 	}
@@ -367,8 +365,8 @@ public class HazelcastOutboundChannelAdapterTests {
 
 		this.bulkListChannel.send(new GenericMessage<>(userList));
 
-		assertTrue(this.testBulkListRequestHandlerAdvice.executeLatch
-				.await(10, TimeUnit.SECONDS));
+		assertThat(this.testBulkListRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS)).isTrue();
 		HazelcastOutboundChannelAdapterTestUtils
 				.verifyCollection(this.distributedBulkList,
 						HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
@@ -392,8 +390,8 @@ public class HazelcastOutboundChannelAdapterTests {
 
 		this.bulkSetChannel.send(new GenericMessage<>(userSet));
 
-		assertTrue(this.testBulkSetRequestHandlerAdvice.executeLatch
-				.await(10, TimeUnit.SECONDS));
+		assertThat(this.testBulkSetRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS)).isTrue();
 		final List<HazelcastIntegrationTestUser> list =
 				new ArrayList(this.distributedBulkSet);
 		Collections.sort(list);
@@ -419,8 +417,8 @@ public class HazelcastOutboundChannelAdapterTests {
 
 		this.bulkQueueChannel.send(new GenericMessage<>(userQueue));
 
-		assertTrue(this.testBulkQueueRequestHandlerAdvice.executeLatch
-				.await(10, TimeUnit.SECONDS));
+		assertThat(this.testBulkQueueRequestHandlerAdvice.executeLatch
+				.await(10, TimeUnit.SECONDS)).isTrue();
 		HazelcastOutboundChannelAdapterTestUtils
 				.verifyCollection(this.distributedBulkQueue,
 						HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
@@ -466,12 +464,12 @@ public class HazelcastOutboundChannelAdapterTests {
 	private void verifyMapForMessage(
 			final Map<Integer, Message<HazelcastIntegrationTestUser>> map) {
 		int index = 1;
-		assertNotNull(map);
-		assertEquals(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT, map.size());
+		assertThat(map).isNotNull();
+		assertThat(map.size()).isEqualTo(HazelcastOutboundChannelAdapterTestUtils.DATA_COUNT);
 		for (Entry<Integer, Message<HazelcastIntegrationTestUser>> entry : map.entrySet()) {
-			assertNotNull(entry);
-			assertEquals(index, entry.getKey().intValue());
-			assertTrue(entry.getValue().getHeaders().size() > 0);
+			assertThat(entry).isNotNull();
+			assertThat(entry.getKey().intValue()).isEqualTo(index);
+			assertThat(entry.getValue().getHeaders().size() > 0).isTrue();
 			HazelcastOutboundChannelAdapterTestUtils
 					.verifyHazelcastIntegrationTestUser(entry.getValue().getPayload(), index);
 			index++;

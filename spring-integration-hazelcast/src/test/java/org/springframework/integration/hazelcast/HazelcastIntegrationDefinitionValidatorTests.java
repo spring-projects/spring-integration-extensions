@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package org.springframework.integration.hazelcast;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -62,7 +62,7 @@ public class HazelcastIntegrationDefinitionValidatorTests {
 				" ADDED, REMOVED, UPDATED, EVICTED, EVICT_ALL, CLEAR_ALL ";
 		final Set<String> typeSet = HazelcastIntegrationDefinitionValidator
 				.validateEnumType(CacheEventType.class, cacheEventTypes);
-		assertEquals(6, typeSet.size());
+		assertThat(typeSet.size()).isEqualTo(6);
 		for (String type : typeSet) {
 			Enum.valueOf(CacheEventType.class, type);
 		}

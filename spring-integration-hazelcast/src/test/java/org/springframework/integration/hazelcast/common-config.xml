@@ -8,15 +8,11 @@
 			<bean class="com.hazelcast.config.Config">
 				<property name="CPSubsystemConfig">
 					<bean class="com.hazelcast.config.cp.CPSubsystemConfig">
-						<property name="CPMemberCount" value="3"/>
+						<property name="CPMemberCount" value="0"/>
 					</bean>
 				</property>
 			</bean>
 		</constructor-arg>
 	</bean>
-
-	<bean id="instance2" parent="instance"/>
-
-	<bean id="instance3" parent="instance"/>
 
 </beans>

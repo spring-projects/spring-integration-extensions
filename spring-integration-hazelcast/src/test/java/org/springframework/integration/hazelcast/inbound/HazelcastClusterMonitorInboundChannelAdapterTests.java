@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.AfterClass;
 import org.junit.Ignore;
@@ -107,18 +105,18 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 
 	private void verifyLifecycleEvent(final Message<?> msg,
 			final LifecycleState lifecycleState) {
-		assertNotNull(msg);
-		assertNotNull(msg.getPayload());
-		assertTrue(msg.getPayload() instanceof LifecycleEvent);
-		assertEquals(lifecycleState, ((LifecycleEvent) msg.getPayload()).getState());
+		assertThat(msg).isNotNull();
+		assertThat(msg.getPayload()).isNotNull();
+		assertThat(msg.getPayload() instanceof LifecycleEvent).isTrue();
+		assertThat(((LifecycleEvent) msg.getPayload()).getState()).isEqualTo(lifecycleState);
 	}
 
 	private void verifyClientEvent(final Message<?> msg) {
-		assertNotNull(msg);
-		assertNotNull(msg.getPayload());
-		assertTrue(msg.getPayload() instanceof Client);
-		assertEquals(ConnectionType.JAVA_CLIENT, ((Client) msg.getPayload()).getClientType());
-		assertNotNull(((Client) msg.getPayload()).getSocketAddress());
+		assertThat(msg).isNotNull();
+		assertThat(msg.getPayload()).isNotNull();
+		assertThat(msg.getPayload() instanceof Client).isTrue();
+		assertThat(((Client) msg.getPayload()).getClientType()).isEqualTo(ConnectionType.JAVA_CLIENT);
+		assertThat(((Client) msg.getPayload()).getSocketAddress()).isNotNull();
 	}
 
 }

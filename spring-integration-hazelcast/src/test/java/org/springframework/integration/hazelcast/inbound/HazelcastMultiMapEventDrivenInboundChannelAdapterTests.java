@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.annotation.Resource;
 
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -80,27 +81,21 @@ public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests {
 				.put(1, new HazelcastIntegrationTestUser(1, "TestName1", "TestSurname1"));
 		Message<?> msg =
 				edMultiMapChannel1.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
-		Assert.assertNotNull(msg);
-		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
-		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.ADDED.name(),
-				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
-		Assert.assertEquals("edMultiMap1",
-				msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
+		assertThat(msg).isNotNull();
+		assertThat(msg.getPayload()).isNotNull();
+		assertThat(msg.getPayload() instanceof EntryEventMessagePayload).isTrue();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.MEMBER)).isNotNull();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE)).isEqualTo(EntryEventType.ADDED.name());
+		assertThat(msg.getHeaders().get(HazelcastHeaders.CACHE_NAME)).isEqualTo("edMultiMap1");
 
-		Assert.assertEquals(Integer.valueOf(1),
-				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).key);
-		Assert.assertEquals(1,
-				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).value).getId());
-		Assert.assertEquals("TestName1",
-				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).value).getName());
-		Assert.assertEquals("TestSurname1",
-				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).value).getSurname());
+		assertThat(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).key).isEqualTo(Integer.valueOf(1));
+		assertThat((((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).value).getId()).isEqualTo(1);
+		assertThat((((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).value).getName()).isEqualTo("TestName1");
+		assertThat((((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).value).getSurname()).isEqualTo("TestSurname1");
 	}
 
 	@Test
@@ -112,28 +107,22 @@ public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests {
 		edMultiMap2.remove(2);
 		Message<?> msg =
 				edMultiMapChannel2.receive(HazelcastInboundChannelAdapterTestUtils.TIMEOUT);
-		Assert.assertNotNull(msg);
-		Assert.assertNotNull(msg.getPayload());
-		Assert.assertTrue(msg.getPayload() instanceof EntryEventMessagePayload);
-		Assert.assertNotNull(msg.getHeaders().get(HazelcastHeaders.MEMBER));
-		Assert.assertEquals(EntryEventType.REMOVED.name(),
-				msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE));
-		Assert.assertEquals("edMultiMap2",
-				msg.getHeaders().get(HazelcastHeaders.CACHE_NAME));
+		assertThat(msg).isNotNull();
+		assertThat(msg.getPayload()).isNotNull();
+		assertThat(msg.getPayload() instanceof EntryEventMessagePayload).isTrue();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.MEMBER)).isNotNull();
+		assertThat(msg.getHeaders().get(HazelcastHeaders.EVENT_TYPE)).isEqualTo(EntryEventType.REMOVED.name());
+		assertThat(msg.getHeaders().get(HazelcastHeaders.CACHE_NAME)).isEqualTo("edMultiMap2");
 
-		Assert.assertEquals(Integer.valueOf(2),
-				((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).key);
-		Assert.assertNull(((EntryEventMessagePayload<?, ?>) msg.getPayload()).value);
-		Assert.assertEquals(2,
-				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).oldValue).getId());
-		Assert.assertEquals("TestName2",
-				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).oldValue).getName());
-		Assert.assertEquals("TestSurname2",
-				(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
-						.getPayload()).oldValue).getSurname());
+		assertThat(((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).key).isEqualTo(Integer.valueOf(2));
+		assertThat(((EntryEventMessagePayload<?, ?>) msg.getPayload()).value).isNull();
+		assertThat((((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).oldValue).getId()).isEqualTo(2);
+		assertThat((((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).oldValue).getName()).isEqualTo("TestName2");
+		assertThat((((EntryEventMessagePayload<Integer, HazelcastIntegrationTestUser>) msg
+				.getPayload()).oldValue).getSurname()).isEqualTo("TestSurname2");
 	}
 
 	@Test

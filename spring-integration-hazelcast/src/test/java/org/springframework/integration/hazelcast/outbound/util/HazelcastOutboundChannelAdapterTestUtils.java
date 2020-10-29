@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package org.springframework.integration.hazelcast.outbound.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,7 +71,7 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
-			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
+			assertThat(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS)).isTrue();
 			verifyMapForPayload(new TreeMap(distributedMap));
 		}
 		catch (InterruptedException e) {
@@ -93,7 +91,7 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 
 			channel.send(new GenericMessage<>(userMap));
 
-			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
+			assertThat(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS)).isTrue();
 			verifyMapForPayload(new TreeMap(distributedMap));
 		}
 		catch (InterruptedException e) {
@@ -106,7 +104,7 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
-			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
+			assertThat(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS)).isTrue();
 			verifyMultiMapForPayload(multiMap);
 		}
 		catch (InterruptedException e) {
@@ -131,7 +129,7 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
-			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
+			assertThat(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS)).isTrue();
 			verifyCollection(distributedList, DATA_COUNT);
 		}
 		catch (InterruptedException e) {
@@ -144,7 +142,7 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 			HazelcastTestRequestHandlerAdvice requestHandlerAdvice) {
 		try {
 			sendMessageToChannel(channel);
-			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
+			assertThat(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS)).isTrue();
 			final List<HazelcastIntegrationTestUser> list = new ArrayList(distributedSet);
 			Collections.sort(list);
 			verifyCollection(list, DATA_COUNT);
@@ -177,7 +175,7 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 				}
 			});
 			sendMessageToChannel(channel);
-			assertTrue(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS));
+			assertThat(requestHandlerAdvice.executeLatch.await(10, TimeUnit.SECONDS)).isTrue();
 		}
 		catch (InterruptedException e) {
 			fail("Test has been failed due to " + e.getMessage());
@@ -193,11 +191,11 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 	public static void verifyMapForPayload(
 			final Map<Integer, HazelcastIntegrationTestUser> map) {
 		int index = 1;
-		assertNotNull(map);
-		assertEquals(true, map.size() == DATA_COUNT);
+		assertThat(map).isNotNull();
+		assertThat(map.size() == DATA_COUNT).isEqualTo(true);
 		for (Map.Entry<Integer, HazelcastIntegrationTestUser> entry : map.entrySet()) {
-			assertNotNull(entry);
-			assertEquals(index, entry.getKey().intValue());
+			assertThat(entry).isNotNull();
+			assertThat(entry.getKey().intValue()).isEqualTo(index);
 			verifyHazelcastIntegrationTestUser(entry.getValue(), index);
 			index++;
 		}
@@ -206,8 +204,8 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 	public static void verifyCollection(
 			final Collection<HazelcastIntegrationTestUser> coll, final int dataCount) {
 		int index = 1;
-		assertNotNull(coll);
-		assertEquals(true, coll.size() == dataCount);
+		assertThat(coll).isNotNull();
+		assertThat(coll.size() == dataCount).isEqualTo(true);
 		for (HazelcastIntegrationTestUser user : coll) {
 			verifyHazelcastIntegrationTestUser(user, index);
 			index++;
@@ -216,11 +214,11 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 
 	public static void verifyHazelcastIntegrationTestUser(
 			HazelcastIntegrationTestUser user, int index) {
-		assertNotNull(user);
-		assertEquals(index, user.getId());
-		assertEquals(TEST_NAME, user.getName());
-		assertEquals(TEST_SURNAME, user.getSurname());
-		assertEquals(index + DEFAULT_AGE, user.getAge());
+		assertThat(user).isNotNull();
+		assertThat(user.getId()).isEqualTo(index);
+		assertThat(user.getName()).isEqualTo(TEST_NAME);
+		assertThat(user.getSurname()).isEqualTo(TEST_SURNAME);
+		assertThat(user.getAge()).isEqualTo(index + DEFAULT_AGE);
 	}
 
 	private static void sendMessageToChannel(final MessageChannel channel) {
@@ -232,12 +230,12 @@ public final class HazelcastOutboundChannelAdapterTestUtils {
 	private static void verifyMultiMapForPayload(
 			final MultiMap<Integer, HazelcastIntegrationTestUser> multiMap) {
 		int index = 1;
-		assertNotNull(multiMap);
-		assertEquals(true, multiMap.size() == DATA_COUNT);
+		assertThat(multiMap).isNotNull();
+		assertThat(multiMap.size() == DATA_COUNT).isEqualTo(true);
 		SortedSet<Integer> keys = new TreeSet<>(multiMap.keySet());
 		for (Integer key : keys) {
-			assertNotNull(key);
-			assertEquals(index, key.intValue());
+			assertThat(key).isNotNull();
+			assertThat(key.intValue()).isEqualTo(index);
 			HazelcastIntegrationTestUser user = multiMap.get(key).iterator().next();
 			verifyHazelcastIntegrationTestUser(user, index);
 			index++;
