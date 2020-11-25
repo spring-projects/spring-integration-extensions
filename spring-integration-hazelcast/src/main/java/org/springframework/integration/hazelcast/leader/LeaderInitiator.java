@@ -396,6 +396,11 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 		}
 
 		@Override
+		public String getRole() {
+			return LeaderInitiator.this.candidate.getRole();
+		}
+
+		@Override
 		public String toString() {
 			return "HazelcastContext{role=" + LeaderInitiator.this.candidate.getRole() +
 					", id=" + LeaderInitiator.this.candidate.getId() +
