@@ -14,6 +14,7 @@ apply from: "${rootProject.projectDir}/publish-maven.gradle"
 group = 'org.springframework.integration'
 
 repositories {
+	mavenCentral()
 	if (version.endsWith('SNAPSHOT')) {
 		maven { url 'https://repo.spring.io/libs-snapshot' }
 	}
