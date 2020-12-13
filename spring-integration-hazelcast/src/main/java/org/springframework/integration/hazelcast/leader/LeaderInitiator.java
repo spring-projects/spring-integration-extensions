@@ -51,6 +51,7 @@ import com.hazelcast.cp.lock.FencedLock;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Mael Le Guével
+ * @author Alexey Tsoy
  */
 public class LeaderInitiator implements SmartLifecycle, DisposableBean, ApplicationEventPublisherAware {
 
