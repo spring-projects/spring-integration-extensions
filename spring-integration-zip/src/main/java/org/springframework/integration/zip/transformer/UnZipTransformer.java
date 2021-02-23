@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 							}
 						}
 						else {
-							throw new IllegalStateException("Unsupported zipResultType " + zipResultType);
+							throw new IllegalStateException("Unsupported zipResultType: " + zipResultType);
 						}
 					}
 
@@ -156,7 +156,9 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						/* If we see the relative traversal string of ".." we need to make sure
 						 * that the outputdir + name doesn't leave the outputdir.
 						 */
-						if (!destinationFile.getCanonicalPath().startsWith(workDirectory.getCanonicalPath())) {
+						if (!destinationFile.getCanonicalPath()
+								.startsWith(tempDir.getCanonicalPath() + File.separator)) {
+
 							throw new ZipException("The file " + zipEntryName +
 									" is trying to leave the target output directory of " + workDirectory);
 						}
@@ -188,8 +190,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					}
 
 				}
-			}
-			finally {
+
 				IOUtils.closeQuietly(inputStream);
 				if (payload instanceof File && this.deleteFiles) {
 					final File filePayload = (File) payload;
@@ -199,6 +200,9 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						}
 					}
 				}
+			}
+			finally {
+				IOUtils.closeQuietly(inputStream);
 			}
 			return unzippedData;
 		}
