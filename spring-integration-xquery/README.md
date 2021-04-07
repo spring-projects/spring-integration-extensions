@@ -164,4 +164,4 @@ We would like to thank **Ganesh Shetty** for his suggestion of inclusion of *XQu
 
 [JSR225]: https://jcp.org/aboutJava/communityprocess/final/jsr225/index.html
 [xqj.net]: https://en.wikipedia.org/wiki/XQuery_API_for_Java
-[Spring Integration XQuery Samples]: https://github.com/SpringSource/spring-integration-samples/tree/master/basic/xquery
+[Spring Integration XQuery Samples]: https://github.com/SpringSource/spring-integration-samples/tree/main/basic/xquery

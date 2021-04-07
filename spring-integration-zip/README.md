@@ -151,20 +151,12 @@ Check out the [spring-integration][spring-integration tag] tag on [Stack Overflo
 
 * [Spring Integration][]
 * [Spring Integration Samples][]
-* [Spring Integration Templates][]
-* [Spring Integration Java DSL][]
-* [Spring Integration Dsl Groovy][]
-* [Spring Integration Dsl Scala][]
 
 For more information, please also don't forget to visit the [Spring Integration][] website.
 
 [Spring Integration]: https://github.com/spring-projects/spring-integration
 [spring-integration tag]: https://stackoverflow.com/questions/tagged/spring-integration
 [Spring Integration Samples]: https://github.com/spring-projects/spring-integration-samples
-[Spring Integration Templates]: https://github.com/spring-projects/spring-integration-templates/tree/master/si-sts-templates
-[Spring Integration Java DSL]: https://github.com/spring-projects/spring-integration-java-dsl
-[Spring Integration Dsl Groovy]: https://github.com/spring-projects/spring-integration-dsl-groovy
-[Spring Integration Dsl Scala]: https://github.com/spring-projects/spring-integration-dsl-scala
 [Stack Overflow]: https://stackoverflow.com/faq
 
 [Zip]: https://en.wikipedia.org/wiki/Zip_%28file_format%29
