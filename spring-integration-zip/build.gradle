@@ -1,10 +1,18 @@
+buildscript {
+	repositories {
+		mavenCentral()
+		maven { url 'https://plugins.gradle.org/m2' }
+		maven { url 'https://repo.spring.io/plugins-release-local' }
+	}
+}
+
 plugins {
 	id 'java-library'
 	id 'eclipse'
 	id 'idea'
 	id 'jacoco'
 	id 'org.sonarqube' version '2.8'
-	id 'com.jfrog.artifactory' version '4.19.0'
+	id 'com.jfrog.artifactory' version '4.21.0'
 }
 
 description = 'Spring Integration Zip Adapter'
@@ -13,10 +21,11 @@ group = 'org.springframework.integration'
 
 repositories {
 	mavenCentral()
-	if (version.endsWith('BUILD-SNAPSHOT')) {
-		maven { url 'https://repo.spring.io/libs-snapshot' }
+	maven { url 'https://repo.spring.io/release' }
+	maven { url 'https://repo.spring.io/milestone' }
+	if (version.endsWith('SNAPSHOT')) {
+		maven { url 'https://repo.spring.io/snapshot' }
 	}
-	maven { url 'https://repo.spring.io/libs-milestone' }
 }
 
 java {
@@ -24,8 +33,8 @@ java {
 	withSourcesJar()
 }
 
-sourceCompatibility=1.6
-targetCompatibility=1.6
+sourceCompatibility=1.8
+targetCompatibility=1.8
 
 ext {
 
@@ -36,8 +45,10 @@ ext {
 	linkScmConnection    = 'https://github.com/spring-projects/spring-integration-extensions.git'
 	linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
 
-	slf4jVersion = '1.7.30'
-	springIntegrationVersion = '4.3.24.RELEASE'
+	assertjVersion = '3.20.2'
+	junitVersion = '5.7.2'
+	log4jVersion = '2.14.1'
+	springIntegrationVersion = '5.5.1'
 	ztZipVersion = '1.14'
 
 	idPrefix = 'zip'
@@ -58,7 +69,7 @@ sourceSets {
 }
 
 jacoco {
-	toolVersion = '0.8.6'
+	toolVersion = '0.8.7'
 }
 
 dependencies {
@@ -66,7 +77,13 @@ dependencies {
 	api "org.zeroturnaround:zt-zip:$ztZipVersion"
 
 	testImplementation "org.springframework.integration:spring-integration-test:$springIntegrationVersion"
-	testRuntimeOnly "org.slf4j:slf4j-log4j12:$slf4jVersion"
+	testImplementation "org.assertj:assertj-core:$assertjVersion"
+	testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+
+	testRuntimeOnly "org.apache.logging.log4j:log4j-jcl:$log4jVersion"
+	testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.7.2"
 }
 
 
@@ -81,7 +98,7 @@ test {
 	jacoco {
 		destinationFile = file("$buildDir/jacoco.exec")
 	}
-
+	useJUnitPlatform()
 	if (System.properties['sonar.host.url']) {
 		finalizedBy jacocoTestReport
 	}
@@ -119,7 +136,7 @@ task api(type: Javadoc) {
 
 	source = sourceSets.main.allJava
 	classpath = project.sourceSets.main.compileClasspath
-	destinationDir = new File(buildDir, "api")
+	destinationDir = new File(buildDir, 'api')
 }
 
 task schemaZip(type: Zip) {
@@ -168,7 +185,7 @@ task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
 	description = "Builds -${archiveClassifier} archive, containing all jars and docs, " +
 		"suitable for community download page."
 
-	ext.baseDir = "${project.name}-${project.version}";
+	ext.baseDir = "${project.name}-${project.version}"
 
 	from('src/dist') {
 		include 'readme.txt'
@@ -177,11 +194,11 @@ task distZip(type: Zip, dependsOn: [docsZip, schemaZip]) {
 		into "${baseDir}"
 	}
 
-	from(zipTree(docsZip.archivePath)) {
+	from(zipTree(docsZip.archiveFile)) {
 		into "${baseDir}/docs"
 	}
 
-	from(zipTree(schemaZip.archivePath)) {
+	from(zipTree(schemaZip.archiveFile)) {
 		into "${baseDir}/schema"
 	}
 
@@ -200,7 +217,7 @@ task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
 	description = "Builds -${archiveClassifier} archive, containing everything " +
 		"in the -${distZip.archiveClassifier} archive plus all dependencies."
 
-	from zipTree(distZip.archivePath)
+	from zipTree(distZip.archiveFile)
 
 	gradle.taskGraph.whenReady { taskGraph ->
 		if (taskGraph.hasTask(":${zipTask.name}")) {
@@ -209,7 +226,7 @@ task depsZip(type: Zip, dependsOn: distZip) { zipTask ->
 
 			rootProject.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each { artifact ->
 				def dependency = artifact.moduleVersion.id
-				if (!projectName.equals(dependency.name)) {
+				if (projectName != dependency.name) {
 					artifacts << artifact.file
 				}
 			}

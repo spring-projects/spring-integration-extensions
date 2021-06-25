@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
 
 package org.springframework.integration.zip.splitter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.channel.QueueChannel;
@@ -32,14 +30,15 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.zip.ZipHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * @author Andriy Kryvtsun
+ * @author Artem Bilan
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@SpringJUnitConfig
+@DirtiesContext
 public class UnZipResultSplitterTests {
 
 	private static final String DIR_1 = "dir1/";
@@ -83,14 +82,14 @@ public class UnZipResultSplitterTests {
 
 	private static void checkMessageWithHeaderValue(Message<?> message, String headerName, String headerValue,
 			String payload) {
-		assertNotNull(message);
+
+		assertThat(message).isNotNull();
 		checkHeaderValue(message, headerName, headerValue);
 		checkPayload(message, payload);
 	}
 
 	@Test
 	public void splitPreservingServiceHeaderValues() {
-
 		Message<?> inMessage = MessageBuilder.withPayload(createPayload())
 				.setHeader(ZipHeaders.ZIP_ENTRY_PATH, "dir")
 				.setHeader(FileHeaders.FILENAME, "filename")
@@ -107,25 +106,26 @@ public class UnZipResultSplitterTests {
 
 	private static void checkMessageWithServiceHeaderValues(Message<?> message, String path, String filename,
 			String payload) {
-		assertNotNull(message);
+
+		assertThat(message).isNotNull();
 		checkHeaderValue(message, ZipHeaders.ZIP_ENTRY_PATH, path);
 		checkHeaderValue(message, FileHeaders.FILENAME, filename);
 		checkPayload(message, payload);
 	}
 
 	private static Map<String, Object> createPayload() {
-		Map<String, Object> payload = new LinkedHashMap<String, Object>();
+		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put(DIR_1 + FILE_1, DATA_1);
 		payload.put(DIR_2 + FILE_2, DATA_2);
 		return payload;
 	}
 
 	private static void checkPayload(Message<?> message, String payload) {
-		assertEquals(payload, message.getPayload());
+		assertThat(message.getPayload()).isEqualTo(payload);
 	}
 
 	private static void checkHeaderValue(Message<?> message, String headerName, String headerValue) {
-		assertEquals(headerValue, message.getHeaders().get(headerName));
+		assertThat(message.getHeaders().get(headerName)).isEqualTo(headerValue);
 	}
 
 }

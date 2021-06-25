@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,18 +13,15 @@
 
 package org.springframework.integration.zip.config.xml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.charset.Charset;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.endpoint.EventDrivenConsumer;
 import org.springframework.integration.file.DefaultFileNameGenerator;
@@ -33,32 +30,32 @@ import org.springframework.integration.test.util.TestUtils;
 import org.springframework.integration.transformer.MessageTransformingHandler;
 import org.springframework.integration.zip.transformer.UnZipTransformer;
 import org.springframework.integration.zip.transformer.ZipResultType;
-import org.springframework.util.Assert;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  *
  * @author Gunnar Hillert
- * @since 1.0
+ * @author Artem Bilan
  *
  */
+@SpringJUnitConfig
+@DirtiesContext
 public class UnZipTransformerParserTests {
 
+	@Autowired
 	private ConfigurableApplicationContext context;
 
 	@Test
 	public void testUnZipTransformerParserWithDefaults() {
-
-		setUp("UnZipTransformerParserTests.xml", getClass());
-
-		EventDrivenConsumer consumer   = this.context.getBean("unzipTransformerWithDefaults", EventDrivenConsumer.class);
+		EventDrivenConsumer consumer = this.context.getBean("unzipTransformerWithDefaults", EventDrivenConsumer.class);
 
 		final AbstractMessageChannel inputChannel = TestUtils.getPropertyValue(consumer, "inputChannel", AbstractMessageChannel.class);
-		assertEquals("input", inputChannel.getComponentName());
+		assertThat(inputChannel.getComponentName()).isEqualTo("input");
 
 		final MessageTransformingHandler handler = TestUtils.getPropertyValue(consumer, "handler", MessageTransformingHandler.class);
 
-		final AbstractMessageChannel outputChannel = TestUtils.getPropertyValue(handler, "outputChannel", AbstractMessageChannel.class);
-		assertEquals("output", outputChannel.getComponentName());
+		assertThat(TestUtils.getPropertyValue(handler, "outputChannelName")).isEqualTo("output");
 
 		final UnZipTransformer unZipTransformer = TestUtils.getPropertyValue(handler, "transformer", UnZipTransformer.class);
 
@@ -69,37 +66,34 @@ public class UnZipTransformerParserTests {
 		final Boolean deleteFiles = TestUtils.getPropertyValue(unZipTransformer, "deleteFiles", Boolean.class);
 		final Boolean expectSingleResult = TestUtils.getPropertyValue(unZipTransformer, "expectSingleResult", Boolean.class);
 
-		assertNotNull(charset);
-		assertNotNull(fileNameGenerator);
-		assertNotNull(zipResultType);
-		assertNotNull(workDirectory);
-		assertNotNull(deleteFiles);
-		assertNotNull(expectSingleResult);
+		assertThat(charset).isNotNull();
+		assertThat(fileNameGenerator).isNotNull();
+		assertThat(zipResultType).isNotNull();
+		assertThat(workDirectory).isNotNull();
+		assertThat(deleteFiles).isNotNull();
+		assertThat(expectSingleResult).isNotNull();
 
-		assertEquals(Charset.defaultCharset(), charset);
-		Assert.isInstanceOf(DefaultFileNameGenerator.class, fileNameGenerator);
-		assertEquals(ZipResultType.FILE, zipResultType);
-		assertEquals(new File(System.getProperty("java.io.tmpdir") + File.separator + "ziptransformer"), workDirectory);
-		assertTrue("WorkDirectory should exist.", workDirectory.exists());
-		assertTrue("WorkDirectory should be a directory.", workDirectory.isDirectory());
-		assertFalse("By default the 'deleteFiles' property should be false.", deleteFiles);
-		assertFalse("The 'expectSingleResult' property should be false.", expectSingleResult);
+		assertThat(charset).isEqualTo(Charset.defaultCharset());
+		assertThat(fileNameGenerator).isInstanceOf(DefaultFileNameGenerator.class);
+		assertThat(zipResultType).isEqualTo(ZipResultType.FILE);
+		assertThat(workDirectory)
+				.isEqualTo(new File(System.getProperty("java.io.tmpdir") + File.separator + "ziptransformer"));
+		assertThat(workDirectory.exists()).isTrue();
+		assertThat(workDirectory.isDirectory()).isTrue();
+		assertThat(deleteFiles).isFalse();
+		assertThat(expectSingleResult).isFalse();
 	}
 
 	@Test
 	public void testUnZipTransformerParserWithExplicitSettings() {
-
-		setUp("UnZipTransformerParserTests.xml", getClass());
-
-		EventDrivenConsumer consumer   = this.context.getBean("unzipTransformer", EventDrivenConsumer.class);
+		EventDrivenConsumer consumer = this.context.getBean("unzipTransformer", EventDrivenConsumer.class);
 
 		final AbstractMessageChannel inputChannel = TestUtils.getPropertyValue(consumer, "inputChannel", AbstractMessageChannel.class);
-		assertEquals("input", inputChannel.getComponentName());
+		assertThat(inputChannel.getComponentName()).isEqualTo("input");
 
 		final MessageTransformingHandler handler = TestUtils.getPropertyValue(consumer, "handler", MessageTransformingHandler.class);
 
-		final AbstractMessageChannel outputChannel = TestUtils.getPropertyValue(handler, "outputChannel", AbstractMessageChannel.class);
-		assertEquals("output", outputChannel.getComponentName());
+		assertThat(TestUtils.getPropertyValue(handler, "outputChannelName")).isEqualTo("output");
 
 		final UnZipTransformer unZipTransformer = TestUtils.getPropertyValue(handler, "transformer", UnZipTransformer.class);
 
@@ -110,32 +104,22 @@ public class UnZipTransformerParserTests {
 		final Boolean deleteFiles = TestUtils.getPropertyValue(unZipTransformer, "deleteFiles", Boolean.class);
 		final Boolean expectSingleResult = TestUtils.getPropertyValue(unZipTransformer, "expectSingleResult", Boolean.class);
 
-		assertNotNull(charset);
-		assertNotNull(fileNameGenerator);
-		assertNotNull(zipResultType);
-		assertNotNull(workDirectory);
-		assertNotNull(deleteFiles);
-		assertNotNull(expectSingleResult);
+		assertThat(charset).isNotNull();
+		assertThat(fileNameGenerator).isNotNull();
+		assertThat(zipResultType).isNotNull();
+		assertThat(workDirectory).isNotNull();
+		assertThat(deleteFiles).isNotNull();
+		assertThat(expectSingleResult).isNotNull();
 
-		assertEquals(Charset.defaultCharset(), charset);
-		Assert.isInstanceOf(DefaultFileNameGenerator.class, fileNameGenerator);
-		assertEquals(ZipResultType.FILE, zipResultType);
-		assertEquals(new File(System.getProperty("java.io.tmpdir") + File.separator + "ziptransformer"), workDirectory);
-		assertTrue("WorkDirectory should exist.", workDirectory.exists());
-		assertTrue("WorkDirectory should be a directory.", workDirectory.isDirectory());
-		assertTrue("The 'deleteFiles' property should be true.", deleteFiles);
-		assertTrue("The 'expectSingleResult' property should be true.", expectSingleResult);
-	}
-
-	@After
-	public void tearDown(){
-		if(context != null){
-			context.close();
-		}
-	}
-
-	public void setUp(String name, Class<?> cls){
-		context    = new ClassPathXmlApplicationContext(name, cls);
+		assertThat(charset).isEqualTo(Charset.defaultCharset());
+		assertThat(fileNameGenerator).isInstanceOf(DefaultFileNameGenerator.class);
+		assertThat(zipResultType).isEqualTo(ZipResultType.FILE);
+		assertThat(workDirectory)
+				.isEqualTo(new File(System.getProperty("java.io.tmpdir") + File.separator + "ziptransformer"));
+		assertThat(workDirectory.exists()).isTrue();
+		assertThat(workDirectory.isDirectory()).isTrue();
+		assertThat(deleteFiles).isTrue();
+		assertThat(expectSingleResult).isTrue();
 	}
 
 }

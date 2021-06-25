@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package org.springframework.integration.zip.transformer;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.zip.Deflater;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.zeroturnaround.zip.ByteSource;
 import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
@@ -49,12 +49,9 @@ import org.springframework.util.StringUtils;
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
- * @since 1.0
  *
  */
 public class ZipTransformer extends AbstractZipTransformer {
-
-	private static final Log logger = LogFactory.getLog(ZipTransformer.class);
 
 	private static final String ZIP_EXTENSION = ".zip";
 
@@ -63,8 +60,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 	private volatile boolean useFileAttributes = true;
 
 	/**
-	 * Sets the compression level. Default is {@link Deflater#DEFAULT_COMPRESSION}.
-	 *
+	 * Set the compression level. Default is {@link Deflater#DEFAULT_COMPRESSION}.
 	 * @param compressionLevel Must be an integer value from 0-9.
 	 */
 	public void setCompressionLevel(int compressionLevel) {
@@ -73,9 +69,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 	}
 
 	/**
-	 * Specifies whether the name of the file shall be used for the
-	 * zip entry.
-	 *
+	 * Specify whether the name of the file shall be used for the zip entry.
 	 * @param useFileAttributes Defaults to true if not set explicitly
 	 */
 	public void setUseFileAttributes(boolean useFileAttributes) {
@@ -84,20 +78,17 @@ public class ZipTransformer extends AbstractZipTransformer {
 
 	/**
 	 * The payload may encompass the following types:
-	 *
 	 * <ul>
 	 *   <li>{@link File}
 	 *...<li>{@link String}
 	 *...<li>byte[]
 	 *...<li>{@link Iterable}
 	 * </ul>
-	 *
 	 * When providing an {@link Iterable}, nested Iterables are not supported. However,
 	 * payloads can be of of any of the other supported types.
-	 *
 	 */
 	@Override
-	protected Object doZipTransform(Message<?> message) throws Exception {
+	protected Object doZipTransform(Message<?> message) {
 		final Object payload = message.getPayload();
 		final Object zippedData;
 		final String baseFileName = this.fileNameGenerator.generateFileName(message);
@@ -128,7 +119,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 			lastModifiedDate = new Date();
 		}
 
-		java.util.List<ZipEntrySource> entries = new ArrayList<ZipEntrySource>();
+		java.util.List<ZipEntrySource> entries = new ArrayList<>();
 
 		if (payload instanceof Iterable<?>) {
 			int counter = 1;
@@ -144,9 +135,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 
 				final ZipEntrySource zipEntrySource = createZipEntrySource(item, lastModifiedDate, baseName + "_"
 						+ counter + fileExtension, this.useFileAttributes);
-				if (logger.isDebugEnabled()) {
-					logger.debug("ZipEntrySource path: '" + zipEntrySource.getPath() + "'");
-				}
+				logger.debug(() -> "ZipEntrySource path: '" + zipEntrySource.getPath() + "'");
 				entries.add(zipEntrySource);
 				counter++;
 			}
@@ -161,7 +150,12 @@ public class ZipTransformer extends AbstractZipTransformer {
 
 		if (ZipResultType.FILE.equals(this.zipResultType)) {
 			final File zippedFile = new File(this.workDirectory, zipFileName);
-			FileCopyUtils.copy(zippedBytes, zippedFile);
+			try {
+				FileCopyUtils.copy(zippedBytes, zippedFile);
+			}
+			catch (IOException ex) {
+				throw new UncheckedIOException(ex);
+			}
 			zippedData = zippedFile;
 		}
 		else if (ZipResultType.BYTE_ARRAY.equals(this.zipResultType)) {
@@ -189,8 +183,8 @@ public class ZipTransformer extends AbstractZipTransformer {
 	}
 
 	private void deleteFile(Object fileToDelete) {
-		if (fileToDelete instanceof File && !((File) fileToDelete).delete() && logger.isWarnEnabled()) {
-			logger.warn("Failed to delete File '" + fileToDelete + "'");
+		if (fileToDelete instanceof File && !((File) fileToDelete).delete()) {
+			logger.warn(() -> "Failed to delete File '" + fileToDelete + "'");
 		}
 	}
 
@@ -210,8 +204,7 @@ public class ZipTransformer extends AbstractZipTransformer {
 
 		}
 		else if (item instanceof byte[] || item instanceof String) {
-
-			byte[] bytesToCompress = null;
+			byte[] bytesToCompress;
 
 			if (item instanceof String) {
 				bytesToCompress = ((String) item).getBytes(this.charset);

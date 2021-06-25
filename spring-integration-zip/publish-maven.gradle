@@ -1,5 +1,9 @@
 apply plugin: 'maven-publish'
 
+tasks.withType(GenerateModuleMetadata) {
+	enabled = false
+}
+
 publishing {
 	publications {
 		mavenJava(MavenPublication) {

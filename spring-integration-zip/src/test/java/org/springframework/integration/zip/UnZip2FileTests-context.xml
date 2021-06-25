@@ -11,6 +11,8 @@
 		http://www.springframework.org/schema/integration/zip https://www.springframework.org/schema/integration/zip/spring-integration-zip.xsd
 		http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration.xsd">
 
+	<context:property-placeholder/>
+
 	<int:channel id="input"/>
 
 	<int:chain input-channel="input" output-channel="out">
@@ -26,9 +28,8 @@
 		</int:interceptors>
 	</int:channel>
 
-	<int:logging-channel-adapter id="logger" log-full-message="true" level="WARN"/>
+	<int:logging-channel-adapter id="logger" log-full-message="true" level="INFO"/>
 
-	<int-file:outbound-channel-adapter id="write-file" channel="out" directory-expression="'${workDir}/' + headers.zip_entryPath" auto-create-directory="true"/>
+	<int-file:outbound-channel-adapter id="write-file" channel="out" directory-expression="'${workDir}/' + headers.zip_entryPath"/>
 
-	<context:property-placeholder properties-ref="properties"/>
 </beans>

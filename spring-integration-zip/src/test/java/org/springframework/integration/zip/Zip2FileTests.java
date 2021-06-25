@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,126 +16,108 @@
 
 package org.springframework.integration.zip;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
- * @since 1.0
- *
  */
+@SpringJUnitConfig
+@DirtiesContext
 public class Zip2FileTests {
 
-	private AnnotationConfigApplicationContext context;
-
+	@Autowired
 	private MessageChannel input;
 
-	private static final Properties properties = new Properties();
+	@TempDir
+	public static File workDir;
 
-	@Rule
-	public TemporaryFolder testFolder = new TemporaryFolder();
-
-	private File workDir;
-
-	@Before
-	public void setup() throws IOException {
-		this.workDir = testFolder.newFolder();
-		properties.put("workDir", workDir);
-
-		context = new AnnotationConfigApplicationContext();
-		context.register(ContextConfiguration.class);
-		context.refresh();
-		input = context.getBean("input", MessageChannel.class);
+	@BeforeAll
+	public static void setup() {
+		System.setProperty("workDir", workDir.getAbsolutePath());
 	}
 
-	@After
-	public void cleanup() {
-		if (context != null) {
-			context.close();
+	@BeforeEach
+	public void cleanUp() {
+		for (File file : workDir.listFiles()) {
+			file.delete();
 		}
 	}
 
 	@Test
-	public void zipStringWithDefaultFileName() throws IOException, InterruptedException {
-
+	public void zipStringWithDefaultFileName() {
 		final Message<String> message = MessageBuilder.withPayload("Zip me up.").build();
-
 		input.send(message);
+		assertThat(workDir.list()).hasSize(1);
 
-		Assert.assertTrue(this.workDir.list().length == 1);
+		File fileInWorkDir = workDir.listFiles()[0];
 
-		File fileInWorkDir = this.workDir.listFiles()[0];
-
-		Assert.assertTrue(fileInWorkDir.isFile());
-		Assert.assertTrue(fileInWorkDir.getName().contains(message.getHeaders().getId().toString()));
-		Assert.assertTrue("The created file should have a 'zip' file extension.",
-				fileInWorkDir.getName().endsWith(".zip"));
+		assertThat(fileInWorkDir.isFile()).isTrue();
+		assertThat(fileInWorkDir.getName()).contains(message.getHeaders().getId().toString());
+		assertThat(fileInWorkDir.getName()).endsWith(".zip");
 	}
 
 	@Test
-	public void zipStringWithExplicitFileName() throws IOException, InterruptedException {
+	public void zipStringWithExplicitFileName() {
 		input.send(MessageBuilder.withPayload("Zip me up.")
 				.setHeader(FileHeaders.FILENAME, "zipString.zip")
 				.build());
 
-		Assert.assertTrue(this.workDir.list().length == 1);
-		Assert.assertEquals("zipString.zip", this.workDir.listFiles()[0].getName());
+		assertThat(workDir.list()).hasSize(1);
+		assertThat(workDir.list()[0]).isEqualTo("zipString.zip");
 	}
 
 	@Test
-	public void zipBytesWithExplicitFileName() throws IOException, InterruptedException {
-
+	public void zipBytesWithExplicitFileName() {
 		input.send(MessageBuilder.withPayload("Zip me up.".getBytes())
 				.setHeader(FileHeaders.FILENAME, "zipString.zip")
 				.build());
 
-		Assert.assertTrue(this.workDir.list().length == 1);
-		Assert.assertEquals("zipString.zip", this.workDir.listFiles()[0].getName());
+		assertThat(workDir.list()).hasSize(1);
+		assertThat(workDir.list()[0]).isEqualTo("zipString.zip");
 	}
 
 	@Test
-	public void zipFile() throws IOException, InterruptedException {
-
-		final File fileToCompress = testFolder.newFile();
-		FileUtils.writeStringToFile(fileToCompress, "hello world");
+	public void zipFile() throws IOException {
+		File fileToCompress = File.createTempFile("test1", "tmp");
+		FileUtils.writeStringToFile(fileToCompress, "hello world", Charset.defaultCharset());
 
 		input.send(MessageBuilder.withPayload(fileToCompress).build());
 
-		Assert.assertTrue(this.workDir.list().length == 1);
-		Assert.assertEquals(fileToCompress.getName() + ".zip", this.workDir.listFiles()[0].getName());
+		assertThat(workDir.list()).hasSize(1);
+		assertThat(workDir.list()[0]).isEqualTo(fileToCompress.getName() + ".zip");
 	}
 
 	@Test
-	public void zipIterableWithMultipleStrings() throws IOException, InterruptedException {
-
+	public void zipIterableWithMultipleStrings() {
 		String stringToCompress1 = "String1";
 		String stringToCompress2 = "String2";
 		String stringToCompress3 = "String3";
 		String stringToCompress4 = "String4";
 
-		final List<String> stringsToCompress = new ArrayList<String>(4);
+		List<String> stringsToCompress = new ArrayList<>(4);
 
 		stringsToCompress.add(stringToCompress1);
 		stringsToCompress.add(stringToCompress2);
@@ -146,19 +128,19 @@ public class Zip2FileTests {
 				.setHeader(FileHeaders.FILENAME, "zipWith4Strings.zip")
 				.build());
 
-		Assert.assertTrue(this.workDir.list().length == 1);
-		Assert.assertEquals("zipWith4Strings.zip", this.workDir.listFiles()[0].getName());
+		assertThat(workDir.list()).hasSize(1);
+		assertThat(workDir.list()[0]).isEqualTo("zipWith4Strings.zip");
 	}
 
 	@Test
-	public void zipIterableWithDifferentTypes() throws IOException, InterruptedException {
+	public void zipIterableWithDifferentTypes() throws IOException {
 
 		String stringToCompress = "String1";
 		byte[] bytesToCompress = "String2".getBytes();
-		final File fileToCompress = testFolder.newFile();
-		FileUtils.writeStringToFile(fileToCompress, "hello world");
+		File fileToCompress = File.createTempFile("test2", "tmp");
+		FileUtils.writeStringToFile(fileToCompress, "hello world", Charset.defaultCharset());
 
-		final List<Object> objectsToCompress = new ArrayList<Object>(3);
+		final List<Object> objectsToCompress = new ArrayList<>(3);
 
 		objectsToCompress.add(stringToCompress);
 		objectsToCompress.add(bytesToCompress);
@@ -168,19 +150,8 @@ public class Zip2FileTests {
 				.setHeader(FileHeaders.FILENAME, "objects-to-compress.zip")
 				.build());
 
-		Assert.assertTrue(this.workDir.list().length == 1);
-		Assert.assertEquals("objects-to-compress.zip", this.workDir.listFiles()[0].getName());
-	}
-
-	@Configuration
-	@ImportResource("classpath:org/springframework/integration/zip/Zip2FileTests-context.xml")
-	public static class ContextConfiguration {
-
-		@Bean
-		Properties properties() throws IOException {
-			return properties;
-		}
-
+		assertThat(workDir.list()).hasSize(1);
+		assertThat(workDir.list()[0]).isEqualTo("objects-to-compress.zip");
 	}
 
 }

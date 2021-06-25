@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.springframework.integration.zip.transformer;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
@@ -30,10 +31,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.zeroturnaround.zip.ZipUtil;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -45,16 +44,14 @@ import org.springframework.messaging.Message;
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
- * @since 1.0
- *
  */
 public class ZipTransformerTests {
 
-	@Rule
-	public TemporaryFolder testFolder = new TemporaryFolder();
+	@TempDir
+	public File workDir;
 
 	@Test
-	public void zipString() throws IOException {
+	public void zipString() {
 		final ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
 		zipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
@@ -65,32 +62,29 @@ public class ZipTransformerTests {
 		final Date fileDate = new Date();
 
 		final Message<String> message = MessageBuilder.withPayload(stringToCompress)
-			.setHeader(ZipHeaders.ZIP_ENTRY_FILE_NAME, "test.txt")
-			.setHeader(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE, fileDate)
-			.build();
+				.setHeader(ZipHeaders.ZIP_ENTRY_FILE_NAME, "test.txt")
+				.setHeader(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE, fileDate)
+				.build();
 
 		final Message<?> result = zipTransformer.transform(message);
 
 		Object resultPayload = result.getPayload();
 
-		Assert.assertTrue("Expected payload to be an instance of byte but was "
-				+ resultPayload.getClass().getName(), resultPayload instanceof byte[]);
+		assertThat(resultPayload).isInstanceOf(byte[].class);
 
-		final File temporaryTestDirectory = testFolder.newFolder();
+		ZipUtil.unpack(new ByteArrayInputStream((byte[]) resultPayload), this.workDir);
 
-		ZipUtil.unpack(new ByteArrayInputStream((byte[]) resultPayload), temporaryTestDirectory);
-
-		final File unzippedEntry = new File(temporaryTestDirectory, "test.txt");
-		Assert.assertTrue(unzippedEntry.exists());
-		Assert.assertTrue(unzippedEntry.isFile());
+		final File unzippedEntry = new File(this.workDir, "test.txt");
+		assertThat(unzippedEntry).exists().isFile();
 
 		//See https://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
-		Assert.assertTrue((fileDate.getTime() - 3000) < unzippedEntry.lastModified());
-		Assert.assertTrue((fileDate.getTime() + 3000) > unzippedEntry.lastModified());
+		assertThat(unzippedEntry.lastModified())
+				.isGreaterThan(fileDate.getTime() - 3000)
+				.isLessThan(fileDate.getTime() + 3000);
 	}
 
 	@Test
-	public void zipStringCollection() throws IOException {
+	public void zipStringCollection() {
 		final ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
 		zipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
@@ -100,7 +94,7 @@ public class ZipTransformerTests {
 		final String string2ToCompress = "Kenny";
 		final String string3ToCompress = "Butters";
 
-		final List<String> strings = new ArrayList<String>(3);
+		final List<String> strings = new ArrayList<>(3);
 
 		strings.add(string1ToCompress);
 		strings.add(string2ToCompress);
@@ -109,55 +103,46 @@ public class ZipTransformerTests {
 		final Date fileDate = new Date();
 
 		final Message<List<String>> message = MessageBuilder.withPayload(strings)
-			.setHeader(ZipHeaders.ZIP_ENTRY_FILE_NAME, "test.txt")
-			.setHeader(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE, fileDate)
-			.build();
+				.setHeader(ZipHeaders.ZIP_ENTRY_FILE_NAME, "test.txt")
+				.setHeader(ZipHeaders.ZIP_ENTRY_LAST_MODIFIED_DATE, fileDate)
+				.build();
 
 		final Message<?> result = zipTransformer.transform(message);
 
 		Object resultPayload = result.getPayload();
 
-		Assert.assertTrue("Expected payload to be an instance of byte but was "
-				+ resultPayload.getClass().getName(), resultPayload instanceof byte[]);
+		assertThat(resultPayload).isInstanceOf(byte[].class);
 
-		final File temporaryTestDirectory = testFolder.newFolder();
+		ZipUtil.unpack(new ByteArrayInputStream((byte[]) resultPayload), this.workDir);
 
-		ZipUtil.unpack(new ByteArrayInputStream((byte[]) resultPayload), temporaryTestDirectory);
+		File[] files = this.workDir.listFiles();
 
-		File[] files = temporaryTestDirectory.listFiles();
+		assertThat(files).hasSizeGreaterThanOrEqualTo(3);
 
-		Assert.assertTrue(files.length >= 3);
-
-		final Set<String> expectedFileNames = new HashSet<String>();
+		final Set<String> expectedFileNames = new HashSet<>();
 
 		expectedFileNames.add("test_1.txt");
 		expectedFileNames.add("test_2.txt");
 		expectedFileNames.add("test_3.txt");
 
 		for (File file : files) {
-
 			if (file.getName().startsWith("test")) {
-				Assert.assertTrue(file.exists());
-				Assert.assertTrue(file.isFile());
+				assertThat(file).exists().isFile();
 
 				//See https://stackoverflow.com/questions/3725662/what-is-the-earliest-timestamp-value-that-is-supported-in-zip-file-format
-				Assert.assertTrue(String.format("%s : %s", fileDate.getTime() - 4000, file.lastModified()),
-						(fileDate.getTime() - 4000) < file.lastModified());
-				Assert.assertTrue((fileDate.getTime() + 4000) > file.lastModified());
+				assertThat(file.lastModified())
+						.isLessThan(fileDate.getTime() + 4000)
+						.isGreaterThan(fileDate.getTime() - 4000);
 
-				Assert.assertTrue(
-					String.format("File '%s' did not end with '.txt'.", file.getName()),
-						file.getName().endsWith(".txt"));
+				assertThat(file).hasExtension("txt");
 
-				Assert.assertTrue(expectedFileNames.contains(file.getName()));
+				assertThat(expectedFileNames).contains(file.getName());
 			}
-
 		}
-
 	}
 
 	@Test
-	public void zipStringToFile() throws IOException {
+	public void zipStringToFile() {
 		final ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
 		zipTransformer.afterPropertiesSet();
@@ -166,30 +151,26 @@ public class ZipTransformerTests {
 
 		final String zipEntryFileName = "test.txt";
 		final Message<String> message = MessageBuilder.withPayload(stringToCompress)
-			.setHeader(ZipHeaders.ZIP_ENTRY_FILE_NAME, zipEntryFileName)
-			.build();
+				.setHeader(ZipHeaders.ZIP_ENTRY_FILE_NAME, zipEntryFileName)
+				.build();
 
 		final Message<?> result = zipTransformer.transform(message);
 
-		Assert.assertTrue("Expected payload to be an instance of file but was "
-				+ result.getPayload().getClass().getName(), result.getPayload() instanceof File);
+		assertThat(result.getPayload()).isInstanceOf(File.class);
 
 		final File payload = (File) result.getPayload();
 
-		System.out.println(payload.getAbsolutePath());
-
-		Assert.assertEquals(message.getHeaders().getId().toString() + ".msg.zip", payload.getName());
-		Assert.assertTrue(SpringZipUtils.isValid(payload));
+		assertThat(payload).hasName(message.getHeaders().getId().toString() + ".msg.zip");
+		assertThat((SpringZipUtils.isValid(payload))).isTrue();
 
 		final byte[] zipEntryData = ZipUtil.unpackEntry(payload, "test.txt");
 
-		Assert.assertNotNull("Entry '" + zipEntryFileName + "' was not found.", zipEntryData);
-		Assert.assertTrue("Hello World".equals(new String(zipEntryData)));
-
+		assertThat(zipEntryData).isNotNull();
+		assertThat(new String(zipEntryData)).isEqualTo("Hello World");
 	}
 
 	@Test
-	public void zipFile() throws IOException {
+	public void zipFile() {
 
 		ZipTransformer zipTransformer = new ZipTransformer();
 		zipTransformer.setBeanFactory(mock(BeanFactory.class));
@@ -198,34 +179,34 @@ public class ZipTransformerTests {
 
 		final File testFile = createTestFile(10);
 
-		Assert.assertTrue(testFile.exists());
+		assertThat(testFile).exists();
 
 		final Message<File> message = MessageBuilder.withPayload(testFile).build();
 
 		final Message<?> result = zipTransformer.transform(message);
 
-		Assert.assertTrue(result.getPayload() instanceof File);
+		assertThat(result.getPayload()).isInstanceOf(File.class);
 
 		final File payload = (File) result.getPayload();
 
-		Assert.assertEquals(testFile.getName() + ".zip", payload.getName());
-		Assert.assertTrue(SpringZipUtils.isValid(payload));
+		assertThat(payload).hasName(testFile.getName() + ".zip");
+		assertThat(SpringZipUtils.isValid(payload)).isTrue();
 	}
 
 	@Test
-	public void zipCollection() throws IOException {
+	public void zipCollection() {
 
 		final File testFile1 = createTestFile(1);
 		final File testFile2 = createTestFile(2);
 		final File testFile3 = createTestFile(3);
 		final File testFile4 = createTestFile(4);
 
-		Assert.assertTrue(testFile1.exists());
-		Assert.assertTrue(testFile2.exists());
-		Assert.assertTrue(testFile3.exists());
-		Assert.assertTrue(testFile4.exists());
+		assertThat(testFile1).exists();
+		assertThat(testFile2).exists();
+		assertThat(testFile3).exists();
+		assertThat(testFile4).exists();
 
-		final Collection<File> files = new ArrayList<File>();
+		final Collection<File> files = new ArrayList<>();
 
 		files.add(testFile1);
 		files.add(testFile2);
@@ -240,37 +221,22 @@ public class ZipTransformerTests {
 
 		final Message<?> result = zipTransformer.transform(message);
 
-		Assert.assertTrue(result.getPayload() instanceof File);
+		assertThat(result.getPayload()).isInstanceOf(File.class);
 
 		final File outputZipFile = (File) result.getPayload();
 
-		Assert.assertTrue(outputZipFile.exists());
-		Assert.assertTrue(outputZipFile.isFile());
-		Assert.assertTrue(outputZipFile.getName().endsWith("zip"));
-		Assert.assertTrue(SpringZipUtils.isValid(outputZipFile));
-
+		assertThat(outputZipFile).exists().isFile().hasExtension("zip");
+		assertThat(SpringZipUtils.isValid(outputZipFile)).isTrue();
 	}
 
-	private File createTestFile(int size) throws IOException {
+	private File createTestFile(int size) {
+		final File testFile = new File(this.workDir, "testdata" + UUID.randomUUID().toString() + ".data");
 
-		final File temporaryTestDirectory = this.testFolder.newFolder();
-
-		final File testFile = new File(temporaryTestDirectory, "testdata" + UUID.randomUUID().toString() + ".data");
-
-		RandomAccessFile f = null;
-		try {
-			f = new RandomAccessFile(testFile, "rw");
-			f.setLength(size * 1024 * 1024);
+		try (RandomAccessFile f = new RandomAccessFile(testFile, "rw")) {
+			f.setLength((long) size * 1024 * 1024);
 		}
 		catch (Exception e) {
 			System.err.println(e);
-		}
-		finally {
-			try {
-				if (f != null) {
-					f.close();
-				}
-			} catch (IOException e) {}
 		}
 		return testFile;
 
