@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,6 +130,20 @@ public class HazelcastMessageStoreTests {
 		store.addMessage(message2);
 		long size = store.getMessageCount();
 		assertThat(size).isEqualTo(2);
+	}
+
+	@Test
+	public void messageStoreIterator() {
+		Message<?> message1 = MessageBuilder.withPayload("test").build();
+		Message<?> message2 = MessageBuilder.withPayload("test").build();
+		store.addMessageToGroup("test", message1);
+		store.addMessageToGroup("test", message2);
+		int groupCount = 0;
+		for (MessageGroup messageGroup : store) {
+			assertThat(messageGroup.size()).isEqualTo(2);
+			groupCount++;
+		}
+		assertThat(groupCount).isEqualTo(1);
 	}
 
 }

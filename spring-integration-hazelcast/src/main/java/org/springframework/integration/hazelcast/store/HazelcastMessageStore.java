@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.springframework.util.Assert;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
-import com.hazelcast.query.Predicate;
-import com.hazelcast.query.impl.predicates.SqlPredicate;
+import com.hazelcast.query.Predicates;
+import com.hazelcast.query.QueryConstants;
 
 /**
  * The Hazelcast {@link IMap}-based {@link AbstractKeyValueMessageStore} implementation.
@@ -77,9 +77,7 @@ public class HazelcastMessageStore extends AbstractKeyValueMessageStore {
 	protected Collection<?> doListKeys(String keyPattern) {
 		Assert.hasText(keyPattern, "'keyPattern' must not be empty");
 		keyPattern = keyPattern.replaceAll("\\*", "%");
-		@SuppressWarnings("unchecked")
-		Predicate<Object, Object> sqlPredicate = new SqlPredicate("__key like " + keyPattern);
-		return this.map.values(sqlPredicate);
+		return this.map.keySet(Predicates.like(QueryConstants.KEY_ATTRIBUTE_NAME.value(), keyPattern));
 	}
 
 }
