@@ -109,8 +109,8 @@ groovydoc {
     link 'https://www.reactive-streams.org/reactive-streams-1.0.3-javadoc/', 'org.reactivestreams.'
 }
 
-task javadocJar(type: Jar, dependsOn: groovydoc) {
-    archiveClassifier = 'groovydoc'
+task javadocJar(type: Jar) {
+    archiveClassifier = 'javadoc'
     from groovydoc
 }
 
@@ -146,7 +146,7 @@ task distZip(type: Zip, dependsOn: docsZip) {
     description = "Builds -${archiveClassifier} archive, containing all jars and docs, " +
             "suitable for community download page."
 
-    ext.baseDir = "${project.name}-${project.version}";
+    ext.baseDir = "${project.name}-${project.version}"
 
     from('src/dist') {
         include 'readme.txt'
@@ -158,6 +158,9 @@ task distZip(type: Zip, dependsOn: docsZip) {
         from project.jar
         from project.sourcesJar
         from project.javadocJar
+        from (project.javadocJar) {
+            rename { it.replace('javadoc', 'groovydoc') }
+        }
     }
 
     from(zipTree(docsZip.archiveFile)) {

@@ -9,6 +9,9 @@ publishing {
 		mavenJava(MavenPublication) {
 		    suppressAllPomMetadataWarnings()
             from components.java
+			artifact(javadocJar) {
+				classifier = 'groovydoc'
+			}
             artifact docsZip
             artifact distZip
 			pom {
