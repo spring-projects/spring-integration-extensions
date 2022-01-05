@@ -1,0 +1,63 @@
+apply plugin: 'maven-publish'
+
+tasks.withType(GenerateModuleMetadata) {
+	enabled = false
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+		    suppressAllPomMetadataWarnings()
+            from components.java
+            artifact docsZip
+            artifact distZip
+			pom {
+				afterEvaluate {
+					name = project.description
+					description = project.description
+				}
+				url = linkScmUrl
+				organization {
+					name = 'Spring IO'
+					url = 'https://spring.io/projects/spring-integration'
+				}
+				licenses {
+					license {
+						name = 'Apache License, Version 2.0'
+						url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+						distribution = 'repo'
+					}
+				}
+				scm {
+					url = linkScmUrl
+					connection = linkScmConnection
+					developerConnection = linkScmDevConnection
+				}
+				developers {
+					developer {
+						id = 'artembilan'
+						name = 'Artem Bilan'
+						email = 'abilan@vmware.com'
+						roles = ['project lead']
+					}
+				}
+				issueManagement {
+					system = 'GitHub'
+					url = linkIssue
+				}
+			}
+			versionMapping {
+				usage('java-api') {
+					fromResolutionResult()
+				}
+				usage('java-runtime') {
+					fromResolutionResult()
+				}
+			}
+		}
+	}
+}
+
+artifactoryPublish {
+	publications(publishing.publications.mavenJava)
+}
