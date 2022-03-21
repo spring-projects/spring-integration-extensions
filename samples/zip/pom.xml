@@ -12,9 +12,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.integration.zip.version>1.0.2.RELEASE</spring.integration.zip.version>
-		<log4j.version>2.13.0</log4j.version>
-		<junit.version>4.13.1</junit.version>
+		<spring.integration.zip.version>2.0.0</spring.integration.zip.version>
+		<log4j.version>2.17.2</log4j.version>
+		<junit.version>4.13.2</junit.version>
 	</properties>
 
 	<repositories>
@@ -30,10 +30,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.10.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<compilerArgument>-Xlint:all</compilerArgument>
 					<showWarnings>true</showWarnings>
 					<showDeprecation>true</showDeprecation>
@@ -42,7 +42,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
+				<version>3.0.0</version>
 				<configuration>
 					<mainClass>org.springframework.integration.samples.zip.Main</mainClass>
 				</configuration>
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
+			<version>2.11.0</version>
 		</dependency>
 
 	</dependencies>

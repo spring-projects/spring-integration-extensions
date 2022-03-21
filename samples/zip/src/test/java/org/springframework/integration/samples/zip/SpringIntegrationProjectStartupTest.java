@@ -32,7 +32,7 @@ import org.springframework.integration.samples.zip.SpringIntegrationUtils;
 public class SpringIntegrationProjectStartupTest {
 
 	@Test
-	public void testStartupOfSpringInegrationContext() throws Exception{
+	public void testStartupOfSpringIntegrationContext() throws Exception{
 		final ApplicationContext context
 			= new ClassPathXmlApplicationContext("/META-INF/spring/integration/spring-integration-context.xml",
 												  SpringIntegrationProjectStartupTest.class);
