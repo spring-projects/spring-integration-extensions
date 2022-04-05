@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -50,6 +50,8 @@ import com.hazelcast.cp.lock.FencedLock;
  * @author Gary Russell
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Mael Le Guével
+ * @author Alexey Tsoy
  */
 public class LeaderInitiator implements SmartLifecycle, DisposableBean, ApplicationEventPublisherAware {
 
@@ -71,16 +73,12 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	/**
 	 * Executor service for running leadership daemon.
 	 */
-	private final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
-
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread thread = new Thread(r, "Hazelcast-leadership-" + (threadNameCount++));
-			thread.setDaemon(true);
-			return thread;
-		}
-
-	});
+	private final ExecutorService executorService =
+			Executors.newSingleThreadExecutor(r -> {
+				Thread thread = new Thread(r, "Hazelcast-leadership-" + (threadNameCount++));
+				thread.setDaemon(true);
+				return thread;
+			});
 
 	private long heartBeatMillis = LockRegistryLeaderInitiator.DEFAULT_HEART_BEAT_TIME;
 
@@ -111,6 +109,8 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	private boolean customPublisher = false;
 
 	private volatile boolean running;
+
+	private final Semaphore yieldSign = new Semaphore(0);
 
 	/**
 	 * Construct a {@link LeaderInitiator} with a default candidate.
@@ -220,9 +220,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	@Override
 	public void stop(Runnable callback) {
 		stop();
-		if (callback != null) {
-			callback.run();
-		}
+		callback.run();
 	}
 
 	/**
@@ -250,7 +248,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		stop();
 		this.executorService.shutdown();
 	}
@@ -268,108 +266,75 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 		private volatile boolean locked = false;
 
 		@Override
-		public Void call() throws Exception {
+		public Void call() {
 			try {
 				while (isRunning()) {
 					try {
-						// We always try to acquire the lock, in case it expired
-						boolean acquired =
-								LeaderInitiator.this.lock.tryLock(LeaderInitiator.this.heartBeatMillis,
-										TimeUnit.MILLISECONDS);
-						if (!this.locked) {
-							if (acquired) {
-								// Success: we are now leader
-								this.locked = true;
-								handleGranted();
-							}
-						}
-						else if (acquired) {
-							// If we were able to acquire it but we were already locked we
-							// should release it
-							LeaderInitiator.this.lock.unlock();
-							if (isRunning()) {
-								// Give it a chance to expire.
-								Thread.sleep(LeaderInitiator.this.heartBeatMillis);
+						if (LeaderInitiator.this.lock.isLocked()) {
+							// Give it a chance to expire.
+							if (yieldSign.tryAcquire(LeaderInitiator.this.heartBeatMillis, TimeUnit.MILLISECONDS)) {
+								revokeLeadership();
+								// Give it a chance to elect some other leader.
+								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
 							}
 						}
 						else {
-							this.locked = false;
-							// We were not able to acquire it, therefore not leading any more
-							handleRevoked();
-							if (isRunning()) {
-								// Try again quickly in case the lock holder dropped it
-								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
+							// We try to acquire the lock
+							boolean acquired =
+									LeaderInitiator.this.lock.tryLock(LeaderInitiator.this.heartBeatMillis,
+											TimeUnit.MILLISECONDS);
+							if (!this.locked) {
+								if (acquired) {
+									// Success: we are now leader
+									this.locked = true;
+									handleGranted();
+								}
 							}
 						}
 					}
 					catch (Exception e) {
-						if (this.locked) {
-							this.locked = false;
+						// The lock was broken and we are no longer leader
+						revokeLeadership();
+
+
+						if (isRunning()) {
+							// Give it a chance to elect some other leader.
 							try {
-								LeaderInitiator.this.lock.unlock();
+								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
 							}
-							catch (Exception e1) {
-								logger.debug("Could not unlock - treat as broken " + this.context +
-										". Revoking " + (isRunning() ? " and retrying..." : "..."), e1);
-
+							catch (InterruptedException e1) {
+								// Ignore interruption and let it to be caught on the next cycle.
+								Thread.currentThread().interrupt();
 							}
-							// The lock was broken and we are no longer leader
-							handleRevoked();
 						}
-
-						if (e instanceof InterruptedException || Thread.currentThread().isInterrupted()) {
-							Thread.currentThread().interrupt();
-							if (isRunning()) {
-								logger.warn("Restarting LeaderSelector for " + this.context + " because of error.", e);
-								LeaderInitiator.this.future =
-										LeaderInitiator.this.executorService.submit(
-												new Callable<Void>() {
-
-													@Override
-													public Void call() throws Exception {
-														// Give it a chance to elect some other leader.
-														Thread.sleep(LeaderInitiator.this.busyWaitMillis);
-														return LeaderSelector.this.call();
-													}
-
-												});
-							}
-							return null;
-						}
-						else {
-							if (isRunning()) {
-								// Give it a chance to elect some other leader.
-								try {
-									Thread.sleep(LeaderInitiator.this.busyWaitMillis);
-								}
-								catch (InterruptedException e1) {
-									// Ignore interruption and let it to be caught on the next cycle.
-									Thread.currentThread().interrupt();
-								}
-							}
-							if (logger.isDebugEnabled()) {
-								logger.debug("Error acquiring the lock for " + this.context +
-										". " + (isRunning() ? "Retrying..." : ""), e);
-							}
+						if (logger.isDebugEnabled()) {
+							logger.debug("Error acquiring the lock for " + this.context +
+									". " + (isRunning() ? "Retrying..." : ""), e);
 						}
 					}
 				}
 			}
 			finally {
-				if (this.locked) {
-					this.locked = false;
-					try {
-						LeaderInitiator.this.lock.unlock();
-					}
-					catch (Exception e) {
-						logger.debug("Could not unlock during stop for " + this.context
-								+ " - treat as broken. Revoking...", e);
-					}
-					// We are stopping, therefore not leading any more
-					handleRevoked();
-				}
+				revokeLeadership();
 			}
+
 			return null;
+		}
+
+		private void revokeLeadership() {
+			if (this.locked) {
+				this.locked = false;
+				try {
+					LeaderInitiator.this.lock.unlock();
+				}
+				catch (Exception e1) {
+					logger.debug("Could not unlock - treat as broken " + this.context +
+							". Revoking " + (isRunning() ? " and retrying..." : "..."), e1);
+
+				}
+
+				handleRevoked();
+			}
 		}
 
 
@@ -413,9 +378,14 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 
 		@Override
 		public void yield() {
-			if (LeaderInitiator.this.future != null) {
-				LeaderInitiator.this.future.cancel(true);
+			if (isLeader()) {
+				LeaderInitiator.this.yieldSign.release();
 			}
+		}
+
+		@Override
+		public String getRole() {
+			return LeaderInitiator.this.candidate.getRole();
 		}
 
 		@Override

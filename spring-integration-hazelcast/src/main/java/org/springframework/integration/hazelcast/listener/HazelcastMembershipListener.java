@@ -22,12 +22,12 @@ import java.util.concurrent.locks.Lock;
 
 import org.springframework.integration.hazelcast.HazelcastLocalInstanceRegistrar;
 
+import com.hazelcast.cluster.MembershipAdapter;
+import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MembershipAdapter;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MultiMap;
 import com.hazelcast.instance.EndpointQualifier;
+import com.hazelcast.multimap.MultiMap;
 
 /**
  * Hazelcast {@link MembershipAdapter} in order to listen for membership updates in the cluster.

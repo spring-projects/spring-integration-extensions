@@ -1,0 +1,176 @@
+plugins {
+    id 'groovy'
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'jacoco'
+    id 'org.sonarqube' version '2.8'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'com.jfrog.artifactory' version '4.24.20'
+}
+
+description = 'Spring Integration Groovy DSL'
+
+group = 'org.springframework.integration'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/release' }
+    maven { url 'https://repo.spring.io/milestone' }
+    if (version.endsWith('SNAPSHOT')) {
+        maven { url 'https://repo.spring.io/snapshot' }
+    }
+//		maven { url 'https://repo.spring.io/libs-staging-local' }
+}
+
+ext {
+    groovyVersion = '3.0.9'
+    junitVersion = '5.7.2'
+    log4jVersion = '2.17.0'
+    reactorVersion = '2020.0.13'
+    spockVersion = '2.0-groovy-3.0'
+    springIntegrationVersion = '5.5.7'
+
+    idPrefix = 'groovy-dsl'
+
+    linkHomepage = 'https://github.com/spring-projects/spring-integration-extensions'
+    linkCi = 'https://build.spring.io/browse/INTEXT'
+    linkIssue = 'https://github.com/spring-projects/spring-integration-extensions/issues'
+    linkScmUrl = 'https://github.com/spring-projects/spring-integration-extensions'
+    linkScmConnection = 'https://github.com/spring-projects/spring-integration-extensions.git'
+    linkScmDevConnection = 'git@github.com:spring-projects/spring-integration-extensions.git'
+
+}
+
+dependencyManagement {
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
+    applyMavenExclusions = false
+    generatedPomCustomization {
+        enabled = false
+    }
+
+    imports {
+        mavenBom "org.apache.logging.log4j:log4j-bom:$log4jVersion"
+        mavenBom "org.codehaus.groovy:groovy-bom:$groovyVersion"
+        mavenBom "org.junit:junit-bom:$junitVersion"
+        mavenBom "io.projectreactor:reactor-bom:$reactorVersion"
+        mavenBom "org.springframework.integration:spring-integration-bom:$springIntegrationVersion"
+    }
+
+}
+
+eclipse.project.natures += 'org.springframework.ide.eclipse.core.springnature'
+
+jacoco.toolVersion = '0.8.7'
+
+dependencies {
+    api 'org.codehaus.groovy:groovy'
+    api 'org.springframework.integration:spring-integration-core'
+
+    testImplementation 'org.springframework.integration:spring-integration-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation "org.spockframework:spock-spring:$spockVersion"
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-jcl'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.enabled false
+        xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+    }
+}
+
+test {
+    // suppress all console output during testing unless running `gradle -i`
+    logging.captureStandardOutput(LogLevel.INFO)
+    useJUnitPlatform()
+    jacoco.destinationFile = file("$buildDir/jacoco.exec")
+
+    if (System.properties['sonar.host.url']) {
+        finalizedBy jacocoTestReport
+    }
+}
+
+groovydoc {
+    link 'https://docs.oracle.com/en/java/javase/17/docs/api', 'java.'
+    link 'https://docs.groovy-lang.org/latest/html/gapi/', 'groovy.', 'org.codehaus.groovy.'
+    link 'https://docs.spring.io/spring-integration/docs/current/api/', 'org.springframework.integration.'
+    link 'https://docs.spring.io/spring-framework/docs/current/javadoc-api/', 'org.springframework.messaging.'
+    link 'https://projectreactor.io/docs/core/release/api/', 'reactor.'
+    link 'https://www.reactive-streams.org/reactive-streams-1.0.3-javadoc/', 'org.reactivestreams.'
+}
+
+task javadocJar(type: Jar) {
+    archiveClassifier = 'javadoc'
+    from groovydoc
+}
+
+check.dependsOn groovydoc
+build.dependsOn jacocoTestReport
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+sonarqube {
+    properties {
+        property 'sonar.links.homepage', linkHomepage
+        property 'sonar.links.ci', linkCi
+        property 'sonar.links.issue', linkIssue
+        property 'sonar.links.scm', linkScmUrl
+        property 'sonar.links.scm_dev', linkScmDevConnection
+    }
+}
+
+task docsZip(type: Zip) {
+    group = 'Distribution'
+    archiveClassifier = 'docs'
+    from(groovydoc) {
+        into 'api'
+    }
+}
+
+task distZip(type: Zip, dependsOn: docsZip) {
+    group = 'Distribution'
+    archiveClassifier = 'dist'
+    description = "Builds -${archiveClassifier} archive, containing all jars and docs, " +
+            "suitable for community download page."
+
+    ext.baseDir = "${project.name}-${project.version}"
+
+    from('src/dist') {
+        include 'readme.txt'
+        include 'license.txt'
+        into "${baseDir}"
+    }
+
+    into("${baseDir}/libs") {
+        from project.jar
+        from project.sourcesJar
+        from project.javadocJar
+        from (project.javadocJar) {
+            rename { it.replace('javadoc', 'groovydoc') }
+        }
+    }
+
+    from(zipTree(docsZip.archiveFile)) {
+        into "${baseDir}/docs"
+    }
+}
+
+task dist(dependsOn: assemble) {
+    group = 'Distribution'
+    description = 'Builds -dist and -docs distribution archives.'
+}
+
+apply from: "${rootProject.projectDir}/publish-maven.gradle"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,12 +46,12 @@ public final class CassandraParserUtils {
 		String ingestQuery = element.getAttribute("ingest-query");
 		String query = element.getAttribute("query");
 
-		if (StringUtils.isEmpty(cassandraTemplate)) {
+		if (!StringUtils.hasText(cassandraTemplate)) {
 			parserContext.getReaderContext().error("cassandra-template is required", element);
 		}
 
 		builder.addConstructorArgReference(cassandraTemplate);
-		if (!StringUtils.isEmpty(mode)) {
+		if (StringUtils.hasText(mode)) {
 			builder.addConstructorArgValue(mode);
 		}
 
@@ -92,7 +92,7 @@ public final class CassandraParserUtils {
 	public static boolean areMutuallyExclusive(String query, BeanDefinition statementExpressionDef,
 			String ingestQuery) {
 
-		return StringUtils.isEmpty(query) && statementExpressionDef == null && StringUtils.isEmpty(ingestQuery)
+		return !StringUtils.hasText(query) && statementExpressionDef == null && !StringUtils.hasText(ingestQuery)
 				|| !(StringUtils.hasText(query) && statementExpressionDef != null && StringUtils.hasText(ingestQuery))
 				&& (StringUtils.hasText(query) ^ statementExpressionDef != null) ^ StringUtils.hasText(ingestQuery);
 	}

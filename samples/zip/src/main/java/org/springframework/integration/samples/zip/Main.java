@@ -39,7 +39,8 @@ public final class Main {
 
 	private static final Log LOGGER = LogFactory.getLog(Main.class);
 
-	private Main() { }
+	private Main() {
+	}
 
 	/**
 	 * Load the Spring Integration Application Context
@@ -50,13 +51,13 @@ public final class Main {
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("\n========================================================="
-					  + "\n                                                         "
-					  + "\n    Welcome to the Spring Integration Zip Sample         "
-					  + "\n                                                         "
-					  + "\n    For more information please visit:                   "
-					  + "\n    https://www.springsource.org/spring-integration       "
-					  + "\n                                                         "
-					  + "\n=========================================================" );
+					+ "\n                                                         "
+					+ "\n    Welcome to the Spring Integration Zip Sample         "
+					+ "\n                                                         "
+					+ "\n    For more information please visit:                   "
+					+ "\n    https://www.springsource.org/spring-integration       "
+					+ "\n                                                         "
+					+ "\n=========================================================");
 		}
 
 		final AbstractApplicationContext context =
@@ -70,23 +71,21 @@ public final class Main {
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("\n========================================================="
-					  + "\n                                                         "
-					  + "\n    Please press 'q + Enter' to quit the application.    "
-					  + "\n                                                         "
-					  + "\n=========================================================" );
+					+ "\n                                                         "
+					+ "\n    Please press 'q + Enter' to quit the application.    "
+					+ "\n                                                         "
+					+ "\n=========================================================");
 		}
 
-		while (!scanner.hasNext("q")) {
-			//Do nothing unless user presses 'q' to quit.
+		while (true) {
+			if (scanner.hasNext("q")) {
+				if (LOGGER.isInfoEnabled()) {
+					LOGGER.info("Exiting application...bye.");
+				}
+				scanner.close();
+				System.exit(0);
+			}
 		}
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Exiting application...bye.");
-		}
-
-		scanner.close();
-		System.exit(0);
-
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package org.springframework.integration.hazelcast.metadata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -32,7 +31,7 @@ import org.springframework.integration.metadata.MetadataStoreListener;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 
 /**
  * @author Vinicius Carvalho
@@ -70,13 +69,13 @@ public class HazelcastMetadataStoreTests {
 	@Test
 	public void testGetNonExistingKeyValue() {
 		String retrievedValue = this.metadataStore.get("does-not-exist");
-		assertNull(retrievedValue);
+		assertThat(retrievedValue).isNull();
 	}
 
 	@Test
 	public void testPersistKeyValue() {
 		this.metadataStore.put("HazelcastMetadataStoreTests-Spring", "Integration");
-		assertEquals("Integration", map.get("HazelcastMetadataStoreTests-Spring"));
+		assertThat(map.get("HazelcastMetadataStoreTests-Spring")).isEqualTo("Integration");
 	}
 
 	@Test
@@ -84,7 +83,7 @@ public class HazelcastMetadataStoreTests {
 		this.metadataStore.put("HazelcastMetadataStoreTests-GetValue", "Hello Hazelcast");
 		String retrievedValue = this.metadataStore
 				.get("HazelcastMetadataStoreTests-GetValue");
-		assertEquals("Hello Hazelcast", retrievedValue);
+		assertThat(retrievedValue).isEqualTo("Hello Hazelcast");
 	}
 
 	@Test
@@ -93,7 +92,7 @@ public class HazelcastMetadataStoreTests {
 
 		String retrievedValue = this.metadataStore
 				.get("HazelcastMetadataStoreTests-PersistEmpty");
-		assertEquals("", retrievedValue);
+		assertThat(retrievedValue).isEqualTo("");
 	}
 
 	@Test
@@ -103,7 +102,7 @@ public class HazelcastMetadataStoreTests {
 			fail("Expected an IllegalArgumentException to be thrown.");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("'value' must not be null.", e.getMessage());
+			assertThat(e.getMessage()).isEqualTo("'value' must not be null.");
 		}
 	}
 
@@ -112,7 +111,7 @@ public class HazelcastMetadataStoreTests {
 		this.metadataStore.put("", "PersistWithEmptyKey");
 
 		String retrievedValue = this.metadataStore.get("");
-		assertEquals("PersistWithEmptyKey", retrievedValue);
+		assertThat(retrievedValue).isEqualTo("PersistWithEmptyKey");
 	}
 
 	@Test
@@ -123,7 +122,7 @@ public class HazelcastMetadataStoreTests {
 
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("'key' must not be null.", e.getMessage());
+			assertThat(e.getMessage()).isEqualTo("'key' must not be null.");
 		}
 	}
 
@@ -133,7 +132,7 @@ public class HazelcastMetadataStoreTests {
 			this.metadataStore.get(null);
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("'key' must not be null.", e.getMessage());
+			assertThat(e.getMessage()).isEqualTo("'key' must not be null.");
 			return;
 		}
 
@@ -147,23 +146,23 @@ public class HazelcastMetadataStoreTests {
 
 		this.metadataStore.put(testKey, testValue);
 
-		assertEquals(testValue, this.metadataStore.remove(testKey));
-		assertNull(this.metadataStore.remove(testKey));
+		assertThat(this.metadataStore.remove(testKey)).isEqualTo(testValue);
+		assertThat(this.metadataStore.remove(testKey)).isNull();
 	}
 
 	@Test
 	public void testPersistKeyValueIfAbsent() {
 		this.metadataStore.putIfAbsent("HazelcastMetadataStoreTests-Spring",
 				"Integration");
-		assertEquals("Integration", map.get("HazelcastMetadataStoreTests-Spring"));
+		assertThat(map.get("HazelcastMetadataStoreTests-Spring")).isEqualTo("Integration");
 	}
 
 	@Test
 	public void testReplaceValue() {
 		this.metadataStore.put("key", "old");
-		assertEquals("old", map.get("key"));
+		assertThat(map.get("key")).isEqualTo("old");
 		this.metadataStore.replace("key", "old", "new");
-		assertEquals("new", map.get("key"));
+		assertThat(map.get("key")).isEqualTo("new");
 	}
 
 	@Test

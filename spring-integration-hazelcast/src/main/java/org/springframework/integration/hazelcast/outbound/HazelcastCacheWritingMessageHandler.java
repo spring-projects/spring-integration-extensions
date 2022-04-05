@@ -28,8 +28,8 @@ import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.MultiMap;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.topic.ITopic;
 
 /**
  * MessageHandler implementation that writes {@link Message} or payload to defined

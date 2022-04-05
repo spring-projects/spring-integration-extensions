@@ -33,8 +33,6 @@ Contributions are always welcome.
 
 * [Spring Integration][]
 * [Spring Integration Samples][]
-* [Spring Integration Templates][]
-* [Spring Integration Dsl Kotlin][]
 * [Spring Integration Pattern Catalog][]
 
 ## Issue Tracking
@@ -121,11 +119,9 @@ The Spring Integration Extensions Framework is released under version 2.0 of the
 [Git]: https://help.github.com/set-up-git-redirect
 [Gradle build and release FAQ]: https://github.com/spring-projects/spring-framework/wiki/Gradle-build-and-release-FAQ
 [Pull requests]:https://help.github.com/en/articles/creating-a-pull-request
-[contributor guidelines]: https://github.com/spring-projects/spring-integration/blob/master/CONTRIBUTING.adoc
+[contributor guidelines]: https://github.com/spring-projects/spring-integration/blob/main/CONTRIBUTING.adoc
 [administrator guidelines]: https://github.com/spring-projects/spring-integration/wiki/Administrator-Guidelines
 [Spring Integration Samples]: https://github.com/spring-projects/spring-integration-samples
-[Spring Integration Templates]: https://github.com/spring-projects/spring-integration-templates/tree/master/si-sts-templates
-[Spring Integration Dsl Kotlin]: https://github.com/spring-projects/spring-integration-extensions/tree/master/spring-integration-kotlin-dsl
 [Spring Integration Pattern Catalog]: https://github.com/spring-projects/spring-integration-pattern-catalog
 [SpringSource Tool Suite]: https://www.springsource.org/sts
 [How to Create New Components]: https://github.com/spring-projects/spring-integration-extensions/wiki/How-to-Create-New-Components

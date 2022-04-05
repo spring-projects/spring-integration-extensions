@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 package org.springframework.integration.hazelcast.store;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +37,7 @@ import org.springframework.messaging.support.GenericMessage;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 
 /**
  * @author Vinicius Carvalho
@@ -85,11 +82,11 @@ public class HazelcastMessageStoreTests {
 		store.addMessage(message);
 		message = store.getMessage(message.getHeaders().getId());
 		MessageHistory messageHistory = MessageHistory.read(message);
-		assertNotNull(messageHistory);
-		assertEquals(2, messageHistory.size());
+		assertThat(messageHistory).isNotNull();
+		assertThat(messageHistory.size()).isEqualTo(2);
 		Properties fooChannelHistory = messageHistory.get(0);
-		assertEquals("fooChannel", fooChannelHistory.get("name"));
-		assertEquals("channel", fooChannelHistory.get("type"));
+		assertThat(fooChannelHistory.get("name")).isEqualTo("fooChannel");
+		assertThat(fooChannelHistory.get("type")).isEqualTo("channel");
 
 	}
 
@@ -103,10 +100,10 @@ public class HazelcastMessageStoreTests {
 			messages.add(message);
 		}
 		MessageGroup group = store.getMessageGroup(groupId);
-		assertEquals(25, group.size());
+		assertThat(group.size()).isEqualTo(25);
 		store.removeMessagesFromGroup(groupId, messages);
 		group = store.getMessageGroup(groupId);
-		assertEquals(0, group.size());
+		assertThat(group.size()).isEqualTo(0);
 	}
 
 	@Test
@@ -115,14 +112,14 @@ public class HazelcastMessageStoreTests {
 		Message<?> message = MessageBuilder.withPayload("test").build();
 		store.addMessage(message);
 		Message<?> retrieved = store.getMessage(message.getHeaders().getId());
-		assertEquals(message, retrieved);
+		assertThat(retrieved).isEqualTo(message);
 	}
 
 	@Test
 	public void customMap() {
-		assertSame(map, TestUtils.getPropertyValue(store, "map"));
+		assertThat(TestUtils.getPropertyValue(store, "map")).isSameAs(map);
 		HazelcastMessageStore store2 = new HazelcastMessageStore(instance);
-		assertNotSame(map, TestUtils.getPropertyValue(store2, "map"));
+		assertThat(TestUtils.getPropertyValue(store2, "map")).isNotSameAs(map);
 	}
 
 	@Test
@@ -132,7 +129,21 @@ public class HazelcastMessageStoreTests {
 		store.addMessage(message1);
 		store.addMessage(message2);
 		long size = store.getMessageCount();
-		assertEquals(2, size);
+		assertThat(size).isEqualTo(2);
+	}
+
+	@Test
+	public void messageStoreIterator() {
+		Message<?> message1 = MessageBuilder.withPayload("test").build();
+		Message<?> message2 = MessageBuilder.withPayload("test").build();
+		store.addMessageToGroup("test", message1);
+		store.addMessageToGroup("test", message2);
+		int groupCount = 0;
+		for (MessageGroup messageGroup : store) {
+			assertThat(messageGroup.size()).isEqualTo(2);
+			groupCount++;
+		}
+		assertThat(groupCount).isEqualTo(1);
 	}
 
 }

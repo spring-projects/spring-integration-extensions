@@ -180,7 +180,7 @@ public class CassandraMessageHandlerTests {
 
 		@Override
 		public String[] getEntityBasePackages() {
-			return new String[] { Book.class.getPackage().getName() };
+			return new String[]{ Book.class.getPackage().getName() };
 		}
 
 		@Bean

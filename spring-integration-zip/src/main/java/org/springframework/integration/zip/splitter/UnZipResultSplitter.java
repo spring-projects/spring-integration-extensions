@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@ import org.springframework.util.Assert;
  * @author Gunnar Hillert
  * @author Andriy Kryvtsun
  * @author Artem Bilan
- *
- * @since 1.0
  */
 public class UnZipResultSplitter extends AbstractMessageSplitter {
 
@@ -48,7 +46,7 @@ public class UnZipResultSplitter extends AbstractMessageSplitter {
 		Map<String, Object> unzippedEntries = (Map<String, Object>) message.getPayload();
 		MessageHeaders headers = message.getHeaders();
 
-		List<MessageBuilder<Object>> messageBuilders = new ArrayList<MessageBuilder<Object>>(unzippedEntries.size());
+		List<MessageBuilder<Object>> messageBuilders = new ArrayList<>(unzippedEntries.size());
 
 		for (Map.Entry<String, Object> entry : unzippedEntries.entrySet()) {
 			String path = FilenameUtils.getPath(entry.getKey());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +33,17 @@ import org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQL
 import org.springframework.integration.hazelcast.inbound.HazelcastEventDrivenMessageProducer;
 import org.springframework.messaging.PollableChannel;
 
+import com.hazelcast.collection.IList;
+import com.hazelcast.collection.IQueue;
+import com.hazelcast.collection.ISet;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.ISet;
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.MultiMap;
-import com.hazelcast.core.ReplicatedMap;
-import com.hazelcast.instance.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import com.hazelcast.map.IMap;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.replicatedmap.ReplicatedMap;
+import com.hazelcast.topic.ITopic;
 
 /**
  * Configuration Class for Hazelcast Integration Inbound Test
@@ -223,23 +223,13 @@ public class HazelcastIntegrationInboundTestConfiguration {
 	@Bean
 	public Config hazelcastConfig() {
 		Config config = new Config();
-		config.getCPSubsystemConfig().setCPMemberCount(3)
+		config.getCPSubsystemConfig().setCPMemberCount(0)
 				.setSessionHeartbeatIntervalSeconds(1);
 		return config;
 	}
 
 	@Bean(destroyMethod = "")
 	public HazelcastInstance testHazelcastInstance() {
-		return Hazelcast.newHazelcastInstance(hazelcastConfig());
-	}
-
-	@Bean(destroyMethod = "")
-	public HazelcastInstance testHazelcastInstance2() {
-		return Hazelcast.newHazelcastInstance(hazelcastConfig());
-	}
-
-	@Bean(destroyMethod = "")
-	public HazelcastInstance testHazelcastInstance3() {
 		return Hazelcast.newHazelcastInstance(hazelcastConfig());
 	}
 

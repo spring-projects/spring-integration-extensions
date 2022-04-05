@@ -227,7 +227,7 @@
 		<constructor-arg value="distributedMap"/>
 	</bean>
 
-	<bean id="distributedBulkMap" factory-bean="instance2" factory-method="getMap">
+	<bean id="distributedBulkMap" factory-bean="instance" factory-method="getMap">
 		<constructor-arg value="distributedBulkMap"/>
 	</bean>
 
@@ -267,7 +267,7 @@
 		<constructor-arg value="bulkReplicatedMap"/>
 	</bean>
 
-	<bean id="topic" factory-bean="instance3" factory-method="getTopic">
+	<bean id="topic" factory-bean="instance" factory-method="getTopic">
 		<constructor-arg value="topic"/>
 	</bean>
 

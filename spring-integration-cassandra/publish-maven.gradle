@@ -34,7 +34,7 @@ publishing {
 					developer {
 						id = 'artembilan'
 						name = 'Artem Bilan'
-						email = 'abilan@pivotal.io'
+						email = 'abilan@vmware.com'
 						roles = ['project lead']
 					}
 				}

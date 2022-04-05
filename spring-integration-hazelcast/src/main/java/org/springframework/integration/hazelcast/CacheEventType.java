@@ -49,6 +49,11 @@ public enum CacheEventType {
 	EVICTED,
 
 	/**
+	 * The Hazelcast EXPIRED event.
+	 */
+	EXPIRED,
+
+	/**
 	 * The Hazelcast EVICT_ALL event.
 	 */
 	EVICT_ALL,

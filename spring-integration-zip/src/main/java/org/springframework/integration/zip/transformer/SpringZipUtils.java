@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,49 +29,38 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipException;
+
+import org.springframework.core.log.LogAccessor;
 
 /**
  * Once the Spring Integration Zip support matures, we need to contribute the
  * methods in this utility class back to the ZT Zip project.
+ *
  * @author Gunnar Hillert
- * @since 1.0
  */
 public class SpringZipUtils {
 
-	private static final Log logger = LogFactory.getLog(SpringZipUtils.class);
+	private static final LogAccessor logger = new LogAccessor(SpringZipUtils.class);
 
 	public static byte[] pack(Collection<ZipEntrySource> entries, int compressionLevel) {
-
-		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("Creating byte array from '%s'.",
-					entries));
-		}
-
-		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
+		logger.debug(() -> "Creating byte array from: " + entries);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		pack(entries, outputStream, compressionLevel);
-
 		return outputStream.toByteArray();
 	}
 
 	public static void pack(Collection<ZipEntrySource> entries, File zip, int compressionLevel) {
+		logger.debug(() -> "Creating '" + zip + "' from " + entries + ".");
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Creating '" + zip + "' from " + entries + ".");
-		}
-
-		final FileOutputStream outputStream;
+		FileOutputStream outputStream;
 		try {
 			outputStream = new FileOutputStream(zip);
 		}
 		catch (FileNotFoundException e) {
 			throw new IllegalStateException(String.format("File '%s' not found.", zip.getAbsolutePath()), e);
 		}
-
 		pack(entries, outputStream, compressionLevel);
 
 	}

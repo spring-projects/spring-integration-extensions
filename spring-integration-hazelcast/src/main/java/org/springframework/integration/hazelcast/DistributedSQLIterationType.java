@@ -25,27 +25,27 @@ package org.springframework.integration.hazelcast;
  * @since 1.0.0
  *
  * @see org.springframework.integration.hazelcast.inbound.HazelcastDistributedSQLMessageSource
- * @see com.hazelcast.core.IMap
+ * @see com.hazelcast.map.IMap
  */
 public enum DistributedSQLIterationType {
 
 	/**
-	 * The {@link com.hazelcast.core.IMap#entrySet()} to iterate.
+	 * The {@link com.hazelcast.map.IMap#entrySet()} to iterate.
 	 */
 	ENTRY,
 
 	/**
-	 * The {@link com.hazelcast.core.IMap#keySet()} to iterate.
+	 * The {@link com.hazelcast.map.IMap#keySet()} to iterate.
 	 */
 	KEY,
 
 	/**
-	 * The {@link com.hazelcast.core.IMap#localKeySet()} to iterate.
+	 * The {@link com.hazelcast.map.IMap#localKeySet()} to iterate.
 	 */
 	LOCAL_KEY,
 
 	/**
-	 * The {@link com.hazelcast.core.IMap#values()} to iterate.
+	 * The {@link com.hazelcast.map.IMap#values()} to iterate.
 	 */
 	VALUE
 

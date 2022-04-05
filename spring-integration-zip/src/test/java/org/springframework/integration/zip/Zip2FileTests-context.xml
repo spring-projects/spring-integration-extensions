@@ -11,6 +11,8 @@
 		http://www.springframework.org/schema/integration/zip https://www.springframework.org/schema/integration/zip/spring-integration-zip.xsd
 		http://www.springframework.org/schema/integration https://www.springframework.org/schema/integration/spring-integration.xsd">
 
+	<context:property-placeholder/>
+
 	<int:channel id="input"/>
 
 	<int-zip:zip-transformer input-channel="input" output-channel="write-file" result-type="BYTE_ARRAY">
@@ -21,5 +23,4 @@
 
 	<int-file:outbound-channel-adapter id="write-file" directory="${workDir}" auto-create-directory="true"/>
 
-	<context:property-placeholder properties-ref="properties"/>
 </beans>

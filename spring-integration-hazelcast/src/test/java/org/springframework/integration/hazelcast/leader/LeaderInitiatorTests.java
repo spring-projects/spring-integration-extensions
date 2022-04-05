@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package org.springframework.integration.hazelcast.leader;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.spy;
@@ -48,7 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 
 /**
  * Tests for hazelcast leader election.
@@ -57,6 +55,7 @@ import com.hazelcast.instance.HazelcastInstanceFactory;
  * @author Patrick Peralta
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Mael Le Guével
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -82,9 +81,9 @@ public class LeaderInitiatorTests {
 
 	@Test
 	public void testLeaderElections() throws Exception {
-		assertThat(this.candidate.onGrantedLatch.await(5, TimeUnit.SECONDS), is(true));
-		assertThat(this.listener.onEventLatch.await(5, TimeUnit.SECONDS), is(true));
-		assertThat(this.listener.events.size(), is(1));
+		assertThat(this.candidate.onGrantedLatch.await(5, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.listener.onEventLatch.await(5, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.listener.events.size()).isEqualTo(1);
 
 		this.initiator.destroy();
 
@@ -101,7 +100,7 @@ public class LeaderInitiatorTests {
 			initiator.start();
 		}
 
-		assertThat(granted.await(10, TimeUnit.SECONDS), is(true));
+		assertThat(granted.await(10, TimeUnit.SECONDS)).isTrue();
 
 		LeaderInitiator initiator1 = countingPublisher.initiator;
 
@@ -114,10 +113,10 @@ public class LeaderInitiatorTests {
 			}
 		}
 
-		assertNotNull(initiator2);
+		assertThat(initiator2).isNotNull();
 
-		assertThat(initiator1.getContext().isLeader(), is(true));
-		assertThat(initiator2.getContext().isLeader(), is(false));
+		assertThat(initiator1.getContext().isLeader()).isTrue();
+		assertThat(initiator2.getContext().isLeader()).isFalse();
 
 		final CountDownLatch granted1 = new CountDownLatch(1);
 		final CountDownLatch granted2 = new CountDownLatch(1);
@@ -129,7 +128,7 @@ public class LeaderInitiatorTests {
 			public void publishOnRevoked(Object source, Context context, String role) {
 				try {
 					// It's difficult to see round-robin election, so block one initiator until the second is elected.
-					assertThat(granted2.await(10, TimeUnit.SECONDS), is(true));
+					assertThat(granted2.await(10, TimeUnit.SECONDS)).isTrue();
 				}
 				catch (InterruptedException e) {
 					// No op
@@ -145,7 +144,7 @@ public class LeaderInitiatorTests {
 			public void publishOnRevoked(Object source, Context context, String role) {
 				try {
 					// It's difficult to see round-robin election, so block one initiator until the second is elected.
-					assertThat(granted1.await(10, TimeUnit.SECONDS), is(true));
+					assertThat(granted1.await(10, TimeUnit.SECONDS)).isTrue();
 				}
 				catch (InterruptedException e) {
 					// No op
@@ -157,17 +156,17 @@ public class LeaderInitiatorTests {
 
 		initiator1.getContext().yield();
 
-		assertThat(revoked1.await(10, TimeUnit.SECONDS), is(true));
+		assertThat(revoked1.await(10, TimeUnit.SECONDS)).isTrue();
 
-		assertThat(initiator2.getContext().isLeader(), is(true));
-		assertThat(initiator1.getContext().isLeader(), is(false));
+		assertThat(initiator2.getContext().isLeader()).isTrue();
+		assertThat(initiator1.getContext().isLeader()).isFalse();
 
 		initiator2.getContext().yield();
 
-		assertThat(revoked2.await(10, TimeUnit.SECONDS), is(true));
+		assertThat(revoked2.await(10, TimeUnit.SECONDS)).isTrue();
 
-		assertThat(initiator1.getContext().isLeader(), is(true));
-		assertThat(initiator2.getContext().isLeader(), is(false));
+		assertThat(initiator1.getContext().isLeader()).isTrue();
+		assertThat(initiator2.getContext().isLeader()).isFalse();
 
 		initiator2.destroy();
 
@@ -176,7 +175,7 @@ public class LeaderInitiatorTests {
 
 		initiator1.getContext().yield();
 
-		assertThat(revoked11.await(10, TimeUnit.SECONDS), is(true));
+		assertThat(revoked11.await(10, TimeUnit.SECONDS)).isTrue();
 
 		initiator1.destroy();
 
@@ -207,9 +206,9 @@ public class LeaderInitiatorTests {
 
 		initiator.start();
 
-		assertThat(onGranted.await(5, TimeUnit.SECONDS), is(true));
+		assertThat(onGranted.await(5, TimeUnit.SECONDS)).isTrue();
 
-		assertThat(initiator.getContext().isLeader(), is(true));
+		assertThat(initiator.getContext().isLeader()).isTrue();
 
 		initiator.destroy();
 	}
@@ -226,23 +225,13 @@ public class LeaderInitiatorTests {
 		@Bean
 		public Config hazelcastConfig() {
 			Config config = new Config();
-			config.getCPSubsystemConfig().setCPMemberCount(3)
+			config.getCPSubsystemConfig()
 					.setSessionHeartbeatIntervalSeconds(1);
 			return config;
 		}
 
 		@Bean(destroyMethod = "")
 		public HazelcastInstance hazelcastInstance() {
-			return Hazelcast.newHazelcastInstance(hazelcastConfig());
-		}
-
-		@Bean(destroyMethod = "")
-		public HazelcastInstance hazelcastInstance2() {
-			return Hazelcast.newHazelcastInstance(hazelcastConfig());
-		}
-
-		@Bean(destroyMethod = "")
-		public HazelcastInstance hazelcastInstance3() {
 			return Hazelcast.newHazelcastInstance(hazelcastConfig());
 		}
 

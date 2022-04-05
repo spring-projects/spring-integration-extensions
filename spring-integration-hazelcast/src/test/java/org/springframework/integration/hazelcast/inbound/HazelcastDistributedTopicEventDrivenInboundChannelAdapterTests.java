@@ -30,8 +30,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.hazelcast.core.ITopic;
-import com.hazelcast.instance.HazelcastInstanceFactory;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import com.hazelcast.topic.ITopic;
 
 /**
  * Hazelcast Distributed Topic Event Driven Inbound Channel Adapter Test

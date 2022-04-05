@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,61 +16,48 @@
 
 package org.springframework.integration.zip.transformer;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.zeroturnaround.zip.ZipException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.transformer.MessageTransformationException;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessagingException;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  *
  * @author Gunnar Hillert
  * @author Artem Bilan
  * @author Ingo Dueppe
- *
- * @since 1.0
- *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@SpringJUnitConfig
+@DirtiesContext
 public class UnZipTransformerTests {
 
-	@Rule
-	public TemporaryFolder testFolder = new TemporaryFolder();
+	@TempDir
+	public File workDir;
 
 	@Autowired
 	private ResourceLoader resourceLoader;
-
-	private File workDir;
-
-	@Before
-	public void setup() throws IOException {
-		this.workDir = testFolder.newFolder();
-	}
 
 	@Test
 	public void unzipFlatFileEntryZip() throws IOException {
@@ -85,13 +72,12 @@ public class UnZipTransformerTests {
 
 		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-		Assert.assertNotNull(resultMessage);
+		assertThat(resultMessage).isNotNull();
 
 		@SuppressWarnings("unchecked")
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-		Assert.assertNotNull(unzippedData);
-		Assert.assertEquals(1, unzippedData.size());
+		assertThat(unzippedData).isNotNull().hasSize(1);
 	}
 
 	@Test
@@ -107,26 +93,26 @@ public class UnZipTransformerTests {
 
 		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-		Assert.assertNotNull(resultMessage);
+		assertThat(resultMessage).isNotNull();
 
 		@SuppressWarnings("unchecked")
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-		Assert.assertNotNull(unzippedData);
-		Assert.assertEquals(1, unzippedData.size());
-		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
-
+		assertThat(unzippedData).isNotNull().hasSize(1);
+		assertThat(new String(unzippedData.values().iterator().next())).isEqualTo("Spring Integration Rocks!");
 	}
 
 	@Test
 	public void unzipSingleFileToByteArray() throws IOException {
-
 		final Resource resource = this.resourceLoader.getResource("classpath:testzipdata/single.zip");
 		final InputStream is = resource.getInputStream();
 
 		final File inputFile = new File(this.workDir, "unzipSingleFileToByteArray");
 
-		IOUtils.copy(is, new FileOutputStream(inputFile));
+		FileOutputStream out = new FileOutputStream(inputFile);
+		IOUtils.copy(is, out);
+		is.close();
+		out.close();
 
 		final Message<File> message = MessageBuilder.withPayload(inputFile).build();
 
@@ -136,16 +122,14 @@ public class UnZipTransformerTests {
 
 		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-		Assert.assertNotNull(resultMessage);
+		assertThat(resultMessage).isNotNull();
 
 		@SuppressWarnings("unchecked")
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-		Assert.assertNotNull(unzippedData);
-		Assert.assertEquals(1, unzippedData.size());
-		Assert.assertTrue(inputFile.exists());
-		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
-
+		assertThat(unzippedData).isNotNull().hasSize(1);
+		assertThat(inputFile).exists();
+		assertThat(new String(unzippedData.values().iterator().next())).isEqualTo("Spring Integration Rocks!");
 	}
 
 	@Test
@@ -157,6 +141,7 @@ public class UnZipTransformerTests {
 
 		FileOutputStream output = new FileOutputStream(inputFile);
 		IOUtils.copy(is, output);
+		is.close();
 		output.close();
 
 		final Message<File> message = MessageBuilder.withPayload(inputFile).build();
@@ -168,16 +153,14 @@ public class UnZipTransformerTests {
 
 		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-		Assert.assertNotNull(resultMessage);
+		assertThat(resultMessage).isNotNull();
 
 		@SuppressWarnings("unchecked")
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-		Assert.assertNotNull(unzippedData);
-		Assert.assertEquals(1, unzippedData.size());
-		Assert.assertFalse(inputFile.exists());
-		Assert.assertEquals("Spring Integration Rocks!", new String(unzippedData.values().iterator().next()));
-
+		assertThat(unzippedData).isNotNull().hasSize(1);
+		assertThat(inputFile).doesNotExist();
+		assertThat(new String(unzippedData.values().iterator().next())).isEqualTo("Spring Integration Rocks!");
 	}
 
 	@Test
@@ -193,13 +176,12 @@ public class UnZipTransformerTests {
 
 		final Message<?> resultMessage = unZipTransformer.transform(message);
 
-		Assert.assertNotNull(resultMessage);
+		assertThat(resultMessage).isNotNull();
 
 		@SuppressWarnings("unchecked")
 		Map<String, byte[]> unzippedData = (Map<String, byte[]>) resultMessage.getPayload();
 
-		Assert.assertNotNull(unzippedData);
-		Assert.assertEquals(5, unzippedData.size());
+		assertThat(unzippedData).isNotNull().hasSize(5);
 	}
 
 	@Test
@@ -214,23 +196,17 @@ public class UnZipTransformerTests {
 		unZipTransformer.setExpectSingleResult(true);
 		unZipTransformer.afterPropertiesSet();
 
-		try {
-			unZipTransformer.transform(message);
-		}
-		catch (MessagingException e) {
-			Assert.assertTrue(e.getMessage().contains("The UnZip operation extracted "
-					+ "5 result objects but expectSingleResult was 'true'."));
-			return;
-		}
 
-		Assert.fail("Expected a MessagingException to be thrown.");
-
+		assertThatExceptionOfType(MessagingException.class)
+				.isThrownBy(() -> unZipTransformer.transform(message))
+				.withMessageContaining("The UnZip operation extracted 5 result objects " +
+						"but expectSingleResult was 'true'.");
 	}
 
 	@Test
 	public void unzipInvalidZipFile() throws IOException {
-		File fileToUnzip = this.testFolder.newFile();
-		FileUtils.writeStringToFile(fileToUnzip, "hello world");
+		File fileToUnzip = File.createTempFile("test1", "tmp");
+		FileUtils.writeStringToFile(fileToUnzip, "hello world", Charset.defaultCharset());
 
 		UnZipTransformer unZipTransformer = new UnZipTransformer();
 		unZipTransformer.setZipResultType(ZipResultType.BYTE_ARRAY);
@@ -239,14 +215,9 @@ public class UnZipTransformerTests {
 
 		Message<File> message = MessageBuilder.withPayload(fileToUnzip).build();
 
-		try {
-			unZipTransformer.transform(message);
-			Assert.fail("Expected a MessagingException to be thrown.");
-		}
-		catch (MessagingException e) {
-			Assert.assertTrue(e.getMessage().contains(String.format("Not a zip file: '%s'.",
-					fileToUnzip.getAbsolutePath())));
-		}
+		assertThatExceptionOfType(MessagingException.class)
+				.isThrownBy(() -> unZipTransformer.transform(message))
+				.withMessageContaining(String.format("Not a zip file: %s", fileToUnzip.getAbsolutePath()));
 	}
 
 	@Test
@@ -259,16 +230,16 @@ public class UnZipTransformerTests {
 		final UnZipTransformer unZipTransformer = new UnZipTransformer();
 		unZipTransformer.afterPropertiesSet();
 
-		try {
-			unZipTransformer.transform(message);
-		}
-		catch (Exception e) {
-			Assert.assertThat(e, instanceOf(MessageTransformationException.class));
-			Assert.assertThat(e.getCause(), instanceOf(MessageHandlingException.class));
-			Assert.assertThat(e.getCause().getCause(), instanceOf(ZipException.class));
-			Assert.assertThat(e.getCause().getCause().getMessage(),
-					containsString("is trying to leave the target output directory"));
-		}
+
+		assertThatExceptionOfType(MessageTransformationException.class)
+				.isThrownBy(() -> unZipTransformer.transform(message))
+				.withRootCauseInstanceOf(ZipException.class)
+				.withMessageContaining("is trying to leave the target output directory");
+	}
+
+	@Configuration
+	public static class TestConfiguration {
+
 	}
 
 }

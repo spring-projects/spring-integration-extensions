@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.zeroturnaround.zip.ZipEntryCallback;
 import org.zeroturnaround.zip.ZipException;
 import org.zeroturnaround.zip.ZipUtil;
@@ -44,12 +42,8 @@ import org.springframework.messaging.MessagingException;
  * @author Artem Bilan
  * @author Ingo Dueppe
  *
- * @since 1.0
- *
  */
 public class UnZipTransformer extends AbstractZipTransformer {
-
-	private static final Log logger = LogFactory.getLog(UnZipTransformer.class);
 
 	private volatile boolean expectSingleResult = false;
 
@@ -73,8 +67,8 @@ public class UnZipTransformer extends AbstractZipTransformer {
 	@Override
 	protected Object doZipTransform(final Message<?> message) {
 		try {
-			final Object payload = message.getPayload();
-			final Object unzippedData;
+			Object payload = message.getPayload();
+			Object unzippedData;
 
 			InputStream inputStream = null;
 
@@ -83,13 +77,12 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					final File filePayload = (File) payload;
 
 					if (filePayload.isDirectory()) {
-						throw new UnsupportedOperationException(String.format("Cannot unzip a directory: '%s'",
-								filePayload.getAbsolutePath()));
+						throw new UnsupportedOperationException("Cannot unzip a directory: " +
+								filePayload.getAbsolutePath());
 					}
 
 					if (!SpringZipUtils.isValid(filePayload)) {
-						throw new IllegalStateException(String.format("Not a zip file: '%s'.",
-								filePayload.getAbsolutePath()));
+						throw new IllegalStateException("Not a zip file: " + filePayload.getAbsolutePath());
 					}
 
 					inputStream = new FileInputStream(filePayload);
@@ -101,12 +94,11 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					inputStream = new ByteArrayInputStream((byte[]) payload);
 				}
 				else {
-					throw new IllegalArgumentException(String.format("Unsupported payload type '%s'. " +
-									"The only supported payload types are java.io.File, byte[] and java.io.InputStream",
-							payload.getClass().getSimpleName()));
+					throw new IllegalArgumentException("Unsupported payload type '" + payload.getClass().getSimpleName()
+							+ "'. The only supported payload types are java.io.File, byte[] and java.io.InputStream");
 				}
 
-				final SortedMap<String, Object> uncompressedData = new TreeMap<String, Object>();
+				final SortedMap<String, Object> uncompressedData = new TreeMap<>();
 
 				ZipUtil.iterate(inputStream, new ZipEntryCallback() {
 
@@ -118,11 +110,9 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						final long zipEntryCompressedSize = zipEntry.getCompressedSize();
 						final String type = zipEntry.isDirectory() ? "directory" : "file";
 
-						if (logger.isInfoEnabled()) {
-							logger.info(String.format("Unpacking Zip Entry - Name: '%s',Time: '%s', " +
-											"Compressed Size: '%s', Type: '%s'",
-									zipEntryName, zipEntryTime, zipEntryCompressedSize, type));
-						}
+						logger.info(() -> String.format("Unpacking Zip Entry - Name: '%s',Time: '%s', " +
+										"Compressed Size: '%s', Type: '%s'",
+								zipEntryName, zipEntryTime, zipEntryCompressedSize, type));
 
 						if (ZipResultType.FILE.equals(zipResultType)) {
 							final File destinationFile = checkPath(message, zipEntryName);
@@ -144,7 +134,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 							}
 						}
 						else {
-							throw new IllegalStateException("Unsupported zipResultType " + zipResultType);
+							throw new IllegalStateException("Unsupported zipResultType: " + zipResultType);
 						}
 					}
 
@@ -156,7 +146,9 @@ public class UnZipTransformer extends AbstractZipTransformer {
 						/* If we see the relative traversal string of ".." we need to make sure
 						 * that the outputdir + name doesn't leave the outputdir.
 						 */
-						if (!destinationFile.getCanonicalPath().startsWith(workDirectory.getCanonicalPath())) {
+						if (!destinationFile.getCanonicalPath()
+								.startsWith(tempDir.getCanonicalPath() + File.separator)) {
+
 							throw new ZipException("The file " + zipEntryName +
 									" is trying to leave the target output directory of " + workDirectory);
 						}
@@ -165,9 +157,7 @@ public class UnZipTransformer extends AbstractZipTransformer {
 				});
 
 				if (uncompressedData.isEmpty()) {
-					if (logger.isWarnEnabled()) {
-						logger.warn("No data unzipped from payload with message Id " + message.getHeaders().getId());
-					}
+					logger.warn(() -> "No data unzipped from payload with message Id " + message.getHeaders().getId());
 					unzippedData = null;
 				}
 				else {
@@ -188,17 +178,17 @@ public class UnZipTransformer extends AbstractZipTransformer {
 					}
 
 				}
-			}
-			finally {
+
 				IOUtils.closeQuietly(inputStream);
 				if (payload instanceof File && this.deleteFiles) {
 					final File filePayload = (File) payload;
 					if (!filePayload.delete() && logger.isWarnEnabled()) {
-						if (logger.isWarnEnabled()) {
-							logger.warn("failed to delete File '" + filePayload + "'");
-						}
+						logger.warn(() -> "failed to delete File '" + filePayload + "'");
 					}
 				}
+			}
+			finally {
+				IOUtils.closeQuietly(inputStream);
 			}
 			return unzippedData;
 		}

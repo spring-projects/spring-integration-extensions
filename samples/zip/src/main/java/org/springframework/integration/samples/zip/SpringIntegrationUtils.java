@@ -50,9 +50,9 @@ public final class SpringIntegrationUtils {
 	 */
 	public static void displayDirectories(final ApplicationContext context) {
 
-		final Map<String, FileReadingMessageSource> fileReadingMessageSources = context.getBeansOfType(FileReadingMessageSource.class);
+		Map<String, FileReadingMessageSource> fileReadingMessageSources = context.getBeansOfType(FileReadingMessageSource.class);
 
-		final List<String> inputDirectories = new ArrayList<String>();
+		List<String> inputDirectories = new ArrayList<>();
 
 		for (FileReadingMessageSource source : fileReadingMessageSources.values()) {
 			final File inDir = (File) new DirectFieldAccessor(source).getPropertyValue("directory");
@@ -60,9 +60,9 @@ public final class SpringIntegrationUtils {
 		}
 
 
-		final Map<String, FileWritingMessageHandler> fileWritingMessageHandlers = context.getBeansOfType(FileWritingMessageHandler.class);
+		Map<String, FileWritingMessageHandler> fileWritingMessageHandlers = context.getBeansOfType(FileWritingMessageHandler.class);
 
-		final List<String> outputDirectories = new ArrayList<String>();
+		List<String> outputDirectories = new ArrayList<>();
 
 		for (final FileWritingMessageHandler messageHandler : fileWritingMessageHandlers.values()) {
 			final Expression outDir = (Expression) new DirectFieldAccessor(messageHandler).getPropertyValue("destinationDirectoryExpression");

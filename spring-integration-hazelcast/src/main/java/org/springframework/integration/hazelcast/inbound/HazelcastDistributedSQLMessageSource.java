@@ -24,8 +24,8 @@ import org.springframework.integration.hazelcast.DistributedSQLIterationType;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import com.hazelcast.core.IMap;
-import com.hazelcast.query.SqlPredicate;
+import com.hazelcast.map.IMap;
+import com.hazelcast.query.impl.predicates.SqlPredicate;
 
 /**
  * Hazelcast Distributed SQL Message Source is a message source which runs defined
@@ -61,6 +61,7 @@ public class HazelcastDistributedSQLMessageSource extends AbstractMessageSource 
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected Collection<?> doReceive() {
 		switch (this.iterationType) {
 			case ENTRY:

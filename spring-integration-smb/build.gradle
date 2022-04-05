@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        maven { url 'https://plugins.gradle.org/m2' }
         maven { url 'https://repo.spring.io/plugins-release' }
     }
     dependencies {
@@ -22,6 +23,7 @@ description = 'Spring Integration SMB Support'
 group = 'org.springframework.integration'
 
 repositories {
+    mavenCentral()
     if (version.endsWith('BUILD-SNAPSHOT')) {
         maven { url 'https://repo.spring.io/libs-snapshot' }
     }
