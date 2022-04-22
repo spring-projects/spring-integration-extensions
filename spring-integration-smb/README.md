@@ -9,7 +9,7 @@ This module adds Spring Integration support for [Server Message Block][] (SMB).
 
 ## Version
 
-[Versions in Maven Repository](http://central.maven.org/maven2/org/springframework/integration/spring-integration-smb/)
+[Versions in Maven Repository](https://repo1.maven.org/maven2/org/springframework/integration/spring-integration-smb/)
 
 ## Using Maven
 
