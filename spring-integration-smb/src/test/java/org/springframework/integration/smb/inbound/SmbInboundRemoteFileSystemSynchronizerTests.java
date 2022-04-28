@@ -64,7 +64,6 @@ public class SmbInboundRemoteFileSystemSynchronizerTests extends AbstractBaseTes
 		smbSessionFactory.setUsername("sambaguest");
 		smbSessionFactory.setPassword("sambaguest");
 		smbSessionFactory.setShareAndDir("smb-share/");
-		smbSessionFactory.setReplaceFile(true);
 	}
 
 //	@Test
@@ -111,6 +110,7 @@ public class SmbInboundRemoteFileSystemSynchronizerTests extends AbstractBaseTes
 
 					doAnswer(new Answer<Object>() {
 
+						@Override
 						public Object answer(InvocationOnMock _invocation) throws Throwable {
 							String path = (String) _invocation.getArguments()[0];
 							OutputStream os = (OutputStream) _invocation.getArguments()[1];

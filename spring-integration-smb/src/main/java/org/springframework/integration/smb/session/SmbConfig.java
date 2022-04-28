@@ -49,10 +49,6 @@ public class SmbConfig {
 
 	private String shareAndDir;
 
-	private boolean replaceFile = false;
-
-	private boolean useTempFile = false;
-
 	/**
 	 * Defaults to and follows the jCIFS library default of 'SMB1'.
 	 * @since 1.2
@@ -129,22 +125,6 @@ public class SmbConfig {
 
 	public String getShareAndDir() {
 		return this.shareAndDir;
-	}
-
-	public void setReplaceFile(boolean _replaceFile) {
-		this.replaceFile = _replaceFile;
-	}
-
-	public boolean isReplaceFile() {
-		return this.replaceFile;
-	}
-
-	public void setUseTempFile(boolean _useTempFile) {
-		this.useTempFile = _useTempFile;
-	}
-
-	public boolean isUseTempFile() {
-		return this.useTempFile;
 	}
 
 	/**
@@ -243,7 +223,6 @@ public class SmbConfig {
 	public String toString() {
 		return getClass().getSimpleName()
 				+ "[url=" + getUrl(false)
-				+ ", replaceFile=" + this.replaceFile
 				+ "]";
 	}
 

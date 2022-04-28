@@ -23,11 +23,12 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.expression.common.LiteralExpression;
-import org.springframework.integration.smb.outbound.SmbMessageHandler;
+import org.springframework.integration.file.remote.handler.FileTransferringMessageHandler;
 import org.springframework.integration.smb.session.SmbSessionFactory;
 import org.springframework.messaging.support.GenericMessage;
 
 import jcifs.DialectVersion;
+import jcifs.smb.SmbFile;
 
 /**
  * Starts the Spring Context and will initialize the Spring Integration routes.
@@ -109,7 +110,7 @@ public final class Main {
 		LOGGER.info("Polling from Share: " + smbSessionFactory.getUrl());
 
 		// Create a test text file on the SMB file share
-		SmbMessageHandler handlerTxt = new SmbMessageHandler(smbSessionFactory);
+		FileTransferringMessageHandler<?> handlerTxt = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handlerTxt.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
 		handlerTxt.setFileNameGenerator(message -> "handlerContent.txt");
 		handlerTxt.setAutoCreateDirectory(true);
@@ -118,7 +119,7 @@ public final class Main {
 		handlerTxt.handleMessage(new GenericMessage<String>("hello, my text"));
 
 		// Create a test binary file on the SMB file share using a temporary filename
-		SmbMessageHandler handlerBin = new SmbMessageHandler(smbSessionFactory);
+		FileTransferringMessageHandler<?> handlerBin = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
 		handlerBin.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
 		handlerBin.setFileNameGenerator(message -> "handlerContent.bin");
 		handlerBin.setAutoCreateDirectory(true);

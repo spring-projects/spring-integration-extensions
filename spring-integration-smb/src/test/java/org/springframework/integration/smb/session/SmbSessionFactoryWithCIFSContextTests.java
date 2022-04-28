@@ -65,7 +65,6 @@ public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 		smbSessionFactory.setUsername("sambaguest");
 		smbSessionFactory.setPassword("sambaguest");
 		smbSessionFactory.setShareAndDir("smb-share/");
-		smbSessionFactory.setReplaceFile(true);
 	}
 
 	@Test

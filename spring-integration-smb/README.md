@@ -18,7 +18,7 @@ Put the following block into pom.xml if using Maven:
     <dependency>
         <groupId>org.springframework.integration</groupId>
         <artifactId>spring-integration-smb</artifactId>
-        <version>1.3.0.RELEASE</version>
+        <version>2.0.RELEASE</version>
     </dependency>
 
 ## Changes
@@ -31,8 +31,8 @@ Put the following block into pom.xml if using Maven:
  * Ability to set the SMB min/max versions in the `SmbSessionFactory` via configuration in the JCIFS library
  * Ability to use a custom implementation of the `jcifs.CIFSContext` interface in the `SmbSessionFactory`
 
-##### Version 1.3
- * Added implementation for `SmbMessageHandler`
+##### Version 2.0
+ * Removed legacy implementations of values `replaceFile` and `useTempFile` flags in `SmbConfig`, base classes of Spring Integration already handle this gracefully
 
 ## Overview
 
@@ -51,14 +51,15 @@ For XML configuration the `<int-smb:inbound-channel-adapter>` component is provi
 
 ### SMB Outbound Channel Adapter
 
-For writing files to a SMB share, and for XML `<int-smb:outbound-channel-adapter>` component we use the `SmbMessageHandler`.
-In case of Java configuration a `SmbMessageHandler` should be supplied with the `SmbSessionFactory` (or `SmbRemoteFileTemplate`).
+There is no (yet) some SMB specific requirements for files transferring to SMB, so for XML `<int-smb:outbound-channel-adapter>` component we simply reuse an existing `FileTransferringMessageHandler`.
+In case of Java configuration that `FileTransferringMessageHandler` should be supplied with the `SmbSessionFactory` (or `SmbRemoteFileTemplate`).
 
 ````java
+@ServiceActivator(inputChannel = "storeToSmb")
 @Bean
-@ServiceActivator(inputChannel = "storeToSmbShare")
 public MessageHandler smbMessageHandler(SmbSessionFactory smbSessionFactory) {
-    SmbMessageHandler handler = new SmbMessageHandler(smbSessionFactory);
+    FileTransferringMessageHandler<SmbFile> handler =
+                new FileTransferringMessageHandler<>(smbSessionFactory);
     handler.setRemoteDirectoryExpression(
                 new LiteralExpression("remote-target-dir"));
     handler.setFileNameGenerator(m ->

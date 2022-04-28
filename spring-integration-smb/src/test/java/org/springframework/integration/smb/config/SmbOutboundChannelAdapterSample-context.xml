@@ -16,7 +16,6 @@
 		p:username="sambaguest"
 		p:password="sambaguest"
 		p:shareAndDir="smb-share/"
-		p:replaceFile="false"/>
 
 	<int:channel id="smbOutboundChannel" />
 

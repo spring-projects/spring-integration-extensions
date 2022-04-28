@@ -16,7 +16,6 @@
 		<property name="username"    value="sambagu@est"/>
 		<property name="password"    value="sambag%uest"/>
 		<property name="shareAndDir" value="smb-share/"/>
-		<property name="replaceFile" value="true"/>
 	</bean>
 
 	<int-smb:inbound-channel-adapter id="smbInboundChannelAdapter"

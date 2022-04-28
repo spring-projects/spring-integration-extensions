@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,8 @@ import jcifs.smb.SmbFile;
  * The SMB-specific {@link RemoteFileTemplate} implementation.
  *
  * @author Artem Bilan
- * @author Gregory Bragg
  */
 public class SmbRemoteFileTemplate extends RemoteFileTemplate<SmbFile> {
-
-	private final SmbSessionFactory smbSessionFactory;
 
 	/**
 	 * Construct a {@link SmbRemoteFileTemplate} with the supplied session factory.
@@ -37,33 +34,6 @@ public class SmbRemoteFileTemplate extends RemoteFileTemplate<SmbFile> {
 	 */
 	public SmbRemoteFileTemplate(SessionFactory<SmbFile> sessionFactory) {
 		super(sessionFactory);
-		this.smbSessionFactory = (SmbSessionFactory) sessionFactory;
-	}
-
-	public boolean isReplaceFile() {
-		return this.smbSessionFactory.isReplaceFile();
-	}
-
-	public void setReplaceFile(boolean replaceFile) {
-		this.smbSessionFactory.setReplaceFile(replaceFile);
-	}
-
-	public boolean isUseTempFile() {
-		return this.smbSessionFactory.isUseTempFile();
-	}
-
-	public void setUseTempFile(boolean useTempFile) {
-		this.smbSessionFactory.setUseTempFile(useTempFile);
-	}
-
-	@Override
-	public boolean isUseTemporaryFileName() {
-		return this.smbSessionFactory.isUseTempFile();
-	}
-
-	@Override
-	public void setUseTemporaryFileName(boolean useTemporaryFileName) {
-		this.smbSessionFactory.setUseTempFile(useTemporaryFileName);
 	}
 
 }
