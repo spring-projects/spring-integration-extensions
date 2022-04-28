@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.mockito.stubbing.Answer;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.expression.common.LiteralExpression;
-import org.springframework.integration.file.remote.handler.FileTransferringMessageHandler;
 import org.springframework.integration.smb.AbstractBaseTests;
 import org.springframework.integration.smb.session.SmbSession;
 import org.springframework.integration.smb.session.SmbSessionFactory;
@@ -45,6 +44,7 @@ import jcifs.smb.SmbFile;
  * @author Markus Spann
  * @author Artem Bilan
  * @author Prafull Kumar Soni
+ * @author Gregory Bragg
  */
 public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 
@@ -62,13 +62,12 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 		smbSessionFactory.setUsername("sambaguest");
 		smbSessionFactory.setPassword("sambaguest");
 		smbSessionFactory.setShareAndDir("smb-share/");
-		smbSessionFactory.setReplaceFile(true);
 	}
 
 	@Test
 	public void testHandleFileContentMessage() {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
-		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
+		SmbMessageHandler handler = new SmbMessageHandler(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
 		handler.setFileNameGenerator(message -> "handlerContent.test");
 		handler.setAutoCreateDirectory(true);
@@ -81,7 +80,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 	@Test
 	public void testHandleFileAsByte() {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
-		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
+		SmbMessageHandler handler = new SmbMessageHandler(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
 		handler.setFileNameGenerator(message -> "handlerContent.test");
 		handler.setBeanFactory(mock(BeanFactory.class));
@@ -93,7 +92,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 //	@Test
 //	public void testHandleFileMessage() throws Exception {
 //		File file = createNewFile("remote-target-dir/template.mf.test");
-//		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
+//		SmbMessageHandler handler = new SmbMessageHandler(smbSessionFactory);
 //		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
 //		handler.setFileNameGenerator(new FileNameGenerator() {
 //			public String generateFileName(Message<?> message) {
@@ -115,6 +114,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 
 				doAnswer(new Answer<Object>() {
 
+					@Override
 					public Object answer(InvocationOnMock _invocation) throws Throwable {
 						String path = (String) _invocation.getArguments()[0];
 						OutputStream os = (OutputStream) _invocation.getArguments()[1];
@@ -136,6 +136,7 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 
 				doAnswer(new Answer<Object>() {
 
+					@Override
 					public Object answer(InvocationOnMock _invocation) {
 						String path = (String) _invocation.getArguments()[0];
 						new File(path).mkdirs();
