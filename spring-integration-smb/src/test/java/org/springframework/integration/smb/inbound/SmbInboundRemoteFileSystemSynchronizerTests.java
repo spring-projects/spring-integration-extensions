@@ -64,7 +64,6 @@ public class SmbInboundRemoteFileSystemSynchronizerTests extends AbstractBaseTes
 		smbSessionFactory.setUsername("sambaguest");
 		smbSessionFactory.setPassword("sambaguest");
 		smbSessionFactory.setShareAndDir("smb-share/");
-		smbSessionFactory.setReplaceFile(true);
 	}
 
 //	@Test

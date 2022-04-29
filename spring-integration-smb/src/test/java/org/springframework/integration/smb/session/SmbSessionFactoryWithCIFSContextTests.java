@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 	private SmbSessionFactory smbSessionFactory;
 
 	@Before
-	public void prepare() throws Exception {
+	public void prepare() {
 		smbSession = mock(SmbSession.class);
 
 		smbSessionFactory = new TestSmbSessionFactory(SingletonContext.getInstance());
@@ -65,7 +65,6 @@ public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 		smbSessionFactory.setUsername("sambaguest");
 		smbSessionFactory.setPassword("sambaguest");
 		smbSessionFactory.setShareAndDir("smb-share/");
-		smbSessionFactory.setReplaceFile(true);
 	}
 
 	@Test
@@ -77,12 +76,12 @@ public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 		handler.setAutoCreateDirectory(true);
 		handler.setBeanFactory(mock(BeanFactory.class));
 		handler.afterPropertiesSet();
-		handler.handleMessage(new GenericMessage<String>("hello"));
+		handler.handleMessage(new GenericMessage<>("hello"));
 		assertFileExists(file);
 	}
 
 	class TestSmbSessionFactory extends SmbSessionFactory {
-		private CIFSContext context = null;
+		private CIFSContext context;
 
 		protected TestSmbSessionFactory(CIFSContext _context) {
 			assertNotNull("CIFSContext object is null.", _context);

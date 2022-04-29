@@ -33,10 +33,11 @@ import jcifs.smb.SmbFile;
  *
  * @author Markus Spann
  * @author Gregory Bragg
+ * @author Artem Bilan
  */
 public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFile> {
 
-	private static Log logger = LogFactory.getLog(SmbSessionFactory.class);
+	private static final Log logger = LogFactory.getLog(SmbSessionFactory.class);
 
 	private CIFSContext context = null;
 
@@ -65,6 +66,7 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	protected SmbSession createSession() throws IOException {
 		SmbShare smbShare;
 		if (this.context != null) {
@@ -78,8 +80,8 @@ public class SmbSessionFactory extends SmbConfig implements SessionFactory<SmbFi
 			smbShare = new SmbShare(this, props);
 		}
 
-		smbShare.setReplaceFile(this.isReplaceFile());
-		smbShare.setUseTempFile(this.isUseTempFile());
+		smbShare.setReplaceFile(isReplaceFile());
+		smbShare.setUseTempFile(isUseTempFile());
 
 		if (logger.isInfoEnabled()) {
 			logger.info(String.format("SMB share init: %s/%s", getHostPort(), getShareAndDir()));

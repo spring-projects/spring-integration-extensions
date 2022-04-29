@@ -13,12 +13,11 @@ This module adds Spring Integration support for [Server Message Block][] (SMB).
 
 ## Using Maven
 
-Put the following block into pom.xml if using Maven:
+Put the following block into pom.xml if using Maven, set the `<version>` tag to the desired release:
 
     <dependency>
         <groupId>org.springframework.integration</groupId>
         <artifactId>spring-integration-smb</artifactId>
-        <version>1.2.0.RELEASE</version>
     </dependency>
 
 ## Changes
@@ -30,6 +29,11 @@ Put the following block into pom.xml if using Maven:
 ##### Version 1.2
  * Ability to set the SMB min/max versions in the `SmbSessionFactory` via configuration in the JCIFS library
  * Ability to use a custom implementation of the `jcifs.CIFSContext` interface in the `SmbSessionFactory`
+ 
+##### Version 1.2.2
+ * Updated to use the latest version of the [JCIFS](https://github.com/codelibs/jcifs) library
+ * Added implementation for `SmbMessageHandler`
+ * Deprecated legacy `replaceFile` and `useTempFile` flags in `SmbConfig`
 
 ## Overview
 
@@ -48,15 +52,14 @@ For XML configuration the `<int-smb:inbound-channel-adapter>` component is provi
 
 ### SMB Outbound Channel Adapter
 
-There is no (yet) some SMB specific requirements for files transferring to SMB, so for XML `<int-smb:outbound-channel-adapter>` component we simply reuse an existing `FileTransferringMessageHandler`.
-In case of Java configuration that `FileTransferringMessageHandler` should be supplied with the `SmbSessionFactory` (or `SmbRemoteFileTemplate`).
+For writing files to a SMB share, and for XML `<int-smb:outbound-channel-adapter>` component we use the `SmbMessageHandler`.
+In case of Java configuration a `SmbMessageHandler` should be supplied with the `SmbSessionFactory` (or `SmbRemoteFileTemplate`).
 
 ````java
-@ServiceActivator(inputChannel = "storeToSmb")
 @Bean
+@ServiceActivator(inputChannel = "storeToSmbShare")
 public MessageHandler smbMessageHandler(SmbSessionFactory smbSessionFactory) {
-    FileTransferringMessageHandler<SmbFile> handler =
-                new FileTransferringMessageHandler<>(smbSessionFactory);
+    SmbMessageHandler handler = new SmbMessageHandler(smbSessionFactory);
     handler.setRemoteDirectoryExpression(
                 new LiteralExpression("remote-target-dir"));
     handler.setFileNameGenerator(m ->

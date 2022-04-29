@@ -66,7 +66,6 @@ public class SmbInboundOutboundSample extends AbstractBaseTests {
 
 		// retrieve the session factory bean to place a couple of test files remotely using a new session
 		SmbSessionFactory smbSessionFactory = ac.getBean("smbSessionFactory", SmbSessionFactory.class);
-		smbSessionFactory.setReplaceFile(true);
 		SmbSession smbSession = smbSessionFactory.getSession();
 
 		// place text files onto the share
@@ -118,7 +117,6 @@ public class SmbInboundOutboundSample extends AbstractBaseTests {
 
 		// retrieve the session factory bean to check the test files are present in the remote location
 		SmbSessionFactory smbSessionFactory = ac.getBean("smbSessionFactory", SmbSessionFactory.class);
-		smbSessionFactory.setReplaceFile(false);
 		SmbSession smbSession = smbSessionFactory.getSession();
 
 		for (int i = 0; i < fileNames.length; i++) {

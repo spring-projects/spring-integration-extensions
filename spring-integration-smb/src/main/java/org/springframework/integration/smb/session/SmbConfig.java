@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,18 +131,42 @@ public class SmbConfig {
 		return this.shareAndDir;
 	}
 
+	/**
+	 * The replace file option.
+	 * @param _replaceFile true/false
+	 * @deprecated as of 1.2.2 in favor of SmbMessageHandler
+	 */
+	@Deprecated
 	public void setReplaceFile(boolean _replaceFile) {
 		this.replaceFile = _replaceFile;
 	}
 
+	/**
+	 * The replace file option.
+	 * @return true/false
+	 * @deprecated as of 1.2.2 in favor of SmbMessageHandler
+	 */
+	@Deprecated
 	public boolean isReplaceFile() {
 		return this.replaceFile;
 	}
 
+	/**
+	 * The tmp file option.
+	 * @param _useTempFile true/false
+	 * @deprecated as of 1.2.2 in favor of SmbMessageHandler
+	 */
+	@Deprecated
 	void setUseTempFile(boolean _useTempFile) {
 		this.useTempFile = _useTempFile;
 	}
 
+	/**
+	 * The tmp file option.
+	 * @return true/false
+	 * @deprecated as of 1.2.2 in favor of SmbMessageHandler
+	 */
+	@Deprecated
 	public boolean isUseTempFile() {
 		return this.useTempFile;
 	}

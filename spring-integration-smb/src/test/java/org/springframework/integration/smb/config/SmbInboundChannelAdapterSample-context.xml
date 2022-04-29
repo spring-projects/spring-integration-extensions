@@ -15,8 +15,7 @@
 		p:domain="sambaguest"
 		p:username="sambaguest"
 		p:password="sambaguest"
-		p:shareAndDir="smb-share/"
-		p:replaceFile="false"/>
+		p:shareAndDir="smb-share/"/>
 
 	<int-smb:inbound-channel-adapter id="smbInboundChannelAdapter"
 		channel="smbInboundChannel"
