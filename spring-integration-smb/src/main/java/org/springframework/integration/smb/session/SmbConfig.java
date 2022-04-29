@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,18 @@ public class SmbConfig {
 
 	private String shareAndDir;
 
+	/**
+	 * do not use.
+	 * @deprecated as of 1.3
+	 */
+	@Deprecated
 	private boolean replaceFile = false;
 
+	/**
+	 * do not use.
+	 * @deprecated as of 1.3
+	 */
+	@Deprecated
 	private boolean useTempFile = false;
 
 	/**
@@ -131,18 +141,42 @@ public class SmbConfig {
 		return this.shareAndDir;
 	}
 
+	/**
+	 * do not use.
+	 * @param _replaceFile true/false
+	 * @deprecated as of 1.3
+	 */
+	@Deprecated
 	public void setReplaceFile(boolean _replaceFile) {
 		this.replaceFile = _replaceFile;
 	}
 
+	/**
+	 * do not use.
+	 * @return true/false
+	 * @deprecated as of 1.3
+	 */
+	@Deprecated
 	public boolean isReplaceFile() {
 		return this.replaceFile;
 	}
 
+	/**
+	 * do not use.
+	 * @param _useTempFile true/false
+	 * @deprecated as of 1.3
+	 */
+	@Deprecated
 	void setUseTempFile(boolean _useTempFile) {
 		this.useTempFile = _useTempFile;
 	}
 
+	/**
+	 * do not use.
+	 * @return true/false
+	 * @deprecated as of 1.3
+	 */
+	@Deprecated
 	public boolean isUseTempFile() {
 		return this.useTempFile;
 	}
