@@ -114,6 +114,7 @@ public final class Main {
 		handlerTxt.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
 		handlerTxt.setFileNameGenerator(message -> "handlerContent.txt");
 		handlerTxt.setAutoCreateDirectory(true);
+		handlerTxt.setUseTemporaryFileName(false);
 		handlerTxt.setBeanFactory(context.getBeanFactory());
 		handlerTxt.afterPropertiesSet();
 		handlerTxt.handleMessage(new GenericMessage<String>("hello, my text"));
