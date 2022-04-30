@@ -22,7 +22,7 @@ import org.springframework.integration.file.remote.session.SessionFactory;
 import jcifs.smb.SmbFile;
 
 /**
- * The SMP-specific {@link RemoteFileTemplate} implementation.
+ * The SMB-specific {@link RemoteFileTemplate} implementation.
  *
  * @author Artem Bilan
  */

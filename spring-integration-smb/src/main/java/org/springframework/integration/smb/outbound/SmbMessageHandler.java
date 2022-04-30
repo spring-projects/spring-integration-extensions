@@ -48,7 +48,6 @@ public class SmbMessageHandler extends FileTransferringMessageHandler<SmbFile> {
 
 	public SmbMessageHandler(SmbRemoteFileTemplate remoteFileTemplate, FileExistsMode mode) {
 		super(remoteFileTemplate, mode);
-		throw new UnsupportedOperationException("do not use, unsupported constructor");
 	}
 
 }
