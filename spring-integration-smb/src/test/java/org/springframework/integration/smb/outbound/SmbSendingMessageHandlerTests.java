@@ -62,7 +62,6 @@ public class SmbSendingMessageHandlerTests extends AbstractBaseTests {
 		smbSessionFactory.setUsername("sambaguest");
 		smbSessionFactory.setPassword("sambaguest");
 		smbSessionFactory.setShareAndDir("smb-share/");
-		//smbSessionFactory.setReplaceFile(true);  // deprecated as of 1.2.2
 	}
 
 	@Test
