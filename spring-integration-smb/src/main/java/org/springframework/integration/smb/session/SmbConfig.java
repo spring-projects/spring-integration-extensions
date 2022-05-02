@@ -51,14 +51,14 @@ public class SmbConfig {
 
 	/**
 	 * do not use.
-	 * @deprecated as of 1.3
+	 * @deprecated as of 1.2.2
 	 */
 	@Deprecated
 	private boolean replaceFile = false;
 
 	/**
 	 * do not use.
-	 * @deprecated as of 1.3
+	 * @deprecated as of 1.2.2
 	 */
 	@Deprecated
 	private boolean useTempFile = false;
@@ -144,7 +144,7 @@ public class SmbConfig {
 	/**
 	 * do not use.
 	 * @param _replaceFile true/false
-	 * @deprecated as of 1.3
+	 * @deprecated as of 1.2.2
 	 */
 	@Deprecated
 	public void setReplaceFile(boolean _replaceFile) {
@@ -154,7 +154,7 @@ public class SmbConfig {
 	/**
 	 * do not use.
 	 * @return true/false
-	 * @deprecated as of 1.3
+	 * @deprecated as of 1.2.2
 	 */
 	@Deprecated
 	public boolean isReplaceFile() {
@@ -164,7 +164,7 @@ public class SmbConfig {
 	/**
 	 * do not use.
 	 * @param _useTempFile true/false
-	 * @deprecated as of 1.3
+	 * @deprecated as of 1.2.2
 	 */
 	@Deprecated
 	void setUseTempFile(boolean _useTempFile) {
@@ -174,7 +174,7 @@ public class SmbConfig {
 	/**
 	 * do not use.
 	 * @return true/false
-	 * @deprecated as of 1.3
+	 * @deprecated as of 1.2.2
 	 */
 	@Deprecated
 	public boolean isUseTempFile() {

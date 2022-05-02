@@ -13,12 +13,12 @@ This module adds Spring Integration support for [Server Message Block][] (SMB).
 
 ## Using Maven
 
-Put the following block into pom.xml if using Maven:
+Put the following block into pom.xml if using Maven, set the `<version>` tag to the desired release:
 
     <dependency>
         <groupId>org.springframework.integration</groupId>
         <artifactId>spring-integration-smb</artifactId>
-        <version>1.3.0.RELEASE</version>
+        <version></version>
     </dependency>
 
 ## Changes
@@ -31,7 +31,7 @@ Put the following block into pom.xml if using Maven:
  * Ability to set the SMB min/max versions in the `SmbSessionFactory` via configuration in the JCIFS library
  * Ability to use a custom implementation of the `jcifs.CIFSContext` interface in the `SmbSessionFactory`
  
-##### Version 1.3
+##### Version 1.2.2
  * Updated to use the latest version of the [JCIFS](https://github.com/codelibs/jcifs) library
  * Added implementation for `SmbMessageHandler`
  * Deprecated legacy `replaceFile` and `useTempFile` flags in `SmbConfig`
