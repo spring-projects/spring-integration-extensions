@@ -18,8 +18,10 @@ package org.springframework.integration.smb.outbound;
 
 import org.springframework.integration.file.remote.handler.FileTransferringMessageHandler;
 import org.springframework.integration.file.remote.session.SessionFactory;
+import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.integration.smb.session.SmbRemoteFileTemplate;
 import org.springframework.integration.smb.session.SmbSessionFactory;
+import org.springframework.util.Assert;
 
 import jcifs.smb.SmbFile;
 
@@ -38,6 +40,17 @@ public class SmbMessageHandler extends FileTransferringMessageHandler<SmbFile> {
 	@SuppressWarnings("deprecation")
 	public SmbMessageHandler(SessionFactory<SmbFile> sessionFactory) {
 		super(sessionFactory);
+
+		if (sessionFactory instanceof SmbSessionFactory) {
+			SmbSessionFactory smbSessionFactory = (SmbSessionFactory) sessionFactory;
+			smbSessionFactory.setReplaceFile(true);
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	public SmbMessageHandler(SessionFactory<SmbFile> sessionFactory, FileExistsMode mode) {
+		super(new SmbRemoteFileTemplate(sessionFactory));
+		Assert.isTrue(mode == FileExistsMode.REPLACE, "Only FileExistsMode.REPLACE is supported.");
 
 		if (sessionFactory instanceof SmbSessionFactory) {
 			SmbSessionFactory smbSessionFactory = (SmbSessionFactory) sessionFactory;
