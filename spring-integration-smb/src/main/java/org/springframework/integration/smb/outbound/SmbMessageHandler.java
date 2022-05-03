@@ -50,11 +50,9 @@ public class SmbMessageHandler extends FileTransferringMessageHandler<SmbFile> {
 	public SmbMessageHandler(SessionFactory<SmbFile> sessionFactory, FileExistsMode mode) {
 		super(new SmbRemoteFileTemplate(sessionFactory), mode);
 
-		if (mode == FileExistsMode.REPLACE) {
-			if (sessionFactory instanceof SmbSessionFactory) {
-				SmbSessionFactory smbSessionFactory = (SmbSessionFactory) sessionFactory;
-				smbSessionFactory.setReplaceFile(true);
-			}
+		if (sessionFactory instanceof SmbSessionFactory) {
+			SmbSessionFactory smbSessionFactory = (SmbSessionFactory) sessionFactory;
+			smbSessionFactory.setReplaceFile(true);
 		}
 	}
 
