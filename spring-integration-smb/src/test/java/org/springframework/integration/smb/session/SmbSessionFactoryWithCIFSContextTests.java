@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -38,6 +39,7 @@ import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.file.remote.handler.FileTransferringMessageHandler;
 import org.springframework.integration.smb.AbstractBaseTests;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.FileSystemUtils;
 
 import jcifs.CIFSContext;
 import jcifs.context.SingletonContext;
@@ -45,6 +47,7 @@ import jcifs.smb.SmbFile;
 
 /**
  * @author Gregory Bragg
+ * @author Artem Bilan
  */
 public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 
@@ -67,10 +70,15 @@ public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 		smbSessionFactory.setShareAndDir("smb-share/");
 	}
 
+	@After
+	public void cleanup() {
+		FileSystemUtils.deleteRecursively(new File("remote-target-dir"));
+	}
+
 	@Test
 	public void testHandleFileContentMessage() {
 		File file = createNewFile("remote-target-dir/handlerContent.test");
-		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<SmbFile>(smbSessionFactory);
+		FileTransferringMessageHandler<?> handler = new FileTransferringMessageHandler<>(smbSessionFactory);
 		handler.setRemoteDirectoryExpression(new LiteralExpression("remote-target-dir"));
 		handler.setFileNameGenerator(message -> "handlerContent.test");
 		handler.setAutoCreateDirectory(true);
@@ -81,6 +89,7 @@ public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 	}
 
 	class TestSmbSessionFactory extends SmbSessionFactory {
+
 		private CIFSContext context;
 
 		protected TestSmbSessionFactory(CIFSContext _context) {
@@ -122,14 +131,9 @@ public class SmbSessionFactoryWithCIFSContextTests extends AbstractBaseTests {
 				// when(smbSession.write(Mockito.any(byte[].class), Mockito.anyString())).thenReturn(null);
 				// when(smbSession.write(Mockito.any(File.class), Mockito.anyString())).thenReturn(null);
 
-				doAnswer(new Answer<Object>() {
-
-					@Override
-					public Object answer(InvocationOnMock _invocation) {
-						String path = (String) _invocation.getArguments()[0];
-						new File(path).mkdirs();
-						return null;
-					}
+				doAnswer(_invocation -> {
+					String path = (String) _invocation.getArguments()[0];
+					return new File(path).mkdirs();
 				}).when(smbSession).mkdir(Mockito.anyString());
 
 				doAnswer(_invocation -> {
