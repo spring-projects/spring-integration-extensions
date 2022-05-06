@@ -1,6 +1,8 @@
 Spring Integration SMB Support
 ==============================
 
+> **_IMPORTANT:_**: Starting with Spring Integration `6.0` this project has been migrated as a module into a [core project](https://github.com/spring-projects/spring-integration/tree/main/spring-integration-smb).
+
 ## Introduction
 
 This module adds Spring Integration support for [Server Message Block][] (SMB).
