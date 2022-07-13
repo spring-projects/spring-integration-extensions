@@ -1,4 +1,4 @@
 Spring Integration Java DSL
 ===============================
 
-The project is hosted on https://github.com/spring-projects/spring-integration-java-dsl
+Starting with Spring Integration `5.0` this extension has been absorbed by [core project](https://docs.spring.io/spring-integration/docs/current/reference/html/dsl.html#java-dsl).
