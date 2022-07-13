@@ -1,6 +1,8 @@
 SPRING INTEGRATION HAZELCAST SUPPORT
 ====================================
 
+> **_IMPORTANT:_**: Starting with Spring Integration `6.0` this project has been migrated as a module into a [core project](https://github.com/spring-projects/spring-integration/tree/main/spring-integration-hazelcast).
+
 ## HAZELCAST EVENT-DRIVEN INBOUND CHANNEL ADAPTER
 
 Hazelcast provides distributed data structures such as
