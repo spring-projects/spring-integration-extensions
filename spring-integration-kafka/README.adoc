@@ -1,0 +1,4 @@
+= Spring Integration for Apache Kafka
+=================================================
+
+Starting with Spring Integration `5.4` this extension has been absorbed by the https://docs.spring.io/spring-integration/docs/6.0.0-RC1/reference/html/kafka.html#kafka[core project].
