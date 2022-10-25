@@ -1,3 +1,3 @@
 = Spring Integration Groovy DSL
 
-Starting with Spring Integration `6.0` this extension has been absorbed by the [core project](https://docs.spring.io/spring-integration/docs/current/reference/html/groovy-dsl.html#groovy-dsl).
+Starting with Spring Integration `6.0` this extension has been absorbed by the https://docs.spring.io/spring-integration/docs/current/reference/html/groovy-dsl.html#groovy-dsl[core project].
