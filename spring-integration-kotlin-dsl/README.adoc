@@ -1,4 +1,4 @@
-Spring Integration Kotlin DSL
+= Spring Integration Kotlin DSL
 ===============================
 
-Starting with Spring Integration `5.3` this extension has been absorbed by [core project](https://docs.spring.io/spring-integration/docs/current/reference/html/kotlin-dsl.html#kotlin-dsl).
+Starting with Spring Integration `5.3` this extension has been absorbed by the https://docs.spring.io/spring-integration/docs/current/reference/html/kotlin-dsl.html#kotlin-dsl[core project].
