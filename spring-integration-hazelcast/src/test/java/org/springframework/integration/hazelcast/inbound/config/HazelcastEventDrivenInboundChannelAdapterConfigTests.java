@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
 
 package org.springframework.integration.hazelcast.inbound.config;
 
-import javax.annotation.Resource;
-
+import com.hazelcast.collection.IList;
+import com.hazelcast.collection.IQueue;
+import com.hazelcast.collection.ISet;
+import com.hazelcast.map.IMap;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.replicatedmap.ReplicatedMap;
+import com.hazelcast.topic.ITopic;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,24 +32,16 @@ import org.springframework.integration.hazelcast.inbound.util.HazelcastInboundCh
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import com.hazelcast.collection.IList;
-import com.hazelcast.collection.IQueue;
-import com.hazelcast.collection.ISet;
-import com.hazelcast.map.IMap;
-import com.hazelcast.multimap.MultiMap;
-import com.hazelcast.replicatedmap.ReplicatedMap;
-import com.hazelcast.topic.ITopic;
 
 /**
  * Hazelcast Event Driven Inbound Channel Adapter JavaConfig driven Unit Test Class
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @since 6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class,
 		loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
@@ -74,28 +71,28 @@ public class HazelcastEventDrivenInboundChannelAdapterConfigTests {
 	@Autowired
 	private PollableChannel multiMapChannel;
 
-	@Resource
+	@Autowired
 	private IMap<Integer, HazelcastIntegrationTestUser> testDistributedMap;
 
-	@Resource
+	@Autowired
 	private IMap<Integer, HazelcastIntegrationTestUser> testDistributedMap2;
 
-	@Resource
+	@Autowired
 	private IList<HazelcastIntegrationTestUser> testDistributedList;
 
-	@Resource
+	@Autowired
 	private ISet<HazelcastIntegrationTestUser> testDistributedSet;
 
-	@Resource
+	@Autowired
 	private IQueue<HazelcastIntegrationTestUser> testDistributedQueue;
 
-	@Resource
+	@Autowired
 	private ITopic<HazelcastIntegrationTestUser> testTopic;
 
-	@Resource
+	@Autowired
 	private ReplicatedMap<Integer, HazelcastIntegrationTestUser> testReplicatedMap;
 
-	@Resource
+	@Autowired
 	private MultiMap<Integer, HazelcastIntegrationTestUser> testMultiMap;
 
 	@Test

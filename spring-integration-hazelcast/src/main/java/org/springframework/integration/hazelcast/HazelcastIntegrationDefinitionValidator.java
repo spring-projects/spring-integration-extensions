@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import com.hazelcast.collection.IList;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.collection.ISet;
@@ -32,18 +29,21 @@ import com.hazelcast.multimap.MultiMap;
 import com.hazelcast.replicatedmap.ReplicatedMap;
 import com.hazelcast.topic.ITopic;
 
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 /**
  * Common Validator for Hazelcast Integration. It validates cache types and events.
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
  *
- * @since 1.0.0
+ * @since 6.0
  */
 public final class HazelcastIntegrationDefinitionValidator {
 
 	public static <E extends Enum<E>> Set<String> validateEnumType(final Class<E> enumType, final String types) {
-			Set<String> typeSet = StringUtils.commaDelimitedListToSet(StringUtils.trimAllWhitespace(types));
+		Set<String> typeSet = StringUtils.commaDelimitedListToSet(StringUtils.trimAllWhitespace(types));
 		for (String type : typeSet) {
 			Enum.valueOf(enumType, type);
 		}

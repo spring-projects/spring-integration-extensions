@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,6 @@ package org.springframework.integration.hazelcast.inbound;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.integration.hazelcast.HazelcastHeaders;
-import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
-import org.springframework.util.Assert;
-
 import com.hazelcast.collection.IList;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.collection.ISet;
@@ -31,12 +27,15 @@ import com.hazelcast.collection.ItemListener;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.instance.EndpointQualifier;
 import com.hazelcast.map.IMap;
-import com.hazelcast.map.listener.MapListener;
 import com.hazelcast.multimap.MultiMap;
 import com.hazelcast.replicatedmap.ReplicatedMap;
 import com.hazelcast.topic.ITopic;
 import com.hazelcast.topic.Message;
 import com.hazelcast.topic.MessageListener;
+
+import org.springframework.integration.hazelcast.HazelcastHeaders;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
+import org.springframework.util.Assert;
 
 /**
  * Hazelcast Event Driven Message Producer is a message producer which enables
@@ -48,7 +47,7 @@ import com.hazelcast.topic.MessageListener;
  * @author Eren Avsarogullari
  * @author Artem Bilan
  *
- * @since 1.0.0
+ * @since 6.0
  */
 public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessageProducer {
 
@@ -63,11 +62,11 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected void doStart() {
 		if (this.distributedObject instanceof IMap) {
 			setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject)
-					.addEntryListener((MapListener) new HazelcastEntryListener(), true));
+					.addEntryListener(new HazelcastEntryListener(), true));
 		}
 		else if (this.distributedObject instanceof MultiMap) {
 			setHazelcastRegisteredEventListenerId(((MultiMap<?, ?>) this.distributedObject)
@@ -125,7 +124,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 		return "hazelcast:inbound-channel-adapter";
 	}
 
-	private class HazelcastItemListener<E> extends AbstractHazelcastEventListener<ItemEvent<E>>
+	private final class HazelcastItemListener<E> extends AbstractHazelcastEventListener<ItemEvent<E>>
 			implements ItemListener<E> {
 
 		@Override
@@ -145,9 +144,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 						event.getMember().getSocketAddress(EndpointQualifier.MEMBER), getCacheListeningPolicy());
 			}
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Received ItemEvent : " + event);
-			}
+			logger.debug(() -> "Received ItemEvent : " + event);
 		}
 
 		@Override
@@ -161,7 +158,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 
 	}
 
-	private class HazelcastMessageListener<E> extends AbstractHazelcastEventListener<Message<E>>
+	private final class HazelcastMessageListener<E> extends AbstractHazelcastEventListener<Message<E>>
 			implements MessageListener<E> {
 
 		@Override
@@ -174,9 +171,7 @@ public class HazelcastEventDrivenMessageProducer extends AbstractHazelcastMessag
 			sendMessage(event,
 					event.getPublishingMember().getSocketAddress(EndpointQualifier.MEMBER), getCacheListeningPolicy());
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Received Message : " + event);
-			}
+			logger.debug(() -> "Received Message : " + event);
 		}
 
 		@Override

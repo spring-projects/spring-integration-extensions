@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.LifecycleEvent;
+import com.hazelcast.core.LifecycleEvent.LifecycleState;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,15 +30,10 @@ import org.springframework.integration.hazelcast.inbound.util.HazelcastInboundCh
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import com.hazelcast.client.Client;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.LifecycleEvent;
-import com.hazelcast.core.LifecycleEvent.LifecycleState;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.internal.nio.ConnectionType;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Hazelcast Cluster Monitor Inbound Channel Adapter Unit Test Class
@@ -44,8 +41,8 @@ import com.hazelcast.internal.nio.ConnectionType;
  * @author Eren Avsarogullari
  * @author Artem Bilan
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@RunWith(SpringRunner.class)
+@SpringJUnitConfig
 @DirtiesContext
 @Ignore("Hard to reach CP consensus with limited number of members in two clusters")
 public class HazelcastClusterMonitorInboundChannelAdapterTests {
@@ -109,14 +106,6 @@ public class HazelcastClusterMonitorInboundChannelAdapterTests {
 		assertThat(msg.getPayload()).isNotNull();
 		assertThat(msg.getPayload() instanceof LifecycleEvent).isTrue();
 		assertThat(((LifecycleEvent) msg.getPayload()).getState()).isEqualTo(lifecycleState);
-	}
-
-	private void verifyClientEvent(final Message<?> msg) {
-		assertThat(msg).isNotNull();
-		assertThat(msg.getPayload()).isNotNull();
-		assertThat(msg.getPayload() instanceof Client).isTrue();
-		assertThat(((Client) msg.getPayload()).getClientType()).isEqualTo(ConnectionType.JAVA_CLIENT);
-		assertThat(((Client) msg.getPayload()).getSocketAddress()).isNotNull();
 	}
 
 }

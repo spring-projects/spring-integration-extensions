@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,17 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.annotation.PreDestroy;
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.replicatedmap.ReplicatedMap;
+import com.hazelcast.topic.ITopic;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
@@ -36,33 +40,17 @@ import org.springframework.integration.hazelcast.outbound.HazelcastCacheWritingM
 import org.springframework.integration.hazelcast.outbound.util.HazelcastOutboundChannelAdapterTestUtils;
 import org.springframework.messaging.MessageChannel;
 
-import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.map.IMap;
-import com.hazelcast.multimap.MultiMap;
-import com.hazelcast.replicatedmap.ReplicatedMap;
-import com.hazelcast.topic.ITopic;
-
 /**
  * Configuration Class for Hazelcast Integration Outbound Test
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
  *
- * @since 1.0.0
+ * @since 6.0
  */
 @Configuration
-@ComponentScan(basePackages = { "org.springframework.integration.hazelcast.*" })
 @EnableIntegration
-@IntegrationComponentScan("org.springframework.integration.hazelcast.outbound")
 public class HazelcastIntegrationOutboundTestConfiguration {
-
-	@PreDestroy
-	public void terminate() {
-		HazelcastInstanceFactory.terminateAll();
-	}
 
 	@Bean
 	public MessageChannel distMapChannel() {
@@ -144,7 +132,7 @@ public class HazelcastIntegrationOutboundTestConfiguration {
 		return testHzInstance().getReplicatedMap("Replicated_Map1");
 	}
 
-	@Bean(destroyMethod = "")
+	@Bean(destroyMethod = "shutdown")
 	public HazelcastInstance testHzInstance() {
 		return Hazelcast.newHazelcastInstance();
 	}

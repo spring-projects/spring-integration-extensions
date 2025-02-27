@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import org.springframework.util.Assert;
-
 import com.hazelcast.map.IMap;
 import com.hazelcast.query.impl.predicates.SqlPredicate;
+
+import org.springframework.util.Assert;
 
 /**
  * Hazelcast Continuous Query Message Producer is a message producer which enables
@@ -28,7 +28,7 @@ import com.hazelcast.query.impl.predicates.SqlPredicate;
  * defined predicate and sends events to related channel.
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @since 6.0
  */
 public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMessageProducer {
 
@@ -47,7 +47,7 @@ public class HazelcastContinuousQueryMessageProducer extends AbstractHazelcastMe
 		this.includeValue = includeValue;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
 	protected void doStart() {
 		setHazelcastRegisteredEventListenerId(((IMap<?, ?>) this.distributedObject)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,44 +16,34 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import javax.annotation.Resource;
-
-import org.junit.AfterClass;
+import com.hazelcast.topic.ITopic;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.hazelcast.HazelcastIntegrationTestUser;
 import org.springframework.integration.hazelcast.inbound.util.HazelcastInboundChannelAdapterTestUtils;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.topic.ITopic;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Hazelcast Distributed Topic Event Driven Inbound Channel Adapter Test
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @since 6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @DirtiesContext
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class HazelcastDistributedTopicEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
 	private PollableChannel edTopicChannel1;
 
-	@Resource
-	private ITopic<HazelcastIntegrationTestUser> edDistributedTopic1;
-
-	@AfterClass
-	public static void shutdown() {
-		HazelcastInstanceFactory.terminateAll();
-	}
+	@Autowired
+	private ITopic edDistributedTopic1;
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {

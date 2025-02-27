@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.integration.hazelcast.ClusterMonitorType;
-import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
-import org.springframework.util.Assert;
-
 import com.hazelcast.client.Client;
 import com.hazelcast.client.ClientListener;
 import com.hazelcast.cluster.MembershipEvent;
@@ -40,6 +35,11 @@ import com.hazelcast.partition.MigrationListener;
 import com.hazelcast.partition.MigrationState;
 import com.hazelcast.partition.ReplicaMigrationEvent;
 
+import org.springframework.integration.endpoint.MessageProducerSupport;
+import org.springframework.integration.hazelcast.ClusterMonitorType;
+import org.springframework.integration.hazelcast.HazelcastIntegrationDefinitionValidator;
+import org.springframework.util.Assert;
+
 /**
  * Hazelcast Cluster Monitor Event Driven Message Producer is a message producer which
  * enables {@link HazelcastClusterMonitorMessageProducer.HazelcastClusterMonitorListener}
@@ -48,7 +48,7 @@ import com.hazelcast.partition.ReplicaMigrationEvent;
  * @author Eren Avsarogullari
  * @author Artem Bilan
  *
- * @since 1.0.0
+ * @since 6.0
  */
 public class HazelcastClusterMonitorMessageProducer extends MessageProducerSupport {
 
@@ -64,10 +64,10 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 	}
 
 	public void setMonitorEventTypes(String monitorEventTypes) {
-		final Set<String> monitorTypes =
+		Set<String> types =
 				HazelcastIntegrationDefinitionValidator.validateEnumType(ClusterMonitorType.class, monitorEventTypes);
-		Assert.notEmpty(monitorTypes, "'monitorTypes' must have elements");
-		this.monitorTypes = monitorTypes;
+		Assert.notEmpty(types, "'monitorTypes' must have elements");
+		this.monitorTypes = types;
 	}
 
 	@Override
@@ -89,13 +89,13 @@ public class HazelcastClusterMonitorMessageProducer extends MessageProducerSuppo
 		if (this.monitorTypes.contains(ClusterMonitorType.MIGRATION.name())) {
 			final UUID registrationId = this.hazelcastInstance.getPartitionService()
 					.addMigrationListener(clusterMonitorListener);
-			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.MIGRATION,	registrationId);
+			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.MIGRATION, registrationId);
 		}
 
 		if (this.monitorTypes.contains(ClusterMonitorType.LIFECYCLE.name())) {
 			final UUID registrationId = this.hazelcastInstance.getLifecycleService()
 					.addLifecycleListener(clusterMonitorListener);
-			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.LIFECYCLE,	registrationId);
+			this.hazelcastRegisteredListenerIdMap.put(ClusterMonitorType.LIFECYCLE, registrationId);
 		}
 
 		if (this.monitorTypes.contains(ClusterMonitorType.CLIENT.name())) {

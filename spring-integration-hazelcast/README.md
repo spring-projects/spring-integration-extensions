@@ -1,7 +1,9 @@
 SPRING INTEGRATION HAZELCAST SUPPORT
 ====================================
 
-> **_IMPORTANT:_**: Starting with Spring Integration `6.0` this project has been migrated as a module into a [core project](https://github.com/spring-projects/spring-integration/tree/main/spring-integration-hazelcast).
+> **_IMPORTANT:_**: Starting with Spring Integration `6.5` the respective `spring-integration-hazelcast` module has been deprecated due to migrating of many Hazelcast feature to the [Enterprise Edition](https://docs.hazelcast.com/hazelcast/5.5/migrate/community-to-enterprise). 
+This contradicst to the Open Source practice, therefore we just stopping support this module. 
+The source code of the module is present in this directory for historical reasons and future considerations.
 
 ## HAZELCAST EVENT-DRIVEN INBOUND CHANNEL ADAPTER
 

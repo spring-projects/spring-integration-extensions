@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package org.springframework.integration.hazelcast.inbound.config;
 
-import javax.annotation.Resource;
-
+import com.hazelcast.map.IMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,18 +26,16 @@ import org.springframework.integration.hazelcast.inbound.util.HazelcastInboundCh
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import com.hazelcast.map.IMap;
 
 /**
  * Hazelcast Continuous Query Inbound Channel Adapter JavaConfig driven Unit Test Class
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @since 6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class,
 		loader = AnnotationConfigContextLoader.class)
 @DirtiesContext
@@ -53,13 +50,13 @@ public class HazelcastCQDistributedMapInboundChannelAdapterConfigTests {
 	@Autowired
 	private PollableChannel cqDistributedMapChannel3;
 
-	@Resource
+	@Autowired
 	private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap1;
 
-	@Resource
+	@Autowired
 	private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap2;
 
-	@Resource
+	@Autowired
 	private IMap<Integer, HazelcastIntegrationTestUser> testCQDistributedMap3;
 
 	@Test

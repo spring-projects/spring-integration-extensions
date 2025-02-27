@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import com.hazelcast.map.IMap;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.replicatedmap.ReplicatedMap;
+import com.hazelcast.topic.ITopic;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,25 +35,17 @@ import org.springframework.integration.hazelcast.HazelcastTestRequestHandlerAdvi
 import org.springframework.integration.hazelcast.outbound.util.HazelcastOutboundChannelAdapterTestUtils;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.map.IMap;
-import com.hazelcast.multimap.MultiMap;
-import com.hazelcast.replicatedmap.ReplicatedMap;
-import com.hazelcast.topic.ITopic;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Hazelcast Outbound Channel Adapter JavaConfig driven Unit Test Class
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @author Atem Bilan
+ *
+ * @since 6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = HazelcastIntegrationOutboundTestConfiguration.class,
-		loader = AnnotationConfigContextLoader.class)
+@SpringJUnitConfig(classes = HazelcastIntegrationOutboundTestConfiguration.class)
 @DirtiesContext
 public class HazelcastOutboundChannelAdapterConfigTests {
 
@@ -87,28 +81,28 @@ public class HazelcastOutboundChannelAdapterConfigTests {
 	@Qualifier("replicatedMapChannel2")
 	private MessageChannel replicatedMapChannel2;
 
-	@Resource
+	@Autowired
 	private IMap<Integer, HazelcastIntegrationTestUser> distMap;
 
-	@Resource
+	@Autowired
 	private IMap<Integer, HazelcastIntegrationTestUser> distBulkMap;
 
-	@Resource
+	@Autowired
 	private List<HazelcastIntegrationTestUser> distList;
 
-	@Resource
+	@Autowired
 	private Set<HazelcastIntegrationTestUser> distSet;
 
-	@Resource
+	@Autowired
 	private Queue<HazelcastIntegrationTestUser> distQueue;
 
-	@Resource
+	@Autowired
 	private ITopic<HazelcastIntegrationTestUser> topic;
 
-	@Resource
+	@Autowired
 	private MultiMap<Integer, HazelcastIntegrationTestUser> multiMap;
 
-	@Resource
+	@Autowired
 	private ReplicatedMap<Integer, HazelcastIntegrationTestUser> replicatedMap;
 
 	@Autowired
@@ -143,7 +137,7 @@ public class HazelcastOutboundChannelAdapterConfigTests {
 	@Qualifier("replicatedMapRequestHandlerAdvice")
 	private HazelcastTestRequestHandlerAdvice replicatedMapRequestHandlerAdvice;
 
-	@AfterClass
+	@AfterAll
 	public static void shutdown() {
 		HazelcastInstanceFactory.terminateAll();
 	}

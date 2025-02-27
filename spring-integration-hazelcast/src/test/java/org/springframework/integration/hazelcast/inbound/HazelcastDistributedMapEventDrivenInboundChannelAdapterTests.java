@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,8 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.annotation.Resource;
-
-import org.junit.AfterClass;
+import com.hazelcast.core.EntryEventType;
+import com.hazelcast.map.IMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,22 +30,20 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import com.hazelcast.core.EntryEventType;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.map.IMap;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Hazelcast Distributed Map Event Driven Inbound Channel Adapter Test
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @since 6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @DirtiesContext
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
@@ -63,22 +58,17 @@ public class HazelcastDistributedMapEventDrivenInboundChannelAdapterTests {
 	@Autowired
 	private PollableChannel edMapChannel4;
 
-	@Resource
-	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap1;
+	@Autowired
+	private IMap edDistributedMap1;
 
-	@Resource
-	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap2;
+	@Autowired
+	private IMap edDistributedMap2;
 
-	@Resource
-	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap3;
+	@Autowired
+	private IMap edDistributedMap3;
 
-	@Resource
-	private IMap<Integer, HazelcastIntegrationTestUser> edDistributedMap4;
-
-	@AfterClass
-	public static void shutdown() {
-		HazelcastInstanceFactory.terminateAll();
-	}
+	@Autowired
+	private IMap edDistributedMap4;
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {

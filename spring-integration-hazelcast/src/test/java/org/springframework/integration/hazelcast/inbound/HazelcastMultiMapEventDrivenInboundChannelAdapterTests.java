@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,8 @@
 
 package org.springframework.integration.hazelcast.inbound;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.annotation.Resource;
-
-import org.junit.AfterClass;
+import com.hazelcast.core.EntryEventType;
+import com.hazelcast.multimap.MultiMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,23 +30,21 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import com.hazelcast.core.EntryEventType;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.multimap.MultiMap;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Hazelcast MultiMap Event Driven Inbound Channel Adapter Test
  *
  * @author Eren Avsarogullari
  * @author Artem Bilan
- * @since 1.0.0
+ * @since 6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @DirtiesContext
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests {
 
 	@Autowired
@@ -61,19 +56,14 @@ public class HazelcastMultiMapEventDrivenInboundChannelAdapterTests {
 	@Autowired
 	private PollableChannel edMultiMapChannel3;
 
-	@Resource
-	private MultiMap<Integer, HazelcastIntegrationTestUser> edMultiMap1;
+	@Autowired
+	private MultiMap edMultiMap1;
 
-	@Resource
-	private MultiMap<Integer, HazelcastIntegrationTestUser> edMultiMap2;
+	@Autowired
+	private MultiMap edMultiMap2;
 
-	@Resource
-	private MultiMap<Integer, HazelcastIntegrationTestUser> edMultiMap3;
-
-	@AfterClass
-	public static void shutdown() {
-		HazelcastInstanceFactory.terminateAll();
-	}
+	@Autowired
+	private MultiMap edMultiMap3;
 
 	@Test
 	public void testEventDrivenForOnlyADDEDEntryEvent() {

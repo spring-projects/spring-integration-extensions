@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2015-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,25 @@
 
 package org.springframework.integration.hazelcast.leader;
 
-
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.cp.CPSubsystem;
+import com.hazelcast.cp.lock.FencedLock;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.core.log.LogAccessor;
+import org.springframework.core.log.LogMessage;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.integration.leader.Candidate;
 import org.springframework.integration.leader.Context;
 import org.springframework.integration.leader.DefaultCandidate;
@@ -38,10 +42,6 @@ import org.springframework.integration.leader.event.DefaultLeaderEventPublisher;
 import org.springframework.integration.leader.event.LeaderEventPublisher;
 import org.springframework.integration.support.leader.LockRegistryLeaderInitiator;
 import org.springframework.util.Assert;
-
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.cp.CPSubsystem;
-import com.hazelcast.cp.lock.FencedLock;
 
 /**
  * Bootstrap leadership {@link org.springframework.integration.leader.Candidate candidates}
@@ -55,14 +55,16 @@ import com.hazelcast.cp.lock.FencedLock;
  * @author Mael Le Guével
  * @author Alexey Tsoy
  * @author Robert Höglund
+ * @author Christian Tzolov
+ * @author Emil Palm
  */
 public class LeaderInitiator implements SmartLifecycle, DisposableBean, ApplicationEventPublisherAware {
 
-	private static final Log logger = LogFactory.getLog(LeaderInitiator.class);
-
-	private static int threadNameCount = 0;
+	private static final LogAccessor logger = new LogAccessor(LeaderInitiator.class);
 
 	private static final Context NULL_CONTEXT = new NullContext();
+
+	private final Lock lock = new ReentrantLock();
 
 	/*** Hazelcast client.
 	 */
@@ -76,12 +78,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	/**
 	 * Executor service for running leadership daemon.
 	 */
-	private final ExecutorService executorService =
-			Executors.newSingleThreadExecutor(r -> {
-				Thread thread = new Thread(r, "Hazelcast-leadership-" + (threadNameCount++));
-				thread.setDaemon(true);
-				return thread;
-			});
+	private AsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor("Hazelcast-leadership-");
 
 	private long heartBeatMillis = LockRegistryLeaderInitiator.DEFAULT_HEART_BEAT_TIME;
 
@@ -99,7 +96,7 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	private int phase;
 
 	/**
-	 * Future returned by submitting an {@link LeaderSelector} to {@link #executorService}.
+	 * Future returned by submitting an {@link LeaderSelector} to {@link #taskExecutor}.
 	 * This is used to cancel leadership.
 	 */
 	private volatile Future<Void> future;
@@ -131,7 +128,17 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	}
 
 	/**
-	 * Sets the {@link LeaderEventPublisher}.
+	 * Set a {@link AsyncTaskExecutor} for running leadership daemon.
+	 * @param taskExecutor the {@link AsyncTaskExecutor} to use.
+	 * @since 6.2
+	 */
+	public void setTaskExecutor(AsyncTaskExecutor taskExecutor) {
+		Assert.notNull(taskExecutor, "A 'taskExecutor' must not be null.");
+		this.taskExecutor = taskExecutor;
+	}
+
+	/**
+	 * Set the {@link LeaderEventPublisher}.
 	 * @param leaderEventPublisher the event publisher
 	 */
 	public void setLeaderEventPublisher(LeaderEventPublisher leaderEventPublisher) {
@@ -206,11 +213,17 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	 * Start the registration of the {@link #candidate} for leader election.
 	 */
 	@Override
-	public synchronized void start() {
-		if (!this.running) {
-			this.leaderSelector = new LeaderSelector();
-			this.running = true;
-			this.future = this.executorService.submit(this.leaderSelector);
+	public void start() {
+		this.lock.lock();
+		try {
+			if (!this.running) {
+				this.leaderSelector = new LeaderSelector();
+				this.running = true;
+				this.future = this.taskExecutor.submit(this.leaderSelector);
+			}
+		}
+		finally {
+			this.lock.unlock();
 		}
 	}
 
@@ -225,13 +238,19 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	 * If the candidate is currently leader, its leadership will be revoked.
 	 */
 	@Override
-	public synchronized void stop() {
-		if (this.running) {
-			this.running = false;
-			if (this.future != null) {
-				this.future.cancel(true);
+	public void stop() {
+		this.lock.lock();
+		try {
+			if (this.running) {
+				this.running = false;
+				if (this.future != null) {
+					this.future.cancel(true);
+				}
+				this.future = null;
 			}
-			this.future = null;
+		}
+		finally {
+			this.lock.unlock();
 		}
 	}
 
@@ -247,20 +266,15 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 	@Override
 	public void destroy() {
 		stop();
-		this.executorService.shutdown();
 	}
-
 
 	FencedLock getLock() {
 		CPSubsystem cpSubSystem = this.client.getCPSubsystem();
 		FencedLock lock = cpSubSystem.getLock(this.candidate.getRole());
-		if (logger.isDebugEnabled()) {
-			logger.debug(
-					String.format("Use lock groupId '%s', lock count '%s'", lock.getGroupId(), lock.getLockCount()));
-		}
+		logger.debug(
+				LogMessage.format("Use lock groupId '%s', lock count '%s'", lock.getGroupId(), lock.getLockCount()));
 		return lock;
 	}
-
 
 	/**
 	 * Callable that manages the acquisition of Hazelcast locks
@@ -279,17 +293,17 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 			try {
 				while (isRunning()) {
 					try {
-						if (logger.isTraceEnabled()) {
-							logger.trace("Am I the leader (" + LeaderInitiator.this.candidate.getRole() + ") ? "
-									+ this.leader);
-						}
+						logger.trace(() ->
+								"Am I the leader (" + LeaderInitiator.this.candidate.getRole() + ")? " + this.leader);
 						if (getLock().isLockedByCurrentThread()) {
 							if (!this.leader) {
 								// Since we have the lock we need to ensure that the leader flag is set
 								this.leader = true;
 							}
 							// Give it a chance to expire.
-							if (yieldSign.tryAcquire(LeaderInitiator.this.heartBeatMillis, TimeUnit.MILLISECONDS)) {
+							if (LeaderInitiator.this.yieldSign
+									.tryAcquire(LeaderInitiator.this.heartBeatMillis, TimeUnit.MILLISECONDS)) {
+
 								revokeLeadership();
 								// Give it a chance to elect some other leader.
 								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
@@ -304,12 +318,15 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 								this.leader = true;
 								handleGranted();
 							}
+							if (!acquired && this.leader) {
+								//If we no longer can acquire the lock but still have the leader status
+								revokeLeadership();
+							}
 						}
 					}
-					catch (Exception e) {
+					catch (Exception ex) {
 						// The lock was broken and we are no longer leader
 						revokeLeadership();
-
 
 						if (isRunning()) {
 							// Give it a chance to elect some other leader.
@@ -317,14 +334,12 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 								Thread.sleep(LeaderInitiator.this.busyWaitMillis);
 							}
 							catch (InterruptedException e1) {
-								// Ignore interruption and let it to be caught on the next cycle.
+								// Ignore interruption and let it be caught on the next cycle.
 								Thread.currentThread().interrupt();
 							}
 						}
-						if (logger.isDebugEnabled()) {
-							logger.debug("Error acquiring the lock for " + this.context +
-									". " + (isRunning() ? "Retrying..." : ""), e);
-						}
+						logger.debug(ex, () -> "Error acquiring the lock for " + this.context +
+								". " + (isRunning() ? "Retrying..." : ""));
 					}
 				}
 			}
@@ -343,15 +358,14 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 					getLock().unlock();
 				}
 				catch (Exception e1) {
-					logger.warn("Could not unlock - treat as broken " + this.context + ". Revoking "
-							+ (isRunning() ? " and retrying..." : "..."), e1);
+					logger.warn(e1, () -> "Could not unlock - treat as broken " + this.context + ". Revoking "
+							+ (isRunning() ? " and retrying..." : "..."));
 
 				}
 
 				handleRevoked();
 			}
 		}
-
 
 		private void handleGranted() throws InterruptedException {
 			LeaderInitiator.this.candidate.onGranted(this.context);
@@ -360,8 +374,8 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 					LeaderInitiator.this.leaderEventPublisher.publishOnGranted(
 							LeaderInitiator.this, this.context, this.role);
 				}
-				catch (Exception e) {
-					logger.warn("Error publishing OnGranted event.", e);
+				catch (Exception ex) {
+					logger.warn(ex, "Error publishing OnGranted event.");
 				}
 			}
 		}
@@ -371,10 +385,10 @@ public class LeaderInitiator implements SmartLifecycle, DisposableBean, Applicat
 			if (LeaderInitiator.this.leaderEventPublisher != null) {
 				try {
 					LeaderInitiator.this.leaderEventPublisher.publishOnRevoked(
-							LeaderInitiator.this, this.context, role);
+							LeaderInitiator.this, this.context, this.role);
 				}
-				catch (Exception e) {
-					logger.warn("Error publishing OnRevoked event.", e);
+				catch (Exception ex) {
+					logger.warn(ex, "Error publishing OnRevoked event.");
 				}
 			}
 		}

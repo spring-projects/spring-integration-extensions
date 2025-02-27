@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.springframework.integration.hazelcast.inbound.config;
 
+import com.hazelcast.core.HazelcastInstance;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,14 +27,13 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.hazelcast.core.HazelcastInstance;
-
 /**
  * Hazelcast Cluster Monitor Inbound Channel Adapter JavaConfig driven Unit Test Class
  *
  * @author Eren Avsarogullari
- * @since 1.0.0
+ * @since 6.0
  */
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HazelcastIntegrationInboundTestConfiguration.class)
 @DirtiesContext

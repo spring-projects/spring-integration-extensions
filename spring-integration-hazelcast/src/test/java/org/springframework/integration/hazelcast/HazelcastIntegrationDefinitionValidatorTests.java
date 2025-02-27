@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,22 @@
 
 package org.springframework.integration.hazelcast;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.annotation.Resource;
-
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hazelcast.collection.IList;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import org.junit.AfterClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Hazelcast Integration Definition Validator Test Class
@@ -41,15 +39,16 @@ import com.hazelcast.instance.impl.HazelcastInstanceFactory;
  * @author Eren Avsarogullari
  * @author Artem Bilan
  *
- * @since 1.0.0
+ * @since 6.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @DirtiesContext
+@SuppressWarnings({"rawtypes"})
 public class HazelcastIntegrationDefinitionValidatorTests {
 
-	@Resource
-	private IList<HazelcastIntegrationTestUser> distList;
+	@Autowired
+	private IList distList;
 
 	@AfterClass
 	public static void shutdown() {

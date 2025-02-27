@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@ package org.springframework.integration.hazelcast.outbound;
 import java.util.Collection;
 import java.util.Map;
 
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.topic.ITopic;
+
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.integration.expression.ExpressionUtils;
@@ -27,10 +31,6 @@ import org.springframework.integration.hazelcast.HazelcastHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
-import com.hazelcast.core.DistributedObject;
-import com.hazelcast.multimap.MultiMap;
-import com.hazelcast.topic.ITopic;
-
 /**
  * MessageHandler implementation that writes {@link Message} or payload to defined
  * Hazelcast distributed cache object.
@@ -38,7 +38,7 @@ import com.hazelcast.topic.ITopic;
  * @author Eren Avsarogullari
  * @author Artem Bilan
  *
- * @since 1.0.0
+ * @since 6.0
  */
 public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler {
 
@@ -85,55 +85,50 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 			objectToStore = message.getPayload();
 		}
 
-		DistributedObject distributedObject = getDistributedObject(message);
+		DistributedObject object = getDistributedObject(message);
 
-		if (distributedObject instanceof Map) {
-			Map map = (Map) distributedObject;
+		if (object instanceof Map map) {
 			if (objectToStore instanceof Map) {
 				map.putAll((Map) objectToStore);
 			}
-			else if (objectToStore instanceof Map.Entry) {
-				Map.Entry entry = (Map.Entry) objectToStore;
+			else if (objectToStore instanceof Map.Entry entry) {
 				map.put(entry.getKey(), entry.getValue());
 			}
 			else {
 				map.put(getKey(message), objectToStore);
 			}
 		}
-		else if (distributedObject instanceof MultiMap) {
-			MultiMap map = (MultiMap) distributedObject;
+		else if (object instanceof MultiMap map) {
 			if (objectToStore instanceof Map) {
 				Map<?, ?> mapToStore = (Map) objectToStore;
 				for (Map.Entry entry : mapToStore.entrySet()) {
 					map.put(entry.getKey(), entry.getValue());
 				}
 			}
-			else if (objectToStore instanceof Map.Entry) {
-				Map.Entry entry = (Map.Entry) objectToStore;
+			else if (objectToStore instanceof Map.Entry entry) {
 				map.put(entry.getKey(), entry.getValue());
 			}
 			else {
 				map.put(getKey(message), objectToStore);
 			}
 		}
-		else if (distributedObject instanceof ITopic) {
-			((ITopic) distributedObject).publish(objectToStore);
+		else if (object instanceof ITopic) {
+			((ITopic) object).publish(objectToStore);
 		}
-		else if (distributedObject instanceof Collection) {
+		else if (object instanceof Collection) {
 			if (objectToStore instanceof Collection) {
-				((Collection) distributedObject).addAll((Collection) objectToStore);
+				((Collection) object).addAll((Collection) objectToStore);
 			}
 			else {
-				((Collection) distributedObject).add(objectToStore);
+				((Collection) object).add(objectToStore);
 			}
 		}
 		else {
-			throw new IllegalStateException("The 'distributedObject' for 'HazelcastCacheWritingMessageHandler' " +
+			throw new IllegalStateException("The 'object' for 'HazelcastCacheWritingMessageHandler' " +
 					"must be of 'IMap', 'MultiMap', 'ITopic', 'ISet' or 'IList' type, " +
-					"but gotten: [" + distributedObject + "].");
+					"but gotten: [" + object + "].");
 		}
 	}
-
 
 	private DistributedObject getDistributedObject(final Message<?> message) {
 		if (this.distributedObject != null) {
@@ -144,7 +139,7 @@ public class HazelcastCacheWritingMessageHandler extends AbstractMessageHandler 
 		}
 		else if (message.getHeaders().containsKey(HazelcastHeaders.CACHE_NAME)) {
 			return getBeanFactory()
-					.getBean(message.getHeaders().get(HazelcastHeaders.CACHE_NAME, String.class),
+					.getBean(message.getHeaders().get(HazelcastHeaders.CACHE_NAME, String.class), // NOSONAR
 							DistributedObject.class);
 		}
 		else {
