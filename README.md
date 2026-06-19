@@ -3,6 +3,15 @@ Spring Integration Extensions
 
 The Spring Integration Extensions project provides extension modules for [Spring Integration][]. This project is part of the [SpringSource organization][] on GitHub.
 
+> [!IMPORTANT]
+> This project has served well over years as a playground for proof of concepts and other experiments.
+> Many modules from here have been merged directly to [Spring Integration][] project, some got abandoned due to absence of community attraction.
+> So far we don't have any further plans to support whatever has left in this repository.
+> According to the community experience it is better to start a new module directly in [Spring Integration][] project.
+> This repository has been moved to the attic.
+> Thank you everyone for contributions!
+
+
 ## Available Modules
 
 * [Amazon Web Services (AWS)][] Support
